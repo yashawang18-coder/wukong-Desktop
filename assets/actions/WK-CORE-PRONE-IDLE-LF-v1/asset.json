@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "asset_id": "WK-CORE-PRONE-IDLE-LF-v1",
+  "identity_profile": "wukong-current-adult-v1",
+  "domain": "core",
+  "action": "prone-idle",
+  "direction": "left-front",
+  "version": 1,
+  "status": "approved-keyframe",
+  "runtime_use": false,
+  "contains_real_photos": false,
+  "sequence": {
+    "loop": true,
+    "frame_count": 5,
+    "canvas": {
+      "width": 1024,
+      "height": 1024,
+      "color_mode": "RGBA"
+    },
+    "frames": [
+      {
+        "index": 1,
+        "path": "approved-keyframes/v1/frame-001.png",
+        "size": 651309,
+        "sha256": "f936cb17d4d84471e5b35f2e2b25cb414df837bcefbcb9fdc05b00304a50e0ad"
+      },
+      {
+        "index": 2,
+        "path": "approved-keyframes/v1/frame-002.png",
+        "size": 645587,
+        "sha256": "4e1b6dee69e05302015d88eeb54e4ff13bc5a391b25abc6cb397a91deef3c626"
+      },
+      {
+        "index": 3,
+        "path": "approved-keyframes/v1/frame-003.png",
+        "size": 647658,
+        "sha256": "18a3c470f1ccf85d4d9d9b7a0cfbae409332e886dbc4edd48fd0fd5891bcd944"
+      },
+      {
+        "index": 4,
+        "path": "approved-keyframes/v1/frame-004.png",
+        "size": 646362,
+        "sha256": "3282ce8726f3dc4b5b0e06ace6d12cf2b433ec0bf8f3c79127586eacdff5a870"
+      },
+      {
+        "index": 5,
+        "path": "approved-keyframes/v1/frame-005.png",
+        "size": 651309,
+        "sha256": "7c60e555420aadc7f233616a91cec39987d8e254d677890270a8ba4ee5b21268"
+      }
+    ]
+  },
+  "review": {
+    "identity": "passed",
+    "motion_visual": "passed",
+    "technical_asset_audit": "passed",
+    "runtime_playback": "pending"
+  }
+}

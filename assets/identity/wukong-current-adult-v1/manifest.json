@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "profile_id": "wukong-current-adult-v1",
+  "identity_revision": "05",
+  "status": "approved",
+  "approved_board": "identity-board.png",
+  "contains_real_photos": false,
+  "board": {
+    "width": 1774,
+    "height": 887,
+    "color_mode": "RGBA",
+    "sha256": "1344b7f9407c86fb531f3ee796260a9ee3746c8455b458f217b05b24bc15dc99"
+  },
+  "anchor_summary": {
+    "neutral_geometry_anchors": 5,
+    "expression_anchors": 1,
+    "expression": "tongue-out-smile"
+  },
+  "approval_scope": "identity-only"
+}
