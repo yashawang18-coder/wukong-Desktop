@@ -1,0 +1,599 @@
+{
+  "schema_version": 3,
+  "asset_id": "WK-CORE-PRONE-IDLE-LF-v1",
+  "identity_profile": "wukong-current-adult-v1",
+  "direction": "left-front",
+  "status": "runtime-candidate",
+  "runtime_use": false,
+  "approved_keyframes": {
+    "version": 1,
+    "owner_approved_on": "2026-08-05",
+    "frame_count": 5
+  },
+  "runtime_sequence": {
+    "version": 3,
+    "canvas": {
+      "width": 1024,
+      "height": 1024,
+      "color_mode": "RGBA"
+    },
+    "fps": 8,
+    "frame_duration_ms": 125,
+    "frame_count": 24,
+    "loop": true,
+    "loop_duration_ms": 3000,
+    "pivot": {
+      "normalized_x": 0.5,
+      "normalized_y": 0.84082
+    },
+    "ground_line_px": 861,
+    "frames": [
+      {
+        "index": 1,
+        "path": "runtime-frames/v3/frame-001.png",
+        "duration_ms": 125,
+        "sha256": "f936cb17d4d84471e5b35f2e2b25cb414df837bcefbcb9fdc05b00304a50e0ad",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.0,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 2,
+        "path": "runtime-frames/v3/frame-002.png",
+        "duration_ms": 125,
+        "sha256": "cb9a47e574108fe3f5d79c3dc3fbd80bf7a64e1e3d9bcaacd78e06ae2d157b25",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.017037,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 3,
+        "path": "runtime-frames/v3/frame-003.png",
+        "duration_ms": 125,
+        "sha256": "ce0c197d80c0a07febe348c8e813a8523a26d45b6416297c553b9d15e643a1d8",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.066987,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 4,
+        "path": "runtime-frames/v3/frame-004.png",
+        "duration_ms": 125,
+        "sha256": "148f56b8779b55de56bdfe22b0257b44bf8f085c3a70c6a2cc6f19739eee31ca",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.146447,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 5,
+        "path": "runtime-frames/v3/frame-005.png",
+        "duration_ms": 125,
+        "sha256": "440365803e0319b0e92ddcb71f86baa0959441b52ef5957a66bc7d3ef9bfa970",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.25,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 6,
+        "path": "runtime-frames/v3/frame-006.png",
+        "duration_ms": 125,
+        "sha256": "5125772e86e6bcc71c37a77be9f2262191b4f65f745aa43aa5fe2f6031945cf0",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.37059,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 7,
+        "path": "runtime-frames/v3/frame-007.png",
+        "duration_ms": 125,
+        "sha256": "cc43f01435ddf1e18f0dce72969226e50ab551bb43f9c3dc97133ed2ca0d7884",
+        "alpha_bbox": [
+          79,
+          181,
+          958,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.5,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 8,
+        "path": "runtime-frames/v3/frame-008.png",
+        "duration_ms": 125,
+        "sha256": "08555a58ac7f09ea390b2fc04f43bad4dc5cfc49fd32447a9d2e2c42d5e5c00d",
+        "alpha_bbox": [
+          79,
+          181,
+          958,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.62941,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 9,
+        "path": "runtime-frames/v3/frame-009.png",
+        "duration_ms": 125,
+        "sha256": "320df817d65b209b297d24abba33f40a29f3e079befcea231dcb4aa3bb049fff",
+        "alpha_bbox": [
+          79,
+          181,
+          958,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.75,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 10,
+        "path": "runtime-frames/v3/frame-010.png",
+        "duration_ms": 125,
+        "sha256": "08af463712b6947acbc08b1a27da319cea6e1f6248a9319011e880daa4874445",
+        "alpha_bbox": [
+          79,
+          181,
+          958,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.853553,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 11,
+        "path": "runtime-frames/v3/frame-011.png",
+        "duration_ms": 125,
+        "sha256": "181a3d2de55305f10b2b5477d7f4da25494778170d35c11c7d7b4728d0ebfd23",
+        "alpha_bbox": [
+          79,
+          181,
+          958,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.933013,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 12,
+        "path": "runtime-frames/v3/frame-012.png",
+        "duration_ms": 125,
+        "sha256": "f8053cd6e3a135851c5d41f5b5a127fa656b20e612e89e8da7b2637c41b4b1c3",
+        "alpha_bbox": [
+          79,
+          181,
+          957,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.982963,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 13,
+        "path": "runtime-frames/v3/frame-013.png",
+        "duration_ms": 125,
+        "sha256": "d19f81712100699e59f6971abd89d9dd8ef1fa2d7ae8dc2236464498137ac85f",
+        "alpha_bbox": [
+          79,
+          181,
+          957,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 1.0,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 14,
+        "path": "runtime-frames/v3/frame-014.png",
+        "duration_ms": 125,
+        "sha256": "f8053cd6e3a135851c5d41f5b5a127fa656b20e612e89e8da7b2637c41b4b1c3",
+        "alpha_bbox": [
+          79,
+          181,
+          957,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.982963,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 15,
+        "path": "runtime-frames/v3/frame-015.png",
+        "duration_ms": 125,
+        "sha256": "181a3d2de55305f10b2b5477d7f4da25494778170d35c11c7d7b4728d0ebfd23",
+        "alpha_bbox": [
+          79,
+          181,
+          958,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.933013,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 16,
+        "path": "runtime-frames/v3/frame-016.png",
+        "duration_ms": 125,
+        "sha256": "08af463712b6947acbc08b1a27da319cea6e1f6248a9319011e880daa4874445",
+        "alpha_bbox": [
+          79,
+          181,
+          958,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.853553,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 17,
+        "path": "runtime-frames/v3/frame-017.png",
+        "duration_ms": 125,
+        "sha256": "320df817d65b209b297d24abba33f40a29f3e079befcea231dcb4aa3bb049fff",
+        "alpha_bbox": [
+          79,
+          181,
+          958,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.75,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 18,
+        "path": "runtime-frames/v3/frame-018.png",
+        "duration_ms": 125,
+        "sha256": "08555a58ac7f09ea390b2fc04f43bad4dc5cfc49fd32447a9d2e2c42d5e5c00d",
+        "alpha_bbox": [
+          79,
+          181,
+          958,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.62941,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 19,
+        "path": "runtime-frames/v3/frame-019.png",
+        "duration_ms": 125,
+        "sha256": "cc43f01435ddf1e18f0dce72969226e50ab551bb43f9c3dc97133ed2ca0d7884",
+        "alpha_bbox": [
+          79,
+          181,
+          958,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.5,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 20,
+        "path": "runtime-frames/v3/frame-020.png",
+        "duration_ms": 125,
+        "sha256": "5125772e86e6bcc71c37a77be9f2262191b4f65f745aa43aa5fe2f6031945cf0",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.37059,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 21,
+        "path": "runtime-frames/v3/frame-021.png",
+        "duration_ms": 125,
+        "sha256": "440365803e0319b0e92ddcb71f86baa0959441b52ef5957a66bc7d3ef9bfa970",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.25,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 22,
+        "path": "runtime-frames/v3/frame-022.png",
+        "duration_ms": 125,
+        "sha256": "148f56b8779b55de56bdfe22b0257b44bf8f085c3a70c6a2cc6f19739eee31ca",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.146447,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 23,
+        "path": "runtime-frames/v3/frame-023.png",
+        "duration_ms": 125,
+        "sha256": "ce0c197d80c0a07febe348c8e813a8523a26d45b6416297c553b9d15e643a1d8",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.066987,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      },
+      {
+        "index": 24,
+        "path": "runtime-frames/v3/frame-024.png",
+        "duration_ms": 125,
+        "sha256": "cb9a47e574108fe3f5d79c3dc3fbd80bf7a64e1e3d9bcaacd78e06ae2d157b25",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.017037,
+          "stable_region": "face-eyes-ears-front-paws"
+        }
+      }
+    ]
+  },
+  "variants": [
+    {
+      "variant_id": "occasional-blink-v1",
+      "version": 1,
+      "frame_count": 4,
+      "fps": 8,
+      "duration_ms": 500,
+      "loop": false,
+      "scheduling": {
+        "mode": "random-interval",
+        "proposed_min_interval_ms": 15000,
+        "proposed_max_interval_ms": 30000,
+        "review_demo_interval_ms": 12000,
+        "runtime_integration_status": "pending-no-application-source"
+      },
+      "frames": [
+        {
+          "index": 1,
+          "path": "variants/blink/v1/frame-001.png",
+          "duration_ms": 125,
+          "sha256": "7ac712d8f12b5b7104dc18d3afa7a5a270aa2aa546b93190e5de6125d424ab65",
+          "alpha_bbox": [
+            79,
+            181,
+            959,
+            861
+          ],
+          "provenance": {
+            "open_source": "approved-keyframes/v1/frame-001.png",
+            "closed_source": "approved-keyframes/v1/frame-004.png",
+            "blink_amount": 0.5,
+            "changed_region": "eyes-only"
+          }
+        },
+        {
+          "index": 2,
+          "path": "variants/blink/v1/frame-002.png",
+          "duration_ms": 125,
+          "sha256": "9464be356ce3d29e4bd36caf8873e16501208e64fc2fa9b7655cea076c700689",
+          "alpha_bbox": [
+            79,
+            181,
+            959,
+            861
+          ],
+          "provenance": {
+            "open_source": "approved-keyframes/v1/frame-001.png",
+            "closed_source": "approved-keyframes/v1/frame-004.png",
+            "blink_amount": 1.0,
+            "changed_region": "eyes-only"
+          }
+        },
+        {
+          "index": 3,
+          "path": "variants/blink/v1/frame-003.png",
+          "duration_ms": 125,
+          "sha256": "7ac712d8f12b5b7104dc18d3afa7a5a270aa2aa546b93190e5de6125d424ab65",
+          "alpha_bbox": [
+            79,
+            181,
+            959,
+            861
+          ],
+          "provenance": {
+            "open_source": "approved-keyframes/v1/frame-001.png",
+            "closed_source": "approved-keyframes/v1/frame-004.png",
+            "blink_amount": 0.5,
+            "changed_region": "eyes-only"
+          }
+        },
+        {
+          "index": 4,
+          "path": "variants/blink/v1/frame-004.png",
+          "duration_ms": 125,
+          "sha256": "c45f049d7192599d14a30d35db276784817e8855a6215a29b6f800f6a7020d75",
+          "alpha_bbox": [
+            79,
+            181,
+            959,
+            861
+          ],
+          "provenance": {
+            "open_source": "approved-keyframes/v1/frame-001.png",
+            "closed_source": "approved-keyframes/v1/frame-004.png",
+            "blink_amount": 0.0,
+            "changed_region": "eyes-only"
+          }
+        }
+      ]
+    }
+  ],
+  "previews": [
+    {
+      "kind": "actual-speed-loop",
+      "path": "previews/loop-actual-speed-github-v3.gif",
+      "sha256": "9821faef1d8035a3035237fc10845796431195c639e72e0740291fbe97ce83e9"
+    },
+    {
+      "kind": "occasional-blink-demo",
+      "path": "previews/occasional-blink-demo-github-v3.gif",
+      "sha256": "04bde7701c448674e093a5e6bf3791c92d54c271b93cca9db330dc013fbd41ce"
+    },
+    {
+      "kind": "entry-loop-exit-seam",
+      "path": "previews/entry-loop-exit-seam-github-v3.gif",
+      "sha256": "f834cbbabb11357b7c91a17262d29bcb0ee09e3dfa44d87a1d51888afd3c07ec"
+    },
+    {
+      "kind": "contact-sheet",
+      "path": "previews/contact-sheet-v3.png",
+      "sha256": "8685f53adcea80b4740b851549841b57b58ed7492629caa0be3eb4672c6d98e9"
+    }
+  ],
+  "review": {
+    "identity": "passed",
+    "keyframes_owner_approval": "passed",
+    "decoded_frame_validation": "passed",
+    "generated_preview_playback": "passed",
+    "neighbor_action_transition": "pending-no-adjacent-action-assets",
+    "desktop_runtime_playback": "pending-no-application-source",
+    "owner_preview_review": "passed-on-2026-08-05"
+  },
+  "notes": [
+    "V3 is a readable three-second base breathing loop with visually stable head, paws, and ears.",
+    "V3 reaches the full approved breathing keyframe after V2's 55-percent amplitude was rejected as visually unreadable.",
+    "Runtime frames are deterministic premultiplied-alpha interpolations between approved open-eye sources 001 and 002.",
+    "The approved neutral head, eyes, and ears are composited back over the torso blend with a feathered mask.",
+    "Approved ear-pose frame 003 remains excluded from the repeating base loop.",
+    "Approved blink frame 004 is used only inside an eyes-only, four-frame, non-looping variant.",
+    "The 12-second preview demonstrates one blink for review; proposed runtime scheduling is randomized at 15-30 seconds and remains unintegrated.",
+    "The owner approved the V3 breathing and occasional-blink previews on 2026-08-05.",
+    "Preview approval does not substitute for playback, scale, transparency, direction, memory, and interruption checks in the real desktop renderer.",
+    "No generated transition candidate is included."
+  ]
+}

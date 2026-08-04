@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "asset_id": "WK-CORE-PRONE-IDLE-LF-v1",
+  "runtime_candidate_version": 3,
+  "review_type": "owner-preview",
+  "reviewed_on": "2026-08-05",
+  "decision": "approved",
+  "approved_scope": [
+    "breathing_visibility",
+    "breathing_tempo",
+    "stable_head_ears_front_paws",
+    "occasional_blink_appearance"
+  ],
+  "status_after_review": "runtime-candidate",
+  "runtime_use": false,
+  "remaining_gate": "real-desktop-renderer-playback-scale-alpha-direction-memory-and-interruption-qa",
+  "evidence": [
+    "previews/loop-actual-speed-github-v3.gif",
+    "previews/occasional-blink-demo-github-v3.gif",
+    "previews/entry-loop-exit-seam-github-v3.gif",
+    "previews/contact-sheet-v3.png"
+  ]
+}

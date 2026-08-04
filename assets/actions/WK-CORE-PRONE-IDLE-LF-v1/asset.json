@@ -21,12 +21,24 @@
     "frames_path": "approved-keyframes/v1/frame-{index:03d}.png"
   },
   "runtime_candidate": {
-    "manifest": "asset-runtime-candidate-v1.json",
-    "frame_count": 12,
-    "frames_path": "runtime-frames/v1/frame-{index:03d}.png",
+    "version": 3,
+    "manifest": "asset-runtime-candidate-v3.json",
+    "frame_count": 24,
+    "frames_path": "runtime-frames/v3/frame-{index:03d}.png",
     "fps": 8,
     "frame_duration_ms": 125,
-    "loop_duration_ms": 1500
+    "loop_duration_ms": 3000,
+    "base_loop_blink": false,
+    "base_loop_ear_motion": "visually-stable",
+    "breathing_amplitude": "full-approved-001-to-002",
+    "blink_variant": {
+      "id": "occasional-blink-v1",
+      "frames_path": "variants/blink/v1/frame-{index:03d}.png",
+      "frame_count": 4,
+      "loop": false,
+      "proposed_random_interval_ms": [15000, 30000],
+      "runtime_integration": "pending"
+    }
   },
   "loop": true,
   "interruptible": true,
@@ -37,9 +49,9 @@
     "identity_check": "passed",
     "keyframe_owner_approval": "passed",
     "generated_preview_playback": "passed",
-    "owner_runtime_review": "pending",
+    "owner_preview_review": "passed_on_2026-08-05",
     "desktop_runtime_playback": "pending_no_application_source",
     "neighbor_action_transition": "pending_no_adjacent_action_assets"
   },
-  "notes": "第五张批准关键帧与第一张完全相同；运行序列省略该重复终点，尚未标记 runtime-approved。"
+  "notes": "V1因耳动过大且眨眼重复过密被取代；V2因呼吸几乎不可见被取代。V3使用完整批准呼吸幅度，稳定头耳与前爪，并将眨眼拆为独立低频变体；主人已批准V3预览，但尚缺真实桌宠渲染器验证，因此仍未标记runtime-approved。"
 }
