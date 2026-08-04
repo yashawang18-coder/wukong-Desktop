@@ -4,7 +4,7 @@
 
 - Canonical profile: `wukong-current-adult-v1`.
 - In the prior workflow the owner approved candidate 05 as the identity reference.
-- Generated assets live in an external project; do not recreate or copy them until its exact version is verified.
+- Current generated assets are tracked in `yashawang18-coder/wukong-Desktop` draft PR #2 at exact commit `db2c29d32e4d1285711dde27b4f65d9eca084dba`.
 - Real photographs are private evidence and must not be committed to a public repository.
 
 ## Evidence priority
@@ -81,5 +81,4 @@ Maintain one row per action:
 
 | behavior_id | purpose | direction | target frames/FPS | status | runtime mapping | source commit | next review |
 |---|---|---|---|---|---|---|---|
-| `WK-CORE-PRONE-IDLE-LF` | awake prone idle | left-front | verify externally | candidate (historical, not verified here) | none verified | external project required | locate and audit |
-
+| `WK-CORE-PRONE-IDLE-LF-v1` | awake prone idle | left-front | 12 frames / 8 FPS | runtime-candidate; keyframes approved | not registered; runtime_use=false | `db2c29d32e4d1285711dde27b4f65d9eca084dba` | owner preview review and real renderer QA |
