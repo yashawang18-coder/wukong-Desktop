@@ -1,0 +1,263 @@
+{
+  "schema_version": 2,
+  "asset_id": "WK-CORE-PRONE-IDLE-LF-v1",
+  "identity_profile": "wukong-current-adult-v1",
+  "direction": "left-front",
+  "status": "runtime-candidate",
+  "runtime_use": false,
+  "approved_keyframes": {
+    "version": 1,
+    "owner_approved_on": "2026-08-05",
+    "frame_count": 5
+  },
+  "runtime_sequence": {
+    "version": 1,
+    "canvas": {
+      "width": 1024,
+      "height": 1024,
+      "color_mode": "RGBA"
+    },
+    "fps": 8,
+    "frame_duration_ms": 125,
+    "frame_count": 12,
+    "loop": true,
+    "loop_duration_ms": 1500,
+    "pivot": {
+      "normalized_x": 0.5,
+      "normalized_y": 0.84082
+    },
+    "ground_line_px": 861,
+    "frames": [
+      {
+        "index": 1,
+        "path": "runtime-frames/v1/frame-001.png",
+        "duration_ms": 125,
+        "sha256": "f936cb17d4d84471e5b35f2e2b25cb414df837bcefbcb9fdc05b00304a50e0ad",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.0
+        }
+      },
+      {
+        "index": 2,
+        "path": "runtime-frames/v1/frame-002.png",
+        "duration_ms": 125,
+        "sha256": "5c90a2d95c03b8740a147b0816b986dda99d7f772be760ef917c6703228d49f5",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.333333
+        }
+      },
+      {
+        "index": 3,
+        "path": "runtime-frames/v1/frame-003.png",
+        "duration_ms": 125,
+        "sha256": "c0c1a85c79516c8b4d2569734899b1bd6699bbf068507ddc3090a9e2d2b49d91",
+        "alpha_bbox": [
+          79,
+          181,
+          958,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-001.png",
+          "source_to": "approved-keyframes/v1/frame-002.png",
+          "t": 0.666667
+        }
+      },
+      {
+        "index": 4,
+        "path": "runtime-frames/v1/frame-004.png",
+        "duration_ms": 125,
+        "sha256": "4e1b6dee69e05302015d88eeb54e4ff13bc5a391b25abc6cb397a91deef3c626",
+        "alpha_bbox": [
+          79,
+          182,
+          957,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-002.png",
+          "source_to": "approved-keyframes/v1/frame-003.png",
+          "t": 0.0
+        }
+      },
+      {
+        "index": 5,
+        "path": "runtime-frames/v1/frame-005.png",
+        "duration_ms": 125,
+        "sha256": "acc8b646fd1e7d7318ff805e5c2228f71dd6cb11052cd49d25649d759b3511a2",
+        "alpha_bbox": [
+          79,
+          181,
+          957,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-002.png",
+          "source_to": "approved-keyframes/v1/frame-003.png",
+          "t": 0.333333
+        }
+      },
+      {
+        "index": 6,
+        "path": "runtime-frames/v1/frame-006.png",
+        "duration_ms": 125,
+        "sha256": "452390c75a6bc7b3ae6a13fc6b15c4dc2d1ff734bd80a9331f78d7b61b7943bc",
+        "alpha_bbox": [
+          79,
+          181,
+          957,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-002.png",
+          "source_to": "approved-keyframes/v1/frame-003.png",
+          "t": 0.666667
+        }
+      },
+      {
+        "index": 7,
+        "path": "runtime-frames/v1/frame-007.png",
+        "duration_ms": 125,
+        "sha256": "18a3c470f1ccf85d4d9d9b7a0cfbae409332e886dbc4edd48fd0fd5891bcd944",
+        "alpha_bbox": [
+          79,
+          181,
+          957,
+          860
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-003.png",
+          "source_to": "approved-keyframes/v1/frame-004.png",
+          "t": 0.0
+        }
+      },
+      {
+        "index": 8,
+        "path": "runtime-frames/v1/frame-008.png",
+        "duration_ms": 125,
+        "sha256": "a37ee9de68b3f995d6609c1921d493d0ee9796244bb23d2d71b444686ade97ac",
+        "alpha_bbox": [
+          79,
+          181,
+          958,
+          860
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-003.png",
+          "source_to": "approved-keyframes/v1/frame-004.png",
+          "t": 0.333333
+        }
+      },
+      {
+        "index": 9,
+        "path": "runtime-frames/v1/frame-009.png",
+        "duration_ms": 125,
+        "sha256": "5d3d4b1126f5a0501b4bccecaf746b6dde4fbb9005efb5be2fe144b471851afd",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-003.png",
+          "source_to": "approved-keyframes/v1/frame-004.png",
+          "t": 0.666667
+        }
+      },
+      {
+        "index": 10,
+        "path": "runtime-frames/v1/frame-010.png",
+        "duration_ms": 125,
+        "sha256": "3282ce8726f3dc4b5b0e06ace6d12cf2b433ec0bf8f3c79127586eacdff5a870",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-004.png",
+          "source_to": "approved-keyframes/v1/frame-005.png",
+          "t": 0.0
+        }
+      },
+      {
+        "index": 11,
+        "path": "runtime-frames/v1/frame-011.png",
+        "duration_ms": 125,
+        "sha256": "0a537f86c595acec99ffc5b5b352d1b9be4358a5cdabadb69c8425e236eb3b61",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-004.png",
+          "source_to": "approved-keyframes/v1/frame-005.png",
+          "t": 0.333333
+        }
+      },
+      {
+        "index": 12,
+        "path": "runtime-frames/v1/frame-012.png",
+        "duration_ms": 125,
+        "sha256": "3ec4e1a43a13e64332ed41b87797b6eb3998bea3036f3f84e73863033ed3b2ae",
+        "alpha_bbox": [
+          79,
+          181,
+          959,
+          861
+        ],
+        "provenance": {
+          "source_from": "approved-keyframes/v1/frame-004.png",
+          "source_to": "approved-keyframes/v1/frame-005.png",
+          "t": 0.666667
+        }
+      }
+    ]
+  },
+  "previews": [
+    {
+      "kind": "actual-speed-loop",
+      "path": "previews/loop-actual-speed-v1.gif",
+      "sha256": "3a0d7b701436e4a36f5200c67c01c72a89ebb01d3ef3c5e0c4ac48b19152c6de"
+    },
+    {
+      "kind": "entry-loop-exit-seam",
+      "path": "previews/entry-loop-exit-seam-v1.gif",
+      "sha256": "a519bb4cc8f1bad7632eba92ffbb2a072b9ab4d58c4a7de1b5c6120d68badf94"
+    }
+  ],
+  "review": {
+    "identity": "passed",
+    "keyframes_owner_approval": "passed",
+    "decoded_frame_validation": "passed",
+    "generated_preview_playback": "passed",
+    "neighbor_action_transition": "pending-no-adjacent-action-assets",
+    "desktop_runtime_playback": "pending-no-application-source",
+    "owner_runtime_review": "pending"
+  },
+  "notes": [
+    "Runtime frames are deterministic premultiplied-alpha interpolations between adjacent approved keyframes.",
+    "The repeated fifth keyframe closes the source loop but is excluded from the runtime list to avoid a duplicate-frame stall.",
+    "No generated transition candidate is included."
+  ]
+}

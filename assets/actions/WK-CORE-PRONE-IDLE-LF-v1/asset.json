@@ -1,59 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "asset_id": "WK-CORE-PRONE-IDLE-LF-v1",
-  "identity_profile": "wukong-current-adult-v1",
-  "domain": "core",
-  "action": "prone-idle",
-  "direction": "left-front",
   "version": 1,
-  "status": "approved-keyframe",
-  "runtime_use": false,
-  "contains_real_photos": false,
-  "sequence": {
-    "loop": true,
-    "frame_count": 5,
-    "canvas": {
-      "width": 1024,
-      "height": 1024,
-      "color_mode": "RGBA"
-    },
-    "frames": [
-      {
-        "index": 1,
-        "path": "approved-keyframes/v1/frame-001.png",
-        "size": 651309,
-        "sha256": "f936cb17d4d84471e5b35f2e2b25cb414df837bcefbcb9fdc05b00304a50e0ad"
-      },
-      {
-        "index": 2,
-        "path": "approved-keyframes/v1/frame-002.png",
-        "size": 645587,
-        "sha256": "4e1b6dee69e05302015d88eeb54e4ff13bc5a391b25abc6cb397a91deef3c626"
-      },
-      {
-        "index": 3,
-        "path": "approved-keyframes/v1/frame-003.png",
-        "size": 647658,
-        "sha256": "18a3c470f1ccf85d4d9d9b7a0cfbae409332e886dbc4edd48fd0fd5891bcd944"
-      },
-      {
-        "index": 4,
-        "path": "approved-keyframes/v1/frame-004.png",
-        "size": 646362,
-        "sha256": "3282ce8726f3dc4b5b0e06ace6d12cf2b433ec0bf8f3c79127586eacdff5a870"
-      },
-      {
-        "index": 5,
-        "path": "approved-keyframes/v1/frame-005.png",
-        "size": 651309,
-        "sha256": "7c60e555420aadc7f233616a91cec39987d8e254d677890270a8ba4ee5b21268"
-      }
-    ]
+  "character_profile": "wukong-current-adult-v1",
+  "name": "左前视角·清醒趴卧待机",
+  "direction": "left_front_35deg",
+  "equipment": "none",
+  "start_pose": "prone_awake_leftfront",
+  "end_pose": "prone_awake_leftfront",
+  "canvas": {
+    "width": 1024,
+    "height": 1024,
+    "color_space": "sRGB",
+    "alpha": true
   },
+  "approved_keyframes": {
+    "status": "approved-keyframes",
+    "owner_approved_on": "2026-08-05",
+    "frame_count": 5,
+    "frames_path": "approved-keyframes/v1/frame-{index:03d}.png"
+  },
+  "runtime_candidate": {
+    "manifest": "asset-runtime-candidate-v1.json",
+    "frame_count": 12,
+    "frames_path": "runtime-frames/v1/frame-{index:03d}.png",
+    "fps": 8,
+    "frame_duration_ms": 125,
+    "loop_duration_ms": 1500
+  },
+  "loop": true,
+  "interruptible": true,
+  "status": "runtime-candidate",
+  "runtime_use": false,
   "review": {
-    "identity": "passed",
-    "motion_visual": "passed",
-    "technical_asset_audit": "passed",
-    "runtime_playback": "pending"
-  }
+    "technical_check": "passed",
+    "identity_check": "passed",
+    "keyframe_owner_approval": "passed",
+    "generated_preview_playback": "passed",
+    "owner_runtime_review": "pending",
+    "desktop_runtime_playback": "pending_no_application_source",
+    "neighbor_action_transition": "pending_no_adjacent_action_assets"
+  },
+  "notes": "第五张批准关键帧与第一张完全相同；运行序列省略该重复终点，尚未标记 runtime-approved。"
 }
