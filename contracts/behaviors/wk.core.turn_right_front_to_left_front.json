@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "behavior_id": "wk.core.turn_right_front_to_left_front",
+  "phase": "P0",
+  "availability": "blocked_direction_evidence_conflict",
+  "eligibility": {
+    "allowed_poses": ["stand.neutral.right_front"],
+    "equipment": ["none"]
+  },
+  "lifecycle": {
+    "intro": {"strategy": "hold", "pose": "stand.neutral.right_front"},
+    "loop": {"strategy": "asset", "clip_role": "turn_transition"},
+    "exit": {"strategy": "hold", "pose": "stand.neutral.left_front"},
+    "interrupt_exit": {"strategy": "missing", "required_role": "safe_interrupt_exit"}
+  },
+  "from_pose": "stand.neutral.right_front",
+  "to_pose": "stand.neutral.left_front",
+  "fallback": "wk.core.prone_idle",
+  "state_effects": {},
+  "interrupt_policy": {"stop": "interrupt_exit", "drag": "interrupt_exit"}
+}

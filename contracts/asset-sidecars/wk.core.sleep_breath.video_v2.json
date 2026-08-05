@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "asset_id": "wk.core.sleep_breath.right_side.wukong_adult",
+  "asset_version": 2,
+  "behavior_id": "wk.core.sleep_breath",
+  "legacy_manifest": "Wukong-Seedance-Base-Actions-video-v2/actions/WK-CORE-SLEEP-BREATH-v2/asset.json",
+  "manifest_availability": "local_unpublished",
+  "from_pose": "sleep.side.right",
+  "to_pose": "sleep.side.right",
+  "review": {"status": "runtime-candidate", "owner_preview_approved": false, "renderer_qa": "pending"},
+  "runtime_policy": {"runtime_use": false, "reference_use": "visual_candidate"},
+  "anchors": {"ground_anchor": "legacy_canvas_pivot", "body_center": "missing", "interaction_bounds": "missing"},
+  "qa": {"hd_pixel_source": true, "identity_natural_detail_verified": false, "fall_asleep_present": false, "wake_up_present": false}
+}

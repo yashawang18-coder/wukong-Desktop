@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "asset_id": "wk.core.prone_to_stand.left_front.wukong_adult",
+  "asset_version": 2,
+  "behavior_id": "wk.core.prone_to_stand",
+  "legacy_manifest": "Wukong-Seedance-Base-Actions-video-v2/actions/WK-CORE-PRONE-TO-STAND-LF-v2/asset.json",
+  "manifest_availability": "local_unpublished",
+  "from_pose": "prone.awake.left_front",
+  "to_pose": "stand.neutral.left_front",
+  "review": {"status": "runtime-candidate", "owner_preview_approved": false, "renderer_qa": "pending"},
+  "runtime_policy": {"runtime_use": false, "reference_use": "motion_only"},
+  "anchors": {"ground_anchor": "legacy_canvas_pivot", "body_center": "missing", "interaction_bounds": "missing"},
+  "qa": {"hd_pixel_source": false, "safe_interrupt_exit": false, "known_blockers": ["720p video pixels are too soft", "interrupt exit missing"]}
+}

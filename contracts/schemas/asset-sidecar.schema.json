@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wukong.local/schemas/asset-sidecar.schema.json",
+  "type": "object",
+  "required": ["schema_version", "asset_id", "asset_version", "behavior_id", "legacy_manifest", "manifest_availability", "from_pose", "to_pose", "review", "runtime_policy", "anchors", "qa"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "asset_id": {"type": "string", "pattern": "^wk\\.[a-z0-9_.]+$"},
+    "asset_version": {"type": "integer", "minimum": 1},
+    "behavior_id": {"type": "string", "pattern": "^wk\\.[a-z0-9_]+(?:\\.[a-z0-9_]+)+$"},
+    "legacy_manifest": {"type": "string"},
+    "manifest_availability": {"enum": ["repository", "local_unpublished"]},
+    "repository_manifest": {"type": "string"},
+    "from_pose": {"type": "string"},
+    "to_pose": {"type": "string"},
+    "review": {
+      "type": "object",
+      "required": ["status", "owner_preview_approved", "renderer_qa"]
+    },
+    "runtime_policy": {
+      "type": "object",
+      "required": ["runtime_use", "reference_use"]
+    },
+    "anchors": {"type": "object"},
+    "qa": {"type": "object"}
+  }
+}

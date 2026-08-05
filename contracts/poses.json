@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "poses": [
+    {
+      "pose_id": "prone.awake.left_front",
+      "posture": "prone",
+      "awareness": "awake",
+      "direction": "left_front",
+      "equipment": "none",
+      "stable": true
+    },
+    {
+      "pose_id": "stand.neutral.left_front",
+      "posture": "stand",
+      "awareness": "awake",
+      "direction": "left_front",
+      "equipment": "none",
+      "stable": true
+    },
+    {
+      "pose_id": "stand.neutral.right_front",
+      "posture": "stand",
+      "awareness": "awake",
+      "direction": "right_front",
+      "equipment": "none",
+      "stable": true
+    },
+    {
+      "pose_id": "sleep.side.right",
+      "posture": "side_lying",
+      "awareness": "asleep",
+      "direction": "right_side",
+      "equipment": "none",
+      "stable": true,
+      "phase": "P1"
+    }
+  ]
+}

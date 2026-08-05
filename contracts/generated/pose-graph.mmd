@@ -1,0 +1,9 @@
+flowchart TD
+    P1["prone.awake.left_front"]
+    P2["stand.neutral.left_front"]
+    P3["stand.neutral.right_front"]
+    P1 -->|"wk.core.prone_idle"| P1
+    P1 -->|"wk.core.prone_to_stand / GAP"| P2
+    P2 -->|"wk.core.stand_to_prone / GAP"| P1
+    P3 -->|"wk.core.turn_right_front_to_left_front / GAP"| P2
+    P2 -->|"wk.core.walk_left / GAP"| P2

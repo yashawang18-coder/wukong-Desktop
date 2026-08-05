@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "behavior_id": "wk.core.sleep_breath",
+  "phase": "P1",
+  "availability": "blocked_isolated_pose_and_owner_review",
+  "eligibility": {
+    "allowed_poses": ["sleep.side.right"],
+    "equipment": ["none"]
+  },
+  "lifecycle": {
+    "intro": {"strategy": "missing", "required_role": "fall_asleep"},
+    "loop": {"strategy": "asset", "clip_role": "breathing_loop"},
+    "exit": {"strategy": "missing", "required_role": "wake_up"},
+    "interrupt_exit": {"strategy": "missing", "required_role": "wake_up_interrupt"}
+  },
+  "from_pose": "sleep.side.right",
+  "to_pose": "sleep.side.right",
+  "fallback": "wk.core.prone_idle",
+  "state_effects": {"fatigue": {"mode": "progressive", "delta_per_minute": -0.01}},
+  "interrupt_policy": {"stop": "interrupt_exit", "drag": "interrupt_exit"}
+}

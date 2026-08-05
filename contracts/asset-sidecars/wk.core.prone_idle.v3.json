@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "asset_id": "wk.core.prone_idle.left_front.wukong_adult",
+  "asset_version": 3,
+  "behavior_id": "wk.core.prone_idle",
+  "legacy_manifest": "delivery/WukongAssets/actions/WK-CORE-PRONE-IDLE-LF/asset-runtime-candidate-v3.json",
+  "manifest_availability": "repository",
+  "repository_manifest": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/asset-runtime-candidate-v3.json",
+  "from_pose": "prone.awake.left_front",
+  "to_pose": "prone.awake.left_front",
+  "review": {"status": "runtime-candidate", "owner_preview_approved": true, "renderer_qa": "pending"},
+  "runtime_policy": {"runtime_use": false, "reference_use": "visual_candidate"},
+  "anchors": {"ground_anchor": "legacy_canvas_pivot", "body_center": "missing", "interaction_bounds": "missing"},
+  "qa": {"hd_pixel_source": true, "loop_preview_approved": true, "renderer_scale_verified": false, "known_blockers": ["real desktop renderer QA pending"]}
+}

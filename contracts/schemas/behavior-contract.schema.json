@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wukong.local/schemas/behavior-contract.schema.json",
+  "type": "object",
+  "required": ["schema_version", "behavior_id", "phase", "availability", "eligibility", "lifecycle", "from_pose", "to_pose", "fallback", "state_effects", "interrupt_policy"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "behavior_id": {"type": "string", "pattern": "^wk\\.[a-z0-9_]+(?:\\.[a-z0-9_]+)+$"},
+    "phase": {"enum": ["P0", "P1", "P2", "P3", "P4"]},
+    "availability": {"type": "string"},
+    "eligibility": {
+      "type": "object",
+      "required": ["allowed_poses", "equipment"]
+    },
+    "lifecycle": {
+      "type": "object",
+      "required": ["intro", "loop", "exit", "interrupt_exit"],
+      "properties": {
+        "intro": {"$ref": "#/$defs/segment"},
+        "loop": {"$ref": "#/$defs/segment"},
+        "exit": {"$ref": "#/$defs/segment"},
+        "interrupt_exit": {"$ref": "#/$defs/segment"}
+      }
+    },
+    "from_pose": {"type": "string"},
+    "to_pose": {"type": "string"},
+    "fallback": {"type": ["string", "null"]}
+  },
+  "$defs": {
+    "segment": {
+      "type": "object",
+      "required": ["strategy"],
+      "properties": {
+        "strategy": {"enum": ["asset", "pose_graph", "hold", "not_applicable", "missing"]}
+      }
+    }
+  }
+}
