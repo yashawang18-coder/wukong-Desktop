@@ -39,10 +39,12 @@ Git does not track empty directories. Optional directories are created when they
 | Status | Meaning | Runtime use |
 |---|---|---|
 | `candidate` | Awaiting owner review and/or motion validation | Forbidden |
-| `approved-keyframe` | Identity and pose approved for interpolation | Not yet |
+| `approved-keyframes` | Identity and pose approved as interpolation anchors | Not yet |
 | `runtime-candidate` | Full sequence ready for playback QA | Test only |
-| `approved` | Identity, motion, transparency and integration checks passed | Allowed |
+| `runtime-approved` | Identity, motion, transparency, and real-renderer integration checks passed | Allowed |
 | `rejected` / `deprecated` | Retained only for audit history | Forbidden |
+
+Owner preview approval must be represented separately from runtime approval. Until real desktop-renderer validation passes, keep `runtime_approved=false` and `runtime_use=false`.
 
 ## Identity hierarchy
 
@@ -60,7 +62,7 @@ New frames must be local motion deltas from approved anchors. Independent full-f
 - Identity packages must declare whether they contain real photos.
 - Candidate actions stay outside runtime manifests.
 - Approval of an identity board does not approve an action sequence.
-- Every action package must record identity, motion and technical review separately.
+- Every action package must record identity, motion, and technical review separately.
 - Preserve rejected versions only when audit value outweighs repository size; never load them at runtime.
 
 ## Naming
