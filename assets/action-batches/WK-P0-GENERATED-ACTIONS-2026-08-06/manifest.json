@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "batch_id": "WK-P0-GENERATED-ACTIONS-2026-08-06",
+  "identity_profile": "wukong-current-adult-v1",
+  "status": "runtime-candidate-import",
+  "owner_preview_approved": false,
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "imported_on": "2026-08-07",
+  "approval_boundary": [
+    "Existing approved keyframes remain byte-unchanged and are not duplicated in this batch.",
+    "Approved-keyframes records are visual approval evidence only; they are not runtime approval.",
+    "New sit/stand and walk transition animation frames remain runtime-candidate.",
+    "No file in this import is registered for runtime use.",
+    "Windows real desktop renderer validation remains required."
+  ],
+  "excluded_from_import": [
+    "source zip files",
+    ".tmp files and cache directories",
+    "contact sheets and contact review images",
+    "GIF and JPG previews",
+    "standing candidate images under standing/candidates/v1",
+    "walk-stop rejected stop-i1 and attempt2 evidence",
+    "raw videos, video-v2 derived frames, video-v2 previews, and video hash records",
+    "private source identifiers"
+  ],
+  "packages": [
+    {
+      "package_id": "wk.core.stand_idle.a2-reuse",
+      "manifest": "standing/a2-reuse-approval.json",
+      "status": "approved-keyframes",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    },
+    {
+      "package_id": "wk.core.sit-stand.keyposes.v1",
+      "manifest": "sit-stand/keyposes-approved.json",
+      "status": "approved-keyframes",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    },
+    {
+      "package_id": "wk.core.sit-stand.runtime-candidate-v2",
+      "manifest": "sit-stand/runtime-candidate-v2.json",
+      "status": "runtime-candidate",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    },
+    {
+      "package_id": "wk.core.walk_left.transitions.keyposes.v1",
+      "manifest": "walk-transitions/keyposes-approved.json",
+      "status": "approved-keyframes",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    },
+    {
+      "package_id": "wk.core.walk_left.transitions.runtime-candidate-v3-walk-start",
+      "manifest": "walk-transitions/runtime-candidate-v3-walk-start.json",
+      "status": "runtime-candidate",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    },
+    {
+      "package_id": "wk.core.walk_left.transitions.runtime-candidate-v4-geometry-stabilized",
+      "manifest": "walk-transitions/runtime-candidate-v4-geometry-stabilized.json",
+      "status": "runtime-candidate",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    }
+  ]
+}

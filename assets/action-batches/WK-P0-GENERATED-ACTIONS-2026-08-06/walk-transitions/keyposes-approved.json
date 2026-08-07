@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "review_package_id": "wk.core.walk_left.transitions.review-v1",
+  "behavior_id": "wk.core.walk_left",
+  "status": "approved-keyframes",
+  "owner_preview_approved": true,
+  "owner_preview_approved_at": "2026-08-06",
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "renderer_qa": "pending",
+  "identity_profile": "wukong-current-adult-v1",
+  "frames": [
+    {
+      "candidate_id": "wk.core.walk_left.intro.mid.v1",
+      "role": "walk_start_mid",
+      "path": "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/walk-transitions/approved-keyframes/v1/frame-001-walk-start-mid.png",
+      "size_bytes": 709285,
+      "sha256": "890e2d9bd6aea55cc766ddfbaf46aa6b0fc209a66e29168eed53a3539aa31c70",
+      "canvas": {"width": 1024, "height": 1024, "mode": "RGBA"},
+      "alpha_bbox": [140, 194, 943, 977],
+      "ground_y": 977,
+      "approval_status": "approved-keyframes"
+    },
+    {
+      "candidate_id": "wk.core.walk_left.exit.settle.v1",
+      "role": "walk_stop_settle",
+      "path": "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/walk-transitions/approved-keyframes/v1/frame-002-walk-stop-settle.png",
+      "size_bytes": 677283,
+      "sha256": "3b21298363b27005b8fc4eb890b6f08f2f54387b45d6e022355d71cfe952f0af",
+      "canvas": {"width": 1024, "height": 1024, "mode": "RGBA"},
+      "alpha_bbox": [155, 194, 946, 977],
+      "ground_y": 977,
+      "approval_status": "approved-keyframes"
+    }
+  ],
+  "approval_boundary": [
+    "Owner approval covers identity and major-pose anchor use only.",
+    "Derived intermediate frames and actual-speed playback are excluded.",
+    "Runtime registration and renderer QA remain absent."
+  ]
+}

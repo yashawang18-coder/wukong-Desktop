@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "decision_id": "wk.core.sit-stand.keyposes.v1.2026-08-06",
+  "decided_at": "2026-08-06",
+  "owner_approved": true,
+  "approval_status": "approved-keyframes",
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "renderer_qa": "pending",
+  "approved_keyframes": [
+    {
+      "candidate_id": "wk.core.sit_idle.mother.v1",
+      "role": "sit-idle-mother",
+      "path": "approved-keyframes/v1/frame-001-sit-idle-mother.png",
+      "sha256": "b97e77c694a9d74f687376eaa3bc61fe45ba8d682309fd4acffa92cde7f5e8c0"
+    },
+    {
+      "candidate_id": "wk.core.stand_to_sit.mid.v1",
+      "role": "stand-to-sit-mid",
+      "path": "approved-keyframes/v1/frame-002-stand-to-sit-mid.png",
+      "sha256": "7b1c0a57e99c9a3917c67a59df8c0fabe666003ed0d1506c05d98061239df676"
+    },
+    {
+      "candidate_id": "wk.core.sit_to_stand.mid.v1",
+      "role": "sit-to-stand-mid",
+      "path": "approved-keyframes/v1/frame-003-sit-to-stand-mid.png",
+      "sha256": "74b6baabc34949127812715cd1cdeb98f5a4d705c0a115174a8dffd8027a3eef"
+    }
+  ],
+  "excluded_scope": [
+    "derived intermediate frames",
+    "complete sit-down playback",
+    "complete stand-up playback",
+    "safe interruption",
+    "real desktop renderer QA",
+    "runtime registration"
+  ]
+}
