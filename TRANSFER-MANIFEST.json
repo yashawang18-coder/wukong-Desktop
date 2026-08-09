@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/yashawang18-coder/wukong-Desktop",
+  "base_branch": "main",
+  "target_branch": "agent/assets-wukong-adult-v1-prone-idle-v1",
+  "expected_remote_sha": "d15738201aa5364d78d64679fe7b222b0a734771",
+  "local_head_sha": "c42417fd25954c543d665dc0a8babb67663ef501",
+  "payload_summary": {
+    "files": 11,
+    "bytes": 5952690,
+    "real_photos": 0
+  },
+  "files": [
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/README.md",
+      "size": 773,
+      "sha256": "746ba00dfded55608b0a2850097520e124887cc21cdd3ff6c029ea7952d5931e",
+      "role": "documentation"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/approved-keyframes/v1/frame-001.png",
+      "size": 651309,
+      "sha256": "f936cb17d4d84471e5b35f2e2b25cb414df837bcefbcb9fdc05b00304a50e0ad",
+      "role": "source"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/approved-keyframes/v1/frame-002.png",
+      "size": 645587,
+      "sha256": "4e1b6dee69e05302015d88eeb54e4ff13bc5a391b25abc6cb397a91deef3c626",
+      "role": "source"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/approved-keyframes/v1/frame-003.png",
+      "size": 647658,
+      "sha256": "18a3c470f1ccf85d4d9d9b7a0cfbae409332e886dbc4edd48fd0fd5891bcd944",
+      "role": "source"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/approved-keyframes/v1/frame-004.png",
+      "size": 646362,
+      "sha256": "3282ce8726f3dc4b5b0e06ace6d12cf2b433ec0bf8f3c79127586eacdff5a870",
+      "role": "source"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/approved-keyframes/v1/frame-005.png",
+      "size": 651309,
+      "sha256": "7c60e555420aadc7f233616a91cec39987d8e254d677890270a8ba4ee5b21268",
+      "role": "source"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/asset.json",
+      "size": 1627,
+      "sha256": "162a47c873376e572e59090bfb1496842a6fe3198c85c70fe397a35d2954c855",
+      "role": "documentation"
+    },
+    {
+      "path": "assets/identity/wukong-current-adult-v1/README.md",
+      "size": 606,
+      "sha256": "8c18e25cce1cd27d5bd4d9855f116dc9bbfa0b46c467560b5de648e84cca5214",
+      "role": "documentation"
+    },
+    {
+      "path": "assets/identity/wukong-current-adult-v1/identity-board.png",
+      "size": 2705794,
+      "sha256": "1344b7f9407c86fb531f3ee796260a9ee3746c8455b458f217b05b24bc15dc99",
+      "role": "source"
+    },
+    {
+      "path": "assets/identity/wukong-current-adult-v1/identity-spec.md",
+      "size": 1140,
+      "sha256": "0b03b0d8ad796188a15a8dd8d0b3b9e0cdaddc56cd8de492e3117b030637451c",
+      "role": "documentation"
+    },
+    {
+      "path": "assets/identity/wukong-current-adult-v1/manifest.json",
+      "size": 525,
+      "sha256": "6a0d918ac5f726badd91a6a88d88c6f94038b93c085685e029a4bc80fde6ab07",
+      "role": "documentation"
+    }
+  ],
+  "excluded_inputs": [
+    {
+      "sha256": "622ec7798d4cfb69f027ee8e73682638076a4cec3f504dc008f3c36613a74327",
+      "reason": "derived five-frame contact sheet; not a source asset"
+    }
+  ],
+  "validation": {
+    "asset_audit": "passed",
+    "build": "pending",
+    "tests": "pending"
+  },
+  "validation_notes": [
+    "All six source PNG files decode completely.",
+    "All action frames are 1024x1024 RGBA with transparent margins and no clipped body parts.",
+    "JSON metadata validation passed.",
+    "No application source, build command or test command exists on this branch yet."
+  ]
+}
