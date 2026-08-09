@@ -1,0 +1,22 @@
+{
+  "decision_id": "wk.core.stand_idle.a2-reuse.2026-08-06",
+  "decided_at": "2026-08-06",
+  "owner_approved": true,
+  "source_keyframe": "assets/actions/WK-CORE-PRONE-TO-STAND-LF-v2/approved-keyframes/v1/frame-002.png",
+  "source_sha256": "89ac37cdfb2b3c9c0227b5e6a2d2d003be917e745c648816b1aae438f6810e98",
+  "approved_roles": [
+    "prone_to_stand.end_anchor",
+    "stand_idle.mother_keyframe",
+    "walk_stop.stable_target"
+  ],
+  "approval_status": "approved-keyframes",
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "renderer_qa": "pending",
+  "notes": [
+    "This expands the approved role of the existing A2 keyframe; it does not alter the source pixels.",
+    "A2 is not runtime-approved and is not registered for production playback.",
+    "Generated standing candidate B remains unsuitable for derivation."
+  ]
+}

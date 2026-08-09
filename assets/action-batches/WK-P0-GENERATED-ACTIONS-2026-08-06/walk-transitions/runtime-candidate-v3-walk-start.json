@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "review_package_id": "wk.core.walk_left.transitions.runtime-candidate-v3-walk-start",
+  "behavior_id": "wk.core.walk_left",
+  "status": "runtime-candidate",
+  "owner_preview_approved": false,
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "renderer_qa": "pending",
+  "identity_profile": "wukong-current-adult-v1",
+  "fps": 8,
+  "ground_y": 977,
+  "playback_order": [
+    "A2-existing-approved-keyframe",
+    "start-i1",
+    "walk-start-mid-approved",
+    "start-i2",
+    "C1-existing-approved-keyframe"
+  ],
+  "candidate_intermediate_frames": [
+    {
+      "role": "start-i1",
+      "path": "runtime-candidate-v3-walk-start/frames/start-i1.png",
+      "size_bytes": 763418,
+      "sha256": "7e8c4675d7c421b4e81f7f41c90ab011487fbffdfc9e62a2e2e15c6a9aa3dea4",
+      "canvas": {"width": 1024, "height": 1024, "mode": "RGBA"},
+      "alpha_bbox": [184, 194, 898, 977],
+      "ground_y": 977,
+      "status": "runtime-candidate",
+      "pose_approval_inherited": false,
+      "runtime_use": false
+    },
+    {
+      "role": "start-i2",
+      "path": "runtime-candidate-v3-walk-start/frames/start-i2.png",
+      "size_bytes": 704880,
+      "sha256": "f76aaf1ea35eb086edc8587ddc4879bd59542a62248587a7a26a9dffd90955e4",
+      "canvas": {"width": 1024, "height": 1024, "mode": "RGBA"},
+      "alpha_bbox": [158, 211, 912, 977],
+      "ground_y": 977,
+      "status": "runtime-candidate",
+      "pose_approval_inherited": false,
+      "runtime_use": false
+    }
+  ],
+  "known_limitations": [
+    "Walk-start playback review is pending.",
+    "Real desktop-renderer QA and safe interruption remain pending."
+  ]
+}

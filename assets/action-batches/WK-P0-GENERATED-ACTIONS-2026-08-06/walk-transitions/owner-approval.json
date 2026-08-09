@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "decision_id": "wk.core.walk_left.transitions.v1.2026-08-06",
+  "decided_at": "2026-08-06",
+  "owner_approved": true,
+  "approval_status": "approved-keyframes",
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "renderer_qa": "pending",
+  "approved_keyframes": [
+    {
+      "candidate_id": "wk.core.walk_left.intro.mid.v1",
+      "path": "approved-keyframes/v1/frame-001-walk-start-mid.png",
+      "sha256": "890e2d9bd6aea55cc766ddfbaf46aa6b0fc209a66e29168eed53a3539aa31c70"
+    },
+    {
+      "candidate_id": "wk.core.walk_left.exit.settle.v1",
+      "path": "approved-keyframes/v1/frame-002-walk-stop-settle.png",
+      "sha256": "3b21298363b27005b8fc4eb890b6f08f2f54387b45d6e022355d71cfe952f0af"
+    }
+  ],
+  "excluded_scope": [
+    "derived intermediate frames",
+    "actual-speed playback",
+    "safe interruption",
+    "renderer QA",
+    "runtime registration"
+  ]
+}

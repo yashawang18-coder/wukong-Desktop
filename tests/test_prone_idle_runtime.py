@@ -10,7 +10,7 @@ from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ACTION_DIR = ROOT / "delivery" / "WukongAssets" / "actions" / "WK-CORE-PRONE-IDLE-LF"
+ACTION_DIR = ROOT / "assets" / "actions" / "WK-CORE-PRONE-IDLE-LF-v1"
 
 
 def sha256(path: Path) -> str:
@@ -102,8 +102,6 @@ class ProneIdleRuntimeTests(unittest.TestCase):
 
     def test_previews_decode_and_have_expected_timing(self) -> None:
         expected = {
-            "loop-actual-speed-v3.gif": (24, 3000),
-            "entry-loop-exit-seam-v3.gif": (26, 4000),
             "loop-actual-speed-github-v3.gif": (24, 3000),
             "occasional-blink-demo-github-v3.gif": (96, 12000),
             "entry-loop-exit-seam-github-v3.gif": (26, 4000),

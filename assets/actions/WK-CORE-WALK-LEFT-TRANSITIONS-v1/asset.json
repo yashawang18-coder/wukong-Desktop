@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "asset_id": "WK-CORE-WALK-LEFT-TRANSITIONS-v1",
+  "identity_profile": "wukong-current-adult-v1",
+  "direction": "screen-left",
+  "status": "runtime-candidate",
+  "owner_preview_approved": false,
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "approved_keyframes": {
+    "version": 1,
+    "frame_count": 2,
+    "owner_approved_on": "2026-08-06",
+    "paths": [
+      "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/walk-transitions/approved-keyframes/v1/frame-001-walk-start-mid.png",
+      "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/walk-transitions/approved-keyframes/v1/frame-002-walk-stop-settle.png"
+    ]
+  },
+  "runtime_candidates": [
+    {
+      "version": 3,
+      "scope": "walk-start",
+      "manifest": "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/walk-transitions/runtime-candidate-v3-walk-start.json",
+      "frame_paths": [
+        "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/walk-transitions/runtime-candidate-v3-walk-start/frames/start-i1.png",
+        "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/walk-transitions/runtime-candidate-v3-walk-start/frames/start-i2.png"
+      ]
+    },
+    {
+      "version": 4,
+      "scope": "walk-stop-geometry-stabilized",
+      "manifest": "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/walk-transitions/runtime-candidate-v4-geometry-stabilized.json",
+      "frame_paths": [
+        "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/walk-transitions/runtime-candidate-v4-geometry-stabilized/frames/stop-i2.png"
+      ]
+    }
+  ],
+  "sequence_scope": "runtime-candidate-transition-frames-only"
+}

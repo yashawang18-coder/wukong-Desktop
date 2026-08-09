@@ -140,11 +140,11 @@
         "index": 7,
         "path": "runtime-frames/v3/frame-007.png",
         "duration_ms": 125,
-        "sha256": "cc43f01435ddf1e18f0dce72969226e50ab551bb43f9c3dc97133ed2ca0d7884",
+        "sha256": "56360b841d0bdae7e3fd128dacbf0b32d44951c280d398c02897c0d4eb48c535",
         "alpha_bbox": [
           79,
           181,
-          958,
+          959,
           861
         ],
         "provenance": {
@@ -356,11 +356,11 @@
         "index": 19,
         "path": "runtime-frames/v3/frame-019.png",
         "duration_ms": 125,
-        "sha256": "cc43f01435ddf1e18f0dce72969226e50ab551bb43f9c3dc97133ed2ca0d7884",
+        "sha256": "56360b841d0bdae7e3fd128dacbf0b32d44951c280d398c02897c0d4eb48c535",
         "alpha_bbox": [
           79,
           181,
-          958,
+          959,
           861
         ],
         "provenance": {

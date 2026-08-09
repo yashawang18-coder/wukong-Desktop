@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "review_package_id": "wk.core.walk_left.transitions.runtime-candidate-v4-geometry-stabilized",
+  "behavior_id": "wk.core.walk_left",
+  "status": "runtime-candidate",
+  "owner_preview_approved": true,
+  "owner_preview_approved_at": "2026-08-06",
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "renderer_qa": "pending",
+  "identity_profile": "wukong-current-adult-v1",
+  "fps": 8,
+  "playback": "one-shot then hold A2 after future renderer validation",
+  "playback_order": [
+    "C4-existing-approved-keyframe",
+    "stop-i2",
+    "A2-existing-approved-keyframe"
+  ],
+  "excluded_from_import": [
+    "rejected stop-i1 image evidence",
+    "attempt2 rejected image evidence",
+    "contact review images",
+    "GIF previews"
+  ],
+  "candidate_intermediate_frames": [
+    {
+      "role": "stop-i2",
+      "path": "runtime-candidate-v4-geometry-stabilized/frames/stop-i2.png",
+      "size_bytes": 720423,
+      "sha256": "bcda4767a5a2e3bd96579ecd99e2207b4469135337c346770902ff13e6b080d4",
+      "canvas": {"width": 1024, "height": 1024, "mode": "RGBA"},
+      "alpha_bbox": [166, 196, 924, 977],
+      "ground_y": 977,
+      "status": "runtime-candidate",
+      "pose_approval_inherited": false,
+      "runtime_use": false
+    }
+  ],
+  "known_limitations": [
+    "Owner preview approval covers only candidate visual playback evidence.",
+    "Runtime approval still requires real desktop-renderer playback, scale, alpha, direction, memory, and interruption validation.",
+    "No runtime registry binding is added."
+  ]
+}

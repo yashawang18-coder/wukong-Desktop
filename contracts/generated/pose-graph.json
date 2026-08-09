@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "poses": [
+    {
+      "pose_id": "prone.awake.left_front",
+      "posture": "prone",
+      "awareness": "awake",
+      "direction": "left_front",
+      "equipment": "none",
+      "stable": true
+    },
+    {
+      "pose_id": "stand.neutral.left_front",
+      "posture": "stand",
+      "awareness": "awake",
+      "direction": "left_front",
+      "equipment": "none",
+      "stable": true
+    },
+    {
+      "pose_id": "stand.neutral.right_front",
+      "posture": "stand",
+      "awareness": "awake",
+      "direction": "right_front",
+      "equipment": "none",
+      "stable": true
+    },
+    {
+      "pose_id": "sleep.side.right",
+      "posture": "side_lying",
+      "awareness": "asleep",
+      "direction": "right_side",
+      "equipment": "none",
+      "stable": true,
+      "phase": "P1"
+    }
+  ],
+  "edges": [
+    {
+      "behavior_id": "wk.core.prone_idle",
+      "phase": "P0",
+      "from_pose": "prone.awake.left_front",
+      "to_pose": "prone.awake.left_front",
+      "availability": "blocked_pending_renderer_qa",
+      "missing_segments": []
+    },
+    {
+      "behavior_id": "wk.core.prone_to_stand",
+      "phase": "P0",
+      "from_pose": "prone.awake.left_front",
+      "to_pose": "stand.neutral.left_front",
+      "availability": "blocked_pending_hd_runtime_asset",
+      "missing_segments": [
+        "interrupt_exit"
+      ]
+    },
+    {
+      "behavior_id": "wk.core.sleep_breath",
+      "phase": "P1",
+      "from_pose": "sleep.side.right",
+      "to_pose": "sleep.side.right",
+      "availability": "blocked_isolated_pose_and_owner_review",
+      "missing_segments": [
+        "intro",
+        "exit",
+        "interrupt_exit"
+      ]
+    },
+    {
+      "behavior_id": "wk.core.stand_to_prone",
+      "phase": "P0",
+      "from_pose": "stand.neutral.left_front",
+      "to_pose": "prone.awake.left_front",
+      "availability": "blocked_pending_hd_runtime_asset",
+      "missing_segments": [
+        "interrupt_exit"
+      ]
+    },
+    {
+      "behavior_id": "wk.core.turn_right_front_to_left_front",
+      "phase": "P0",
+      "from_pose": "stand.neutral.right_front",
+      "to_pose": "stand.neutral.left_front",
+      "availability": "blocked_direction_evidence_conflict",
+      "missing_segments": [
+        "interrupt_exit"
+      ]
+    },
+    {
+      "behavior_id": "wk.core.walk_left",
+      "phase": "P0",
+      "from_pose": "stand.neutral.left_front",
+      "to_pose": "stand.neutral.left_front",
+      "availability": "blocked_missing_intro_exit_and_hd_loop",
+      "missing_segments": [
+        "intro",
+        "exit",
+        "interrupt_exit"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "behavior_id": "wk.core.prone_idle",
+      "phase": "P0",
+      "from_pose": "prone.awake.left_front",
+      "to_pose": "prone.awake.left_front",
+      "availability": "blocked_pending_renderer_qa",
+      "missing_segments": []
+    },
+    {
+      "behavior_id": "wk.core.prone_to_stand",
+      "phase": "P0",
+      "from_pose": "prone.awake.left_front",
+      "to_pose": "stand.neutral.left_front",
+      "availability": "blocked_pending_hd_runtime_asset",
+      "missing_segments": [
+        "interrupt_exit"
+      ]
+    },
+    {
+      "behavior_id": "wk.core.sleep_breath",
+      "phase": "P1",
+      "from_pose": "sleep.side.right",
+      "to_pose": "sleep.side.right",
+      "availability": "blocked_isolated_pose_and_owner_review",
+      "missing_segments": [
+        "intro",
+        "exit",
+        "interrupt_exit"
+      ]
+    },
+    {
+      "behavior_id": "wk.core.stand_to_prone",
+      "phase": "P0",
+      "from_pose": "stand.neutral.left_front",
+      "to_pose": "prone.awake.left_front",
+      "availability": "blocked_pending_hd_runtime_asset",
+      "missing_segments": [
+        "interrupt_exit"
+      ]
+    },
+    {
+      "behavior_id": "wk.core.turn_right_front_to_left_front",
+      "phase": "P0",
+      "from_pose": "stand.neutral.right_front",
+      "to_pose": "stand.neutral.left_front",
+      "availability": "blocked_direction_evidence_conflict",
+      "missing_segments": [
+        "interrupt_exit"
+      ]
+    },
+    {
+      "behavior_id": "wk.core.walk_left",
+      "phase": "P0",
+      "from_pose": "stand.neutral.left_front",
+      "to_pose": "stand.neutral.left_front",
+      "availability": "blocked_missing_intro_exit_and_hd_loop",
+      "missing_segments": [
+        "intro",
+        "exit",
+        "interrupt_exit"
+      ]
+    }
+  ]
+}
