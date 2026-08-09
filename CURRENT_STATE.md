@@ -1,5 +1,16 @@
 # Current state
 
+Last verified: 2026-08-09 (Asia/Singapore), `main` at `2f7e949c21bd88d2a4cc49977778f4c517dd962a`.
+
+## Repository summary
+
+- PR #2, PR #3, and PR #4 have been merged into `main`; PR #1 is the remaining documentation PR being refreshed against the consolidated repository.
+- The repository contains Wukong identity and P0 asset evidence, behavior/pose contracts, schemas, validators, generated gap reports, and Python tests.
+- It does not yet contain the Windows desktop application, WPF host, backend/behavior runtime, model provider implementation, installer, or Pupu reference source.
+- The reviewed Wukong six-tab UX exists as a product-design input but is not currently committed in this repository.
+- `python3 -m unittest discover -s tests -v` passes 25 tests in the verified checkout.
+- `contracts/runtime/asset-registry.json` has zero runtime bindings. No asset is runtime-approved or enabled for application use.
+
 ## WK-BASIC-ACTIONS-BATCH-v2
 
 - 17 keyframes across six action packages are owner-preview approved.
@@ -35,3 +46,17 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
 - Contract validation reports `0 error(s)` and nine explicit lifecycle gaps.
 - Six focused contract-foundation unit tests pass locally.
 - The runtime asset registry has zero bindings. No application integration or real-renderer validation is claimed.
+
+## WK-INTERACTION-PRONE-TOUCH-v4-1
+
+- PR #4 is merged into `main` as a 70-frame additive runtime candidate with `intro`, `loop`, `exit`, and `interrupt_exit` sequences.
+- Owner preview approval is recorded, but `runtime_validation=pending`, `runtime_approved=false`, and `runtime_use=false` remain unchanged.
+- It is evidence for the future animation lifecycle implementation; it is not yet a production behavior binding.
+
+## Next implementation target
+
+Phase 1 is the smallest honest end-to-end runtime:
+
+`InputEvent -> Intent -> BehaviorRequest -> Eligibility -> Arbitration -> BehaviorExecution -> AnimationLifecycle -> Outcome -> RuntimeState -> Event/Memory -> Trace`
+
+Before implementation, add or provide the reviewed UX artifact and a pinned Pupu source snapshot as read-only reference, then audit the actual source layout. Phase 1 must not expand into P1-P4 assets, complex long-term learning, cloud sync, macOS, or automatic frame generation.

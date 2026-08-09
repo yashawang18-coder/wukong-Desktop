@@ -10,6 +10,7 @@ Before making changes, read:
 4. `ASSET_STRUCTURE.md`.
 5. The relevant `asset.json`.
 6. Tests covering the affected area.
+7. The relevant files in `docs/handoff/` for product, behavior, migration, and release boundaries.
 
 Repository files and executable behavior are the source of truth. Do not infer completed work from conversation history alone.
 
@@ -66,3 +67,12 @@ Flag changes that:
 - modify approved source assets in place without a new version;
 - omit synchronized manifest or state-document updates;
 - weaken non-force Git publishing safeguards.
+
+## Product and architecture boundaries
+
+- Wukong is not a button-to-animation player. UI, menu, autonomous scheduling, and model output submit a `BehaviorRequest`; none may start an animation directly.
+- Behavior requests pass through intent resolution, eligibility, arbitration, execution, outcome, state update, event/memory recording, and developer trace.
+- The model may propose natural-language replies, semantic behavior intent, and memory candidates, but it may not mutate state, name asset files, or bypass eligibility and safety rules.
+- Preview, simulation, and developer-forced runs use isolated contexts and must not write production state or memory.
+- `reference/pupu/`, if supplied, is read-only engineering reference. Pupu behavior IDs, cat assets, hard-coded animation mappings, user data, and secrets must not enter Wukong runtime or release output.
+- The six-tab UX is a product contract, not the behavior engine. Normal mode hides raw state and internal traces; developer mode exposes diagnostics without bypassing production rules.

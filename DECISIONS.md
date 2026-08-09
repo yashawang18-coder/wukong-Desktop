@@ -42,3 +42,19 @@ Excluded scope:
 - Private source identifiers.
 
 Runtime boundary: `approved-keyframes` is not `runtime-approved`; new animations remain `runtime-candidate`, with `runtime_validation=pending`, `runtime_approved=false`, and `runtime_use=false`. Windows real desktop renderer validation remains required before runtime registration or application use.
+
+## 2026-08-09 - use one behavior pipeline for all request sources
+
+Owner UI actions, right-click commands, autonomous ticks, schedules, developer simulations, and model-proposed intents enter the same request and arbitration pipeline. No UI or model integration may call the animation orchestrator directly or mutate runtime state.
+
+Accepted, rejected, and deferred decisions must be explainable. Execution reports `Started`, `Progressed`, `Completed`, `Interrupted`, or `Failed`; state and memory changes derive from recorded outcomes rather than unrestricted property writes.
+
+## 2026-08-09 - treat Pupu as selective read-only engineering reference
+
+A pinned complete Pupu source snapshot may be supplied to preserve dependency context, but it is not a codebase to rename or re-skin. Transparent Windows hosting, input capture, settings, diagnostics, packaging, and similar infrastructure may be selectively adapted after audit. Behavior selection, animation lifecycle, state mutation, model action triggering, memory flow, and manifest integration must follow Wukong contracts and should be rewritten where Pupu violates them.
+
+Pupu assets, behavior IDs, hard-coded mappings, secrets, photographs, personal settings, memories, albums, and build outputs are prohibited from Wukong release artifacts.
+
+## 2026-08-09 - keep normal UX and developer diagnostics in one product
+
+The control panel uses six primary tabs: Owner, Profile, Album, Model, Assets, and Developer. The Owner and Model areas have independent conversation sessions. Normal mode presents user-facing state and feedback; developer mode adds trace, state-machine, behavior, agent, memory, scene simulation, log/test, and technical-description views. Simulation must be visibly isolated and restorable and must not write real memory.
