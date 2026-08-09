@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "contract_id": "wk.interaction.prone_touch.v4.1",
+  "behavior_id": "wk.interaction.prone_touch",
+  "asset_ref": "wk.interaction.prone_touch.v4.1",
+  "contract_status": "candidate",
+  "runtime_gate": {
+    "runtime_validation": "pending",
+    "runtime_approved": false,
+    "runtime_use": false,
+    "must_not_register_until_all_gates_pass": true
+  },
+  "entry_conditions": [
+    "pet is in prone idle",
+    "touch interaction begins",
+    "behavior is not blocked"
+  ],
+  "lifecycle": {
+    "intro": {
+      "sequence": "intro",
+      "on_complete": "loop",
+      "interruptible": true,
+      "on_interrupt": "interrupt_exit"
+    },
+    "loop": {
+      "sequence": "loop",
+      "repeat": true,
+      "excludes": [
+        "nose_lick"
+      ],
+      "on_touch_release": "exit",
+      "on_interrupt": "interrupt_exit"
+    },
+    "reaction_nose_lick": {
+      "sequence": "reaction_nose_lick",
+      "trigger_mode": "one-shot",
+      "allowed_from": [
+        "loop"
+      ],
+      "on_complete": "loop",
+      "on_interrupt": "interrupt_exit"
+    },
+    "exit": {
+      "sequence": "exit",
+      "on_complete": "wk.core.prone_idle",
+      "interruptible": false
+    },
+    "interrupt_exit": {
+      "sequence": "interrupt_exit",
+      "on_complete": "wk.core.prone_idle",
+      "interruptible": false
+    }
+  },
+  "invariants": {
+    "loop_first_frame_equals_last_frame": true,
+    "nose_lick_not_in_loop": true,
+    "nose_lick_occurs_once_per_reaction": true,
+    "interrupt_exit_returns_to_approved_prone_pose": true,
+    "ground_y": 861,
+    "canvas": "1024x1024 RGBA"
+  },
+  "fallback_behavior": "wk.core.prone_idle"
+}
