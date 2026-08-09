@@ -1,28 +1,78 @@
-# Wukong Desktop repository instructions
+# Wukong Desktop Agent Instructions
 
-Before planning, generating code, changing assets, or preparing an EXE, read all files in `docs/handoff/`.
+## Read before working
 
-## Source of truth
+Before making changes, read:
 
-1. Repository files and commit history are authoritative.
-2. `docs/handoff/CURRENT_STATE.md` records the last verified project state.
-3. Machine-readable manifests and actual test/build output outrank conversational summaries.
-4. If an external asset project is referenced but its repository, branch, PR, or commit is not supplied, treat its contents as unknown.
+1. The applicable `AGENTS.md` files from the repository root to the working directory.
+2. `CURRENT_STATE.md`.
+3. `DECISIONS.md`.
+4. `ASSET_STRUCTURE.md`.
+5. The relevant `asset.json`.
+6. Tests covering the affected area.
+7. The relevant files in `docs/handoff/` for product, behavior, migration, and release boundaries.
 
-## Required safeguards
+Repository files and executable behavior are the source of truth. Do not infer completed work from conversation history alone.
 
-- Do not modify `main` directly unless the owner explicitly authorizes it.
-- Do not upload real photographs, credentials, signing material, private logs, or user memory.
-- Never promote `candidate` to `approved-keyframes` or `runtime-approved` without explicit owner approval.
-- An approved identity board does not approve an animation.
-- Do not register an asset in runtime code until its transparency, canvas, continuity, loop, direction, scale, and playback have been verified.
-- Do not claim that an EXE, installer, test, CI job, or release succeeded unless the corresponding command or workflow actually completed and its output was checked.
-- Preserve separation between character identity, action keyframes, runtime frames, behavior logic, platform UI, and release packaging.
+## Scope discipline
 
-## Change workflow
+- Change only what the owner explicitly requested.
+- Preserve unrelated code, assets, metadata, dimensions, timing, and behavior.
+- Do not silently expand a diagnostic request into implementation.
+- Never claim that a build, test, animation, or interaction passed unless it was actually executed.
+- Clearly distinguish: statically inspected, automated-test verified, CI verified, and Windows real-renderer verified.
 
-- Use a focused `agent/<description>` branch and a draft PR.
-- Update `CURRENT_STATE.md`, `DECISIONS.md`, and relevant plans whenever a change alters project facts.
-- Record unresolved assumptions and blockers explicitly; do not fill gaps with plausible inventions.
-- Keep code changes small enough to validate and revert independently.
+## State documents
 
+- `CURRENT_STATE.md` records the current factual state and remaining blockers.
+- `DECISIONS.md` records durable owner decisions and their reasons.
+- `AGENTS.md` contains stable working rules only; do not store temporary task progress here.
+- Any asset-state change must update its `asset.json`.
+- Material approval or runtime-state changes must update `asset.json`, `CURRENT_STATE.md`, and `DECISIONS.md` in the same commit.
+
+## Testing and completion
+
+- Run the smallest relevant test first, then the broader affected suite.
+- Add or update automated tests when introducing a new invariant.
+- Review the final diff for unrelated files and generated caches.
+- Do not commit `__pycache__`, temporary previews, intermediate masks, or local logs.
+- "Done" requires:
+  1. requested files changed;
+  2. relevant tests executed;
+  3. results reported accurately;
+  4. remaining real-renderer validation identified;
+  5. repository state documents synchronized when state changed.
+
+## Git safety
+
+- `main` is protected. Do not commit, push, or merge into `main` without explicit owner authorization.
+- Never force-push.
+- Prefer a real Git checkout and one coherent commit.
+- Before publishing, fetch and record the target branch HEAD.
+- Immediately before moving the remote branch, verify its HEAD again.
+- Update the branch only by non-force fast-forward.
+- If the remote HEAD changed, stop and reconcile instead of overwriting it.
+- A local commit does not imply authorization to push.
+- Public uploads require explicit repository, branch, and public-release scope.
+- When a real checkout is unavailable, use content-addressed blob deduplication, one tree, one commit, and one final non-force ref update.
+- After publishing, verify the remote commit SHA, PR head branch, affected file set, and that `main` remained unchanged.
+
+## Code review rules
+
+Flag changes that:
+
+- promote an asset without the required approval state;
+- claim tests or Windows playback that were not actually run;
+- change unrelated visual or runtime behavior;
+- modify approved source assets in place without a new version;
+- omit synchronized manifest or state-document updates;
+- weaken non-force Git publishing safeguards.
+
+## Product and architecture boundaries
+
+- Wukong is not a button-to-animation player. UI, menu, autonomous scheduling, and model output submit a `BehaviorRequest`; none may start an animation directly.
+- Behavior requests pass through intent resolution, eligibility, arbitration, execution, outcome, state update, event/memory recording, and developer trace.
+- The model may propose natural-language replies, semantic behavior intent, and memory candidates, but it may not mutate state, name asset files, or bypass eligibility and safety rules.
+- Preview, simulation, and developer-forced runs use isolated contexts and must not write production state or memory.
+- `reference/pupu/`, if supplied, is read-only engineering reference. Pupu behavior IDs, cat assets, hard-coded animation mappings, user data, and secrets must not enter Wukong runtime or release output.
+- The six-tab UX is a product contract, not the behavior engine. Normal mode hides raw state and internal traces; developer mode exposes diagnostics without bypassing production rules.

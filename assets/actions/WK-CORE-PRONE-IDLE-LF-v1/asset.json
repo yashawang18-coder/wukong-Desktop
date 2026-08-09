@@ -1,0 +1,57 @@
+{
+  "schema_version": 2,
+  "asset_id": "WK-CORE-PRONE-IDLE-LF-v1",
+  "version": 1,
+  "character_profile": "wukong-current-adult-v1",
+  "name": "左前视角·清醒趴卧待机",
+  "direction": "left_front_35deg",
+  "equipment": "none",
+  "start_pose": "prone_awake_leftfront",
+  "end_pose": "prone_awake_leftfront",
+  "canvas": {
+    "width": 1024,
+    "height": 1024,
+    "color_space": "sRGB",
+    "alpha": true
+  },
+  "approved_keyframes": {
+    "status": "approved-keyframes",
+    "owner_approved_on": "2026-08-05",
+    "frame_count": 5,
+    "frames_path": "approved-keyframes/v1/frame-{index:03d}.png"
+  },
+  "runtime_candidate": {
+    "version": 3,
+    "manifest": "asset-runtime-candidate-v3.json",
+    "frame_count": 24,
+    "frames_path": "runtime-frames/v3/frame-{index:03d}.png",
+    "fps": 8,
+    "frame_duration_ms": 125,
+    "loop_duration_ms": 3000,
+    "base_loop_blink": false,
+    "base_loop_ear_motion": "visually-stable",
+    "breathing_amplitude": "full-approved-001-to-002",
+    "blink_variant": {
+      "id": "occasional-blink-v1",
+      "frames_path": "variants/blink/v1/frame-{index:03d}.png",
+      "frame_count": 4,
+      "loop": false,
+      "proposed_random_interval_ms": [15000, 30000],
+      "runtime_integration": "pending"
+    }
+  },
+  "loop": true,
+  "interruptible": true,
+  "status": "runtime-candidate",
+  "runtime_use": false,
+  "review": {
+    "technical_check": "passed",
+    "identity_check": "passed",
+    "keyframe_owner_approval": "passed",
+    "generated_preview_playback": "passed",
+    "owner_preview_review": "passed_on_2026-08-05",
+    "desktop_runtime_playback": "pending_no_application_source",
+    "neighbor_action_transition": "pending_no_adjacent_action_assets"
+  },
+  "notes": "V1因耳动过大且眨眼重复过密被取代；V2因呼吸几乎不可见被取代。V3使用完整批准呼吸幅度，稳定头耳与前爪，并将眨眼拆为独立低频变体；主人已批准V3预览，但尚缺真实桌宠渲染器验证，因此仍未标记runtime-approved。"
+}

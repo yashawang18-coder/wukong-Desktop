@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "review_package_id": "wk.core.sit-stand.runtime-candidate-v2",
+  "behavior_ids": [
+    "wk.core.stand_to_sit",
+    "wk.core.sit_to_stand"
+  ],
+  "status": "runtime-candidate",
+  "owner_preview_approved": false,
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "renderer_qa": "pending",
+  "identity_profile": "wukong-current-adult-v1",
+  "ground_y": 977,
+  "fps": 5.263,
+  "frame_duration_ms": 190,
+  "stand_to_sit_order": [
+    "A2-existing-approved-keyframe",
+    "stand-to-sit-early",
+    "stand-to-sit-mid-approved",
+    "stand-to-sit-late",
+    "sit-idle-mother-approved"
+  ],
+  "sit_to_stand_order": [
+    "sit-idle-mother-approved",
+    "sit-to-stand-prelift",
+    "sit-to-stand-early",
+    "sit-to-stand-mid-approved",
+    "sit-to-stand-late",
+    "A2-existing-approved-keyframe"
+  ],
+  "candidate_intermediate_frames": [
+    {
+      "frame_id": "wk.core.stand_to_sit.early.v2",
+      "role": "stand-to-sit-early",
+      "path": "runtime-candidate-v2/frames/stand-to-sit-early.png",
+      "size_bytes": 680278,
+      "sha256": "62befb0030772d3aaef9f6cab15d38b4e13df37593a48c5b31ec7d21aaa080f6",
+      "canvas": {"width": 1024, "height": 1024, "mode": "RGBA"},
+      "alpha_bbox": [156, 199, 924, 977],
+      "ground_y": 977,
+      "status": "runtime-candidate",
+      "owner_approved": false,
+      "runtime_use": false
+    },
+    {
+      "frame_id": "wk.core.stand_to_sit.late.v2",
+      "role": "stand-to-sit-late",
+      "path": "runtime-candidate-v2/frames/stand-to-sit-late.png",
+      "size_bytes": 585692,
+      "sha256": "91256e1f9fd0f06abd3f07a30e6a6b89e1803e9ff8cdc61e112bc2455ce7eec5",
+      "canvas": {"width": 1024, "height": 1024, "mode": "RGBA"},
+      "alpha_bbox": [236, 212, 843, 977],
+      "ground_y": 977,
+      "status": "runtime-candidate",
+      "owner_approved": false,
+      "runtime_use": false
+    },
+    {
+      "frame_id": "wk.core.sit_to_stand.prelift.v2",
+      "role": "sit-to-stand-prelift",
+      "path": "runtime-candidate-v2/frames/sit-to-stand-prelift.png",
+      "size_bytes": 633458,
+      "sha256": "473e8bb5ff3c664d173adec16a7849163e40a2e37f515fb99e7144d684788597",
+      "canvas": {"width": 1024, "height": 1024, "mode": "RGBA"},
+      "alpha_bbox": [175, 215, 905, 977],
+      "ground_y": 977,
+      "status": "runtime-candidate",
+      "owner_approved": false,
+      "runtime_use": false
+    },
+    {
+      "frame_id": "wk.core.sit_to_stand.early.v2",
+      "role": "sit-to-stand-early",
+      "path": "runtime-candidate-v2/frames/sit-to-stand-early.png",
+      "size_bytes": 708103,
+      "sha256": "4bdce18362b10116db6d5251666f42a89ea712d74b25b096064b5c8b71e3d819",
+      "canvas": {"width": 1024, "height": 1024, "mode": "RGBA"},
+      "alpha_bbox": [148, 212, 933, 977],
+      "ground_y": 977,
+      "status": "runtime-candidate",
+      "owner_approved": false,
+      "runtime_use": false
+    },
+    {
+      "frame_id": "wk.core.sit_to_stand.late.v2",
+      "role": "sit-to-stand-late",
+      "path": "runtime-candidate-v2/frames/sit-to-stand-late.png",
+      "size_bytes": 738360,
+      "sha256": "a19594bd7c4d2d399b286aa3b5f869d279d9a28c1e879e8c469580d96c11f8d6",
+      "canvas": {"width": 1024, "height": 1024, "mode": "RGBA"},
+      "alpha_bbox": [174, 194, 906, 977],
+      "ground_y": 977,
+      "status": "runtime-candidate",
+      "owner_approved": false,
+      "runtime_use": false
+    }
+  ],
+  "approval_boundary": [
+    "The approved key poses retain approved-keyframes status.",
+    "The generated intermediate frames are runtime-candidate and do not inherit approval.",
+    "Safe interruption, renderer QA, and runtime registration remain absent."
+  ]
+}

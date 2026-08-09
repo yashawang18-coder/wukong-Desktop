@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "review_package_id": "wk.core.sit-stand.keyposes.review-v1",
+  "behavior_ids": [
+    "wk.core.stand_to_sit",
+    "wk.core.sit_idle",
+    "wk.core.sit_to_stand"
+  ],
+  "status": "approved-keyframes",
+  "owner_preview_approved": true,
+  "owner_preview_approved_at": "2026-08-06",
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "renderer_qa": "pending",
+  "identity_profile": "wukong-current-adult-v1",
+  "approval_boundary": [
+    "Owner approval covers these three key poses as derivation anchors.",
+    "Derived intermediate frames are excluded from this approval.",
+    "Complete sit-down and stand-up playback remains unapproved.",
+    "Runtime registration and real desktop renderer QA remain absent."
+  ],
+  "frames": [
+    {
+      "key": "sit-idle-mother",
+      "path": "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/sit-stand/approved-keyframes/v1/frame-001-sit-idle-mother.png",
+      "size_bytes": 578126,
+      "sha256": "b97e77c694a9d74f687376eaa3bc61fe45ba8d682309fd4acffa92cde7f5e8c0",
+      "alpha_bbox": [266, 217, 813, 977],
+      "ground_y": 977
+    },
+    {
+      "key": "stand-to-sit-mid",
+      "path": "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/sit-stand/approved-keyframes/v1/frame-002-stand-to-sit-mid.png",
+      "size_bytes": 655802,
+      "sha256": "7b1c0a57e99c9a3917c67a59df8c0fabe666003ed0d1506c05d98061239df676",
+      "alpha_bbox": [202, 207, 879, 977],
+      "ground_y": 977
+    },
+    {
+      "key": "sit-to-stand-mid",
+      "path": "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/sit-stand/approved-keyframes/v1/frame-003-sit-to-stand-mid.png",
+      "size_bytes": 751418,
+      "sha256": "74b6baabc34949127812715cd1cdeb98f5a4d705c0a115174a8dffd8027a3eef",
+      "alpha_bbox": [168, 194, 911, 977],
+      "ground_y": 977
+    }
+  ]
+}

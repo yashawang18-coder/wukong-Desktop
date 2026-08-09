@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "behavior_id": "wk.core.prone_idle",
+  "phase": "P0",
+  "availability": "blocked_pending_renderer_qa",
+  "eligibility": {
+    "allowed_poses": ["prone.awake.left_front"],
+    "equipment": ["none"]
+  },
+  "lifecycle": {
+    "intro": {"strategy": "hold", "pose": "prone.awake.left_front"},
+    "loop": {"strategy": "asset", "clip_role": "base_loop"},
+    "exit": {"strategy": "hold", "pose": "prone.awake.left_front"},
+    "interrupt_exit": {"strategy": "hold", "pose": "prone.awake.left_front"}
+  },
+  "from_pose": "prone.awake.left_front",
+  "to_pose": "prone.awake.left_front",
+  "fallback": null,
+  "state_effects": {},
+  "interrupt_policy": {"stop": "immediate_safe_frame", "drag": "immediate_safe_frame"}
+}

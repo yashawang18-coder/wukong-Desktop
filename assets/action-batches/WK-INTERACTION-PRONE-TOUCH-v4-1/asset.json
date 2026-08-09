@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "asset_id": "wk.interaction.prone_touch.v4.1",
+  "behavior_id": "wk.interaction.prone_touch",
+  "asset_version": "4.1",
+  "character_profile": "wukong-current-adult-v1",
+  "status": "runtime-candidate",
+  "owner_keyposes_approved": true,
+  "continuous_playback_approved": true,
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "canvas": {
+    "width": 1024,
+    "height": 1024,
+    "mode": "RGBA",
+    "ground_y": 861
+  },
+  "timing": {
+    "fps": 8,
+    "frame_ms": 125
+  },
+  "sequences": [
+    {
+      "name": "intro",
+      "path": "sequences/intro",
+      "frame_pattern": "frame-%03d.png",
+      "frame_count": 8,
+      "frame_ms": 125,
+      "duration_ms": 1000
+    },
+    {
+      "name": "loop",
+      "path": "sequences/loop",
+      "frame_pattern": "frame-%03d.png",
+      "frame_count": 33,
+      "frame_ms": 125,
+      "duration_ms": 4125
+    },
+    {
+      "name": "reaction_nose_lick",
+      "path": "sequences/reaction_nose_lick",
+      "frame_pattern": "frame-%03d.png",
+      "frame_count": 9,
+      "frame_ms": 125,
+      "duration_ms": 1125
+    },
+    {
+      "name": "exit",
+      "path": "sequences/exit",
+      "frame_pattern": "frame-%03d.png",
+      "frame_count": 10,
+      "frame_ms": 125,
+      "duration_ms": 1250
+    },
+    {
+      "name": "interrupt_exit",
+      "path": "sequences/interrupt_exit",
+      "frame_pattern": "frame-%03d.png",
+      "frame_count": 10,
+      "frame_ms": 125,
+      "duration_ms": 1250
+    }
+  ],
+  "preservation": {
+    "previously_approved_keyframe_count": 17,
+    "previously_approved_keyframes_modified": false,
+    "previously_approved_keyframes_included": false,
+    "v4_owner_approved_endpoint_hashes_preserved": true
+  },
+  "prohibited_sources": [
+    "V3",
+    "V3.1",
+    "V3.2",
+    "V3.3",
+    "V3.4",
+    "owner source video pixels",
+    "human hand pixels",
+    "real Wukong photos"
+  ],
+  "runtime_registration": {
+    "registered": false,
+    "permitted": false
+  },
+  "validation_required": [
+    "Windows transparent desktop renderer QA",
+    "runtime state transition QA",
+    "interaction interruption QA"
+  ]
+}

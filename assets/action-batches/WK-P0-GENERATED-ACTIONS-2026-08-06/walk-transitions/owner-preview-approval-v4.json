@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "review_package_id": "wk.core.walk_left.transitions.runtime-candidate-v4-geometry-stabilized",
+  "behavior_id": "wk.core.walk_left",
+  "review_type": "owner-preview",
+  "reviewed_on": "2026-08-06",
+  "decision": "approved",
+  "approved_scope": [
+    "three-frame walk-stop preview playback",
+    "rear-body stability",
+    "hind-leg placement",
+    "color continuity",
+    "identity continuity",
+    "short stop timing"
+  ],
+  "status_after_review": "runtime-candidate",
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "excluded_scope": [
+    "safe interrupted stop",
+    "real desktop-renderer playback",
+    "scale and pivot verification in the application",
+    "alpha-edge verification on real desktop backgrounds",
+    "runtime registration"
+  ],
+  "remaining_gate": "real-desktop-renderer-playback-scale-alpha-direction-memory-and-interruption-qa"
+}

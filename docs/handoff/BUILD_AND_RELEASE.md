@@ -1,40 +1,32 @@
-# Build and Release
+# Build and Release Contract
 
-The current repository does not yet verify a source tree or build system. The following is the required release contract, not a claim that these steps already exist or pass.
+## Current fact
+
+The consolidated repository contains assets, contracts, tools, and Python tests, but no Windows application project or installer configuration. The commands below are requirements for the future source tree, not claims of current success.
+
+The currently verified repository test command is:
+
+```text
+python3 -m unittest discover -s tests -v
+```
+
+On 2026-08-09 it passed 25 tests against `main` commit `2f7e949c21bd88d2a4cc49977778f4c517dd962a`.
 
 ## Required pipeline
 
-1. Restore dependencies from locked/versioned definitions.
-2. Validate code formatting and static analysis.
-3. Run unit and integration tests.
-4. Validate every runtime asset manifest, file hash, alpha/canvas rule, and behavior mapping.
-5. Build the Windows application for the declared architecture(s).
-6. Package a versioned installer and include licenses/notices.
-7. Install on a clean Windows environment, launch, exercise smoke tests, uninstall, and check upgrade behavior from the previous supported version.
-8. Publish immutable checksums and retain CI logs/artifacts according to policy.
-
-## Release metadata
-
-Record:
-
-- source repository, branch, and commit SHA;
-- external asset repository and commit SHA;
-- application version and asset-registry version;
-- SDK/toolchain and dependency lock versions;
-- target Windows versions and architectures;
-- CI workflow/run URL, test summary, artifact name, size, and SHA-256;
-- signing identity/status without committing private keys;
-- installer, upgrade, rollback, and known-issue results.
+1. Restore locked dependencies and validate formatting/static analysis.
+2. Run domain, persistence, contract, asset, and UI-boundary tests.
+3. Validate manifests, hashes, approval gates, runtime bindings, and exclusion of Pupu/reference/private data.
+4. Build the declared Windows architecture and configuration reproducibly.
+5. Package a versioned installer with notices, data-directory policy, upgrade/rollback behavior, and checksums.
+6. On clean Windows 10/11 machines, install, launch, test transparent-window input/DPI/multi-monitor/sleep-wake/restart, exercise one completed and one interrupted P0 behavior, upgrade, uninstall, and confirm user-data policy.
+7. Record CI/workflow URL, source SHA, asset registry version, toolchain, test summary, artifact identity/SHA-256, signing status, and real-machine evidence.
 
 ## Release gates
 
-- No `candidate` or `runtime-candidate` asset is reachable from production behavior mappings.
-- A missing asset produces a safe fallback rather than a crash or invisible pet.
-- Transparent-window input, scaling, multi-monitor/DPI, sleep/wake, restart, and settings recovery are smoke-tested.
-- Logs and local memory do not leak credentials, private images, or conversation content.
-- An artifact is called “built” only after the build completes; “released” only after the intended publication action completes.
-
-## First source audit
-
-When source code becomes available, replace this generic contract with exact commands for restore, test, build, publish, installer generation, CI invocation, artifact download, and clean-machine verification.
-
+- Only `runtime-approved` assets with complete registry bindings are reachable.
+- Missing/corrupt assets fail safely without an invisible pet or process exit.
+- Owner UI, autonomous scheduling, and model intent share arbitration.
+- Preview/simulation never contaminate real memory.
+- Secrets, conversations, private images, and Pupu/reference data are absent from logs and outputs.
+- “Built”, “CI verified”, “installed”, and “real-renderer verified” are separate evidence-backed statements.

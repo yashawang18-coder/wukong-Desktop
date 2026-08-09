@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "behavior_id": "wk.core.stand_to_prone",
+  "phase": "P0",
+  "availability": "blocked_pending_hd_runtime_asset",
+  "eligibility": {
+    "allowed_poses": ["stand.neutral.left_front"],
+    "equipment": ["none"]
+  },
+  "lifecycle": {
+    "intro": {"strategy": "hold", "pose": "stand.neutral.left_front"},
+    "loop": {"strategy": "asset", "clip_role": "transition"},
+    "exit": {"strategy": "hold", "pose": "prone.awake.left_front"},
+    "interrupt_exit": {"strategy": "missing", "required_role": "safe_interrupt_exit"}
+  },
+  "from_pose": "stand.neutral.left_front",
+  "to_pose": "prone.awake.left_front",
+  "fallback": "wk.core.prone_idle",
+  "state_effects": {},
+  "interrupt_policy": {"stop": "interrupt_exit", "drag": "interrupt_exit"}
+}

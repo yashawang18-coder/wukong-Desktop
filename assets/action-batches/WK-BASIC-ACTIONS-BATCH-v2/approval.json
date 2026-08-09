@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "batch_id": "WK-BASIC-ACTIONS-BATCH-v2",
+  "identity_profile": "wukong-current-adult-v1",
+  "status": "approved-keyframes",
+  "owner_preview_approved": true,
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "owner_approved_on": "2026-08-05",
+  "approval_scope": "17 human-reviewed keyframes across six action packages",
+  "runtime_frames_generated": false,
+  "interpolation_performed": false,
+  "runtime_use": false,
+  "notes": [
+    "C3 uses the owner-reviewed 110-percent scale correction while preserving its original gait phase and ground baseline.",
+    "F2 uses the owner-reviewed coat-color correction while preserving its original inhale pose and silhouette.",
+    "Approval covers keyframes only; runtime generation and application integration require separate review."
+  ],
+  "actions": [
+    {
+      "action_id": "WK-CORE-PRONE-TO-STAND-LF-v2",
+      "frames": [
+        {"key": "A1", "path": "assets/actions/WK-CORE-PRONE-TO-STAND-LF-v2/approved-keyframes/v1/frame-001.png", "size_bytes": 725359, "sha256": "11449a6195eee05a82f81a9974ea585a17be84ae7bbbafa804a43992dab36791"},
+        {"key": "A2", "path": "assets/actions/WK-CORE-PRONE-TO-STAND-LF-v2/approved-keyframes/v1/frame-002.png", "size_bytes": 646008, "sha256": "89ac37cdfb2b3c9c0227b5e6a2d2d003be917e745c648816b1aae438f6810e98"}
+      ]
+    },
+    {
+      "action_id": "WK-CORE-STAND-TO-PRONE-LF-v2",
+      "frames": [
+        {"key": "B1", "path": "assets/actions/WK-CORE-STAND-TO-PRONE-LF-v2/approved-keyframes/v1/frame-001.png", "size_bytes": 615129, "sha256": "546afc13f47b45697c0506a631ee64c707de8c6f4c7ffe7c587c39b3b5e3d4a0"},
+        {"key": "B2", "path": "assets/actions/WK-CORE-STAND-TO-PRONE-LF-v2/approved-keyframes/v1/frame-002.png", "size_bytes": 586348, "sha256": "f3d2a7526c4e894803789399ee1af26f287b91c3109c55ac10e898c97181a95a"}
+      ]
+    },
+    {
+      "action_id": "WK-CORE-WALK-LEFT-v2",
+      "frames": [
+        {"key": "C1", "path": "assets/actions/WK-CORE-WALK-LEFT-v2/approved-keyframes/v1/frame-001.png", "size_bytes": 636637, "sha256": "5ce94195c91cec918a3bac3dfabc77fed025129d6d235820c0523a726c384d4b"},
+        {"key": "C2", "path": "assets/actions/WK-CORE-WALK-LEFT-v2/approved-keyframes/v1/frame-002.png", "size_bytes": 666692, "sha256": "600ea475fc5d592924a9efa96824df501443538a93d1fd6901378ed359585397"},
+        {"key": "C3", "path": "assets/actions/WK-CORE-WALK-LEFT-v2/approved-keyframes/v1/frame-003.png", "size_bytes": 658674, "sha256": "b957d4486fc96cf55a362c7d6ce0b228d13b12610a9b13f524f2f91015065049"},
+        {"key": "C4", "path": "assets/actions/WK-CORE-WALK-LEFT-v2/approved-keyframes/v1/frame-004.png", "size_bytes": 591663, "sha256": "26f94a2fce431fe53873b1d972726a6ef7e0bb9f7033c27d254e7290b8085b73"}
+      ]
+    },
+    {
+      "action_id": "WK-CORE-TURN-LF-TO-RF-v2",
+      "frames": [
+        {"key": "D1", "path": "assets/actions/WK-CORE-TURN-LF-TO-RF-v2/approved-keyframes/v1/frame-001.png", "size_bytes": 569884, "sha256": "08bdeef4817a9f327bb619bb698abd7d17b9a5e6645c05486e91ea846343a731"},
+        {"key": "D2", "path": "assets/actions/WK-CORE-TURN-LF-TO-RF-v2/approved-keyframes/v1/frame-002.png", "size_bytes": 558990, "sha256": "8dd3c943234a85a482b49be8392f240c735dccdbfcc4f93839bb2d9479ce2e89"},
+        {"key": "D3", "path": "assets/actions/WK-CORE-TURN-LF-TO-RF-v2/approved-keyframes/v1/frame-003.png", "size_bytes": 457776, "sha256": "bd69a87c94fab31105a74b2929161f8053ff05f5eee80cd3e5f3ce65f3986962"},
+        {"key": "D4", "path": "assets/actions/WK-CORE-TURN-LF-TO-RF-v2/approved-keyframes/v1/frame-004.png", "size_bytes": 653297, "sha256": "5ef258b54334ec88056be46f1689d0adff1732c849cc52e2642157b9890bfb9d"}
+      ]
+    },
+    {
+      "action_id": "WK-INTERACT-HAPPY-TOUCH-v2",
+      "frames": [
+        {"key": "E1", "path": "assets/actions/WK-INTERACT-HAPPY-TOUCH-v2/approved-keyframes/v1/frame-001.png", "size_bytes": 707936, "sha256": "5b7234e63bf18e551fd02ed0011d3f490deceef1db6fe2899d37e35cebce05a7"},
+        {"key": "E2", "path": "assets/actions/WK-INTERACT-HAPPY-TOUCH-v2/approved-keyframes/v1/frame-002.png", "size_bytes": 554277, "sha256": "df32000aaf4935898070ec41cb5d500d2ca815c45c095a8c1524e428f521cbd2"},
+        {"key": "E3", "path": "assets/actions/WK-INTERACT-HAPPY-TOUCH-v2/approved-keyframes/v1/frame-003.png", "size_bytes": 620571, "sha256": "2cbeec9b1afdcdfb183977bf4931a6ad3dc0939489ec2acb7d87634a29108a8e"}
+      ]
+    },
+    {
+      "action_id": "WK-CORE-SLEEP-BREATH-v2",
+      "frames": [
+        {"key": "F1", "path": "assets/actions/WK-CORE-SLEEP-BREATH-v2/approved-keyframes/v1/frame-001.png", "size_bytes": 487558, "sha256": "8edefef8478df9a5ca5557eb7c8b4326b437b739e6b10842f8115bcb22b44af8"},
+        {"key": "F2", "path": "assets/actions/WK-CORE-SLEEP-BREATH-v2/approved-keyframes/v1/frame-002.png", "size_bytes": 482181, "sha256": "3ed98db88075099534e765b7c92ce1a887ff347b6da02ee3722b96ab84327f4e"}
+      ]
+    }
+  ]
+}

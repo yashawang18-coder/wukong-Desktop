@@ -1,59 +1,65 @@
 # Behavior Core Specification
 
-## State model
+## State ownership
 
-Do not collapse all state into one mutable personality object.
-
-- `TemperamentBaseline`: owner-controlled stable traits; ordinary interactions do not rewrite it.
-- `RuntimeState`: arousal, stress, social desire, play desire, curiosity, fatigue, safety, hunger/needs as applicable.
+- `TemperamentBaseline`: stable owner-controlled traits; ordinary interaction never rewrites it.
+- `RuntimeState`: energy, fullness, fatigue, stress, curiosity, social desire, play desire, safety, current pose, behavior, and phase.
 - `RelationshipState`: trust, familiarity, touch acceptance, and initiative acceptance.
-- `LearnedPreference`: evidence keyed by behavior, interaction, and context; promote habits only after repeated cross-day evidence.
+- `LearnedPreference`: behavior/interaction/context evidence; Phase 1 keeps the interface but does not promote complex cross-day habits.
 
-## Autonomous selection
+State is changed by domain events and `BehaviorOutcome` only. View models expose commands and read models; they do not use unrestricted two-way binding to domain state.
 
-Score eligible behaviors from explicit components:
+## Request and lifecycle contracts
+
+`BehaviorRequest` includes request/correlation IDs, semantic intent or existing canonical `behavior_id`, source, time, priority, context, defer policy, and optional fixed seed for developer tests.
+
+Eligibility returns `Accepted`, `Rejected`, or `Deferred` with stable reason code, user-facing reason, and optional retry time. Execution reports `Requested`, `Accepted`, `Deferred`, `Rejected`, `Started`, `Progressed`, `Completed`, `Interrupted`, or `Failed`.
+
+`BehaviorOutcome` records completion ratio, interruption/failure reason, bounded state delta, and memory eligibility. Effects earned before interruption are not rolled back.
+
+## Eligibility and arbitration
+
+Only eligible candidates are scored:
 
 ```text
-base weight
-+ temperament affinity
-+ runtime-state fit
-+ relationship fit
-+ learned preference
-+ context fit
-- cooldown penalty
-- repetition penalty
-- interruption cost
-+ seeded jitter
+score = BaseWeight
+      + StateFit
+      + RelationshipFit
+      + ContextFit
+      + LearnedPreference
+      - CooldownPenalty
+      - RepetitionPenalty
+      - InterruptionCost
+      + SeededJitter
 ```
 
-Log the score components and rejection reasons. Enforce minimum dwell time, cooldown, repetition suppression, switching hysteresis, and context constraints.
+Every component and gate reason is traced. Minimum dwell, cooldown, repetition suppression, switching hysteresis, pose/asset availability, and safe-interruption rules are mandatory. Seeded jitter resolves ties only. With no legal candidate, return `Deferred`; do not play a random fallback.
 
-## Interaction pipeline
+## Animation lifecycle
 
-1. Interpret raw input as a gesture (`touch`, `stroke`, `hold`, `drag`, `rapid_tap`, `release`, etc.).
-2. Update runtime/relationship state through bounded deltas.
-3. Select a response from eligible behaviors.
-4. Execute through a lifecycle: `Started`, `Progressed`, `Completed`, `Interrupted`, or `Failed`.
-5. Apply long-action effects progressively; interruption does not roll back effects already earned.
-6. Record completion ratio and interruption/failure reason.
+```text
+prepare pose -> intro -> loop -> exit -> safe end pose
+                         |
+                         +-> interrupt_exit -> declared fallback/safe pose
+```
 
-## Runtime contracts
+The orchestrator is manifest-driven and is the only component that finalizes animation execution. Callers do not separately implement cleanup. Playback failure is converted to `Failed` and a safe fallback without terminating the desktop process.
 
-- Every behavior references a stable `behavior_id`, never a loose filename.
-- Asset availability is checked before selection; missing assets trigger a defined fallback.
-- `stop` and safety-critical interruption remain available during long actions.
-- State mutations are testable without a window or renderer.
-- Randomness is seedable for replay and debugging.
-- Persistence has schema versioning, migration, corruption recovery, and privacy boundaries.
+Preview and simulation use isolated player/state/event contexts and never contribute to real state, relationship, preference, or memory.
 
-## Minimum tests
+## Model boundary
 
-- score components and eligibility;
-- cooldown, minimum dwell, hysteresis, and repetition suppression;
-- gesture thresholds and conflicting input sequences;
-- interruption and partial-progress accounting;
-- missing/deprecated asset fallback;
-- seeded replay determinism;
-- persistence migration and invalid-data recovery;
-- platform UI cannot mutate read-only behavior state through invalid two-way binding.
+Model output is limited to natural-language reply, optional semantic behavior intent, confidence, and optional memory candidate. Any behavior intent passes through intent resolution, eligibility, and arbitration. The model cannot name an asset path, invent a canonical ID, mutate state, force success, or bypass harness/safety/interruption constraints.
 
+## Minimum automated tests
+
+1. UI and model cannot directly start animation.
+2. Identical state/clock/seed gives identical arbitration.
+3. Minimum dwell defers unsafe switching; high stress can reject interaction.
+4. Cooldown and repetition penalties affect traceable scores.
+5. No candidate returns `Deferred`.
+6. Normal and interrupted animation paths execute declared phases/fallbacks.
+7. Player faults do not terminate the app.
+8. Preview/simulation do not mutate production state or memory.
+9. Completed, interrupted, and failed outcomes are persisted correctly.
+10. Owner and Model Debug conversations use distinct sessions.

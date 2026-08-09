@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "asset_id": "WK-CORE-STAND-TO-SIT-LF-v1",
+  "identity_profile": "wukong-current-adult-v1",
+  "direction": "left-front",
+  "status": "runtime-candidate",
+  "owner_preview_approved": false,
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "approved_keyframes": {
+    "version": 1,
+    "frame_count": 2,
+    "owner_approved_on": "2026-08-06",
+    "paths": [
+      "assets/actions/WK-CORE-PRONE-TO-STAND-LF-v2/approved-keyframes/v1/frame-002.png",
+      "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/sit-stand/approved-keyframes/v1/frame-002-stand-to-sit-mid.png",
+      "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/sit-stand/approved-keyframes/v1/frame-001-sit-idle-mother.png"
+    ]
+  },
+  "runtime_candidate": {
+    "version": 2,
+    "manifest": "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/sit-stand/runtime-candidate-v2.json",
+    "intermediate_frame_count": 2,
+    "frame_paths": [
+      "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/sit-stand/runtime-candidate-v2/frames/stand-to-sit-early.png",
+      "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/sit-stand/runtime-candidate-v2/frames/stand-to-sit-late.png"
+    ]
+  },
+  "sequence_scope": "runtime-candidate-intermediate-frames-only"
+}

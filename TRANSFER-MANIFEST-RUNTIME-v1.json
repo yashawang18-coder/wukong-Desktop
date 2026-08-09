@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "kind": "runtime-candidate-delta",
+  "repository": "https://github.com/yashawang18-coder/wukong-Desktop",
+  "target_branch": "agent/assets-wukong-adult-v1-prone-idle-v1",
+  "baseline_commit": "c74fce633fea319ed998610c57324db48393aee0",
+  "asset_id": "WK-CORE-PRONE-IDLE-LF-v1",
+  "status": "runtime-candidate",
+  "runtime_use": false,
+  "contains_real_photos": false,
+  "files": [
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/README.md",
+      "size": 1242,
+      "sha256": "e7e0b3f8661c324629273d3f6dcd173468f64ed57e4b570a2ef016c8c8478355",
+      "role": "documentation"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/asset.json",
+      "size": 1428,
+      "sha256": "18d8b7b1c6cb2ad1710b873e48a8ca0778ecde7c0d2701ac6fb4c0c2e0266280",
+      "role": "metadata"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/asset-runtime-candidate-v1.json",
+      "size": 7475,
+      "sha256": "facb3539ec7c9c0619fee5196ea4511958e055f47bb68ac80ade02779da2f930",
+      "role": "metadata"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/prompts/runtime-generation-v1.md",
+      "size": 1187,
+      "sha256": "558e419c291c9ecc766cbb2a25de39d3ed72f0551a961c9a81992cb7544441b7",
+      "role": "generation-record"
+    },
+    {
+      "path": "tools/build_prone_idle_runtime.py",
+      "size": 13349,
+      "sha256": "217976515549cace338ccbfa5c026466691d195f2c1ecb147f68a410bfc00271",
+      "role": "reproducibility-tool"
+    },
+    {
+      "path": "tests/test_prone_idle_runtime.py",
+      "size": 2641,
+      "sha256": "24c5126b29bc84d1a3de3de2c16104ed32f842e8f10623bf6efc629077535117",
+      "role": "validation"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/runtime-frames/v1/frame-001.png",
+      "size": 651309,
+      "sha256": "f936cb17d4d84471e5b35f2e2b25cb414df837bcefbcb9fdc05b00304a50e0ad",
+      "role": "runtime-candidate"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/runtime-frames/v1/frame-002.png",
+      "size": 617991,
+      "sha256": "5c90a2d95c03b8740a147b0816b986dda99d7f772be760ef917c6703228d49f5",
+      "role": "runtime-candidate"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/runtime-frames/v1/frame-003.png",
+      "size": 614769,
+      "sha256": "c0c1a85c79516c8b4d2569734899b1bd6699bbf068507ddc3090a9e2d2b49d91",
+      "role": "runtime-candidate"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/runtime-frames/v1/frame-004.png",
+      "size": 645587,
+      "sha256": "4e1b6dee69e05302015d88eeb54e4ff13bc5a391b25abc6cb397a91deef3c626",
+      "role": "runtime-candidate"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/runtime-frames/v1/frame-005.png",
+      "size": 621864,
+      "sha256": "acc8b646fd1e7d7318ff805e5c2228f71dd6cb11052cd49d25649d759b3511a2",
+      "role": "runtime-candidate"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/runtime-frames/v1/frame-006.png",
+      "size": 623814,
+      "sha256": "452390c75a6bc7b3ae6a13fc6b15c4dc2d1ff734bd80a9331f78d7b61b7943bc",
+      "role": "runtime-candidate"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/runtime-frames/v1/frame-007.png",
+      "size": 647658,
+      "sha256": "18a3c470f1ccf85d4d9d9b7a0cfbae409332e886dbc4edd48fd0fd5891bcd944",
+      "role": "runtime-candidate"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/runtime-frames/v1/frame-008.png",
+      "size": 633898,
+      "sha256": "a37ee9de68b3f995d6609c1921d493d0ee9796244bb23d2d71b444686ade97ac",
+      "role": "runtime-candidate"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/runtime-frames/v1/frame-009.png",
+      "size": 632608,
+      "sha256": "5d3d4b1126f5a0501b4bccecaf746b6dde4fbb9005efb5be2fe144b471851afd",
+      "role": "runtime-candidate"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/runtime-frames/v1/frame-010.png",
+      "size": 646362,
+      "sha256": "3282ce8726f3dc4b5b0e06ace6d12cf2b433ec0bf8f3c79127586eacdff5a870",
+      "role": "runtime-candidate"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/runtime-frames/v1/frame-011.png",
+      "size": 621007,
+      "sha256": "0a537f86c595acec99ffc5b5b352d1b9be4358a5cdabadb69c8425e236eb3b61",
+      "role": "runtime-candidate"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/runtime-frames/v1/frame-012.png",
+      "size": 622206,
+      "sha256": "3ec4e1a43a13e64332ed41b87797b6eb3998bea3036f3f84e73863033ed3b2ae",
+      "role": "runtime-candidate"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/previews/loop-actual-speed-v1.gif",
+      "size": 503549,
+      "sha256": "3a0d7b701436e4a36f5200c67c01c72a89ebb01d3ef3c5e0c4ac48b19152c6de",
+      "role": "preview"
+    },
+    {
+      "path": "assets/actions/WK-CORE-PRONE-IDLE-LF-v1/previews/entry-loop-exit-seam-v1.gif",
+      "size": 586067,
+      "sha256": "a519bb4cc8f1bad7632eba92ffbb2a072b9ab4d58c4a7de1b5c6120d68badf94",
+      "role": "preview"
+    }
+  ],
+  "validation": {
+    "generator": "passed",
+    "unit_tests": "passed-after-running-tests/test_prone_idle_runtime.py",
+    "owner_runtime_review": "pending",
+    "desktop_runtime_playback": "pending-no-application-source"
+  }
+}

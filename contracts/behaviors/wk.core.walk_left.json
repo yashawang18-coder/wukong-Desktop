@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "behavior_id": "wk.core.walk_left",
+  "phase": "P0",
+  "availability": "blocked_missing_intro_exit_and_hd_loop",
+  "eligibility": {
+    "allowed_poses": ["stand.neutral.left_front"],
+    "equipment": ["none"]
+  },
+  "lifecycle": {
+    "intro": {"strategy": "missing", "required_role": "walk_start"},
+    "loop": {"strategy": "asset", "clip_role": "gait_loop"},
+    "exit": {"strategy": "missing", "required_role": "walk_stop"},
+    "interrupt_exit": {"strategy": "missing", "required_role": "safe_walk_stop"}
+  },
+  "from_pose": "stand.neutral.left_front",
+  "to_pose": "stand.neutral.left_front",
+  "fallback": "wk.core.prone_idle",
+  "state_effects": {},
+  "interrupt_policy": {"stop": "interrupt_exit", "drag": "interrupt_exit"}
+}

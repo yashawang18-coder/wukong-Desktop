@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "asset_id": "WK-CORE-STAND-IDLE-LF-v1",
+  "identity_profile": "wukong-current-adult-v1",
+  "direction": "left-front",
+  "status": "approved-keyframes",
+  "owner_preview_approved": true,
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "approval_record": "assets/action-batches/WK-P0-GENERATED-ACTIONS-2026-08-06/standing/a2-reuse-approval.json",
+  "source_keyframe": {
+    "role": "A2-prone-to-stand-hind-rise",
+    "path": "assets/actions/WK-CORE-PRONE-TO-STAND-LF-v2/approved-keyframes/v1/frame-002.png",
+    "sha256": "89ac37cdfb2b3c9c0227b5e6a2d2d003be917e745c648816b1aae438f6810e98"
+  },
+  "sequence_scope": "reuse-existing-approved-keyframe",
+  "notes": [
+    "This record reuses existing A2 approval as a stand-idle role.",
+    "No source pixels are duplicated or modified.",
+    "A2 remains not runtime-approved and not registered for production playback."
+  ]
+}
