@@ -1,0 +1,32 @@
+<Window x:Class="Wukong.Desktop.ControlPanelWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Wukong Control"
+        Width="520"
+        Height="420"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel Margin="16">
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <TextBlock Text="Wukong 控制面板" FontSize="18" FontWeight="SemiBold" />
+            <CheckBox x:Name="DeveloperToggle"
+                      Content="启用开发者 Trace"
+                      Margin="0,10,0,0"
+                      Checked="DeveloperToggle_Changed"
+                      Unchecked="DeveloperToggle_Changed" />
+            <DockPanel Margin="0,10,0,0">
+                <TextBox x:Name="ModelInput"
+                         DockPanel.Dock="Left"
+                         MinWidth="340"
+                         Margin="0,0,8,0"
+                         VerticalContentAlignment="Center" />
+                <Button Content="Fake Model"
+                        Padding="12,5"
+                        Click="FakeModelButton_Click" />
+            </DockPanel>
+        </StackPanel>
+        <ListBox x:Name="TraceList"
+                 Visibility="Collapsed"
+                 FontFamily="Consolas"
+                 FontSize="12" />
+    </DockPanel>
+</Window>

@@ -1,0 +1,14 @@
+# Local read-only Pupu engineering reference
+reference/pupu-source/
+reference/*.zip
+
+# Python cache artifacts
+__pycache__/
+*.py[cod]
+
+# Local .NET CLI/build artifacts
+.dotnet-cli-home/
+.wukong-log-tests/
+.publish-check/
+bin/
+obj/

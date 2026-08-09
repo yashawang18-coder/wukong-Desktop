@@ -1,0 +1,1204 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wukong 控制面板 UX 原型</title>
+<style>
+:root{--ink:#242622;--muted:#777a72;--line:#deddd5;--paper:#f7f5f0;--card:#fffefa;--green:#49664e;--green2:#dfe9df;--orange:#b66a37;--orange2:#f3e4d5;--red:#a84f47;--shadow:0 18px 55px #383c3422;--r:18px}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:#ddd8ce}
+button,input,textarea,select{font:inherit;color:inherit}button{cursor:pointer}
+.app{width:min(1440px,100vw);height:100vh;min-height:720px;margin:auto;background:var(--paper);display:grid;grid-template-columns:220px 1fr;grid-template-rows:72px 1fr 42px;overflow:hidden;box-shadow:var(--shadow)}
+header{grid-column:1/-1;display:flex;align-items:center;padding:0 24px;border-bottom:1px solid var(--line);background:#fbfaf6}
+.brand{display:flex;align-items:center;gap:12px}.mark{width:40px;height:40px;border-radius:14px;background:var(--ink);color:white;display:grid;place-items:center;font-size:23px}
+.brand b{font-size:18px;letter-spacing:.02em}.brand span{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.head-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
+.status-chip{padding:8px 12px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:white}
+.status-chip i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#5b9b69;margin-right:7px}
+.icon-btn{border:0;background:transparent;border-radius:10px;padding:9px 11px}.icon-btn:hover{background:#ece9e1}
+.sidebar{padding:18px 14px;border-right:1px solid var(--line);background:#f0ede6;display:flex;flex-direction:column}
+.profile{display:flex;align-items:center;gap:11px;padding:9px 10px 18px}
+.avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(145deg,#7e796d,#b7afa0);display:grid;place-items:center;font-size:24px;box-shadow:inset 0 0 0 3px #ffffff66;overflow:hidden;flex-shrink:0;background-size:cover;background-position:center}
+.profile strong{display:block}.profile small{color:var(--muted)}
+nav{display:grid;gap:6px}
+.nav-btn{border:0;background:transparent;text-align:left;padding:12px 14px;border-radius:12px;display:flex;align-items:center;gap:12px;color:#555850}
+.nav-btn span{width:22px;text-align:center}.nav-btn:hover{background:#e6e2d9}
+.nav-btn.active{background:var(--ink);color:white;box-shadow:0 8px 18px #24262226}
+.nav-btn.locked{opacity:.55}.nav-btn .lock-tag{margin-left:auto;font-size:10px;opacity:.75}
+.mode-box{margin-top:auto;padding:13px;border:1px solid #d5d1c7;border-radius:14px;background:#f8f6f1}
+.mode-line{display:flex;align-items:center;justify-content:space-between;font-size:12px;gap:8px}
+.switch{width:40px;height:22px;border:0;border-radius:999px;padding:3px;background:#bdbdb5}
+.switch:after{content:"";display:block;width:16px;height:16px;background:#fff;border-radius:50%;transition:.2s}
+.switch.on{background:var(--orange)}.switch.on:after{transform:translateX(18px)}
+.mode-box small{display:block;color:var(--muted);line-height:1.5;margin-top:8px}
+.main{overflow:auto;padding:26px 30px 40px}
+.page{display:none;max-width:1160px;margin:auto}.page.active{display:block}
+.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px}
+.eyebrow{color:var(--green);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;line-height:1}
+.page h1{font-size:24px;margin:2px 0 0;letter-spacing:-.03em;line-height:1.2}.sub{color:var(--muted);font-size:12px;margin-top:2px;line-height:1.4}
+.page-head.compact .sub{display:inline;margin-left:8px}.page-head.compact h1{display:inline;font-size:22px}
+.page-head.compact>div{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 0}
+.grid{display:grid;gap:16px}.cols-2{grid-template-columns:1.1fr .9fr}.cols-3{grid-template-columns:repeat(3,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:0 5px 18px #36392f09}
+.card h2{font-size:15px;margin:0 0 14px}
+.pet-now{min-height:280px;display:grid;grid-template-columns:210px 1fr;align-items:center;background:linear-gradient(145deg,#e8ede3,#faf8f1)}
+.pet-stage{min-height:220px;display:grid;place-items:center;align-content:center;position:relative;gap:4px}
+.pet-stage:after{content:"";position:absolute;bottom:56px;width:145px;height:22px;background:#6d705a24;filter:blur(9px);border-radius:50%}
+.pet-face{width:128px;height:128px;border-radius:50%;display:grid;place-items:center;font-size:78px;z-index:1;background:linear-gradient(145deg,#d9d2c6,#b7afa0);box-shadow:inset 0 0 0 4px #ffffff55;overflow:hidden;background-size:cover;background-position:center}
+.mood h2{font-size:24px;margin:0 0 8px}.mood p{color:var(--muted);line-height:1.65;font-size:13px}
+.meters{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.meter{background:#ffffffb8;border:1px solid #d8ddd2;padding:8px 10px;border-radius:10px;font-size:12px}
+.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.action{border:1px solid var(--line);background:#fbfaf6;border-radius:13px;padding:13px 8px;transition:.2s}
+.action:hover{border-color:var(--green);transform:translateY(-2px)}.action.danger{color:var(--red);border-color:#e8c7c3}
+.chat-row{display:flex;gap:9px}
+.field{border:1px solid var(--line);background:white;border-radius:12px;padding:11px 13px;outline:0;width:100%}
+.field:focus{border-color:var(--green);box-shadow:0 0 0 3px #49664e16}
+.primary{border:0;background:var(--ink);color:white;padding:11px 16px;border-radius:12px}
+.secondary{border:1px solid var(--line);background:white;padding:10px 14px;border-radius:11px}
+.soft{border:0;background:var(--green2);color:#37513b;padding:10px 14px;border-radius:11px}
+.reply{margin-top:12px;padding:12px 14px;background:#f1eee6;border-radius:12px;font-size:13px}
+.schedule{display:grid;gap:9px}
+.schedule-item{display:flex;align-items:center;gap:14px;padding:9px 0;border-bottom:1px solid #ece9e1}
+.schedule-item:last-child{border:0}.schedule-item time{font-weight:700;color:var(--green);min-width:48px}
+.schedule-item .sch-text{flex:1}.schedule-item .sch-status{font-size:11px;color:var(--muted)}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+.tab{border:0;background:transparent;padding:10px 14px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
+.tab:hover{color:var(--ink);background:#efede6}.tab.active{color:var(--ink);border-color:var(--ink);font-weight:700}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.tab-panel.active.model-lr{display:grid}
+.form-grid{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center}
+.form-grid label{font-size:13px;color:#5f625b}
+.slider{accent-color:var(--green);width:100%}
+.relation{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.relation div{background:#f2efe8;padding:13px;border-radius:12px}.relation b{display:block;font-size:16px}.relation small{color:var(--muted)}
+.memory-card{padding:15px 0;border-bottom:1px solid var(--line)}.memory-card:last-child{border:0}.memory-card small{color:var(--muted)}
+.album-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.path{flex:1;min-width:240px;color:var(--muted);font-size:12px;padding:10px 12px;border-radius:10px;background:#f1eee8}
+.album-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.photo{border:2px solid transparent;border-radius:13px;padding:5px;background:#f1eee8;text-align:left}
+.photo.active{border-color:var(--green);background:var(--green2)}
+.thumb{height:88px;border-radius:8px;display:grid;place-items:center;font-size:36px;background:linear-gradient(145deg,#dfe6d9,#b7c5ae)}
+.photo:nth-child(2) .thumb{background:linear-gradient(145deg,#ead9c7,#d3ad88)}
+.photo:nth-child(3) .thumb{background:linear-gradient(145deg,#d7e1ec,#9fb4cb)}
+.photo:nth-child(4) .thumb{background:linear-gradient(145deg,#ede1b9,#c6ae63)}
+.photo small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:6px 3px 1px}
+.photo-editor{display:grid;grid-template-columns:1fr 1.2fr;gap:16px}
+.preview{min-height:235px;border-radius:15px;background:linear-gradient(150deg,#d5dfce,#8ea186);display:grid;place-items:center;font-size:100px}
+.textarea{min-height:124px;resize:vertical}.hint{font-size:12px;color:var(--muted);margin:8px 0}
+.saved{color:var(--green);font-size:12px;margin-left:8px}
+.settings-layout{display:grid;gap:14px}
+.model-pane{max-width:1100px;width:100%}
+.model-lr{display:grid;grid-template-columns:minmax(280px,1fr) minmax(340px,1.15fr);gap:16px;align-items:stretch;height:520px;max-height:520px;min-height:0}
+.model-lr.is-smart{grid-template-columns:max-content minmax(340px,1fr)}
+.model-left-host{height:100%;min-height:0;min-width:0;overflow:hidden}
+.model-left-panel{display:none;height:100%;max-height:100%;box-sizing:border-box;flex-direction:column;overflow:auto}
+.model-left-panel.active{display:flex}
+.model-left-panel .form-stack{flex:1;display:flex;flex-direction:column;gap:14px;min-height:0}
+.model-left-panel .prompt{flex:1;min-height:160px;height:auto}
+.model-left-panel.smart-fit{width:max-content;max-width:min(400px,42vw)}
+.model-left-panel.smart-fit .form-stack{width:max-content;max-width:100%}
+.model-lr>.model-chat{height:100%;max-height:100%;min-height:0}
+.toggle-list{display:grid;gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;width:max-content;max-width:100%}
+.toggle-row{display:grid;grid-template-columns:max-content auto;align-items:center;gap:18px;padding:14px 16px;border-bottom:1px solid var(--line);min-height:64px}
+.toggle-row:last-child{border-bottom:0}
+.toggle-row b{display:block;margin-bottom:4px;white-space:nowrap}
+.toggle-row .hint{margin:0;white-space:nowrap;color:var(--muted);font-size:12px}
+.form-stack{display:grid;gap:14px}
+.form-stack .form-grid{grid-template-columns:120px 1fr}
+.prompt{min-height:220px;line-height:1.7;resize:vertical}
+.library-layout{display:grid;grid-template-columns:210px 1fr;gap:16px}
+.category-list{display:grid;gap:4px}
+.category-list button{border:0;background:transparent;text-align:left;padding:10px 11px;border-radius:10px;color:var(--muted)}
+.category-list button.active{background:var(--green2);color:#2e4a34;font-weight:700}
+.asset-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.asset{border:1px solid var(--line);border-radius:15px;padding:13px;background:#fff}
+.asset-visual{height:105px;border-radius:11px;background:#eeece5;display:grid;place-items:center;font-size:52px;margin-bottom:10px}
+.asset h3{font-size:14px;margin:0 0 7px}.asset p{font-size:11px;color:var(--muted);margin:0}
+.badge{display:inline-block;margin-top:9px;padding:4px 7px;border-radius:7px;background:var(--green2);color:#36543c;font-size:10px}
+.badge.wait{background:var(--orange2);color:#8c562e}
+.docs-layout{display:grid;grid-template-columns:230px 1fr;gap:18px}
+.doc-nav button{display:block;width:100%;border:0;background:transparent;text-align:left;padding:10px;border-radius:9px;color:var(--muted)}
+.doc-nav button.active{background:#e9e6de;color:var(--ink)}
+.article h2{font-size:23px}.article h3{font-size:15px;margin-top:24px}
+.article p,.article li{font-size:13px;line-height:1.8;color:#5b5e56}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:18px 0}
+.flow div{padding:12px 7px;text-align:center;border-radius:10px;background:#edf1e9;font-size:11px}
+.dev-only{display:none}.developer .dev-only{display:block}
+.dev-banner{display:none;background:var(--orange2);color:#7f4e2d;border:1px solid #e5bea0;padding:10px 14px;border-radius:12px;font-size:12px;margin-bottom:16px}
+.developer .dev-banner{display:block}
+.monitor{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.monitor section{background:#292b27;color:#f0eee7;border-radius:13px;padding:15px;min-height:150px}
+.monitor small{color:#9fa79c}.monitor code{display:block;color:#b9d6b9;font-size:11px;line-height:1.8;margin-top:10px}
+footer{grid-column:1/-1;border-top:1px solid var(--line);display:flex;align-items:center;padding:0 18px;background:#fbfaf6;color:var(--muted);font-size:11px;gap:24px}
+footer span:last-child{margin-left:auto}
+.toast{position:fixed;right:24px;bottom:58px;background:#242622;color:white;padding:12px 16px;border-radius:12px;box-shadow:var(--shadow);font-size:12px;opacity:0;transform:translateY(10px);pointer-events:none;transition:.25s;z-index:60}
+.toast.show{opacity:1;transform:none}
+.overlay{position:fixed;inset:0;background:#24262266;display:none;place-items:center;z-index:50;padding:20px}
+.overlay.show{display:grid}
+.modal{width:min(640px,100%);max-height:min(86vh,820px);overflow:auto;background:var(--card);border-radius:18px;border:1px solid var(--line);box-shadow:var(--shadow);padding:22px}
+.modal h2{margin:0 0 6px;font-size:20px}.modal-head{display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap}
+.avatar-module{display:grid;justify-items:center;text-align:center;padding:28px 18px}
+.avatar-preview{width:140px;height:140px;border-radius:50%;background:linear-gradient(145deg,#d9d2c6,#b7afa0);display:grid;place-items:center;font-size:64px;overflow:hidden;background-size:cover;background-position:center;box-shadow:inset 0 0 0 4px #ffffff88;margin-bottom:16px}
+.avatar-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.owner-avatar-actions{margin-top:12px;position:relative;z-index:2}
+.crop-stage{position:relative;width:min(320px,70vw);height:320px;border-radius:16px;overflow:hidden;background:#1d1f1c;margin:12px auto;touch-action:none;cursor:grab}
+.crop-stage:active{cursor:grabbing}
+.crop-stage img{position:absolute;user-select:none;pointer-events:none;max-width:none}
+.crop-mask{position:absolute;inset:0;border-radius:16px;box-shadow:inset 0 0 0 999px #00000088;pointer-events:none}
+.crop-mask:after{content:"";position:absolute;left:50%;top:50%;width:240px;height:240px;transform:translate(-50%,-50%);border-radius:50%;box-shadow:0 0 0 999px transparent;outline:2px solid #fff8;background:transparent}
+.schedule-editor{display:grid;gap:10px}
+.schedule-row{display:grid;grid-template-columns:140px 1fr 120px 36px;gap:10px;align-items:center}
+.schedule-row input[type="time"]{min-width:140px}
+.schedule-preview{display:grid;gap:0}
+.schedule-preview .schedule-item{padding:12px 0}
+.doc-nav button:hover,.category-list button:hover{background:#f0eee8;color:var(--ink)}
+.lock-panel{text-align:center;padding:48px 24px}.lock-panel .big{font-size:48px;margin-bottom:12px}
+.model-chat{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;height:100%;max-height:100%;min-height:0;box-sizing:border-box;overflow:hidden}
+.chat-log{display:flex;flex-direction:column;gap:12px;padding:4px 0 12px;overflow-x:hidden;overflow-y:auto;min-height:0;max-height:100%}
+.bubble{max-width:78%;padding:12px 14px;border-radius:15px;font-size:13px;line-height:1.6;flex-shrink:0}
+.bubble.user{align-self:flex-end;background:var(--ink);color:white;border-bottom-right-radius:5px}
+.bubble.assistant{align-self:flex-start;background:#eeece5;border-bottom-left-radius:5px}
+.debug-meta{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}
+.debug-meta span{font-size:11px;padding:6px 8px;border-radius:8px;background:#f0eee8;color:var(--muted)}
+@media(max-width:900px){
+.app{grid-template-columns:76px 1fr}.sidebar{padding:12px 8px}
+.profile div:last-child,.nav-btn:not(.active){font-size:0}.nav-btn{justify-content:center}.nav-btn span{font-size:18px}
+.nav-btn .lock-tag{display:none}.mode-box small,.mode-line span{display:none}.mode-line{justify-content:center}
+.cols-2,.photo-editor,.library-layout,.docs-layout{grid-template-columns:1fr}
+.album-grid{grid-template-columns:repeat(2,1fr)}.asset-grid{grid-template-columns:repeat(2,1fr)}
+.main{padding:20px}.pet-now{grid-template-columns:150px 1fr}.actions{grid-template-columns:repeat(3,1fr)}
+.schedule-row{grid-template-columns:1fr;gap:6px}
+.model-lr,.model-lr.is-smart{grid-template-columns:1fr;height:auto;max-height:none}
+.model-left-host,.model-left-panel{min-height:0;max-height:none}
+.model-lr>.model-chat{height:420px;max-height:420px}
+.model-left-panel.smart-fit{width:100%;max-width:100%}
+.toggle-list{width:100%}
+.toggle-row{grid-template-columns:1fr auto}
+.toggle-row b,.toggle-row .hint{white-space:normal}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<header>
+  <div class="brand"><div class="mark">悟</div><div><b>Wukong 控制面板</b></div></div>
+  <div class="head-actions"><div class="status-chip"><i></i>运行正常</div><button class="secondary" onclick="downloadConfig()" title="导出本地配置为 JSON">导出配置</button><button class="icon-btn" title="设置">⚙</button><button class="icon-btn" title="最小化">—</button><button class="icon-btn" title="关闭">×</button></div>
+</header>
+<aside class="sidebar">
+  <div class="profile"><div class="avatar" id="sideAvatar">🐕</div><div><strong id="sideName">悟空</strong><small id="sideMood">安静趴着</small></div></div>
+  <nav>
+    <button class="nav-btn active" data-page="owner"><span>⌂</span>主人</button>
+    <button class="nav-btn" data-page="profile"><span>♙</span>档案</button>
+    <button class="nav-btn" data-page="album"><span>▧</span>相册</button>
+    <button class="nav-btn" data-page="model"><span>✦</span>大模型</button>
+    <button class="nav-btn locked" data-page="assets" id="navAssets"><span>◫</span>素材<span class="lock-tag">🔒</span></button>
+    <button class="nav-btn locked" data-page="developer" id="navDeveloper"><span>⌘</span>开发者<span class="lock-tag">🔒</span></button>
+  </nav>
+  <div class="mode-box">
+    <div class="mode-line"><span id="devModeLabel">开发者登录</span><button class="switch" id="devSwitch" aria-label="开发者登录"></button></div>
+    <small id="devModeHint">素材与开发者模块需要密码解锁后才可查看和编辑。</small>
+  </div>
+</aside>
+<main class="main">
+  <!-- 主人 -->
+  <section class="page active" id="owner">
+    <div class="page-head">
+      <div><div class="eyebrow">Daily companion</div><h1 id="ownerGreeting">晚上好，老爸</h1><div class="sub" id="ownerSub">悟空现在很平静，愿意听你说话，但不一定想起来。</div></div>
+      <button class="secondary" onclick="openScheduleModal()">管理今日安排</button>
+    </div>
+    <div class="dev-banner">开发者模式已开启：页面将展示行为来源和调试入口。</div>
+    <div class="grid cols-2">
+      <article class="card pet-now">
+        <div class="pet-stage">
+          <div class="pet-face" id="ownerPetFace">🐕</div>
+          <div class="avatar-actions owner-avatar-actions">
+            <button class="secondary" onclick="document.getElementById('avatarFile').click()">上传头像</button>
+            <button class="soft" onclick="downloadAvatar()">下载</button>
+            <button class="secondary" onclick="clearAvatar()">默认</button>
+          </div>
+          <input type="file" id="avatarFile" accept="image/*" hidden>
+        </div>
+        <div class="mood">
+          <div class="eyebrow">当前的悟空</div>
+          <h2 id="ownerMoodTitle">安静趴着，有一点困</h2>
+          <p id="ownerMoodDesc">它刚刚巡视完桌面，现在可以互动。连续打扰可能让它选择回避。</p>
+          <div class="meters" id="ownerMeters"></div>
+        </div>
+      </article>
+      <article class="card">
+        <h2>今日安排</h2>
+        <div class="schedule" id="ownerSchedule"></div>
+        <div style="margin-top:12px;text-align:right"><button class="soft" onclick="openScheduleModal()">编辑日程</button></div>
+      </article>
+    </div>
+    <div class="grid cols-2" style="margin-top:16px">
+      <article class="card">
+        <h2>常用互动</h2>
+        <div class="actions">
+          <button class="action" onclick="requestAction('叫过来')">叫过来</button>
+          <button class="action" onclick="requestAction('伸爪')">伸爪</button>
+          <button class="action" onclick="requestAction('摸摸')">摸摸</button>
+          <button class="action" onclick="requestAction('喂食')">喂食</button>
+          <button class="action" onclick="requestAction('玩耍')">玩耍</button>
+          <button class="action" onclick="requestAction('邀请外出')">邀请外出</button>
+          <button class="action danger" onclick="requestAction('停下')">停下</button>
+        </div>
+      </article>
+      <article class="card">
+        <h2>和悟空说话</h2>
+        <div class="chat-row"><input class="field" id="chatInput" placeholder="告诉悟空你在想什么…"><button class="primary" onclick="sendChat()">发送</button></div>
+        <div class="reply" id="reply">悟空：我听见了。让我再趴一会儿。</div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 档案 -->
+  <section class="page" id="profile">
+    <div class="page-head"><div><div class="eyebrow">Identity & memory</div><h1>档案</h1><div class="sub">长期资料、性格底色、关系变化与记忆。</div></div></div>
+    <div class="tabs" data-tabs="profile">
+      <button class="tab active" data-target="pet-profile">悟空档案</button>
+      <button class="tab" data-target="owner-profile">主人档案</button>
+      <button class="tab" data-target="relationship">性格与关系</button>
+      <button class="tab" data-target="memories">记忆</button>
+    </div>
+    <div class="tab-panel active" id="pet-profile">
+      <article class="card">
+        <h2>悟空档案</h2>
+        <div class="form-grid">
+          <label>名字</label><input class="field" id="petName" value="悟空">
+          <label>英文名</label><input class="field" id="petNameEn" value="Wukong">
+          <label>生日</label><input class="field" id="petBirthday" type="date" value="2024-08-10">
+          <label>品种</label><input class="field" id="petBreed" value="日本柴犬">
+          <label>性别</label><select class="field" id="petGender"><option>公</option><option>母</option></select>
+          <label>阶段</label><input class="field" id="petStage" value="成年">
+          <label>默认背带</label><select class="field" id="petHarness"><option>橙色背带</option><option>红蓝色背带</option><option>不指定颜色</option></select>
+        </div>
+        <div style="margin-top:16px;text-align:right"><button class="primary" onclick="savePetProfile()">保存宠物档案</button></div>
+      </article>
+    </div>
+    <div class="tab-panel" id="owner-profile">
+      <article class="card">
+        <h2>主人档案</h2>
+        <div class="form-grid">
+          <label>悟空对你的称呼</label><input class="field" id="ownerCall" value="老爸">
+          <label>主人性别</label><select class="field" id="ownerGender"><option>男</option><option>女</option></select>
+          <label>主人生日</label><input class="field" id="ownerBirthday" type="date" value="1994-10-10">
+          <label>所在时区</label><select class="field" id="ownerTz"><option>Asia/Singapore · UTC+8</option><option>Asia/Shanghai · UTC+8</option></select>
+          <label>日常作息</label><input class="field" id="ownerRoutine" value="09:00–18:00 工作，23:30 后安静">
+        </div>
+        <div style="margin-top:16px;text-align:right"><button class="primary" onclick="saveOwnerProfile()">保存档案</button></div>
+      </article>
+    </div>
+    <div class="tab-panel" id="relationship">
+      <div class="grid cols-2">
+        <article class="card">
+          <h2>性格底色 <span class="sub">主人可调</span></h2>
+          <div class="form-grid">
+            <label>活力</label><input class="slider" type="range" id="traitEnergy" value="62">
+            <label>黏人</label><input class="slider" type="range" id="traitClingy" value="44">
+            <label>好奇</label><input class="slider" type="range" id="traitCurious" value="71">
+            <label>独立</label><input class="slider" type="range" id="traitIndependent" value="67">
+            <label>敏感</label><input class="slider" type="range" id="traitSensitive" value="35">
+          </div>
+          <div style="margin-top:16px;text-align:right"><button class="primary" onclick="saveTraits()">保存性格</button></div>
+        </article>
+        <article class="card">
+          <h2>关系与习惯 <span class="sub">自然形成，只读</span></h2>
+          <div class="relation">
+            <div><small>信任</small><b>很信任你</b></div>
+            <div><small>熟悉度</small><b>非常熟悉</b></div>
+            <div><small>触摸接受度</small><b>通常愿意</b></div>
+            <div><small>最近偏好</small><b>晚饭后外出</b></div>
+          </div>
+        </article>
+      </div>
+    </div>
+    <div class="tab-panel" id="memories">
+      <article class="card">
+        <h2>长期记忆</h2>
+        <div class="memory-card"><small>2026-08-03 · 相册记忆</small><p>悟空第一次穿橙色背带去公园，回来后很累。</p><button class="secondary" onclick="toast('已打开记忆编辑')">编辑</button> <button class="secondary" onclick="toast('这条记忆已暂时停用')">暂不使用</button></div>
+        <div class="memory-card"><small>2026-08-01 · 互动习惯</small><p>老爸工作时希望悟空保持安静，晚上可以更活泼一些。</p><button class="secondary" onclick="toast('已打开记忆编辑')">编辑</button></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 相册 -->
+  <section class="page" id="album">
+    <div class="page-head">
+      <div><div class="eyebrow">Photo memories</div><h1>相册</h1><div class="sub">选择悟空的照片目录，并告诉它照片里发生了什么。</div></div>
+      <div><b>三步：</b><span class="sub"> 选择目录 → 选择照片 → 写一句记忆</span></div>
+    </div>
+    <div class="dev-banner">索引诊断已启用：普通页面仍保持轻量，底部可展开查看技术状态。</div>
+    <article class="card">
+      <div class="album-toolbar">
+        <button class="primary" onclick="toast('演示版：已选择相册目录')">选择相册目录</button>
+        <button class="secondary" onclick="toast('已刷新，共发现 4 张照片')">刷新</button>
+        <button class="secondary" onclick="toast('演示版：打开本地目录')">打开目录</button>
+        <span class="path">D:\WukongAlbum · 共 4 张</span>
+      </div>
+      <div style="display:flex;gap:9px;margin-top:13px">
+        <input class="field" id="albumNote" value="悟空从小到大的日常照片" aria-label="相册说明">
+        <button class="soft" onclick="saveAlbumNote()">保存说明</button>
+      </div>
+      <div class="album-grid" id="albumGrid">
+        <button class="photo active" data-name="公园.jpg" data-desc="悟空第一次穿橙色背带去公园，回来后很累。" data-emoji="🌳"><div class="thumb">🌳</div><small>公园.jpg</small></button>
+        <button class="photo" data-name="睡觉.jpg" data-desc="午后，悟空在窗边的小窝里睡着了。" data-emoji="☁"><div class="thumb">☁</div><small>睡觉.jpg</small></button>
+        <button class="photo" data-name="回家.jpg" data-desc="" data-emoji="⌂"><div class="thumb">⌂</div><small>回家.jpg</small></button>
+        <button class="photo" data-name="玩球.jpg" data-desc="" data-emoji="●"><div class="thumb">●</div><small>玩球.jpg</small></button>
+      </div>
+    </article>
+    <article class="card" style="margin-top:16px">
+      <div class="photo-editor">
+        <div class="preview" id="bigPreview">🌳</div>
+        <div>
+          <div class="eyebrow">照片记忆</div>
+          <h2 id="photoName" style="margin-top:5px">公园.jpg</h2>
+          <textarea class="field textarea" id="photoDesc">悟空第一次穿橙色背带去公园，回来后很累。</textarea>
+          <p class="hint">只需要写这张照片对你和悟空意味着什么，索引由系统自动完成。</p>
+          <button class="primary" onclick="savePhoto()">保存照片描述</button>
+          <button class="secondary" onclick="deletePhotoDesc()">删除描述</button>
+          <span class="saved" id="memoryState">✓ 悟空已经记住这张照片</span>
+          <details class="dev-only" style="margin-top:16px"><summary>索引诊断</summary><p class="hint">已解析 · 已建立索引 · 最近更新 21:36 · source: local_album</p></details>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- 大模型 -->
+  <section class="page" id="model">
+    <div class="page-head compact">
+      <div><h1>大模型</h1><span class="sub">配置模型与设定，并调试对话效果</span></div>
+    </div>
+    <div class="tabs" id="modelTabs">
+      <button class="tab active" data-model-tab="service">模型服务</button>
+      <button class="tab" data-model-tab="prompt">宠物设定</button>
+      <button class="tab" data-model-tab="smart">智能与记忆</button>
+    </div>
+    <div class="model-pane">
+      <div class="model-lr" id="modelSplit">
+        <div class="model-left-host" id="modelLeftHost">
+          <article class="card model-left-panel active" id="model-service" data-left="service">
+            <h2>模型服务</h2>
+            <div class="form-stack">
+              <div class="form-grid">
+                <label>服务商</label>
+                <select class="field" id="modelProvider">
+                  <option value="DeepSeek">DeepSeek</option>
+                  <option value="智谱 GLM">智谱 GLM</option>
+                  <option value="通义千问">通义千问</option>
+                  <option value="月之暗面 Kimi">月之暗面 Kimi</option>
+                  <option value="OpenAI">OpenAI</option>
+                  <option value="Anthropic Claude">Anthropic Claude</option>
+                  <option value="Google Gemini">Google Gemini</option>
+                  <option value="硅基流动">硅基流动</option>
+                  <option value="OpenAI Compatible">OpenAI Compatible</option>
+                  <option value="本地模型">本地模型</option>
+                </select>
+                <label>API 地址</label><input class="field" id="modelUrl" value="https://api.deepseek.com/v1">
+                <label>API 密钥</label><input class="field" id="modelKey" type="password" value="sk-demo-key">
+                <label>模型名称</label><input class="field" id="modelName" value="deepseek-chat">
+                <label>备用模型</label><input class="field" id="modelBackup" placeholder="可选">
+              </div>
+              <p class="hint" id="providerHint">选择服务商后会自动填充常用 API 地址与模型名，仍可手动修改。</p>
+              <div style="text-align:right;margin-top:auto">
+                <button class="secondary" onclick="toast('连接成功，模型响应耗时 1.2 秒')">测试连接</button>
+                <button class="primary" onclick="saveModelConfig()">保存配置</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="card model-left-panel" id="custom-prompt" data-left="prompt">
+            <h2>宠物设定</h2>
+            <div class="form-stack">
+              <p class="hint">补充称呼、表达习惯和长期期望。该内容不能覆盖行为资格、状态机和安全规则。</p>
+              <textarea class="field prompt" id="petSetting">悟空叫我“老爸”。平时回答简短一点，不要总是主动说话。当我工作时尽量保持安静，晚上可以更活泼一些。</textarea>
+              <div style="text-align:right;margin-top:auto">
+                <button class="secondary" onclick="resetPetSetting()">恢复默认</button>
+                <button class="primary" onclick="savePetSetting()">保存并启用</button>
+              </div>
+              <div class="dev-only"><button class="soft" onclick="toast('已展开实际 Prompt 拼装结果')">查看实际拼装结果</button></div>
+            </div>
+          </article>
+
+          <article class="card model-left-panel smart-fit" id="smart-memory" data-left="smart">
+            <h2>智能与记忆</h2>
+            <div class="form-stack">
+              <div class="toggle-list">
+                <div class="toggle-row"><div><b>使用长期记忆</b><div class="hint">回答前检索档案、互动和习惯记忆</div></div><button class="switch on" data-toggle="memLong" aria-label="使用长期记忆"></button></div>
+                <div class="toggle-row"><div><b>使用相册记忆</b><div class="hint">允许检索已保存描述的相册照片</div></div><button class="switch on" data-toggle="memAlbum" aria-label="使用相册记忆"></button></div>
+                <div class="toggle-row"><div><b>允许提出互动请求</b><div class="hint">模型可提出动作请求，仍由状态机判断</div></div><button class="switch on" data-toggle="memAction" aria-label="允许提出互动请求"></button></div>
+                <div class="toggle-row"><div><b>显示拒绝或延后原因</b><div class="hint">用自然语言解释当前意愿</div></div><button class="switch on" data-toggle="memReason" aria-label="显示拒绝原因"></button></div>
+              </div>
+              <div style="text-align:left;margin-top:auto"><button class="primary" onclick="saveSmartToggles()">保存智能设置</button></div>
+            </div>
+          </article>
+        </div>
+
+        <article class="card model-chat" id="model-chat-debug">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <div><h2 style="margin-bottom:4px">对话调试</h2><div class="hint">固定在右侧，三个页签共用。</div></div>
+            <button class="secondary" onclick="clearDebugChat()">清空会话</button>
+          </div>
+          <div class="debug-meta">
+            <span id="debugModelTag">模型：deepseek-chat</span><span>长期记忆：已启用</span><span>相册记忆：已启用</span><span id="debugLatency">最近耗时：1.2s</span>
+          </div>
+          <div class="chat-log" id="debugChatLog">
+            <div class="bubble user">你今天想出去玩吗？</div>
+            <div class="bubble assistant">想去闻闻外面的风。不过现在有点困，晚饭后再带我出去吧。</div>
+          </div>
+          <div>
+            <div class="chat-row"><input class="field" id="debugChatInput" placeholder="输入测试消息，可按 Enter 发送…"><button class="primary" onclick="sendDebugChat()">发送测试</button></div>
+            <div class="dev-only hint">开发者模式：发送后可在“开发者 → Agent”查看 Prompt、原始响应、Token 与行为门禁。</div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 素材（需开发者权限） -->
+  <section class="page" id="assets">
+    <div id="assetsGate" class="card lock-panel">
+      <div class="big">🔒</div>
+      <h2>素材模块已锁定</h2>
+      <p class="hint">开发者登录后可查看与编辑素材契约、版本与质检。</p>
+      <button class="primary" onclick="openDevLogin()">开发者登录</button>
+    </div>
+    <div id="assetsContent" style="display:none">
+      <div class="page-head">
+        <div><div class="eyebrow">Motion library</div><h1>素材</h1><div class="sub">开发者可查看动作库，并编辑契约、帧锚点、版本与质检。</div></div>
+        <button class="secondary">完整度 82%</button>
+      </div>
+      <div class="dev-banner">开发者能力已展开：编辑会创建候选版本，不会直接覆盖正式运行素材。</div>
+      <div class="library-layout">
+        <article class="card category-list" id="assetCategories">
+          <button class="active">稳定姿态</button><button>移动与转向</button><button>饮食饮水</button><button>睡眠休息</button><button>主人互动</button><button>自主行为</button><button>外出与背带</button><button>节日特辑</button><button>魔法特辑</button><button>转场与安全退出</button>
+        </article>
+        <div>
+          <div class="tabs" id="assetDevTabs">
+            <button class="tab active">普通查看</button><button class="tab">契约</button><button class="tab">帧与锚点</button><button class="tab">版本</button><button class="tab">质检</button>
+          </div>
+          <div class="asset-grid" id="assetContent"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 开发者（需登录） -->
+  <section class="page" id="developer">
+    <div id="devGate" class="card lock-panel">
+      <div class="big">🔐</div>
+      <h2>开发者模块已锁定</h2>
+      <p class="hint">输入开发者密码后可查看与编辑调试工作台。</p>
+      <button class="primary" onclick="openDevLogin()">开发者登录</button>
+    </div>
+    <div id="devContentWrap" style="display:none">
+      <div class="page-head">
+        <div><div class="eyebrow">How Wukong works</div><h1 id="devTitle">开发者工作台</h1><div class="sub" id="devSub">监视状态机、行为、Agent、记忆和动画执行。</div></div>
+      </div>
+      <div class="dev-banner">完整调试工作台已开启。场景模拟不会写入正式记忆，可一键恢复真实状态。</div>
+      <div class="docs-layout" id="docsView">
+        <aside class="card doc-nav" id="docNav">
+          <button class="active">Wukong 能做什么</button><button>状态和意愿如何变化</button><button>为什么有时会拒绝</button><button>动作与素材如何工作</button><button>对话、记忆与相册</button><button>数据存储与隐私</button><button>常见问题</button>
+        </aside>
+        <article class="card article" id="docArticle">
+          <div class="eyebrow">产品能力说明</div>
+          <h2>悟空不是按钮驱动的动画播放器</h2>
+          <p>主人提出互动请求后，系统会结合悟空的当前状态、关系、环境与动作资格判断接受、拒绝或延后。动作通过契约连接素材、状态变化和记忆回写，保证不同能力可以持续扩展。</p>
+          <h3>一次互动如何发生</h3>
+          <div class="flow"><div>主人请求</div><div>理解意图</div><div>资格与意愿</div><div>动作生命周期</div><div>状态与记忆</div></div>
+          <h3>主人与开发者的边界</h3>
+          <ul>
+            <li>主人可以查看状态、发起互动、配置对话和管理记忆。</li>
+            <li>素材与开发者模块需登录后查看与编辑。</li>
+            <li>开发者模式才允许修改契约、强制模拟、查看 Trace 和发布素材。</li>
+          </ul>
+        </article>
+      </div>
+      <div style="margin-top:16px">
+        <div class="tabs" id="devTabs">
+          <button class="tab active">实时监视</button><button class="tab">状态机</button><button class="tab">行为</button><button class="tab">Agent</button><button class="tab">记忆</button><button class="tab">场景模拟</button><button class="tab">日志测试</button><button class="tab">技术说明</button>
+        </div>
+        <div class="monitor" id="devContent"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>
+  <span id="footerPet">悟空正在：安静趴着</span>
+  <span>模型：已连接</span>
+  <span>相册记忆：正常</span>
+  <span id="footerMode">普通模式</span>
+</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 开发者登录 -->
+<div class="overlay" id="loginOverlay">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <div><h2>开发者登录</h2><p class="hint">解锁素材与开发者模块的查看/编辑权限。</p></div>
+      <button class="icon-btn" onclick="closeOverlay('loginOverlay')">×</button>
+    </div>
+    <div class="form-grid" style="grid-template-columns:80px 1fr">
+      <label>密码</label><input class="field" id="devPassword" type="password" placeholder="请输入密码" autocomplete="off">
+    </div>
+    <p class="hint" id="loginError" style="color:var(--red);display:none">密码不正确</p>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeOverlay('loginOverlay')">取消</button>
+      <button class="primary" onclick="submitDevLogin()">登录</button>
+    </div>
+  </div>
+</div>
+
+<!-- 今日安排 -->
+<div class="overlay" id="scheduleOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h2>管理今日安排</h2><p class="hint">编辑待发布日程；记录事项仅供预览。</p></div>
+      <button class="icon-btn" onclick="closeOverlay('scheduleOverlay')">×</button>
+    </div>
+    <div class="tabs" id="scheduleTabs">
+      <button class="tab active" data-sch-tab="edit">编辑日程</button>
+      <button class="tab" data-sch-tab="log">记录事项</button>
+    </div>
+    <div id="schEditPanel">
+      <div class="schedule-editor" id="scheduleEditor"></div>
+      <button class="soft" style="margin-top:12px" onclick="addScheduleRow()">＋ 添加一条</button>
+    </div>
+    <div id="schLogPanel" style="display:none">
+      <p class="hint">只读预览今日安排，不能在此编辑。</p>
+      <div class="schedule-preview" id="schedulePreview"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeOverlay('scheduleOverlay')">取消</button>
+      <button class="primary" id="schSaveBtn" onclick="saveScheduleFromModal()">保存安排</button>
+    </div>
+  </div>
+</div>
+
+<!-- 头像裁剪 -->
+<div class="overlay" id="cropOverlay">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <div><h2>裁剪圆形头像</h2><p class="hint">拖动图片调整位置，滚轮缩放，确认后保存。</p></div>
+      <button class="icon-btn" onclick="closeOverlay('cropOverlay')">×</button>
+    </div>
+    <div class="crop-stage" id="cropStage"><img id="cropImg" alt="裁剪预览"><div class="crop-mask"></div></div>
+    <input class="slider" id="cropZoom" type="range" min="100" max="300" value="100" style="margin-top:8px">
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeOverlay('cropOverlay')">取消</button>
+      <button class="primary" onclick="confirmCrop()">确认裁剪</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY='wukong_panel_v1';
+const DEV_PASSWORD='0714';
+const DEFAULT_PET_SETTING='悟空叫我“老爸”。平时回答简短一点，不要总是主动说话。当我工作时尽量保持安静，晚上可以更活泼一些。';
+
+const defaultState={
+  developer:false,
+  pet:{name:'悟空',nameEn:'Wukong',birthday:'2024-08-10',breed:'日本柴犬',gender:'公',stage:'成年',harness:'橙色背带',avatar:''},
+  owner:{call:'老爸',gender:'男',birthday:'1994-10-10',tz:'Asia/Singapore · UTC+8',routine:'09:00–18:00 工作，23:30 后安静'},
+  traits:{energy:62,clingy:44,curious:71,independent:67,sensitive:35},
+  status:{energy:62,hunger:78,mood:'平静',curiosity:55,social:48,stress:18,focus:40,comfort:72},
+  schedule:[
+    {time:'18:30',text:'晚餐',status:'已发布'},
+    {time:'20:00',text:'邀请外出 30 分钟 · 橙色背带',status:'未发布'},
+    {time:'23:30',text:'进入安静时间',status:'未发布'}
+  ],
+  albumNote:'悟空从小到大的日常照片',
+  photos:{
+    '公园.jpg':'悟空第一次穿橙色背带去公园，回来后很累。',
+    '睡觉.jpg':'午后，悟空在窗边的小窝里睡着了。',
+    '回家.jpg':'',
+    '玩球.jpg':''
+  },
+  model:{provider:'DeepSeek',url:'https://api.deepseek.com/v1',key:'sk-demo-key',name:'deepseek-chat',backup:''},
+  petSetting:DEFAULT_PET_SETTING,
+  smart:{memLong:true,memAlbum:true,memAction:true,memReason:true}
+};
+
+let state=loadState();
+normalizeState(state);
+persist();
+const app=document.getElementById('app');
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw)return structuredClone(defaultState);
+    return deepMerge(structuredClone(defaultState),JSON.parse(raw));
+  }catch(e){return structuredClone(defaultState)}
+}
+function normalizeState(s){
+  if(s.pet){
+    if(s.pet.gender==='公狗')s.pet.gender='公';
+    if(s.pet.gender==='母狗')s.pet.gender='母';
+    if(!s.pet.nameEn)s.pet.nameEn='Wukong';
+  }
+  if(s.owner&&!s.owner.gender)s.owner.gender='男';
+  if(Array.isArray(s.schedule)){
+    s.schedule.forEach(item=>{
+      if(item.status==='已发布'||item.status==='未发布')return;
+      item.status=(item.status==='已完成')?'已发布':'未发布';
+    });
+  }
+}
+function deepMerge(base,patch){
+  if(!patch||typeof patch!=='object')return base;
+  Object.keys(patch).forEach(k=>{
+    if(patch[k]&&typeof patch[k]==='object'&&!Array.isArray(patch[k])&&typeof base[k]==='object'&&base[k]&&!Array.isArray(base[k])) deepMerge(base[k],patch[k]);
+    else base[k]=patch[k];
+  });
+  return base;
+}
+function persist(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),2300)}
+function closeOverlay(id){document.getElementById(id).classList.remove('show')}
+function openOverlay(id){document.getElementById(id).classList.add('show')}
+
+/* ---------- 导航 ---------- */
+const pages=[...document.querySelectorAll('.page')];
+const navs=[...document.querySelectorAll('.nav-btn')];
+navs.forEach(b=>b.onclick=()=>{
+  const page=b.dataset.page;
+  if((page==='assets'||page==='developer')&&!state.developer){
+    openDevLogin();
+    return;
+  }
+  navs.forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  pages.forEach(p=>p.classList.toggle('active',p.id===page));
+});
+
+document.querySelectorAll('[data-tabs]').forEach(group=>{
+  group.querySelectorAll('[data-target]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      group.querySelectorAll('[data-target]').forEach(x=>x.classList.remove('active'));
+      button.classList.add('active');
+      const target=document.getElementById(button.dataset.target);
+      if(!target)return;
+      const scope=target.parentElement;
+      scope.querySelectorAll(':scope > .tab-panel').forEach(panel=>panel.classList.remove('active'));
+      target.classList.add('active');
+    });
+  });
+});
+
+function switchModelTab(name){
+  document.querySelectorAll('#modelTabs .tab').forEach(btn=>btn.classList.toggle('active',btn.dataset.modelTab===name));
+  document.querySelectorAll('.model-left-panel').forEach(panel=>panel.classList.toggle('active',panel.dataset.left===name));
+  document.getElementById('modelSplit').classList.toggle('is-smart',name==='smart');
+}
+document.querySelectorAll('#modelTabs .tab').forEach(btn=>{
+  btn.addEventListener('click',()=>switchModelTab(btn.dataset.modelTab));
+});
+
+/* ---------- 开发者权限 ---------- */
+function openDevLogin(){
+  document.getElementById('devPassword').value='';
+  document.getElementById('loginError').style.display='none';
+  openOverlay('loginOverlay');
+  setTimeout(()=>document.getElementById('devPassword').focus(),50);
+}
+function submitDevLogin(){
+  const pwd=document.getElementById('devPassword').value;
+  if(pwd!==DEV_PASSWORD){
+    document.getElementById('loginError').style.display='block';
+    toast('密码不正确');
+    return;
+  }
+  setDeveloper(true);
+  closeOverlay('loginOverlay');
+  toast('开发者已登录：素材与开发者可查看/编辑');
+}
+function setDeveloper(on){
+  state.developer=!!on;
+  persist();
+  applyDeveloperUI();
+}
+function applyDeveloperUI(){
+  const on=!!state.developer;
+  app.classList.toggle('developer',on);
+  document.getElementById('devSwitch').classList.toggle('on',on);
+  document.getElementById('footerMode').textContent=on?'开发者模式':'普通模式';
+  document.getElementById('devModeLabel').textContent=on?'开发者已登录':'开发者登录';
+  document.getElementById('devModeHint').textContent=on?'已解锁素材与开发者模块。再次点击可退出登录。':'素材与开发者模块需要密码解锁后才可查看和编辑。';
+  ['navAssets','navDeveloper'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.classList.toggle('locked',!on);
+    el.querySelector('.lock-tag').textContent=on?'✓':'🔒';
+  });
+  document.getElementById('assetsGate').style.display=on?'none':'block';
+  document.getElementById('assetsContent').style.display=on?'block':'none';
+  document.getElementById('devGate').style.display=on?'none':'block';
+  document.getElementById('devContentWrap').style.display=on?'block':'none';
+  if(!on){
+    const active=document.querySelector('.nav-btn.active');
+    if(active&&(active.dataset.page==='assets'||active.dataset.page==='developer')){
+      document.querySelector('.nav-btn[data-page="owner"]').click();
+    }
+  }
+}
+document.getElementById('devSwitch').onclick=function(){
+  if(state.developer){
+    setDeveloper(false);
+    toast('已退出开发者登录');
+  }else{
+    openDevLogin();
+  }
+};
+document.getElementById('devPassword').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submitDevLogin()}});
+
+/* ---------- 档案 / 状态渲染 ---------- */
+function applyAvatar(el,avatar,fallback='🐕'){
+  if(avatar){
+    el.style.backgroundImage=`url(${avatar})`;
+    el.textContent='';
+  }else{
+    el.style.backgroundImage='';
+    el.textContent=fallback;
+  }
+}
+function renderStatusMeters(){
+  const s=state.status;
+  const items=[
+    ['精力',s.energy+'%'],['饱腹',s.hunger+'%'],['心情',s.mood],
+    ['好奇',s.curiosity+'%'],['社交欲',s.social+'%'],['压力',s.stress+'%'],
+    ['专注',s.focus+'%'],['舒适',s.comfort+'%']
+  ];
+  document.getElementById('ownerMeters').innerHTML=items.map(([k,v])=>`<span class="meter">${k} ${v}</span>`).join('');
+}
+function renderSchedule(){
+  const list=state.schedule.slice().sort((a,b)=>a.time.localeCompare(b.time));
+  document.getElementById('ownerSchedule').innerHTML=list.map(item=>`
+    <div class="schedule-item"><time>${item.time}</time><span class="sch-text">${escapeHtml(item.text)}</span><span class="sch-status">${escapeHtml(item.status||'')}</span></div>
+  `).join('')||'<p class="hint">今天还没有安排，点「管理今日安排」添加。</p>';
+}
+function escapeHtml(str){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function applyProfilesToUI(){
+  const p=state.pet,o=state.owner;
+  document.getElementById('petName').value=p.name;
+  document.getElementById('petNameEn').value=p.nameEn||'';
+  document.getElementById('petBirthday').value=p.birthday;
+  document.getElementById('petBreed').value=p.breed;
+  document.getElementById('petGender').value=(p.gender==='母'||p.gender==='母狗')?'母':'公';
+  document.getElementById('petStage').value=p.stage;
+  document.getElementById('petHarness').value=p.harness;
+  document.getElementById('ownerCall').value=o.call;
+  document.getElementById('ownerGender').value=o.gender==='女'?'女':'男';
+  document.getElementById('ownerBirthday').value=o.birthday;
+  document.getElementById('ownerTz').value=o.tz;
+  document.getElementById('ownerRoutine').value=o.routine;
+  document.getElementById('sideName').textContent=p.name;
+  document.getElementById('ownerGreeting').textContent=`晚上好，${o.call}`;
+  document.getElementById('ownerSub').textContent=`${p.name}现在很平静，愿意听你说话，但不一定想起来。`;
+  applyAvatar(document.getElementById('sideAvatar'),p.avatar);
+  applyAvatar(document.getElementById('ownerPetFace'),p.avatar);
+  document.getElementById('traitEnergy').value=state.traits.energy;
+  document.getElementById('traitClingy').value=state.traits.clingy;
+  document.getElementById('traitCurious').value=state.traits.curious;
+  document.getElementById('traitIndependent').value=state.traits.independent;
+  document.getElementById('traitSensitive').value=state.traits.sensitive;
+  document.getElementById('albumNote').value=state.albumNote;
+  document.getElementById('modelProvider').value=state.model.provider;
+  document.getElementById('modelUrl').value=state.model.url;
+  document.getElementById('modelKey').value=state.model.key;
+  document.getElementById('modelName').value=state.model.name;
+  document.getElementById('modelBackup').value=state.model.backup||'';
+  const debugTag=document.getElementById('debugModelTag');
+  if(debugTag)debugTag.textContent='模型：'+state.model.name;
+  document.getElementById('petSetting').value=state.petSetting;
+  document.querySelectorAll('.toggle-row .switch[data-toggle]').forEach(btn=>{
+    const key=btn.dataset.toggle;
+    btn.classList.toggle('on',!!state.smart[key]);
+  });
+  renderStatusMeters();
+  renderSchedule();
+  syncPhotoDescs();
+}
+function savePetProfile(){
+  state.pet.name=document.getElementById('petName').value.trim()||'悟空';
+  state.pet.nameEn=document.getElementById('petNameEn').value.trim()||'Wukong';
+  state.pet.birthday=document.getElementById('petBirthday').value;
+  state.pet.breed=document.getElementById('petBreed').value.trim()||'日本柴犬';
+  state.pet.gender=document.getElementById('petGender').value;
+  state.pet.stage=document.getElementById('petStage').value.trim()||'成年';
+  state.pet.harness=document.getElementById('petHarness').value;
+  persist();applyProfilesToUI();toast('宠物档案已保存');
+}
+function saveOwnerProfile(){
+  state.owner.call=document.getElementById('ownerCall').value.trim()||'老爸';
+  state.owner.gender=document.getElementById('ownerGender').value;
+  state.owner.birthday=document.getElementById('ownerBirthday').value;
+  state.owner.tz=document.getElementById('ownerTz').value;
+  state.owner.routine=document.getElementById('ownerRoutine').value;
+  persist();applyProfilesToUI();toast('主人档案已保存');
+}
+function saveTraits(){
+  state.traits={
+    energy:+document.getElementById('traitEnergy').value,
+    clingy:+document.getElementById('traitClingy').value,
+    curious:+document.getElementById('traitCurious').value,
+    independent:+document.getElementById('traitIndependent').value,
+    sensitive:+document.getElementById('traitSensitive').value
+  };
+  persist();toast('性格底色已保存');
+}
+
+/* ---------- 头像裁剪 ---------- */
+let crop={img:null,x:0,y:0,scale:1,baseW:0,baseH:0,dragging:false,sx:0,sy:0,ox:0,oy:0};
+document.getElementById('avatarFile').addEventListener('change',e=>{
+  const file=e.target.files&&e.target.files[0];
+  e.target.value='';
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=document.getElementById('cropImg');
+    img.onload=()=>{
+      const stage=document.getElementById('cropStage');
+      const fit=Math.max(stage.clientWidth/img.naturalWidth,stage.clientHeight/img.naturalHeight);
+      crop.baseW=img.naturalWidth*fit;crop.baseH=img.naturalHeight*fit;crop.scale=1;
+      crop.x=(stage.clientWidth-crop.baseW)/2;crop.y=(stage.clientHeight-crop.baseH)/2;
+      document.getElementById('cropZoom').value=100;
+      updateCropTransform();
+      openOverlay('cropOverlay');
+    };
+    img.src=reader.result;
+    crop.img=img;
+  };
+  reader.readAsDataURL(file);
+});
+function updateCropTransform(){
+  const img=document.getElementById('cropImg');
+  const w=crop.baseW*crop.scale,h=crop.baseH*crop.scale;
+  img.style.width=w+'px';img.style.height=h+'px';img.style.left=crop.x+'px';img.style.top=crop.y+'px';
+}
+const cropStage=document.getElementById('cropStage');
+cropStage.addEventListener('pointerdown',e=>{
+  crop.dragging=true;crop.sx=e.clientX;crop.sy=e.clientY;crop.ox=crop.x;crop.oy=crop.y;
+  cropStage.setPointerCapture(e.pointerId);
+});
+cropStage.addEventListener('pointermove',e=>{
+  if(!crop.dragging)return;
+  crop.x=crop.ox+(e.clientX-crop.sx);crop.y=crop.oy+(e.clientY-crop.sy);updateCropTransform();
+});
+cropStage.addEventListener('pointerup',()=>crop.dragging=false);
+cropStage.addEventListener('pointercancel',()=>crop.dragging=false);
+cropStage.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const next=Math.min(3,Math.max(1,crop.scale+(e.deltaY<0?0.08:-0.08)));
+  const cx=cropStage.clientWidth/2,cy=cropStage.clientHeight/2;
+  const rx=(cx-crop.x)/(crop.baseW*crop.scale),ry=(cy-crop.y)/(crop.baseH*crop.scale);
+  crop.scale=next;
+  crop.x=cx-rx*crop.baseW*crop.scale;crop.y=cy-ry*crop.baseH*crop.scale;
+  document.getElementById('cropZoom').value=Math.round(next*100);
+  updateCropTransform();
+},{passive:false});
+document.getElementById('cropZoom').addEventListener('input',e=>{
+  const next=(+e.target.value)/100;
+  const cx=cropStage.clientWidth/2,cy=cropStage.clientHeight/2;
+  const rx=(cx-crop.x)/(crop.baseW*crop.scale),ry=(cy-crop.y)/(crop.baseH*crop.scale);
+  crop.scale=next;
+  crop.x=cx-rx*crop.baseW*crop.scale;crop.y=cy-ry*crop.baseH*crop.scale;
+  updateCropTransform();
+});
+function confirmCrop(){
+  const size=240;
+  const canvas=document.createElement('canvas');
+  canvas.width=size;canvas.height=size;
+  const ctx=canvas.getContext('2d');
+  ctx.beginPath();ctx.arc(size/2,size/2,size/2,0,Math.PI*2);ctx.closePath();ctx.clip();
+  const stage=cropStage;
+  const circle=240,offsetX=(stage.clientWidth-circle)/2,offsetY=(stage.clientHeight-circle)/2;
+  const sx=(offsetX-crop.x)/(crop.baseW*crop.scale)*crop.img.naturalWidth;
+  const sy=(offsetY-crop.y)/(crop.baseH*crop.scale)*crop.img.naturalHeight;
+  const sw=circle/(crop.baseW*crop.scale)*crop.img.naturalWidth;
+  const sh=circle/(crop.baseH*crop.scale)*crop.img.naturalHeight;
+  ctx.drawImage(crop.img,sx,sy,sw,sh,0,0,size,size);
+  state.pet.avatar=canvas.toDataURL('image/png');
+  persist();applyProfilesToUI();closeOverlay('cropOverlay');toast('圆形头像已保存');
+}
+function clearAvatar(){state.pet.avatar='';persist();applyProfilesToUI();toast('已恢复默认头像')}
+function downloadBlob(filename, blob){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),800);
+}
+function downloadConfig(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  downloadBlob('wukong-config.json',blob);
+  toast('已开始下载配置文件');
+}
+function downloadAvatar(){
+  if(!state.pet.avatar){toast('还没有上传头像');return}
+  const a=document.createElement('a');
+  a.href=state.pet.avatar;a.download=(state.pet.name||'wukong')+'-avatar.png';
+  document.body.appendChild(a);a.click();a.remove();
+  toast('已开始下载圆形头像');
+}
+
+/* ---------- 日程 ---------- */
+function openScheduleModal(){
+  renderScheduleEditor();
+  renderSchedulePreview();
+  document.querySelectorAll('#scheduleTabs .tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.getElementById('schEditPanel').style.display='block';
+  document.getElementById('schLogPanel').style.display='none';
+  document.getElementById('schSaveBtn').style.display='inline-block';
+  openOverlay('scheduleOverlay');
+}
+document.querySelectorAll('#scheduleTabs .tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('#scheduleTabs .tab').forEach(x=>x.classList.remove('active'));
+    tab.classList.add('active');
+    const isEdit=tab.dataset.schTab==='edit';
+    document.getElementById('schEditPanel').style.display=isEdit?'block':'none';
+    document.getElementById('schLogPanel').style.display=isEdit?'none':'block';
+    document.getElementById('schSaveBtn').style.display=isEdit?'inline-block':'none';
+    if(!isEdit)renderSchedulePreview();
+  });
+});
+function statusOptions(selected){
+  const pub=selected==='已发布';
+  return `<option ${pub?'':'selected'}>未发布</option><option ${pub?'selected':''}>已发布</option>`;
+}
+function renderScheduleEditor(){
+  const box=document.getElementById('scheduleEditor');
+  box.innerHTML=state.schedule.map((item,idx)=>`
+    <div class="schedule-row" data-idx="${idx}">
+      <input class="field" type="time" value="${item.time}">
+      <input class="field" value="${escapeHtml(item.text)}" placeholder="安排内容">
+      <select class="field">${statusOptions(item.status)}</select>
+      <button class="icon-btn" title="删除" onclick="removeScheduleRow(${idx})">×</button>
+    </div>
+  `).join('')||'<p class="hint">暂无日程，点击下方添加。</p>';
+}
+function renderSchedulePreview(){
+  const list=state.schedule.slice().sort((a,b)=>a.time.localeCompare(b.time));
+  document.getElementById('schedulePreview').innerHTML=list.map(item=>`
+    <div class="schedule-item"><time>${item.time}</time><span class="sch-text">${escapeHtml(item.text)}</span><span class="sch-status">${escapeHtml(item.status||'未发布')}</span></div>
+  `).join('')||'<p class="hint">暂无事项可预览。</p>';
+}
+function addScheduleRow(){
+  state.schedule.push({time:'12:00',text:'新安排',status:'未发布'});
+  renderScheduleEditor();
+}
+function removeScheduleRow(idx){
+  state.schedule.splice(idx,1);
+  renderScheduleEditor();
+}
+function collectScheduleFromEditor(){
+  return [...document.querySelectorAll('#scheduleEditor .schedule-row')].map(row=>{
+    const inputs=row.querySelectorAll('.field');
+    return {time:inputs[0].value,text:inputs[1].value.trim()||'未命名安排',status:inputs[2].value};
+  }).filter(x=>x.time);
+}
+function saveScheduleFromModal(){
+  if(document.getElementById('schEditPanel').style.display!=='none'){
+    state.schedule=collectScheduleFromEditor();
+  }
+  persist();renderSchedule();closeOverlay('scheduleOverlay');toast('今日安排已保存');
+}
+
+/* ---------- 相册 ---------- */
+function syncPhotoDescs(){
+  document.querySelectorAll('.photo').forEach(p=>{
+    const name=p.dataset.name;
+    if(state.photos[name]!==undefined)p.dataset.desc=state.photos[name];
+  });
+  const active=document.querySelector('.photo.active');
+  if(active)selectPhoto(active);
+}
+function selectPhoto(p){
+  document.querySelectorAll('.photo').forEach(x=>x.classList.remove('active'));
+  p.classList.add('active');
+  document.getElementById('photoName').textContent=p.dataset.name;
+  document.getElementById('photoDesc').value=p.dataset.desc||'';
+  document.getElementById('bigPreview').textContent=p.dataset.emoji||p.querySelector('.thumb').textContent;
+  document.getElementById('memoryState').textContent=p.dataset.desc?'✓ 悟空已经记住这张照片':'尚未描述';
+}
+document.querySelectorAll('.photo').forEach(p=>p.onclick=()=>selectPhoto(p));
+function savePhoto(){
+  const p=document.querySelector('.photo.active');
+  const v=document.getElementById('photoDesc').value.trim();
+  p.dataset.desc=v;state.photos[p.dataset.name]=v;persist();
+  document.getElementById('memoryState').textContent=v?'✓ 悟空已经记住这张照片':'尚未描述';
+  toast(v?'悟空记住这张照片了':'描述为空，尚未形成记忆');
+}
+function deletePhotoDesc(){
+  const p=document.querySelector('.photo.active');
+  document.getElementById('photoDesc').value='';
+  p.dataset.desc='';state.photos[p.dataset.name]='';persist();
+  document.getElementById('memoryState').textContent='尚未描述';
+  toast('已删除描述，本地照片不会被删除');
+}
+function saveAlbumNote(){
+  state.albumNote=document.getElementById('albumNote').value;
+  persist();toast('相册说明已保存');
+}
+
+/* ---------- 大模型 ---------- */
+function saveModelConfig(){
+  state.model={
+    provider:document.getElementById('modelProvider').value,
+    url:document.getElementById('modelUrl').value,
+    key:document.getElementById('modelKey').value,
+    name:document.getElementById('modelName').value,
+    backup:document.getElementById('modelBackup').value
+  };
+  persist();
+  const debugTag=document.getElementById('debugModelTag');
+  if(debugTag)debugTag.textContent='模型：'+state.model.name;
+  toast('对话设置已保存');
+}
+const PROVIDER_PRESETS={
+  'DeepSeek':{url:'https://api.deepseek.com/v1',name:'deepseek-chat',hint:'DeepSeek 官方 OpenAI 兼容接口'},
+  '智谱 GLM':{url:'https://open.bigmodel.cn/api/paas/v4',name:'glm-4-flash',hint:'智谱 GLM OpenAI 兼容接口'},
+  '通义千问':{url:'https://dashscope.aliyuncs.com/compatible-mode/v1',name:'qwen-plus',hint:'阿里云通义千问兼容模式'},
+  '月之暗面 Kimi':{url:'https://api.moonshot.cn/v1',name:'moonshot-v1-8k',hint:'Moonshot / Kimi OpenAI 兼容接口'},
+  'OpenAI':{url:'https://api.openai.com/v1',name:'gpt-4o-mini',hint:'OpenAI 官方接口'},
+  'Anthropic Claude':{url:'https://api.anthropic.com/v1',name:'claude-3-5-sonnet-latest',hint:'Claude 官方接口（部分网关需兼容层）'},
+  'Google Gemini':{url:'https://generativelanguage.googleapis.com/v1beta/openai',name:'gemini-2.0-flash',hint:'Gemini OpenAI 兼容端点'},
+  '硅基流动':{url:'https://api.siliconflow.cn/v1',name:'deepseek-ai/DeepSeek-V3',hint:'硅基流动聚合多家模型'},
+  'OpenAI Compatible':{url:'https://api.example.com/v1',name:'gpt-compatible-model',hint:'任意 OpenAI 兼容网关，请自行填写地址'},
+  '本地模型':{url:'http://127.0.0.1:11434/v1',name:'llama3.1',hint:'常见本地服务如 Ollama / LM Studio'}
+};
+document.getElementById('modelProvider').addEventListener('change',()=>{
+  const key=document.getElementById('modelProvider').value;
+  const preset=PROVIDER_PRESETS[key];
+  if(!preset)return;
+  document.getElementById('modelUrl').value=preset.url;
+  document.getElementById('modelName').value=preset.name;
+  document.getElementById('providerHint').textContent=preset.hint+'。选择后已自动填充，仍可手动修改。';
+  toast('已切换到 '+key);
+});
+function savePetSetting(){
+  state.petSetting=document.getElementById('petSetting').value;
+  persist();toast('宠物设定已保存并启用');
+}
+function resetPetSetting(){
+  document.getElementById('petSetting').value=DEFAULT_PET_SETTING;
+  state.petSetting=DEFAULT_PET_SETTING;persist();toast('已恢复默认宠物设定');
+}
+document.querySelectorAll('.toggle-row .switch[data-toggle]').forEach(button=>{
+  button.addEventListener('click',()=>button.classList.toggle('on'));
+});
+function saveSmartToggles(){
+  document.querySelectorAll('.toggle-row .switch[data-toggle]').forEach(btn=>{
+    state.smart[btn.dataset.toggle]=btn.classList.contains('on');
+  });
+  persist();toast('智能设置已保存');
+}
+
+/* ---------- 互动 / 聊天 ---------- */
+function requestAction(name){
+  document.getElementById('reply').textContent=name==='停下'?'悟空：已经停下，回到安静趴卧。':'悟空听懂了“'+name+'”，正在判断现在是否愿意。';
+  toast(name==='停下'?'已请求安全停止':'互动请求已送给悟空');
+}
+function sendChat(){
+  const i=document.getElementById('chatInput');
+  if(!i.value.trim()){toast('先说点什么吧');return}
+  document.getElementById('reply').textContent='悟空：我听见了。这个我会记在心里。';
+  i.value='';
+}
+function sendDebugChat(){
+  const input=document.getElementById('debugChatInput'),log=document.getElementById('debugChatLog'),value=input.value.trim();
+  if(!value){toast('请输入一条测试消息');return}
+  const user=document.createElement('div');user.className='bubble user';user.textContent=value;log.appendChild(user);
+  const answer=document.createElement('div');answer.className='bubble assistant';
+  answer.textContent='悟空：测试消息已收到。当前回复使用了宠物设定与长期记忆，但动作请求仍需经过状态机判断。';
+  log.appendChild(answer);
+  document.getElementById('debugLatency').textContent='最近耗时：0.9s';
+  input.value='';
+  requestAnimationFrame(()=>{log.scrollTop=log.scrollHeight});
+  toast('测试回复完成');
+}
+function clearDebugChat(){
+  document.getElementById('debugChatLog').innerHTML='<div class="bubble assistant">调试会话已清空。你可以从这里开始一段新的独立测试。</div>';
+  toast('对话调试记录已清空');
+}
+document.getElementById('debugChatInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendDebugChat()}});
+
+/* ---------- 素材 ---------- */
+const assetSets={
+'稳定姿态':[['🐕','安静趴卧','左右方向 · 无背带 · 循环','完整可用'],['🐾','趴着呼吸','左右方向 · 8 帧 · 循环','完整可用'],['〰','侧躺慢呼吸','左向 · 无背带 · 循环','完整可用']],
+'移动与转向':[['↞','向左行走','左向 · 12 帧 · 循环','完整可用'],['↝','向右行走','右向 · 12 帧 · 循环','完整可用'],['⤾','原地转向','左 / 右方向切换','等待补充']],
+'饮食饮水':[['◒','低头吃粮','站姿进入 · 循环','完整可用'],['◇','追逐零食','移动 · 扑击 · 进食','部分方向缺失'],['≋','低头饮水','站姿进入 · 循环','完整可用']],
+'睡眠休息':[['☾','进入睡眠','intro → loop → exit','等待补充 exit'],['◡','窝内熟睡','长驻留 · 慢呼吸','完整可用'],['⌁','眨眼哈欠','单次 · 可转入睡眠','完整可用']],
+'主人互动':[['♡','享受摸摸','接受分支 · 循环','完整可用'],['♧','伸爪回应','请求动作 · 单次','完整可用'],['!','拒绝打扰','拒绝分支 · 安全退出','完整可用']],
+'自主行为':[['◔','回头观察','左前 / 右前 · 单次','部分方向缺失'],['⟳','追尾转圈','原地循环 · 可中断','等待补充'],['✦','日常舔毛','坐姿进入 · 循环','完整可用']],
+'外出与背带':[['↗','邀请外出','主人或定时计划触发','完整可用'],['▱','橙色背带行走','左 / 右 · 背带变体','完整可用'],['▰','红蓝色背带行走','左 / 右 · 背带变体','部分方向缺失']],
+'节日特辑':[['✿','春节窗花','节日限定 · 单次','完整可用'],['★','生日庆祝','蛋糕与礼物 · 循环','等待补充'],['❄','冬日围巾','装扮变体','完整可用']],
+'魔法特辑':[['✧','星光漂浮','魔法状态 · 循环','完整可用'],['☄','扫帚飞行','移动特辑 · 可中断','等待补充'],['◉','缩小魔法','状态变体 · 安全回落','完整可用']],
+'转场与安全退出':[['↝','回落站姿','多姿态出口 · 不循环','完整可用'],['⌄','趴卧退出','loop → exit','完整可用'],['□','素材缺失回落','fallback · 静态姿态','完整可用']]
+};
+function renderAssetCards(items){
+  document.getElementById('assetContent').innerHTML=items.map(item=>`<article class="asset"><div class="asset-visual">${item[0]}</div><h3>${item[1]}</h3><p>${item[2]}</p><span class="badge ${item[3]==='完整可用'?'':'wait'}">${item[3]}</span></article>`).join('');
+}
+document.querySelectorAll('#assetCategories button').forEach(button=>button.addEventListener('click',()=>{
+  document.querySelectorAll('#assetCategories button').forEach(x=>x.classList.remove('active'));
+  button.classList.add('active');
+  document.querySelectorAll('#assetDevTabs .tab').forEach((x,i)=>x.classList.toggle('active',i===0));
+  renderAssetCards(assetSets[button.textContent]);
+  toast('已打开“'+button.textContent+'”分类');
+}));
+const assetDevViews={'普通查看':null,'契约':[['ID','behavior_id','动作身份、分类与 eligibility','开发编辑'],['↳','生命周期','intro / loop / exit / interrupt_exit','开发编辑'],['⇣','回落规则','接受、拒绝、延后与 fallback','开发编辑']],'帧与锚点':[['▦','帧序列','12 FPS · 8 帧 · 循环','开发编辑'],['⌖','脚底锚点','x 0.50 · y 0.92','开发编辑'],['↔','窗口位移','每帧 4 px · 左向','开发编辑']],'版本':[['●','正式版本','v1.2.0 · 当前运行','完整可用'],['○','候选版本','v1.3.0-rc2 · 待评审','等待发布'],['↶','历史版本','v1.1.4 · 可回滚','完整可用']],'质检':[['✓','图像检查','PNG · RGBA · 透明边缘','完整可用'],['#','文件校验','SHA-256 · 清单路径','完整可用'],['!','发布门禁','缺少右前方向 1 项','等待补充']]};
+document.querySelectorAll('#assetDevTabs .tab').forEach(button=>button.addEventListener('click',()=>{
+  document.querySelectorAll('#assetDevTabs .tab').forEach(x=>x.classList.remove('active'));
+  button.classList.add('active');
+  const items=assetDevViews[button.textContent];
+  if(items)renderAssetCards(items);
+  else renderAssetCards(assetSets[document.querySelector('#assetCategories button.active').textContent]);
+  toast('已打开“'+button.textContent+'”');
+}));
+
+/* ---------- 开发者文档 / 监视 ---------- */
+const docs={
+'Wukong 能做什么':['产品能力说明','悟空不是按钮驱动的动画播放器','主人提出互动请求后，系统会结合悟空的当前状态、关系、环境与动作资格判断接受、拒绝或延后。'],
+'状态和意愿如何变化':['状态机基本原理','状态会随时间与互动持续变化','精力、饱腹、压力、好奇和社交意愿共同影响候选行为；主人不能直接改写悟空当下的意愿。'],
+'为什么有时会拒绝':['行为决策','拒绝也是完整的互动结果','当动作资格不满足、当前行为不可安全中断或压力过高时，悟空会拒绝或延后，并给出自然语言原因。'],
+'动作与素材如何工作':['动作契约','素材由生命周期而不是名称连接','每项行为通过 intro、loop、exit、interrupt_exit 和 fallback 串起素材，保证切换连贯且可以安全中断。'],
+'对话、记忆与相册':['Agent 与记忆','对话会检索被允许使用的记忆','相册描述、长期习惯和近期互动可参与回答；行为请求仍会进入状态机，不由模型直接强制执行。'],
+'数据存储与隐私':['本地数据','照片仍保留在主人选择的目录','系统保存路径、描述与索引状态，不主动移动或删除原始照片；API 密钥应在本地安全存储。'],
+'常见问题':['故障排查','先确认模型、素材与运行状态','模型无回复时检查连接配置；动作无效时查看资格与素材完整度；相册失效时重新关联本地目录。']
+};
+document.querySelectorAll('#docNav button').forEach(button=>button.addEventListener('click',()=>{
+  document.querySelectorAll('#docNav button').forEach(x=>x.classList.remove('active'));
+  button.classList.add('active');
+  const d=docs[button.textContent];
+  document.getElementById('docArticle').innerHTML=`<div class="eyebrow">${d[0]}</div><h2>${d[1]}</h2><p>${d[2]}</p><h3>页面说明</h3><p>这是开发者可阅读的技术说明；编辑契约与 Trace 仍需在对应页签中进行。</p>`;
+}));
+const devViews={
+'实时监视':[['事件与状态','event: owner_touch<br>arousal: 0.34 → 0.42<br>social_desire: 0.67'],['行为仲裁','stroke_enjoy +0.82<br>selected: stroke_enjoy'],['动画执行','phase: loop<br>asset: v1.2.0<br>frame: 6/8']],
+'状态机':[['RuntimeState','fatigue: 0.38<br>stress: 0.14'],['资格门禁','posture: prone ✓<br>cooldown: ready ✓'],['切换控制','min_dwell: 8s<br>hysteresis: 0.12']],
+'行为':[['候选行为','touch_enjoy 0.82<br>curious_look 0.61'],['响应分支','accept: selected<br>defer: available'],['安全退出','interrupt_exit: prone<br>fallback: idle']],
+'Agent':[['请求上下文','prompt: v4<br>memory_hits: 3'],['模型响应','latency: 0.9s<br>tokens: 286'],['行为门禁','intent: invite_walk<br>result: deferred']],
+'记忆':[['召回结果','album_park 0.91<br>quiet_work 0.84'],['回写候选','habit_candidate: 2/3 days'],['模拟写入','dry_run: true<br>persisted: false']],
+'场景模拟':[['状态注入','fatigue +0.4<br>stress +0.2'],['互动模拟','rapid_tap × 6<br>toy: laser'],['恢复控制','snapshot: real_state<br>ready: true']],
+'日志测试':[['行为 Trace','last_run: pass<br>events: 18'],['自动回归','69 passed<br>0 failed'],['一致性检查','contracts: valid<br>assets: 1 warning']],
+'技术说明':[['架构文档','state → behavior → player'],['协议规范','contract schema v1'],['故障排查','diagnostics ready']]
+};
+function renderDev(items){document.getElementById('devContent').innerHTML=items.map(item=>`<section><b>${item[0]}</b><code>${item[1]}</code></section>`).join('')}
+document.querySelectorAll('#devTabs .tab').forEach(button=>button.addEventListener('click',()=>{
+  document.querySelectorAll('#devTabs .tab').forEach(x=>x.classList.remove('active'));
+  button.classList.add('active');
+  renderDev(devViews[button.textContent]);
+  toast('已打开“'+button.textContent+'”');
+}));
+
+/* ---------- 启动 ---------- */
+applyProfilesToUI();
+applyDeveloperUI();
+switchModelTab('service');
+renderAssetCards(assetSets['稳定姿态']);
+renderDev(devViews['实时监视']);
+</script>
+</body>
+</html>
