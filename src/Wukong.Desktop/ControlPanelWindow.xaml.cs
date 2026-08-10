@@ -7,15 +7,21 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Microsoft.Win32;
+using Wukong.Application;
 
 namespace Wukong.Desktop;
 
 public partial class ControlPanelWindow : Window
 {
     private readonly DesktopRuntimeHost _runtime;
+    private readonly DesktopAgentRuntime _agent;
+    private readonly bool _ownsAgent;
     private readonly DispatcherTimer _previewTimer;
     private readonly ObservableCollection<AlbumFolderItem> _albumFolders = new();
     private readonly ObservableCollection<string> _albumMediaBindings = new();
+    private readonly ObservableCollection<ChatDisplayItem> _chatItems = new();
+    private readonly ObservableCollection<ConversationMemoryCandidate> _memoryCandidates = new();
+    private readonly Dictionary<ChatProviderType, ChatProviderConfiguration> _providerConfigurations = new();
     private PlayableMotion? _previewMotion;
     private MotionPhase? _previewPhase;
     private IReadOnlyList<string> _previewFrames = Array.Empty<string>();
@@ -24,23 +30,49 @@ public partial class ControlPanelWindow : Window
     private int _previewIndex;
     private bool _previewPaused;
     private bool _previewDark;
+    private bool _modelUiReady;
+    private bool _changingDeveloperMode;
+    private CancellationTokenSource? _agentRequestCancellation;
 
     public ControlPanelWindow(DesktopRuntimeHost runtime)
+        : this(runtime, DesktopAgentRuntime.CreateDefault(), ownsAgent: true)
+    {
+    }
+
+    public ControlPanelWindow(DesktopRuntimeHost runtime, DesktopAgentRuntime agent)
+        : this(runtime, agent, ownsAgent: false)
+    {
+    }
+
+    private ControlPanelWindow(DesktopRuntimeHost runtime, DesktopAgentRuntime agent, bool ownsAgent)
     {
         _runtime = runtime;
+        _agent = agent;
+        _ownsAgent = ownsAgent;
         InitializeComponent();
         DataContext = _runtime;
         TraceList.ItemsSource = _runtime.TraceLines;
         AssetList.ItemsSource = _runtime.Motions;
         AlbumList.ItemsSource = _albumFolders;
         AlbumMediaList.ItemsSource = _albumMediaBindings;
+        OwnerChatList.ItemsSource = _chatItems;
+        ModelChatList.ItemsSource = _chatItems;
+        MemoryCandidateList.ItemsSource = _memoryCandidates;
         _previewTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(125) };
         _previewTimer.Tick += (_, _) => AdvancePreview();
         RefreshAlbumView();
+        Loaded += async (_, _) => await LoadAgentUiAsync();
+        Closed += (_, _) =>
+        {
+            _agentRequestCancellation?.Cancel();
+            _previewTimer.Stop();
+            if (_ownsAgent)
+                _agent.Dispose();
+        };
     }
 
-    private async void FakeModelButton_Click(object sender, RoutedEventArgs e) =>
-        await _runtime.SubmitFakeModelMessageAsync(ModelInput.Text);
+    private async void FakeModelButton_Click(object sender, RoutedEventArgs e) => await SendAgentMessageAsync(ModelInput);
+    private async void ModelSend_Click(object sender, RoutedEventArgs e) => await SendAgentMessageAsync(ModelDebugInput);
 
     private async void Command_Click(object sender, RoutedEventArgs e)
     {
@@ -48,15 +80,47 @@ public partial class ControlPanelWindow : Window
             await _runtime.SubmitOwnerCommandAsync(command);
     }
 
-    private void DeveloperToggle_Changed(object sender, RoutedEventArgs e) =>
-        TraceList.Visibility = DeveloperToggle.IsChecked == true
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+    private void DeveloperToggle_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_changingDeveloperMode)
+            return;
+
+        if (DeveloperToggle.IsChecked == true && !_agent.DeveloperSession.IsAuthenticated)
+        {
+            var dialog = new DeveloperLoginWindow(_agent.DeveloperSession) { Owner = this };
+            if (dialog.ShowDialog() != true)
+            {
+                _changingDeveloperMode = true;
+                DeveloperToggle.IsChecked = false;
+                _changingDeveloperMode = false;
+            }
+        }
+        else if (DeveloperToggle.IsChecked != true)
+        {
+            _agent.DeveloperSession.SignOut();
+        }
+
+        UpdateDeveloperVisibility();
+    }
 
     private void Nav_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not Button { Tag: string page })
             return;
+
+        if (page == "Developer" && !_agent.DeveloperSession.IsAuthenticated)
+        {
+            _changingDeveloperMode = true;
+            DeveloperToggle.IsChecked = true;
+            _changingDeveloperMode = false;
+            var dialog = new DeveloperLoginWindow(_agent.DeveloperSession) { Owner = this };
+            if (dialog.ShowDialog() != true)
+            {
+                DeveloperToggle.IsChecked = false;
+                return;
+            }
+            UpdateDeveloperVisibility();
+        }
 
         OwnerPage.Visibility = page == "Owner" ? Visibility.Visible : Visibility.Collapsed;
         ProfilePage.Visibility = page == "Profile" ? Visibility.Visible : Visibility.Collapsed;
@@ -174,43 +238,373 @@ public partial class ControlPanelWindow : Window
         ProfileMemoryPanel.Visibility = tab == "Memory" ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private void SavePetPrompt_Click(object sender, RoutedEventArgs e)
+    private async void SavePetPrompt_Click(object sender, RoutedEventArgs e)
     {
-        var profileDir = ProfileDirectory();
-        Directory.CreateDirectory(profileDir);
-        File.WriteAllText(Path.Combine(profileDir, "pet-prompt.txt"), PetPromptText.Text);
+        await _agent.Profiles.SavePetPromptAsync(PetPromptText.Text);
+        ModelConfigStatus.Text = "宠物设定已保存并会用于后续对话。";
     }
 
-    private void SaveOwnerProfile_Click(object sender, RoutedEventArgs e)
+    private async void SavePetProfile_Click(object sender, RoutedEventArgs e)
     {
-        var profileDir = ProfileDirectory();
-        Directory.CreateDirectory(profileDir);
-        File.WriteAllText(
-            Path.Combine(profileDir, "owner-profile.txt"),
-            string.Join(Environment.NewLine, new[]
-            {
-                $"call_name={OwnerCallNameText.Text}",
-                $"schedule={OwnerScheduleText.Text}",
-                $"preference={OwnerPreferenceText.Text}",
-                $"tone={((OwnerToneCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? string.Empty)}",
-                $"notes={OwnerNotesText.Text}"
-            }));
+        await _agent.Profiles.SavePetProfileAsync(new(
+            PetNameText.Text.Trim(),
+            PetEnglishNameText.Text.Trim(),
+            PetBirthDatePicker.SelectedDate?.ToString("yyyy-MM-dd") ?? string.Empty,
+            PetBreedText.Text.Trim(),
+            PetLifeStageText.Text.Trim(),
+            SelectedComboText(PetHarnessCombo)));
     }
 
-    private void SaveModelConfig_Click(object sender, RoutedEventArgs e)
+    private async void SaveOwnerProfile_Click(object sender, RoutedEventArgs e)
     {
-        var profileDir = ProfileDirectory();
-        Directory.CreateDirectory(profileDir);
-        File.WriteAllText(
-            Path.Combine(profileDir, "model-config.txt"),
-            string.Join(Environment.NewLine, new[]
-            {
-                $"provider={((ModelProviderCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? string.Empty)}",
-                $"api_url={ModelApiUrlText.Text}",
-                $"api_key_set={!string.IsNullOrWhiteSpace(ModelApiKeyBox.Password)}",
-                $"model={ModelNameText.Text}",
-                "backend_connected=false"
-            }));
+        await _agent.Profiles.SaveOwnerProfileAsync(new(
+            OwnerCallNameText.Text.Trim(),
+            OwnerScheduleText.Text.Trim(),
+            OwnerPreferenceText.Text.Trim(),
+            SelectedComboText(OwnerToneCombo),
+            OwnerNotesText.Text.Trim()));
+    }
+
+    private async void SaveModelConfig_Click(object sender, RoutedEventArgs e) => await SaveModelConfigurationAsync();
+
+    private async Task LoadAgentUiAsync()
+    {
+        var petTask = _agent.Profiles.LoadPetProfileAsync();
+        var ownerTask = _agent.Profiles.LoadOwnerProfileAsync();
+        var promptTask = _agent.Profiles.LoadPetPromptAsync();
+        var configurationsTask = _agent.Models.GetConfigurationsAsync();
+        var activeTask = _agent.Models.GetActiveConfigurationAsync();
+        await Task.WhenAll(petTask, ownerTask, promptTask, configurationsTask, activeTask);
+
+        var pet = await petTask;
+        PetNameText.Text = pet.Name;
+        PetEnglishNameText.Text = pet.EnglishName;
+        PetBirthDatePicker.SelectedDate = DateTime.TryParse(pet.BirthDate, out var birthDate) ? birthDate : null;
+        PetBreedText.Text = pet.Breed;
+        PetLifeStageText.Text = pet.LifeStage;
+        SelectComboText(PetHarnessCombo, pet.Harness);
+
+        var owner = await ownerTask;
+        OwnerCallNameText.Text = owner.CallName;
+        OwnerScheduleText.Text = owner.Schedule;
+        OwnerPreferenceText.Text = owner.CompanionPreference;
+        SelectComboText(OwnerToneCombo, owner.Tone);
+        OwnerNotesText.Text = owner.Notes;
+        PetPromptText.Text = await promptTask;
+        LoadAvatarIfAvailable();
+
+        _providerConfigurations.Clear();
+        foreach (var configuration in await configurationsTask)
+            _providerConfigurations[configuration.Provider] = configuration;
+        ModelProviderCombo.ItemsSource = Enum.GetValues<ChatProviderType>();
+        var active = await activeTask;
+        ModelProviderCombo.SelectedItem = active.Provider;
+        LoadProviderEditor(active);
+        _modelUiReady = true;
+
+        await ReloadChatHistoryAsync();
+        await RefreshMemoryCandidatesAsync();
+        UpdateDeveloperVisibility();
+    }
+
+    private async void ModelProviderCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_modelUiReady || ModelProviderCombo.SelectedItem is not ChatProviderType provider)
+            return;
+        await _agent.Models.SetActiveProviderAsync(provider);
+        if (_providerConfigurations.TryGetValue(provider, out var configuration))
+            LoadProviderEditor(configuration);
+    }
+
+    private void LoadProviderEditor(ChatProviderConfiguration configuration)
+    {
+        ModelApiUrlText.Text = configuration.BaseUrl;
+        ModelNameText.Text = configuration.Model;
+        ModelTimeoutText.Text = configuration.TimeoutSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        ModelTemperatureText.Text = configuration.Temperature.ToString("0.0#", System.Globalization.CultureInfo.InvariantCulture);
+        ModelApiKeyBox.Clear();
+        var requiresKey = configuration.Provider != ChatProviderType.Ollama;
+        ModelApiKeyBox.IsEnabled = requiresKey;
+        ModelApiKeyStatus.Text = requiresKey
+            ? configuration.ApiKeyConfigured ? "已安全保存（不会回显）" : "未配置"
+            : "本地 Ollama 默认不需要 API Key";
+    }
+
+    private async Task<bool> SaveModelConfigurationAsync()
+    {
+        if (ModelProviderCombo.SelectedItem is not ChatProviderType provider)
+            return false;
+        if (!int.TryParse(ModelTimeoutText.Text, out var timeoutSeconds))
+            timeoutSeconds = 60;
+        if (!double.TryParse(ModelTemperatureText.Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var temperature))
+            temperature = 0.7;
+        var existing = _providerConfigurations.TryGetValue(provider, out var value)
+            ? value
+            : ChatProviderConfiguration.Default(provider);
+        var configuration = new ChatProviderConfiguration(
+            provider,
+            ModelApiUrlText.Text,
+            ModelNameText.Text,
+            timeoutSeconds,
+            temperature,
+            existing.ApiKeyConfigured);
+        try
+        {
+            await _agent.Models.SaveConfigurationAsync(configuration, ModelApiKeyBox.Password);
+            await _agent.Models.SetActiveProviderAsync(provider);
+            var saved = (await _agent.Models.GetConfigurationsAsync()).Single(x => x.Provider == provider);
+            _providerConfigurations[provider] = saved;
+            LoadProviderEditor(saved);
+            ModelConfigStatus.Text = $"已保存 {provider} 配置。API Key 不写入项目文件。";
+            return true;
+        }
+        catch (Exception)
+        {
+            ModelConfigStatus.Text = "配置保存失败，请检查本机凭证存储权限。";
+            return false;
+        }
+    }
+
+    private async void TestModelConnection_Click(object sender, RoutedEventArgs e)
+    {
+        if (!await SaveModelConfigurationAsync())
+            return;
+        ModelConfigStatus.Text = "正在测试连接...";
+        try
+        {
+            var response = await _agent.Models.TestConnectionAsync();
+            ModelConfigStatus.Text = string.IsNullOrWhiteSpace(response.Text) ? "连接成功。" : "连接成功，模型已返回响应。";
+        }
+        catch (ChatProviderException ex)
+        {
+            ModelConfigStatus.Text = ex.PublicMessage;
+        }
+        catch (Exception)
+        {
+            ModelConfigStatus.Text = "连接失败，请检查网络、地址和模型配置。";
+        }
+    }
+
+    private async Task SendAgentMessageAsync(TextBox input)
+    {
+        var text = input.Text.Trim();
+        if (string.IsNullOrWhiteSpace(text) || _agentRequestCancellation is not null)
+            return;
+
+        _chatItems.Add(ChatDisplayItem.User(text));
+        input.Clear();
+        SetChatStatus("悟空正在想...");
+        _agentRequestCancellation = new CancellationTokenSource();
+        try
+        {
+            var result = await _agent.Conversation.SendAsync(
+                new ConversationRequest(DesktopAgentRuntime.DailySessionId, text),
+                _agentRequestCancellation.Token);
+            _chatItems.Add(result.Success
+                ? ChatDisplayItem.Assistant(result.AssistantText ?? string.Empty)
+                : ChatDisplayItem.Error(result.UserFacingError ?? "请求失败，请检查模型配置。"));
+            SetChatStatus(result.Success
+                ? $"{result.Provider} / {result.Model} / {result.Duration.TotalSeconds:0.0}s / 相册记忆 {result.UsedAlbumMemoryCount} 条"
+                : result.UserFacingError ?? "请求失败");
+            ScrollChatToEnd();
+            if (_agent.DeveloperSession.IsAuthenticated)
+                RefreshDiagnosticsView();
+        }
+        finally
+        {
+            _agentRequestCancellation.Dispose();
+            _agentRequestCancellation = null;
+        }
+    }
+
+    private async Task ReloadChatHistoryAsync()
+    {
+        var history = await _agent.Conversation.GetHistoryAsync(DesktopAgentRuntime.DailySessionId);
+        _chatItems.Clear();
+        foreach (var message in history.Where(x => x.Role != AgentChatRole.System))
+            _chatItems.Add(ChatDisplayItem.From(message));
+        ScrollChatToEnd();
+    }
+
+    private void ScrollChatToEnd()
+    {
+        if (_chatItems.Count == 0)
+            return;
+        OwnerChatList.ScrollIntoView(_chatItems[^1]);
+        ModelChatList.ScrollIntoView(_chatItems[^1]);
+    }
+
+    private void SetChatStatus(string value)
+    {
+        OwnerChatStatus.Text = value;
+        ModelChatStatus.Text = value;
+    }
+
+    private async void AgentInput_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key != System.Windows.Input.Key.Enter || System.Windows.Input.Keyboard.Modifiers.HasFlag(System.Windows.Input.ModifierKeys.Shift))
+            return;
+        e.Handled = true;
+        if (sender is TextBox input)
+            await SendAgentMessageAsync(input);
+    }
+
+    private void CancelAgentRequest_Click(object sender, RoutedEventArgs e) => _agentRequestCancellation?.Cancel();
+
+    private async void ClearConversation_Click(object sender, RoutedEventArgs e)
+    {
+        await _agent.Conversation.ClearHistoryAsync(DesktopAgentRuntime.DailySessionId);
+        _chatItems.Clear();
+        SetChatStatus("当前对话已清空。");
+    }
+
+    private async void SaveMemoryCandidate_Click(object sender, RoutedEventArgs e)
+    {
+        var candidate = await _agent.Conversation.SaveLatestTurnAsCandidateAsync(DesktopAgentRuntime.DailySessionId);
+        SetChatStatus(candidate is null ? "没有可保存的完整对话轮次。" : "已保存为待人工确认的记忆候选。");
+        await RefreshMemoryCandidatesAsync();
+    }
+
+    private async Task RefreshMemoryCandidatesAsync()
+    {
+        var items = await _agent.Memory.ReadAsync();
+        _memoryCandidates.Clear();
+        foreach (var item in items.OrderByDescending(x => x.CreatedAt))
+            _memoryCandidates.Add(item);
+        MemoryEmptyState.Visibility = _memoryCandidates.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private async void RefreshMemory_Click(object sender, RoutedEventArgs e) => await RefreshMemoryCandidatesAsync();
+    private async void ConfirmMemory_Click(object sender, RoutedEventArgs e) => await SetMemoryStatusAsync(sender, ConversationMemoryStatus.Confirmed);
+    private async void RejectMemory_Click(object sender, RoutedEventArgs e) => await SetMemoryStatusAsync(sender, ConversationMemoryStatus.Rejected);
+
+    private async Task SetMemoryStatusAsync(object sender, ConversationMemoryStatus status)
+    {
+        if (sender is Button { Tag: ConversationMemoryCandidate candidate })
+        {
+            await _agent.Memory.SetStatusAsync(candidate.Id, status);
+            await RefreshMemoryCandidatesAsync();
+        }
+    }
+
+    private async void DeleteMemory_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: ConversationMemoryCandidate candidate })
+        {
+            await _agent.Memory.DeleteAsync(candidate.Id);
+            await RefreshMemoryCandidatesAsync();
+        }
+    }
+
+    private void OpenDeveloper_Click(object sender, RoutedEventArgs e)
+    {
+        DeveloperToggle.IsChecked = true;
+        if (!_agent.DeveloperSession.IsAuthenticated)
+            return;
+        OwnerPage.Visibility = Visibility.Collapsed;
+        ProfilePage.Visibility = Visibility.Collapsed;
+        AlbumPage.Visibility = Visibility.Collapsed;
+        ModelPage.Visibility = Visibility.Collapsed;
+        AssetsPage.Visibility = Visibility.Collapsed;
+        DeveloperPage.Visibility = Visibility.Visible;
+        RefreshDiagnosticsView();
+    }
+
+    private void UpdateDeveloperVisibility()
+    {
+        var visible = _agent.DeveloperSession.IsAuthenticated ? Visibility.Visible : Visibility.Collapsed;
+        DeveloperDiagnosticsPanel.Visibility = visible;
+        TraceList.Visibility = visible;
+        if (visible == Visibility.Visible)
+            RefreshDiagnosticsView();
+        else if (DeveloperPage.Visibility == Visibility.Visible)
+        {
+            DeveloperPage.Visibility = Visibility.Collapsed;
+            OwnerPage.Visibility = Visibility.Visible;
+        }
+    }
+
+    private void RefreshDiagnostics_Click(object sender, RoutedEventArgs e) => RefreshDiagnosticsView();
+
+    private void RefreshDiagnosticsView()
+    {
+        if (!_agent.DeveloperSession.IsAuthenticated)
+            return;
+        var diagnostics = _agent.Diagnostics.ReadLatest();
+        if (diagnostics is null)
+        {
+            AgentDiagnosticsText.Text = "尚无 Agent 请求诊断。";
+            return;
+        }
+
+        var context = diagnostics.Context;
+        AgentDiagnosticsText.Text = string.Join(Environment.NewLine, new[]
+        {
+            $"provider={diagnostics.Provider}",
+            $"model={diagnostics.Model}",
+            $"status={diagnostics.Status}",
+            $"duration_ms={diagnostics.Duration.TotalMilliseconds:0}",
+            $"pet_fields={string.Join(",", context.PetFields)}",
+            $"owner_fields={string.Join(",", context.OwnerFields)}",
+            $"pet_setting={context.PetPromptSummary}",
+            $"personality={context.Personality}",
+            $"relationship={context.Relationship}",
+            $"runtime={context.RuntimeState}",
+            $"album_matches={string.Join("; ", context.AlbumMatches.Select(x => $"{x.Title}|{x.Date}|{x.Score:0.00}|{x.SourceName}"))}",
+            $"history_messages={context.HistoryMessageCount}",
+            $"truncated={context.WasTruncated}",
+            $"degradations={string.Join(",", context.Degradations)}"
+        });
+    }
+
+    private void ApplyMockState_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _agent.MockContext.Update(
+                PersonalitySnapshot.Default with { Liveliness = MockLivelinessSlider.Value },
+                RelationshipSnapshot.Default with { Trust = MockTrustSlider.Value },
+                PetRuntimeStateSnapshot.Default with
+                {
+                    CurrentBehavior = MockBehaviorText.Text,
+                    Fatigue = MockFatigueSlider.Value,
+                    Stress = MockStressSlider.Value,
+                    SocialDesire = MockSocialSlider.Value,
+                    PlayDesire = MockPlaySlider.Value,
+                    Curiosity = MockCuriositySlider.Value
+                });
+            MockStateStatus.Text = "Mock 状态已更新，将用于下一轮对话。";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            MockStateStatus.Text = "开发者会话已失效，请重新登录。";
+            UpdateDeveloperVisibility();
+        }
+    }
+
+    private void LoadAvatarIfAvailable()
+    {
+        var profileDirectory = ProfileDirectory();
+        var avatar = Directory.Exists(profileDirectory)
+            ? Directory.GetFiles(profileDirectory, "pet-avatar.*").OrderByDescending(File.GetLastWriteTimeUtc).FirstOrDefault()
+            : null;
+        OwnerAvatarImage.Source = LoadBitmap(avatar);
+        OwnerAvatarFallback.Visibility = OwnerAvatarImage.Source is null ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private static string SelectedComboText(ComboBox combo) =>
+        (combo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? combo.Text;
+
+    private static void SelectComboText(ComboBox combo, string value)
+    {
+        foreach (var item in combo.Items.OfType<ComboBoxItem>())
+        {
+            if (!string.Equals(item.Content?.ToString(), value, StringComparison.Ordinal))
+                continue;
+            combo.SelectedItem = item;
+            return;
+        }
+        combo.Text = value;
     }
 
     private void PreviewAsset_Click(object sender, RoutedEventArgs e)

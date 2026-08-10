@@ -4,11 +4,18 @@ using System.Windows.Media.Imaging;
 using Wukong.Desktop;
 using Wukong.Domain;
 
+if (args.Contains("--show-panel-smoke", StringComparer.Ordinal))
+    return ShowPanelSmoke();
+
 var tests = new (string Name, Action Run)[]
 {
     ("input adapter emits input events", InputAdapterEmitsEvents),
     ("startup factory creates one main window", StartupFactoryCreatesOneMainWindow),
     ("control panel xaml constructs", ControlPanelXamlConstructs),
+    ("agent windows construct and desktop chat starts hidden", AgentWindowsConstructAndChatStartsHidden),
+    ("desktop chat keyboard semantics distinguish send and newline", DesktopChatKeyboardSemantics),
+    ("desktop chat sensor is limited to lower blank region", DesktopChatSensorIsLimited),
+    ("desktop chat placement stays visible at all corners", DesktopChatPlacementStaysVisible),
     ("main window pet scale changes image size", MainWindowPetScaleChangesImageSize),
     ("initial placement stays in work area", InitialPlacementStaysInWorkArea),
     ("phase15 motion assets are copied and decodable", Phase15MotionAssetsAreCopiedAndDecodable),
@@ -41,6 +48,36 @@ foreach (var test in tests)
 Console.WriteLine($"{tests.Length - failures.Count}/{tests.Length} tests passed.");
 foreach (var failure in failures) Console.Error.WriteLine(failure);
 return failures.Count == 0 ? 0 : 1;
+
+static int ShowPanelSmoke()
+{
+    Exception? failure = null;
+    var thread = new Thread(() =>
+    {
+        try
+        {
+            var app = EnsureTestApplication();
+            var panel = new ControlPanelWindow(new DesktopRuntimeHost());
+            app.MainWindow = panel;
+            panel.Closed += (_, _) => panel.Dispatcher.BeginInvokeShutdown(System.Windows.Threading.DispatcherPriority.Normal);
+            panel.Show();
+            System.Windows.Threading.Dispatcher.Run();
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+    });
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+    thread.Join();
+    if (failure is not null)
+    {
+        Console.Error.WriteLine(failure);
+        return 1;
+    }
+    return 0;
+}
 
 static void InputAdapterEmitsEvents()
 {
@@ -102,6 +139,70 @@ static void ControlPanelXamlConstructs()
 
     if (failure is not null)
         throw failure;
+}
+
+static void AgentWindowsConstructAndChatStartsHidden()
+{
+    Exception? failure = null;
+    var thread = new Thread(() =>
+    {
+        try
+        {
+            _ = EnsureTestApplication();
+            using var agent = DesktopAgentRuntime.CreateDefault();
+            var chat = new DesktopChatWindow(agent);
+            var login = new DeveloperLoginWindow(agent.DeveloperSession);
+            Assert(!chat.IsExpanded, "desktop chat should be hidden until the sensor is clicked");
+            chat.Close();
+            login.Close();
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+    });
+
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+    thread.Join();
+    if (failure is not null)
+        throw failure;
+}
+
+static void DesktopChatKeyboardSemantics()
+{
+    Assert(DesktopChatWindow.ShouldSend(System.Windows.Input.Key.Enter, System.Windows.Input.ModifierKeys.None), "Enter should send");
+    Assert(!DesktopChatWindow.ShouldSend(System.Windows.Input.Key.Enter, System.Windows.Input.ModifierKeys.Shift), "Shift+Enter should insert a newline");
+    Assert(!DesktopChatWindow.ShouldSend(System.Windows.Input.Key.Escape, System.Windows.Input.ModifierKeys.None), "Escape should not send");
+}
+
+static void DesktopChatSensorIsLimited()
+{
+    var size = new Size(320, 320);
+    Assert(MainWindow.IsChatSensorPoint(size, new Point(160, 305)), "lower center should open chat");
+    Assert(!MainWindow.IsChatSensorPoint(size, new Point(160, 160)), "pet body region must not open chat");
+    Assert(!MainWindow.IsChatSensorPoint(size, new Point(20, 305)), "lower corner must not open chat");
+}
+
+static void DesktopChatPlacementStaysVisible()
+{
+    var workArea = new Rect(0, 0, 1280, 720);
+    var overlay = new Size(420, 286);
+    var pets = new[]
+    {
+        new Rect(0, 0, 320, 320),
+        new Rect(960, 0, 320, 320),
+        new Rect(0, 400, 320, 320),
+        new Rect(960, 400, 320, 320)
+    };
+    foreach (var pet in pets)
+    {
+        var point = DesktopChatPlacement.Place(workArea, pet, overlay);
+        Assert(point.X >= workArea.Left && point.Y >= workArea.Top, "chat escaped top or left work area");
+        Assert(point.X + overlay.Width <= workArea.Right && point.Y + overlay.Height <= workArea.Bottom, "chat escaped right or bottom work area");
+    }
+    var bottomPosition = DesktopChatPlacement.Place(workArea, pets[2], overlay);
+    Assert(bottomPosition.Y < pets[2].Top, "chat should open upward near the bottom edge");
 }
 
 static void MainWindowPetScaleChangesImageSize()

@@ -12,6 +12,7 @@ namespace Wukong.Desktop;
 public partial class MainWindow : Window
 {
     private readonly DesktopRuntimeHost _runtime;
+    private readonly DesktopAgentRuntime _agentRuntime;
     private readonly DispatcherTimer _autonomousTimer;
     private readonly DispatcherTimer _animationTimer;
     private readonly Dictionary<string, BitmapImage> _imageCache = new(StringComparer.OrdinalIgnoreCase);
@@ -19,6 +20,7 @@ public partial class MainWindow : Window
     private const double BasePetImageSize = 310;
     private const double BaseFallbackSize = 240;
     private ControlPanelWindow? _controlPanel;
+    private DesktopChatWindow? _chatWindow;
     private PetMotionRequest? _activeRequest;
     private int _phaseIndex;
     private int _frameIndex;
@@ -37,7 +39,17 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         _runtime = new DesktopRuntimeHost();
+        _agentRuntime = DesktopAgentRuntime.CreateDefault();
         _runtime.MotionRequested += Runtime_MotionRequested;
+        LocationChanged += (_, _) => RepositionChat();
+        SizeChanged += (_, _) => RepositionChat();
+        Closed += (_, _) =>
+        {
+            var chatWindow = _chatWindow;
+            _chatWindow = null;
+            chatWindow?.Close();
+            _agentRuntime.Dispose();
+        };
 
         _animationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(125) };
         _animationTimer.Tick += (_, _) => AdvanceFrame();
@@ -132,6 +144,12 @@ public partial class MainWindow : Window
             e.ClickCount,
             hitVisibleBody);
         var gesture = GestureInterpreter.Interpret(sample);
+        if (!hitVisibleBody && IsChatSensorPoint(up))
+        {
+            ToggleChat();
+            e.Handled = true;
+            return;
+        }
         var tapCandidateCount = IsTapCandidate(hitVisibleBody, duration, distance)
             ? RegisterTapCandidate(up, now)
             : 0;
@@ -186,6 +204,8 @@ public partial class MainWindow : Window
         await _runtime.SubmitContextMenuIntentAsync(new SemanticIntent(SemanticIntentKind.Quiet, "wk.core.prone_idle"));
 
     private void OpenPanelMenuItem_Click(object sender, RoutedEventArgs e) => OpenControlPanel();
+
+    private void ChatMenuItem_Click(object sender, RoutedEventArgs e) => ToggleChat();
 
     private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
     {
@@ -353,10 +373,34 @@ public partial class MainWindow : Window
             return;
         }
 
-        _controlPanel = new ControlPanelWindow(_runtime);
+        _controlPanel = new ControlPanelWindow(_runtime, _agentRuntime);
         _controlPanel.Closed += (_, _) => _controlPanel = null;
         _controlPanel.Show();
     }
+
+    private bool IsChatSensorPoint(Point point) => IsChatSensorPoint(
+        new Size(ActualWidth > 0 ? ActualWidth : Width, ActualHeight > 0 ? ActualHeight : Height),
+        point);
+
+    public static bool IsChatSensorPoint(Size size, Point point) =>
+        point.Y >= Math.Max(0, size.Height - 42) &&
+        point.X >= size.Width * 0.28 &&
+        point.X <= size.Width * 0.72;
+
+    private void ToggleChat()
+    {
+        _chatWindow ??= new DesktopChatWindow(_agentRuntime) { Owner = this };
+        _chatWindow.Toggle(SystemParameters.WorkArea, CurrentBounds());
+    }
+
+    private void RepositionChat() =>
+        _chatWindow?.Reposition(SystemParameters.WorkArea, CurrentBounds());
+
+    private Rect CurrentBounds() => new(
+        Left,
+        Top,
+        ActualWidth > 0 ? ActualWidth : Width,
+        ActualHeight > 0 ? ActualHeight : Height);
 
     private void ApplyVisiblePlacement(Point preferred)
     {

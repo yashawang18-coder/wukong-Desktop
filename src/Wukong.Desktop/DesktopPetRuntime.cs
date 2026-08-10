@@ -406,7 +406,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public string LastSource { get; private set; } = "Startup";
     public string LastTrigger { get; private set; } = "startup";
     public string LastError { get; private set; } = "无";
-    public string AgentStatus { get; private set; } = "本地 FakeModel 在线";
+    public string AgentStatus { get; private set; } = "本地 fallback runtime";
     public string Willingness { get; private set; } = "悟空现在很平静，愿意听你说话，但不一定想起来";
     public string Reply { get; private set; } = "让我再趴一会儿";
     public double Energy { get; private set; } = 0.68;

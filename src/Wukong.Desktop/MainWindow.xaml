@@ -22,6 +22,7 @@
             <ContextMenu>
                 <MenuItem Header="Touch" Click="TouchMenuItem_Click" />
                 <MenuItem Header="Quiet" Click="QuietMenuItem_Click" />
+                <MenuItem Header="Chat" Click="ChatMenuItem_Click" />
                 <MenuItem Header="Open Control Panel" Click="OpenPanelMenuItem_Click" />
                 <Separator />
                 <MenuItem Header="Exit Wukong" Click="ExitMenuItem_Click" />
@@ -65,6 +66,15 @@
                MouseWheel="Window_MouseWheel"
                SnapsToDevicePixels="True"
                RenderOptions.BitmapScalingMode="HighQuality" />
+
+        <Border x:Name="ChatSensorHint"
+                Height="32"
+                Width="92"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,2"
+                Background="Transparent"
+                IsHitTestVisible="False" />
 
         <Border x:Name="PhaseBadge"
                 HorizontalAlignment="Center"
