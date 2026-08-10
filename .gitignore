@@ -9,6 +9,7 @@ __pycache__/
 # Local .NET CLI/build artifacts
 .dotnet-cli-home/
 .wukong-log-tests/
+.wukong-bootstrap-tests/
 .publish-check/
 bin/
 obj/

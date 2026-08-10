@@ -1,10 +1,26 @@
+using System.IO;
 using System.Windows;
+using System.Windows.Media.Imaging;
 using Wukong.Desktop;
 using Wukong.Domain;
 
 var tests = new (string Name, Action Run)[]
 {
-    ("input adapter emits input events", InputAdapterEmitsEvents)
+    ("input adapter emits input events", InputAdapterEmitsEvents),
+    ("startup factory creates one main window", StartupFactoryCreatesOneMainWindow),
+    ("control panel xaml constructs", ControlPanelXamlConstructs),
+    ("main window pet scale changes image size", MainWindowPetScaleChangesImageSize),
+    ("initial placement stays in work area", InitialPlacementStaysInWorkArea),
+    ("phase15 motion assets are copied and decodable", Phase15MotionAssetsAreCopiedAndDecodable),
+    ("gesture interpreter distinguishes touch stroke drag and rapid tap", GestureInterpreterDistinguishesGestures),
+    ("rapid tap has priority over owner touch", RapidTapHasPriorityOverOwnerTouch),
+    ("runtime requests touch motion and returns decisions", RuntimeRequestsTouchMotion),
+    ("runtime rapid tap does not request touch motion", RuntimeRapidTapDoesNotRequestTouchMotion),
+    ("album folder item reads local markdown album", AlbumFolderItemReadsLocalMarkdownAlbum),
+    ("album folder item reads xhs markdown album", AlbumFolderItemReadsXhsMarkdownAlbum),
+    ("album markdown update preserves unknown fields", AlbumMarkdownUpdatePreservesUnknownFields),
+    ("autonomous tick can request a motion after dwell", AutonomousTickCanRequestMotion),
+    ("bootstrap log redacts and does not throw", BootstrapLogRedactsAndDoesNotThrow)
 };
 
 var failures = new List<string>();
@@ -34,7 +50,337 @@ static void InputAdapterEmitsEvents()
     Assert(item.Data["x"] == "12.5", "x coordinate not captured");
 }
 
+static void StartupFactoryCreatesOneMainWindow()
+{
+    Exception? failure = null;
+    var thread = new Thread(() =>
+    {
+        try
+        {
+            var app = EnsureTestApplication();
+            var first = DesktopStartup.EnsureMainWindow(app);
+            var second = DesktopStartup.EnsureMainWindow(app);
+            Assert(ReferenceEquals(first, second), "startup factory created multiple main windows");
+            Assert(ReferenceEquals(app.MainWindow, first), "main window was not assigned to application");
+            Assert(first.Width > 0 && first.Height > 0, "main window has invalid initial size");
+            first.Close();
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+    });
+
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+    thread.Join();
+
+    if (failure is not null)
+        throw failure;
+}
+
+static void ControlPanelXamlConstructs()
+{
+    Exception? failure = null;
+    var thread = new Thread(() =>
+    {
+        try
+        {
+            _ = EnsureTestApplication();
+            var panel = new ControlPanelWindow(new DesktopRuntimeHost());
+            panel.Close();
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+    });
+
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+    thread.Join();
+
+    if (failure is not null)
+        throw failure;
+}
+
+static void MainWindowPetScaleChangesImageSize()
+{
+    Exception? failure = null;
+    var thread = new Thread(() =>
+    {
+        try
+        {
+            _ = EnsureTestApplication();
+            var window = new MainWindow();
+            window.SetPetScaleForTest(1.25);
+            Assert(Math.Abs(window.PetScale - 1.25) < 0.001, "pet scale was not applied");
+            Assert(Math.Abs(window.Width - 400) < 0.001, "window width did not scale");
+            window.Close();
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+    });
+
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+    thread.Join();
+
+    if (failure is not null)
+        throw failure;
+}
+
+static void InitialPlacementStaysInWorkArea()
+{
+    var workArea = new Rect(0, 0, 1920, 1040);
+    var position = WindowPlacement.BottomRight(workArea, 280, 280, 24);
+    Assert(position.X >= workArea.Left, "left coordinate outside work area");
+    Assert(position.Y >= workArea.Top, "top coordinate outside work area");
+    Assert(position.X + 280 <= workArea.Right, "right edge outside work area");
+    Assert(position.Y + 280 <= workArea.Bottom, "bottom edge outside work area");
+}
+
+static Application EnsureTestApplication()
+{
+    if (Application.Current is not null)
+        return Application.Current;
+
+    var app = new App();
+    app.InitializeComponent();
+    return app;
+}
+
+static void Phase15MotionAssetsAreCopiedAndDecodable()
+{
+    var desktopAssembly = typeof(MainWindow).Assembly.Location;
+    var path = Path.Combine(
+        Path.GetDirectoryName(desktopAssembly) ?? throw new InvalidOperationException("desktop output directory missing"),
+        "WukongAssets",
+        "actions",
+        "WK-CORE-PRONE-IDLE-LF-v1",
+        "runtime-frames",
+        "v3",
+        "frame-001.png");
+    Assert(File.Exists(path), "phase15 idle frame was not copied to desktop output");
+
+    using var stream = File.OpenRead(path);
+    var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+    var frame = decoder.Frames.Single();
+    Assert(frame.PixelWidth > 0 && frame.PixelHeight > 0, "phase15 frame has invalid dimensions");
+
+    var catalog = DesktopMotionCatalog.Load(Path.GetDirectoryName(desktopAssembly)!);
+    Assert(catalog.Motions.Count >= 6, "phase15 playable registry did not load enough motions");
+    Assert(catalog.RequiredIdle.FrameCount >= 5, "idle motion is not animated");
+}
+
+static void GestureInterpreterDistinguishesGestures()
+{
+    Assert(GestureInterpreter.Interpret(new GestureSample(new Point(1, 1), new Point(2, 2), TimeSpan.FromMilliseconds(120), 1, true)) == PetGestureKind.None, "single click should not trigger touch");
+    Assert(GestureInterpreter.Interpret(new GestureSample(new Point(1, 1), new Point(36, 20), TimeSpan.FromMilliseconds(400), 1, true)) == PetGestureKind.Stroke, "stroke not detected");
+    Assert(GestureInterpreter.Interpret(new GestureSample(new Point(1, 1), new Point(120, 1), TimeSpan.FromMilliseconds(300), 1, true)) == PetGestureKind.Drag, "drag not detected");
+    Assert(GestureInterpreter.Interpret(new GestureSample(new Point(1, 1), new Point(1, 1), TimeSpan.FromMilliseconds(120), 2, true)) == PetGestureKind.DoubleClick, "double click not detected");
+    Assert(GestureInterpreter.Interpret(new GestureSample(new Point(1, 1), new Point(1, 1), TimeSpan.FromMilliseconds(120), 3, true)) == PetGestureKind.RapidTap, "rapid tap not detected");
+    Assert(GestureInterpreter.Interpret(new GestureSample(new Point(1, 1), new Point(1, 1), TimeSpan.FromMilliseconds(120), 1, false)) == PetGestureKind.None, "transparent area should not trigger");
+}
+
+static void RapidTapHasPriorityOverOwnerTouch()
+{
+    var sample = new GestureSample(
+        new Point(20, 20),
+        new Point(23, 22),
+        TimeSpan.FromMilliseconds(180),
+        3,
+        true);
+
+    Assert(GestureInterpreter.Interpret(sample) == PetGestureKind.RapidTap, "rapid tap should win before single touch confirmation");
+    Assert(GestureInterpreter.IsRapidTap(DateTimeOffset.Now, DateTimeOffset.Now - TimeSpan.FromMilliseconds(420), 3), "rapid tap threshold rejected valid burst");
+    Assert(!GestureInterpreter.IsRapidTap(DateTimeOffset.Now, DateTimeOffset.Now - TimeSpan.FromMilliseconds(901), 3), "rapid tap threshold accepted stale burst");
+}
+
+static void RuntimeRequestsTouchMotion()
+{
+    var runtime = new DesktopRuntimeHost();
+    PetMotionRequest? request = null;
+    runtime.MotionRequested += (_, item) => request = item;
+    var result = runtime.SubmitGestureAsync(PetGestureKind.OwnerTouch, BehaviorRequestSource.OwnerUi).GetAwaiter().GetResult();
+    Assert(result == PetActionResult.Accepted, "touch was not accepted");
+    Assert(request is not null, "touch did not request a motion");
+    Assert(request!.Motion.BehaviorId == Phase15BehaviorIds.ProneTouch, "touch chose wrong behavior");
+    Assert(request.Motion.Phases.Any(x => x.Name == "loop" && x.Frames.Count > 0), "touch motion missing loop frames");
+}
+
+static void RuntimeRapidTapDoesNotRequestTouchMotion()
+{
+    var runtime = new DesktopRuntimeHost();
+    PetMotionRequest? request = null;
+    runtime.MotionRequested += (_, item) => request = item;
+    var result = runtime.SubmitGestureAsync(PetGestureKind.RapidTap, BehaviorRequestSource.OwnerUi).GetAwaiter().GetResult();
+    Assert(result != PetActionResult.Accepted, "rapid tap should not accept a locked transition");
+    Assert(request is null || request.Motion.BehaviorId != Phase15BehaviorIds.ProneTouch, "rapid tap must not request owner touch motion");
+}
+
+static void AlbumFolderItemReadsLocalMarkdownAlbum()
+{
+    var root = Path.Combine(Path.GetTempPath(), "wukong-album-tests", Guid.NewGuid().ToString("N"));
+    try
+    {
+        var album = Path.Combine(root, "park-day");
+        Directory.CreateDirectory(album);
+        File.WriteAllText(Path.Combine(album, "album.md"), "# park-day\r\n\r\ndate: 2026-08-11\r\n\r\n悟空在公园玩了一下午。");
+        File.WriteAllBytes(Path.Combine(album, "cover.jpg"), new byte[] { 1, 2, 3 });
+
+        var item = AlbumFolderItem.FromDirectory(album);
+
+        Assert(item.Name == "park-day", "album folder name was not read");
+        Assert(item.PhotoCount == 1, "album image count was not read");
+        Assert(item.MarkdownPath.EndsWith("album.md", StringComparison.OrdinalIgnoreCase), "album markdown was not found");
+        Assert(item.Description.Contains("悟空在公园", StringComparison.Ordinal), "album markdown description was not read");
+        Assert(item.Status == "已读取描述", "album status did not reflect markdown");
+    }
+    finally
+    {
+        TryDeleteDirectory(root);
+    }
+}
+
+static void AlbumFolderItemReadsXhsMarkdownAlbum()
+{
+    var root = Path.Combine(Path.GetTempPath(), "wukong-album-tests", Guid.NewGuid().ToString("N"));
+    try
+    {
+        var album = Path.Combine(root, "2025-12-13_01");
+        Directory.CreateDirectory(album);
+        File.WriteAllText(
+            Path.Combine(album, "2025-12-13_title.md"),
+            "---\r\n" +
+            "title: \"\u4e24\u4e2a\u534a\u6708\u7684\u65f6\u5019\uff0c\u88ab\u8001\u7238\u5e26\u56de\u5bb6\u5566\uff01\"\r\n" +
+            "time: \"2025-12-13 08:27:16 +08:00\"\r\n" +
+            "media:\r\n" +
+            "  - \"image_02.webp\"\r\n" +
+            "  - \"image_01.webp\"\r\n" +
+            "---\r\n\r\n" +
+            "# \u4e24\u4e2a\u534a\u6708\u7684\u65f6\u5019\uff0c\u88ab\u8001\u7238\u5e26\u56de\u5bb6\u5566\uff01\r\n\r\n" +
+            "\u65f6\u95f4: 2025-12-13 08:27:16 +08:00\r\n\r\n" +
+            "## \u6b63\u6587\r\n\r\n" +
+            "\u7b2c\u4e00\u6b21\u5750\u8f66\uff0c\u5934\u6655\u6655\u3002\r\n\r\n" +
+            "## \u7d20\u6750\r\n\r\n" +
+            "- `image_02.webp`\r\n",
+            System.Text.Encoding.UTF8);
+        File.WriteAllBytes(Path.Combine(album, "image_01.webp"), new byte[] { 1, 2, 3 });
+        File.WriteAllBytes(Path.Combine(album, "image_02.webp"), new byte[] { 4, 5, 6 });
+
+        var item = AlbumFolderItem.FromDirectory(album);
+
+        Assert(item.Name.Contains("\u8001\u7238\u5e26\u56de\u5bb6", StringComparison.Ordinal), "xhs title was not read");
+        Assert(item.DateText == "2025-12-13", "xhs date was not normalized");
+        Assert(item.PhotoCount == 2, "xhs image count was not read");
+        Assert(item.ThumbnailPath.EndsWith("image_02.webp", StringComparison.OrdinalIgnoreCase), "xhs media order did not drive thumbnail");
+        Assert(item.Description.Contains("\u7b2c\u4e00\u6b21\u5750\u8f66", StringComparison.Ordinal), "xhs body description was not read");
+        Assert(item.MediaFiles.SequenceEqual(new[] { "image_02.webp", "image_01.webp" }), "xhs media list was not preserved");
+    }
+    finally
+    {
+        TryDeleteDirectory(root);
+    }
+}
+
+static void AlbumMarkdownUpdatePreservesUnknownFields()
+{
+    var root = Path.Combine(Path.GetTempPath(), "wukong-album-tests", Guid.NewGuid().ToString("N"));
+    try
+    {
+        var album = Path.Combine(root, "2025-12-13_01");
+        Directory.CreateDirectory(album);
+        File.WriteAllText(
+            Path.Combine(album, "album.md"),
+            "---\r\n" +
+            "title: \"old title\"\r\n" +
+            "source: \"xhs\"\r\n" +
+            "time: \"2025-12-13 08:27:16 +08:00\"\r\n" +
+            "media:\r\n" +
+            "  - \"old.webp\"\r\n" +
+            "---\r\n\r\n" +
+            "# old title\r\n\r\n" +
+            "\u65f6\u95f4: 2025-12-13 08:27:16 +08:00\r\n\r\n" +
+            "## \u6b63\u6587\r\n\r\n" +
+            "old body\r\n\r\n" +
+            "## \u5730\u70b9\r\n\r\n" +
+            "\u5357\u4eac\r\n\r\n" +
+            "## \u7d20\u6750\r\n\r\n" +
+            "- `old.webp`\r\n",
+            System.Text.Encoding.UTF8);
+        File.WriteAllBytes(Path.Combine(album, "image_01.webp"), new byte[] { 1, 2, 3 });
+
+        var item = AlbumFolderItem.FromDirectory(album);
+        var updated = item.CreateMarkdown("2026-08-11", "\u65b0\u7684\u6b63\u6587", new[] { "image_01.webp" });
+
+        Assert(updated.Contains("source: \"xhs\"", StringComparison.Ordinal), "unknown front matter was not preserved");
+        Assert(updated.Contains("## \u5730\u70b9", StringComparison.Ordinal), "unknown body section was not preserved");
+        Assert(updated.Contains("\u5357\u4eac", StringComparison.Ordinal), "unknown section content was not preserved");
+        Assert(updated.Contains("time: \"2026-08-11\"", StringComparison.Ordinal), "date was not updated");
+        Assert(updated.Contains("- \"image_01.webp\"", StringComparison.Ordinal), "media binding was not updated");
+        Assert(!updated.Contains("old.webp", StringComparison.Ordinal), "old media binding was preserved incorrectly");
+    }
+    finally
+    {
+        TryDeleteDirectory(root);
+    }
+}
+
+static void AutonomousTickCanRequestMotion()
+{
+    var runtime = new DesktopRuntimeHost();
+    PetMotionRequest? request = null;
+    runtime.MotionRequested += (_, item) => request = item;
+    typeof(DesktopRuntimeHost)
+        .GetField("_currentStartedAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+        .SetValue(runtime, DateTimeOffset.Now - TimeSpan.FromSeconds(30));
+    runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
+    Assert(request is not null, "autonomous tick did not leave a playable motion request trail");
+}
+
+static void BootstrapLogRedactsAndDoesNotThrow()
+{
+    var root = Path.Combine(Path.GetTempPath(), "wukong-bootstrap-tests", Guid.NewGuid().ToString("N"));
+    try
+    {
+        BootstrapLog.WriteToDirectory(
+            root,
+            "startup Authorization: Bearer abc token=secret C:\\Users\\alice\\file.txt",
+            new { apiKey = "sk-secret1234567890" },
+            new DateTimeOffset(2026, 8, 10, 0, 0, 0, TimeSpan.Zero));
+
+        var file = Directory.GetFiles(root, "*.log", SearchOption.AllDirectories).Single();
+        var text = File.ReadAllText(file);
+        Assert(text.Contains("[redacted]", StringComparison.Ordinal), "bootstrap log did not redact credentials");
+        Assert(!text.Contains("secret", StringComparison.OrdinalIgnoreCase), "bootstrap log leaked secret");
+        Assert(!text.Contains("C:\\", StringComparison.Ordinal), "bootstrap log leaked path");
+
+        var invalidRoot = Path.Combine(root, "not-a-directory");
+        File.WriteAllText(invalidRoot, "file");
+        BootstrapLog.WriteToDirectory(invalidRoot, "this must not throw", new { token = "secret" });
+    }
+    finally
+    {
+        TryDeleteDirectory(root);
+    }
+}
+
 static void Assert(bool condition, string message)
 {
     if (!condition) throw new InvalidOperationException(message);
+}
+
+static void TryDeleteDirectory(string path)
+{
+    try
+    {
+        if (Directory.Exists(path))
+            Directory.Delete(path, recursive: true);
+    }
+    catch
+    {
+    }
 }
