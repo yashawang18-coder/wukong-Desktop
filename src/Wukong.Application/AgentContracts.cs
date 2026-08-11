@@ -125,7 +125,18 @@ public sealed record RelevantAlbumMemory(
     string MemoryId, string AlbumTitle, string Date, string Excerpt,
     IReadOnlyList<string> MediaReferences, string SourceMarkdownPath, double RelevanceScore);
 
-public sealed record PetContextRequest(string UserMessage, int MaximumAlbumMemories = 5);
+public sealed record AgentMemoryConfiguration(
+    bool UseLongTermMemory,
+    bool UseAlbumMemory,
+    bool UseShortTermMemory)
+{
+    public static AgentMemoryConfiguration Default { get; } = new(true, true, true);
+}
+
+public sealed record PetContextRequest(
+    string UserMessage,
+    int MaximumAlbumMemories = 5,
+    AgentMemoryConfiguration? MemoryConfiguration = null);
 public sealed record PetContextSnapshot(
     PetProfileSnapshot PetProfile, OwnerProfileSnapshot OwnerProfile, string CustomPetPrompt,
     PersonalitySnapshot Personality, RelationshipSnapshot Relationship, PetRuntimeStateSnapshot RuntimeState,
@@ -154,6 +165,12 @@ public interface IAgentProfileStore
     Task SaveOwnerProfileAsync(OwnerProfileSnapshot profile, CancellationToken cancellationToken = default);
     Task<string> LoadPetPromptAsync(CancellationToken cancellationToken = default);
     Task SavePetPromptAsync(string prompt, CancellationToken cancellationToken = default);
+}
+
+public interface IAgentMemoryConfigurationStore
+{
+    Task<AgentMemoryConfiguration> LoadAsync(CancellationToken cancellationToken = default);
+    Task SaveAsync(AgentMemoryConfiguration configuration, CancellationToken cancellationToken = default);
 }
 
 public interface IConversationHistoryStore
@@ -203,7 +220,10 @@ public interface IMockContextController
     void Update(PersonalitySnapshot personality, RelationshipSnapshot relationship, PetRuntimeStateSnapshot runtimeState);
 }
 
-public sealed record ConversationRequest(string SessionId, string UserMessage);
+public sealed record ConversationRequest(
+    string SessionId,
+    string UserMessage,
+    AgentMemoryConfiguration? MemoryConfiguration = null);
 public sealed record ConversationTurnResult(
     bool Success, string? AssistantText, string? UserFacingError, ChatFailureKind? FailureKind,
     string Provider, string Model, TimeSpan Duration, int UsedAlbumMemoryCount);

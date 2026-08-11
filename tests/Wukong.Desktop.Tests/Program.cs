@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using Wukong.Desktop;
 using Wukong.Domain;
@@ -125,6 +126,14 @@ static void ControlPanelXamlConstructs()
         {
             _ = EnsureTestApplication();
             var panel = new ControlPanelWindow(new DesktopRuntimeHost());
+            Assert(panel.FindName("ModelConfigPanel") is not null, "model configuration tab panel missing");
+            Assert(panel.FindName("MemoryConfigPanel") is not null, "memory configuration tab panel missing");
+            Assert(panel.FindName("PetSettingPanel") is not null, "pet setting tab panel missing");
+            Assert(panel.FindName("UseLongTermMemoryCheck") is CheckBox, "long term memory switch missing");
+            Assert(panel.FindName("UseAlbumMemoryCheck") is CheckBox, "album memory switch missing");
+            Assert(panel.FindName("UseShortTermMemoryCheck") is CheckBox, "short term memory switch missing");
+            Assert(panel.FindName("PetHarnessCombo") is null, "removed pet harness field is still registered");
+            Assert(panel.FindName("OwnerToneCombo") is null, "removed owner tone field is still registered");
             panel.Close();
         }
         catch (Exception ex)

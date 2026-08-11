@@ -365,6 +365,21 @@ public sealed class FileConversationMemoryStore : IConversationMemoryStore
         ?? Array.Empty<ConversationMemoryCandidate>();
 }
 
+public sealed class FileAgentMemoryConfigurationStore : IAgentMemoryConfigurationStore
+{
+    private readonly string _path;
+
+    public FileAgentMemoryConfigurationStore(string rootDirectory) =>
+        _path = Path.Combine(rootDirectory, "memory-configuration.json");
+
+    public async Task<AgentMemoryConfiguration> LoadAsync(CancellationToken cancellationToken = default) =>
+        await AgentJson.ReadAsync<AgentMemoryConfiguration>(_path, cancellationToken)
+        ?? AgentMemoryConfiguration.Default;
+
+    public Task SaveAsync(AgentMemoryConfiguration configuration, CancellationToken cancellationToken = default) =>
+        AgentJson.WriteAsync(_path, configuration, cancellationToken);
+}
+
 public sealed class MockRuntimeContextStateProvider : IRuntimeContextStateProvider, IMockContextController
 {
     private readonly IDeveloperSession? _developerSession;
@@ -422,8 +437,13 @@ public sealed class LocalPetContextProvider : IPetContextProvider
         var ownerTask = _profiles.LoadOwnerProfileAsync(cancellationToken);
         var promptTask = _profiles.LoadPetPromptAsync(cancellationToken);
         var stateTask = _runtimeState.GetStateAsync(cancellationToken);
-        var albumTask = _albumMemory.SearchAsync(request.UserMessage, Math.Clamp(request.MaximumAlbumMemories, 0, 5), cancellationToken);
-        var memoryTask = _conversationMemory.ReadAsync(cancellationToken);
+        var memoryConfiguration = request.MemoryConfiguration ?? AgentMemoryConfiguration.Default;
+        var albumTask = memoryConfiguration.UseAlbumMemory
+            ? _albumMemory.SearchAsync(request.UserMessage, Math.Clamp(request.MaximumAlbumMemories, 0, 5), cancellationToken)
+            : Task.FromResult<IReadOnlyList<RelevantAlbumMemory>>(Array.Empty<RelevantAlbumMemory>());
+        var memoryTask = memoryConfiguration.UseLongTermMemory
+            ? _conversationMemory.ReadAsync(cancellationToken)
+            : Task.FromResult<IReadOnlyList<ConversationMemoryCandidate>>(Array.Empty<ConversationMemoryCandidate>());
         await Task.WhenAll(petTask, ownerTask, promptTask, stateTask, albumTask, memoryTask);
         var state = await stateTask;
         var confirmed = SelectConfirmedMemories(await memoryTask, request.UserMessage);

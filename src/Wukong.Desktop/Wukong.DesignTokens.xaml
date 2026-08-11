@@ -44,16 +44,20 @@
     <Style x:Key="NavButton" TargetType="Button">
         <Setter Property="Margin" Value="0,0,0,6" />
         <Setter Property="Padding" Value="14,12" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="#555850" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Cursor" Value="Hand" />
     </Style>
 
     <Style x:Key="PrimaryButton" TargetType="Button">
         <Setter Property="Padding" Value="11,10" />
         <Setter Property="Margin" Value="0,0,8,8" />
+        <Setter Property="MinWidth" Value="92" />
+        <Setter Property="MinHeight" Value="38" />
         <Setter Property="Background" Value="{StaticResource InkBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />

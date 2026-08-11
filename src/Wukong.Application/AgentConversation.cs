@@ -257,9 +257,12 @@ public sealed class ContextualConversationService : IContextualConversationServi
 
         var started = DateTimeOffset.UtcNow;
         var config = await _modelRuntime.GetActiveConfigurationAsync(cancellationToken);
-        var history = await _history.ReadAsync(request.SessionId, cancellationToken);
+        var memoryConfiguration = request.MemoryConfiguration ?? AgentMemoryConfiguration.Default;
+        var history = memoryConfiguration.UseShortTermMemory
+            ? await _history.ReadAsync(request.SessionId, cancellationToken)
+            : Array.Empty<AgentChatMessage>();
         var snapshot = await _contextProvider.GetSnapshotAsync(
-            new PetContextRequest(request.UserMessage, ContextBudgetOptions.Default.MaximumAlbumMemories),
+            new PetContextRequest(request.UserMessage, ContextBudgetOptions.Default.MaximumAlbumMemories, memoryConfiguration),
             cancellationToken);
         var assembled = _assembler.Assemble(snapshot, history, request.UserMessage, started);
 

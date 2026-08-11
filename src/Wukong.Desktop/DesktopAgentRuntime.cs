@@ -15,6 +15,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         IContextualConversationService conversation,
         IChatModelRuntime models,
         IAgentProfileStore profiles,
+        IAgentMemoryConfigurationStore memoryConfiguration,
         IConversationMemoryStore memory,
         IDeveloperSession developerSession,
         IDeveloperDiagnostics diagnostics,
@@ -24,6 +25,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         Conversation = conversation;
         Models = models;
         Profiles = profiles;
+        MemoryConfiguration = memoryConfiguration;
         Memory = memory;
         DeveloperSession = developerSession;
         Diagnostics = diagnostics;
@@ -33,6 +35,7 @@ public sealed class DesktopAgentRuntime : IDisposable
     public IContextualConversationService Conversation { get; }
     public IChatModelRuntime Models { get; }
     public IAgentProfileStore Profiles { get; }
+    public IAgentMemoryConfigurationStore MemoryConfiguration { get; }
     public IConversationMemoryStore Memory { get; }
     public IDeveloperSession DeveloperSession { get; }
     public IDeveloperDiagnostics Diagnostics { get; }
@@ -56,6 +59,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         };
         var models = new ConfiguredChatModelRuntime(configurations, secrets, providers);
         var profiles = new LocalAgentProfileStore(profileRoot);
+        var memoryConfiguration = new FileAgentMemoryConfigurationStore(agentRoot);
         var history = new FileConversationHistoryStore(agentRoot);
         var memory = new FileConversationMemoryStore(agentRoot);
         var developer = new DeveloperSession();
@@ -70,7 +74,7 @@ public sealed class DesktopAgentRuntime : IDisposable
             history,
             memory,
             diagnostics);
-        return new(httpClient, conversation, models, profiles, memory, developer, diagnostics, mockState);
+        return new(httpClient, conversation, models, profiles, memoryConfiguration, memory, developer, diagnostics, mockState);
     }
 
     public void Dispose() => _httpClient.Dispose();

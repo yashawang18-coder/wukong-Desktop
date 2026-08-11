@@ -20,6 +20,7 @@ public partial class ControlPanelWindow : Window
     private readonly ObservableCollection<AlbumFolderItem> _albumFolders = new();
     private readonly ObservableCollection<string> _albumMediaBindings = new();
     private readonly ObservableCollection<ChatDisplayItem> _chatItems = new();
+    private readonly Dictionary<string, ObservableCollection<ChatDisplayItem>> _modelDebugItems = new(StringComparer.Ordinal);
     private readonly ObservableCollection<ConversationMemoryCandidate> _memoryCandidates = new();
     private readonly Dictionary<ChatProviderType, ChatProviderConfiguration> _providerConfigurations = new();
     private PlayableMotion? _previewMotion;
@@ -31,6 +32,10 @@ public partial class ControlPanelWindow : Window
     private bool _previewPaused;
     private bool _previewDark;
     private bool _modelUiReady;
+    private string _activeModelTab = "Model";
+    private AgentMemoryConfiguration _memoryConfiguration = AgentMemoryConfiguration.Default;
+    private PetProfileSnapshot _loadedPetProfile = PetProfileSnapshot.Default;
+    private OwnerProfileSnapshot _loadedOwnerProfile = OwnerProfileSnapshot.Default;
     private bool _changingDeveloperMode;
     private CancellationTokenSource? _agentRequestCancellation;
 
@@ -56,7 +61,10 @@ public partial class ControlPanelWindow : Window
         AlbumList.ItemsSource = _albumFolders;
         AlbumMediaList.ItemsSource = _albumMediaBindings;
         OwnerChatList.ItemsSource = _chatItems;
-        ModelChatList.ItemsSource = _chatItems;
+        _modelDebugItems["Model"] = new ObservableCollection<ChatDisplayItem>();
+        _modelDebugItems["Memory"] = new ObservableCollection<ChatDisplayItem>();
+        _modelDebugItems["Pet"] = new ObservableCollection<ChatDisplayItem>();
+        ModelChatList.ItemsSource = _modelDebugItems[_activeModelTab];
         MemoryCandidateList.ItemsSource = _memoryCandidates;
         _previewTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(125) };
         _previewTimer.Tick += (_, _) => AdvancePreview();
@@ -200,10 +208,18 @@ public partial class ControlPanelWindow : Window
     private void UnbindAlbumMedia_Click(object sender, RoutedEventArgs e)
     {
         if (AlbumMediaList.SelectedItem is not string fileName)
+        {
+            AlbumStatusText.Text = "请先选择要解绑的素材。";
             return;
+        }
 
-        _albumMediaBindings.Remove(fileName);
+        if (!_albumMediaBindings.Remove(fileName))
+        {
+            AlbumStatusText.Text = "未找到要解绑的素材。";
+            return;
+        }
         SaveSelectedAlbumMarkdown();
+        AlbumStatusText.Text = $"已解绑 {fileName}";
     }
 
     private void UploadPetAvatar_Click(object sender, RoutedEventArgs e)
@@ -238,10 +254,52 @@ public partial class ControlPanelWindow : Window
         ProfileMemoryPanel.Visibility = tab == "Memory" ? Visibility.Visible : Visibility.Collapsed;
     }
 
+    private void ModelTab_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string tab })
+            SelectModelTab(tab);
+    }
+
+    private void SelectModelTab(string tab)
+    {
+        _activeModelTab = tab is "Memory" or "Pet" ? tab : "Model";
+        ModelConfigPanel.Visibility = _activeModelTab == "Model" ? Visibility.Visible : Visibility.Collapsed;
+        MemoryConfigPanel.Visibility = _activeModelTab == "Memory" ? Visibility.Visible : Visibility.Collapsed;
+        PetSettingPanel.Visibility = _activeModelTab == "Pet" ? Visibility.Visible : Visibility.Collapsed;
+        ModelConfigTabButton.Style = (Style)FindResource(_activeModelTab == "Model" ? "PrimaryButton" : "SecondaryButton");
+        MemoryConfigTabButton.Style = (Style)FindResource(_activeModelTab == "Memory" ? "PrimaryButton" : "SecondaryButton");
+        PetSettingTabButton.Style = (Style)FindResource(_activeModelTab == "Pet" ? "PrimaryButton" : "SecondaryButton");
+        ModelChatList.ItemsSource = _modelDebugItems[_activeModelTab];
+        SetChatStatus(_activeModelTab switch
+        {
+            "Memory" => "记忆配置调试会话已切换。",
+            "Pet" => "宠物设定调试会话已切换。",
+            _ => "大模型调试会话已切换。"
+        });
+        ScrollChatToEnd();
+    }
+
+    private async void MemoryConfig_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_modelUiReady)
+            return;
+
+        _memoryConfiguration = ReadMemoryConfigurationFromUi();
+        await _agent.MemoryConfiguration.SaveAsync(_memoryConfiguration);
+        SetChatStatus("记忆配置已保存，将用于下一轮对话。");
+    }
+
     private async void SavePetPrompt_Click(object sender, RoutedEventArgs e)
     {
         await _agent.Profiles.SavePetPromptAsync(PetPromptText.Text);
         ModelConfigStatus.Text = "宠物设定已保存并会用于后续对话。";
+        SetChatStatus("宠物设定已保存，下一轮调试会重新注入最新提示词。");
+    }
+
+    private void PetPromptText_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_modelUiReady)
+            ModelConfigStatus.Text = "宠物设定已修改，保存后用于后续对话。";
     }
 
     private async void SavePetProfile_Click(object sender, RoutedEventArgs e)
@@ -252,16 +310,16 @@ public partial class ControlPanelWindow : Window
             PetBirthDatePicker.SelectedDate?.ToString("yyyy-MM-dd") ?? string.Empty,
             PetBreedText.Text.Trim(),
             PetLifeStageText.Text.Trim(),
-            SelectedComboText(PetHarnessCombo)));
+            _loadedPetProfile.Harness));
     }
 
     private async void SaveOwnerProfile_Click(object sender, RoutedEventArgs e)
     {
         await _agent.Profiles.SaveOwnerProfileAsync(new(
-            OwnerCallNameText.Text.Trim(),
+            _loadedOwnerProfile.CallName,
             OwnerScheduleText.Text.Trim(),
             OwnerPreferenceText.Text.Trim(),
-            SelectedComboText(OwnerToneCombo),
+            _loadedOwnerProfile.Tone,
             OwnerNotesText.Text.Trim()));
     }
 
@@ -274,23 +332,25 @@ public partial class ControlPanelWindow : Window
         var promptTask = _agent.Profiles.LoadPetPromptAsync();
         var configurationsTask = _agent.Models.GetConfigurationsAsync();
         var activeTask = _agent.Models.GetActiveConfigurationAsync();
-        await Task.WhenAll(petTask, ownerTask, promptTask, configurationsTask, activeTask);
+        var memoryConfigurationTask = _agent.MemoryConfiguration.LoadAsync();
+        await Task.WhenAll(petTask, ownerTask, promptTask, configurationsTask, activeTask, memoryConfigurationTask);
 
         var pet = await petTask;
+        _loadedPetProfile = pet;
         PetNameText.Text = pet.Name;
         PetEnglishNameText.Text = pet.EnglishName;
         PetBirthDatePicker.SelectedDate = DateTime.TryParse(pet.BirthDate, out var birthDate) ? birthDate : null;
         PetBreedText.Text = pet.Breed;
         PetLifeStageText.Text = pet.LifeStage;
-        SelectComboText(PetHarnessCombo, pet.Harness);
 
         var owner = await ownerTask;
-        OwnerCallNameText.Text = owner.CallName;
+        _loadedOwnerProfile = owner;
         OwnerScheduleText.Text = owner.Schedule;
         OwnerPreferenceText.Text = owner.CompanionPreference;
-        SelectComboText(OwnerToneCombo, owner.Tone);
         OwnerNotesText.Text = owner.Notes;
         PetPromptText.Text = await promptTask;
+        _memoryConfiguration = await memoryConfigurationTask;
+        ApplyMemoryConfigurationToUi(_memoryConfiguration);
         LoadAvatarIfAvailable();
 
         _providerConfigurations.Clear();
@@ -305,6 +365,7 @@ public partial class ControlPanelWindow : Window
         await ReloadChatHistoryAsync();
         await RefreshMemoryCandidatesAsync();
         UpdateDeveloperVisibility();
+        SelectModelTab("Model");
     }
 
     private async void ModelProviderCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -329,6 +390,18 @@ public partial class ControlPanelWindow : Window
             ? configuration.ApiKeyConfigured ? "已安全保存（不会回显）" : "未配置"
             : "本地 Ollama 默认不需要 API Key";
     }
+
+    private void ApplyMemoryConfigurationToUi(AgentMemoryConfiguration configuration)
+    {
+        UseLongTermMemoryCheck.IsChecked = configuration.UseLongTermMemory;
+        UseAlbumMemoryCheck.IsChecked = configuration.UseAlbumMemory;
+        UseShortTermMemoryCheck.IsChecked = configuration.UseShortTermMemory;
+    }
+
+    private AgentMemoryConfiguration ReadMemoryConfigurationFromUi() => new(
+        UseLongTermMemoryCheck.IsChecked == true,
+        UseAlbumMemoryCheck.IsChecked == true,
+        UseShortTermMemoryCheck.IsChecked == true);
 
     private async Task<bool> SaveModelConfigurationAsync()
     {
@@ -391,16 +464,17 @@ public partial class ControlPanelWindow : Window
         if (string.IsNullOrWhiteSpace(text) || _agentRequestCancellation is not null)
             return;
 
-        _chatItems.Add(ChatDisplayItem.User(text));
+        var chatItems = ActiveChatItems(input);
+        chatItems.Add(ChatDisplayItem.User(text));
         input.Clear();
         SetChatStatus("悟空正在想...");
         _agentRequestCancellation = new CancellationTokenSource();
         try
         {
             var result = await _agent.Conversation.SendAsync(
-                new ConversationRequest(DesktopAgentRuntime.DailySessionId, text),
+                new ConversationRequest(SessionIdForInput(input), text, _memoryConfiguration),
                 _agentRequestCancellation.Token);
-            _chatItems.Add(result.Success
+            chatItems.Add(result.Success
                 ? ChatDisplayItem.Assistant(result.AssistantText ?? string.Empty)
                 : ChatDisplayItem.Error(result.UserFacingError ?? "请求失败，请检查模型配置。"));
             SetChatStatus(result.Success
@@ -419,25 +493,56 @@ public partial class ControlPanelWindow : Window
 
     private async Task ReloadChatHistoryAsync()
     {
-        var history = await _agent.Conversation.GetHistoryAsync(DesktopAgentRuntime.DailySessionId);
-        _chatItems.Clear();
-        foreach (var message in history.Where(x => x.Role != AgentChatRole.System))
-            _chatItems.Add(ChatDisplayItem.From(message));
+        await ReloadChatHistoryAsync(DesktopAgentRuntime.DailySessionId, _chatItems);
+        foreach (var key in _modelDebugItems.Keys.ToArray())
+            await ReloadChatHistoryAsync(SessionIdForModelTab(key), _modelDebugItems[key]);
         ScrollChatToEnd();
+    }
+
+    private async Task ReloadChatHistoryAsync(string sessionId, ObservableCollection<ChatDisplayItem> target)
+    {
+        var history = await _agent.Conversation.GetHistoryAsync(sessionId);
+        target.Clear();
+        foreach (var message in history.Where(x => x.Role != AgentChatRole.System))
+            target.Add(ChatDisplayItem.From(message));
     }
 
     private void ScrollChatToEnd()
     {
-        if (_chatItems.Count == 0)
-            return;
-        OwnerChatList.ScrollIntoView(_chatItems[^1]);
-        ModelChatList.ScrollIntoView(_chatItems[^1]);
+        if (_chatItems.Count > 0)
+            OwnerChatList.ScrollIntoView(_chatItems[^1]);
+        var active = _modelDebugItems[_activeModelTab];
+        if (active.Count > 0)
+            ModelChatList.ScrollIntoView(active[^1]);
     }
 
     private void SetChatStatus(string value)
     {
         OwnerChatStatus.Text = value;
         ModelChatStatus.Text = value;
+    }
+
+    private ObservableCollection<ChatDisplayItem> ActiveChatItems(TextBox input) =>
+        ReferenceEquals(input, ModelDebugInput) ? _modelDebugItems[_activeModelTab] : _chatItems;
+
+    private string SessionIdForInput(TextBox input) =>
+        ReferenceEquals(input, ModelDebugInput) ? SessionIdForModelTab(_activeModelTab) : DesktopAgentRuntime.DailySessionId;
+
+    private static string SessionIdForModelTab(string tab) => tab switch
+    {
+        "Memory" => "model-debug-memory",
+        "Pet" => "model-debug-pet",
+        _ => "model-debug-model"
+    };
+
+    private static bool IsInModelDebug(DependencyObject source)
+    {
+        for (DependencyObject? current = source; current is not null; current = LogicalTreeHelper.GetParent(current))
+        {
+            if (current is FrameworkElement { Name: "ModelDebugPanel" })
+                return true;
+        }
+        return false;
     }
 
     private async void AgentInput_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -453,14 +558,23 @@ public partial class ControlPanelWindow : Window
 
     private async void ClearConversation_Click(object sender, RoutedEventArgs e)
     {
-        await _agent.Conversation.ClearHistoryAsync(DesktopAgentRuntime.DailySessionId);
-        _chatItems.Clear();
+        var sessionId = sender is Button button && IsInModelDebug(button)
+            ? SessionIdForModelTab(_activeModelTab)
+            : DesktopAgentRuntime.DailySessionId;
+        await _agent.Conversation.ClearHistoryAsync(sessionId);
+        if (sessionId == DesktopAgentRuntime.DailySessionId)
+            _chatItems.Clear();
+        else
+            _modelDebugItems[_activeModelTab].Clear();
         SetChatStatus("当前对话已清空。");
     }
 
     private async void SaveMemoryCandidate_Click(object sender, RoutedEventArgs e)
     {
-        var candidate = await _agent.Conversation.SaveLatestTurnAsCandidateAsync(DesktopAgentRuntime.DailySessionId);
+        var sessionId = sender is Button button && IsInModelDebug(button)
+            ? SessionIdForModelTab(_activeModelTab)
+            : DesktopAgentRuntime.DailySessionId;
+        var candidate = await _agent.Conversation.SaveLatestTurnAsCandidateAsync(sessionId);
         SetChatStatus(candidate is null ? "没有可保存的完整对话轮次。" : "已保存为待人工确认的记忆候选。");
         await RefreshMemoryCandidatesAsync();
     }

@@ -19,6 +19,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("provider timeout network and empty response map safely", ProviderTransportFailuresMapSafely),
     ("album markdown retrieval is relevant and bounded", AlbumMarkdownRetrievalWorks),
     ("missing and damaged album markdown degrades safely", AlbumMarkdownFailuresAreSafe),
+    ("memory configuration store persists switches", MemoryConfigurationStorePersistsSwitches),
     ("mock context editing requires developer session", MockContextRequiresDeveloperSession)
 };
 
@@ -240,6 +241,20 @@ static async Task AlbumMarkdownFailuresAreSafe()
         await File.WriteAllBytesAsync(Path.Combine(root, "broken.md"), new byte[] { 0xff, 0xfe, 0x00 });
         var retriever = new AlbumMarkdownMemoryRetriever(() => root);
         _ = await retriever.SearchAsync("悟空", 5);
+    }
+    finally { TryDeleteDirectory(root); }
+}
+
+static async Task MemoryConfigurationStorePersistsSwitches()
+{
+    var root = TestAgentRoot();
+    try
+    {
+        var store = new FileAgentMemoryConfigurationStore(root);
+        Assert(await store.LoadAsync() == AgentMemoryConfiguration.Default, "default memory configuration changed");
+        var updated = new AgentMemoryConfiguration(false, true, false);
+        await store.SaveAsync(updated);
+        Assert(await store.LoadAsync() == updated, "memory configuration was not persisted");
     }
     finally { TryDeleteDirectory(root); }
 }

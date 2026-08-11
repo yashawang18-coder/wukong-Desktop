@@ -22,6 +22,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("album instructions remain untrusted reference data", AlbumInstructionsRemainData),
     ("agent context budget reports truncation", AgentContextBudgetTruncates),
     ("conversation history clears and is shared by session", ConversationHistoryClears),
+    ("short term memory switch excludes prior turns", ShortTermMemorySwitchExcludesPriorTurns),
     ("provider failures do not create assistant history", FailedReplyDoesNotPersist),
     ("conversation turn becomes pending memory candidate", ConversationTurnBecomesCandidate),
     ("developer diagnostics require authenticated session", DeveloperDiagnosticsRequireAuthentication),
@@ -302,6 +303,19 @@ static async Task ConversationHistoryClears()
     Assert((await service.GetHistoryAsync("daily")).Count == 2, "successful turn was not persisted");
     await service.ClearHistoryAsync("daily");
     Assert((await service.GetHistoryAsync("daily")).Count == 0, "history clear failed");
+}
+
+static async Task ShortTermMemorySwitchExcludesPriorTurns()
+{
+    var service = CreateAgentService(AgentSnapshot(), out var model, out _, out _);
+    var enabled = AgentMemoryConfiguration.Default;
+    Assert((await service.SendAsync(new("daily", "first-message", enabled))).Success, "first turn failed");
+    var disabled = enabled with { UseShortTermMemory = false };
+    Assert((await service.SendAsync(new("daily", "second-message", disabled))).Success, "second turn failed");
+
+    var requestTexts = model.LastRequest!.Messages.Select(x => x.Content).ToArray();
+    Assert(requestTexts.Any(x => x.Contains("second-message", StringComparison.Ordinal)), "current user message missing");
+    Assert(!requestTexts.Any(x => x.Contains("first-message", StringComparison.Ordinal)), "disabled short term memory still injected prior turn");
 }
 
 static async Task FailedReplyDoesNotPersist()
