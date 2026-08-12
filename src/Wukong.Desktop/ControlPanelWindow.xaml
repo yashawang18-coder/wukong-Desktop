@@ -550,6 +550,32 @@
               </StackPanel>
             </Border>
           </Grid>
+          <Border Style="{StaticResource Card}" Visibility="{Binding ElementName=DeveloperDiagnosticsPanel, Path=Visibility}">
+            <StackPanel>
+              <TextBlock Text="口令动作候选调试" FontWeight="SemiBold" />
+              <TextBlock Text="仅用于开发者运行验收；不会加入自主动作池，也不会绕过正式口令运行准入。" Style="{StaticResource SubText}" Margin="0,4,0,12" />
+              <ItemsControl x:Name="CommandMotionList">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Background="#F7F5F0" CornerRadius="12" Padding="10" Margin="0,0,10,10" Width="250">
+                      <StackPanel>
+                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding BehaviorId}" Style="{StaticResource SubText}" />
+                        <TextBlock Text="{Binding FrameCount, StringFormat=frames: {0}}" />
+                        <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" />
+                        <Button Content="强制预览" Tag="{Binding}" Style="{StaticResource PrimaryButton}" Click="ForceCommandMotion_Click" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
           <Border Style="{StaticResource Card}">
             <StackPanel>
               <TextBlock Text="本地运行 Trace" FontWeight="SemiBold" />

@@ -1,4 +1,6 @@
 using System.IO;
+using System.Security.Cryptography;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -20,6 +22,9 @@ var tests = new (string Name, Action Run)[]
     ("main window pet scale changes image size", MainWindowPetScaleChangesImageSize),
     ("initial placement stays in work area", InitialPlacementStaysInWorkArea),
     ("phase15 motion assets are copied and decodable", Phase15MotionAssetsAreCopiedAndDecodable),
+    ("command action candidates are indexed and validated", CommandActionCandidatesAreIndexed),
+    ("command candidates stay out of autonomous and production commands", CommandCandidatesStayGated),
+    ("developer forced command candidate can request playback", DeveloperForcedCommandCandidateCanRequestPlayback),
     ("gesture interpreter distinguishes touch stroke drag and rapid tap", GestureInterpreterDistinguishesGestures),
     ("rapid tap has priority over owner touch", RapidTapHasPriorityOverOwnerTouch),
     ("runtime requests touch motion and returns decisions", RuntimeRequestsTouchMotion),
@@ -285,6 +290,72 @@ static void Phase15MotionAssetsAreCopiedAndDecodable()
     Assert(catalog.RequiredIdle.FrameCount >= 5, "idle motion is not animated");
 }
 
+static void CommandActionCandidatesAreIndexed()
+{
+    var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
+    var manifestPath = Path.Combine(output, "WukongAssets", "action-batches", "WK-COMMAND-ACTION-CANDIDATES-v3", "manifest.json");
+    Assert(File.Exists(manifestPath), "command candidate manifest was not copied to output");
+
+    using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+    var actions = manifest.RootElement.GetProperty("actions").EnumerateArray().ToArray();
+    Assert(actions.Length == 4, "command manifest must describe four actions");
+
+    foreach (var action in actions)
+    {
+        var frames = action.GetProperty("frames").EnumerateArray().ToArray();
+        Assert(frames.Length == action.GetProperty("frame_count").GetInt32(), "manifest frame count mismatch");
+        foreach (var frame in frames)
+        {
+            var framePath = Path.Combine(Path.GetDirectoryName(manifestPath)!, frame.GetProperty("path").GetString()!.Replace('/', Path.DirectorySeparatorChar));
+            Assert(File.Exists(framePath), $"manifest frame missing: {framePath}");
+            Assert(new FileInfo(framePath).Length == frame.GetProperty("bytes").GetInt64(), "frame byte length mismatch");
+            using var stream = File.OpenRead(framePath);
+            var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+            var bitmap = decoder.Frames.Single();
+            Assert(bitmap.PixelWidth == frame.GetProperty("width").GetInt32(), "frame width mismatch");
+            Assert(bitmap.PixelHeight == frame.GetProperty("height").GetInt32(), "frame height mismatch");
+            Assert(HasAlpha(bitmap.Format), "command frame is not alpha-capable");
+            Assert(Sha256(framePath) == frame.GetProperty("sha256").GetString(), "frame sha256 mismatch");
+        }
+    }
+
+    var catalog = DesktopMotionCatalog.Load(output);
+    var commandMotions = catalog.Motions.Where(x => x.Category == "口令动作").ToArray();
+    Assert(commandMotions.Length == 4, "command candidates were not indexed");
+    Assert(commandMotions.All(x => !x.RuntimeEnabled), "command candidates must remain runtime locked");
+    Assert(commandMotions.All(x => x.FrameCount is 8 or 9 or 10), "command candidate frame counts wrong");
+}
+
+static void CommandCandidatesStayGated()
+{
+    var runtime = new DesktopRuntimeHost();
+    PetMotionRequest? request = null;
+    runtime.MotionRequested += (_, item) => request = item;
+
+    var command = runtime.SubmitOwnerCommandAsync("抬爪").GetAwaiter().GetResult();
+    Assert(command == PetActionResult.Deferred, "unapproved command candidate should defer for production command");
+    Assert(request is null, "production command bypassed runtime candidate gate");
+
+    typeof(DesktopRuntimeHost)
+        .GetField("_currentStartedAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+        .SetValue(runtime, DateTimeOffset.Now - TimeSpan.FromSeconds(30));
+    runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
+    Assert(request is null || !request.Motion.BehaviorId.StartsWith("wk.command.", StringComparison.Ordinal), "autonomous pool selected command candidate");
+}
+
+static void DeveloperForcedCommandCandidateCanRequestPlayback()
+{
+    var runtime = new DesktopRuntimeHost();
+    PetMotionRequest? request = null;
+    runtime.MotionRequested += (_, item) => request = item;
+
+    var result = runtime.SubmitDeveloperMotionAsync(CommandBehaviorIds.Jump).GetAwaiter().GetResult();
+    Assert(result == PetActionResult.Accepted, "developer forced command candidate was not accepted");
+    Assert(request is not null, "developer forced candidate did not request playback");
+    Assert(request!.Motion.BehaviorId == CommandBehaviorIds.Jump, "developer forced playback selected wrong motion");
+    Assert(request.Motion.FrameCount == 8, "jump candidate frame count wrong");
+}
+
 static void GestureInterpreterDistinguishesGestures()
 {
     Assert(GestureInterpreter.Interpret(new GestureSample(new Point(1, 1), new Point(2, 2), TimeSpan.FromMilliseconds(120), 1, true)) == PetGestureKind.None, "single click should not trigger touch");
@@ -482,6 +553,19 @@ static void Assert(bool condition, string message)
 {
     if (!condition) throw new InvalidOperationException(message);
 }
+
+static string Sha256(string path)
+{
+    using var stream = File.OpenRead(path);
+    return Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
+}
+
+static bool HasAlpha(System.Windows.Media.PixelFormat format) =>
+    format == System.Windows.Media.PixelFormats.Bgra32 ||
+    format == System.Windows.Media.PixelFormats.Pbgra32 ||
+    format == System.Windows.Media.PixelFormats.Prgba64 ||
+    format == System.Windows.Media.PixelFormats.Rgba64 ||
+    format == System.Windows.Media.PixelFormats.Rgba128Float;
 
 static void TryDeleteDirectory(string path)
 {

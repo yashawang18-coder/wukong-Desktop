@@ -58,3 +58,16 @@ Pupu assets, behavior IDs, hard-coded mappings, secrets, photographs, personal s
 ## 2026-08-09 - keep normal UX and developer diagnostics in one product
 
 The control panel uses six primary tabs: Owner, Profile, Album, Model, Assets, and Developer. The Owner and Model areas have independent conversation sessions. Normal mode presents user-facing state and feedback; developer mode adds trace, state-machine, behavior, agent, memory, scene simulation, log/test, and technical-description views. Simulation must be visibly isolated and restorable and must not write real memory.
+
+## 2026-08-12 - integrate command action candidates behind runtime gates
+
+Import `WK-COMMAND-ACTION-CANDIDATES-v3` from the remote candidate asset branch as runtime-candidate evidence only. The four command behaviors use explicit stable IDs instead of folder-name discovery in production routing:
+
+- `wk.command.paw_rise`
+- `wk.command.jump`
+- `wk.command.spin_approach_stop_sit`
+- `wk.command.paw_eat`
+
+These sequences may appear in the asset library and may be force-played in developer mode to collect Windows renderer evidence. They must remain excluded from the autonomous pool and production runtime registry until renderer QA promotes the assets to `runtime-approved` with `runtime_use=true`.
+
+Manual transparent-window validation on 2026-08-12 failed all four command candidates for `color_inconsistency`, `geometry_scale_jitter`, and `uneven_timing`. Keep the integration and developer preview path, but do not approve these assets, do not open production command execution, and do not add them to autonomous behavior selection until a corrected batch passes renderer QA.

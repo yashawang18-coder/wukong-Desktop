@@ -58,6 +58,10 @@ public partial class ControlPanelWindow : Window
         DataContext = _runtime;
         TraceList.ItemsSource = _runtime.TraceLines;
         AssetList.ItemsSource = _runtime.Motions;
+        CommandMotionList.ItemsSource = _runtime.Motions
+            .Where(x => string.Equals(x.Category, "口令动作", StringComparison.Ordinal))
+            .OrderBy(x => x.BehaviorId)
+            .ToList();
         AlbumList.ItemsSource = _albumFolders;
         AlbumMediaList.ItemsSource = _albumMediaBindings;
         OwnerChatList.ItemsSource = _chatItems;
@@ -694,6 +698,21 @@ public partial class ControlPanelWindow : Window
             MockStateStatus.Text = "开发者会话已失效，请重新登录。";
             UpdateDeveloperVisibility();
         }
+    }
+
+    private async void ForceCommandMotion_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: PlayableMotion motion })
+            return;
+        if (!_agent.DeveloperSession.IsAuthenticated)
+        {
+            MockStateStatus.Text = "开发者会话已失效，请重新登录。";
+            UpdateDeveloperVisibility();
+            return;
+        }
+
+        var result = await _runtime.SubmitDeveloperMotionAsync(motion.BehaviorId);
+        MockStateStatus.Text = $"开发者预览 {motion.DisplayName}: {result}";
     }
 
     private void LoadAvatarIfAvailable()

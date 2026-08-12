@@ -2,6 +2,9 @@
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Windows;
 using Wukong.Domain;
 using Wukong.Infrastructure;
@@ -94,10 +97,14 @@ public sealed class DesktopMotionCatalog
 {
     private readonly Dictionary<string, PlayableMotion> _motions;
 
-    private DesktopMotionCatalog(IEnumerable<PlayableMotion> motions) =>
+    private DesktopMotionCatalog(IEnumerable<PlayableMotion> motions, string loadSummary)
+    {
         _motions = motions.Where(x => x.IsUsable).ToDictionary(x => x.BehaviorId, StringComparer.OrdinalIgnoreCase);
+        LoadSummary = loadSummary;
+    }
 
     public IReadOnlyList<PlayableMotion> Motions => _motions.Values.OrderBy(x => x.BehaviorId).ToList();
+    public string LoadSummary { get; }
 
     public PlayableMotion? Find(string behaviorId) =>
         _motions.TryGetValue(behaviorId, out var motion) ? motion : null;
@@ -279,7 +286,10 @@ public sealed class DesktopMotionCatalog
                 disposition: "Transition locked")
         };
 
-        return new DesktopMotionCatalog(motions);
+        var commandCandidates = LoadCommandCandidates(root).ToArray();
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; manifest=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json";
+        BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
+        return new DesktopMotionCatalog(motions.Concat(commandCandidates), summary);
     }
 
     private static PlayableMotion Motion(
@@ -353,6 +363,91 @@ public sealed class DesktopMotionCatalog
         frames.AddRange(frames.Skip(1).Take(frames.Count - 2).Reverse());
         return frames;
     }
+
+    private static IEnumerable<PlayableMotion> LoadCommandCandidates(string root)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", "WK-COMMAND-ACTION-CANDIDATES-v3", "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("command_candidate_manifest_missing");
+            yield break;
+        }
+
+        CommandActionBatchManifest? manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<CommandActionBatchManifest>(
+                File.ReadAllText(manifestPath),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Command candidate manifest parse failed", ex);
+            yield break;
+        }
+
+        if (manifest?.Actions is null)
+            yield break;
+
+        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        foreach (var action in manifest.Actions)
+        {
+            var frames = new List<string>();
+            var errors = new List<string>();
+            foreach (var frame in action.Frames ?? Array.Empty<CommandActionFrameManifest>())
+            {
+                var path = Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(path))
+                {
+                    errors.Add($"missing:{frame.Path}");
+                    continue;
+                }
+
+                var info = new FileInfo(path);
+                if (info.Length != frame.Bytes)
+                    errors.Add($"bytes:{frame.Path}");
+                if (!string.Equals(Sha256(path), frame.Sha256, StringComparison.OrdinalIgnoreCase))
+                    errors.Add($"sha256:{frame.Path}");
+                frames.Add(path);
+            }
+
+            if (frames.Count != action.FrameCount)
+                errors.Add($"frame_count:{frames.Count}/{action.FrameCount}");
+
+            if (errors.Count > 0)
+            {
+                BootstrapLog.WriteRaw($"command_candidate_invalid behavior={action.BehaviorId} errors={string.Join(",", errors)}");
+                continue;
+            }
+
+            var validationStatus = string.Equals(action.RuntimeValidation, "failed", StringComparison.OrdinalIgnoreCase)
+                ? "候选素材：验收失败，待返工"
+                : "候选素材：待运行验收";
+
+            yield return new PlayableMotion(
+                action.BehaviorId,
+                action.DisplayName,
+                "口令动作",
+                action.Direction,
+                action.FrameDurationMs,
+                action.Interruptible,
+                new[] { new MotionPhase("intro", frames, Loop: false) },
+                Path.Combine(batchRoot, action.SourceFolder.Replace('/', Path.DirectorySeparatorChar)),
+                RuntimeEnabled: false,
+                Status: validationStatus,
+                MissingContent: "runtime approval / production registry binding",
+                StartPose: action.FromPose,
+                EndPose: action.ToPose,
+                StyleGroup: "wukong-current-adult-v1",
+                Disposition: "Developer preview only");
+        }
+    }
+
+    private static string Sha256(string path)
+    {
+        using var stream = File.OpenRead(path);
+        return Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
+    }
 }
 
 public static class Phase15BehaviorIds
@@ -367,6 +462,37 @@ public static class Phase15BehaviorIds
     public const string StrokeEnjoy = "wk.phase15.stroke_enjoy";
     public const string ProneTouch = "wk.phase15.prone_touch";
 }
+
+public static class CommandBehaviorIds
+{
+    public const string PawRise = "wk.command.paw_rise";
+    public const string Jump = "wk.command.jump";
+    public const string SpinApproachStopSit = "wk.command.spin_approach_stop_sit";
+    public const string PawEat = "wk.command.paw_eat";
+}
+
+public sealed record CommandActionBatchManifest(
+    [property: JsonPropertyName("actions")] IReadOnlyList<CommandActionManifest> Actions);
+
+public sealed record CommandActionManifest(
+    [property: JsonPropertyName("behavior_id")] string BehaviorId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("source_folder")] string SourceFolder,
+    [property: JsonPropertyName("frame_count")] int FrameCount,
+    [property: JsonPropertyName("frame_duration_ms")] int FrameDurationMs,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("from_pose")] string FromPose,
+    [property: JsonPropertyName("to_pose")] string ToPose,
+    [property: JsonPropertyName("direction")] string Direction,
+    [property: JsonPropertyName("interruptible")] bool Interruptible,
+    [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames);
+
+public sealed record CommandActionFrameManifest(
+    [property: JsonPropertyName("path")] string Path,
+    [property: JsonPropertyName("width")] int Width,
+    [property: JsonPropertyName("height")] int Height,
+    [property: JsonPropertyName("sha256")] string Sha256,
+    [property: JsonPropertyName("bytes")] long Bytes);
 
 public sealed record PetMotionRequest(PlayableMotion Motion, string Trigger, bool ReturnToIdle, int LoopCycles);
 
@@ -388,7 +514,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         CurrentAsset = _catalog.RequiredIdle.FirstFrame;
         CurrentAction = _catalog.RequiredIdle.DisplayName;
         CurrentBehaviorId = _catalog.RequiredIdle.BehaviorId;
-        Trace("phase15_registry_loaded", $"motions={_catalog.Motions.Count}");
+        Trace("asset_catalog_loaded", $"{_catalog.LoadSummary}; motions={_catalog.Motions.Count}");
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -468,19 +594,12 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public Task<PetActionResult> SubmitOwnerCommandAsync(string command)
     {
-        var behaviorId = command switch
-        {
-            "叫过来" => Phase15BehaviorIds.LookAround,
-            "伸爪" => Phase15BehaviorIds.SafeStand,
-            "摸摸" => Phase15BehaviorIds.ProneTouch,
-            "喂食" => Phase15BehaviorIds.LookAround,
-            "玩耍" => Phase15BehaviorIds.LookAround,
-            "邀请外出" => Phase15BehaviorIds.SafeStand,
-            "停下" => Phase15BehaviorIds.ProneIdle,
-            _ => Phase15BehaviorIds.ProneIdle
-        };
+        var behaviorId = ResolveOwnerCommandBehavior(command);
         return Task.FromResult(SubmitBehavior(BehaviorRequestSource.OwnerUi, behaviorId, $"owner_command:{command}", priority: 8, force: command == "停下"));
     }
+
+    public Task<PetActionResult> SubmitDeveloperMotionAsync(string behaviorId) =>
+        Task.FromResult(SubmitBehavior(BehaviorRequestSource.DeveloperForced, behaviorId, $"developer_force:{behaviorId}", priority: 100, force: true));
 
     public Task SubmitAutonomousTickAsync()
     {
@@ -576,6 +695,20 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         Accept(motion, source.ToString(), trigger, returnToIdle: behaviorId != Phase15BehaviorIds.ProneIdle, loopCycles: behaviorId == Phase15BehaviorIds.ProneIdle ? int.MaxValue : 2);
         return PetActionResult.Accepted;
     }
+
+    private static string ResolveOwnerCommandBehavior(string command) => command.Trim() switch
+    {
+        "叫过来" => Phase15BehaviorIds.LookAround,
+        "伸爪" or "抬爪" or "握手" => CommandBehaviorIds.PawRise,
+        "摸摸" => Phase15BehaviorIds.ProneTouch,
+        "跳" or "跳跃" => CommandBehaviorIds.Jump,
+        "转圈" or "靠近" or "停止坐下" or "转圈靠近停止坐下" => CommandBehaviorIds.SpinApproachStopSit,
+        "喂食" or "吃东西" or "舔爪" => CommandBehaviorIds.PawEat,
+        "玩耍" => Phase15BehaviorIds.LookAround,
+        "邀请外出" => Phase15BehaviorIds.SafeStand,
+        "停下" => Phase15BehaviorIds.ProneIdle,
+        _ => Phase15BehaviorIds.ProneIdle
+    };
 
     private void Accept(PlayableMotion motion, string source, string reason, bool returnToIdle, int loopCycles)
     {

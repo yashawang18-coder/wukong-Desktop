@@ -23,5 +23,9 @@
              LinkBase="WukongAssets"
              CopyToOutputDirectory="PreserveNewest"
              CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\assets\**\*.gif"
+             LinkBase="WukongAssets"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

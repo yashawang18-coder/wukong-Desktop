@@ -53,6 +53,22 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
 - Owner preview approval is recorded, but `runtime_validation=pending`, `runtime_approved=false`, and `runtime_use=false` remain unchanged.
 - It is evidence for the future animation lifecycle implementation; it is not yet a production behavior binding.
 
+## WK-COMMAND-ACTION-CANDIDATES-v3
+
+- Fetched from `origin/agent/assets-command-actions-v3-candidate` commit `fc9f0fd`.
+- Imported four command-action candidate sequences under `assets/action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/`:
+  - `01_sit_prone_paw_rise`: 8 PNG frames.
+  - `02_jump`: 8 PNG frames.
+  - `03_spin_approach_stop_sit`: 10 PNG frames.
+  - `04_sit_prone_paw_eat`: 9 PNG frames.
+- Added a batch manifest with frame order, timing, pose, interruption policy, dimensions, byte sizes, and SHA-256 hashes.
+- Added candidate behavior contracts for `wk.command.paw_rise`, `wk.command.jump`, `wk.command.spin_approach_stop_sit`, and `wk.command.paw_eat`.
+- These assets are visible in the desktop asset library and may be force-played from developer mode for Windows renderer validation.
+- Manual transparent-window validation failed for all four sequences with `color_inconsistency`, `geometry_scale_jitter`, and `uneven_timing`.
+- They are not added to `contracts/runtime/asset-registry.json`, not included in the autonomous behavior pool, and remain `runtime_validation=failed`, `runtime_approved=false`, `runtime_use=false`.
+- Production command routing may resolve to these stable behavior IDs, but the runtime gate must return `Deferred` until corrected assets pass explicit renderer QA and runtime approval is recorded.
+- The extra seven PNG files in the batch are preview/reference images only: four contact sheets, `all-groups-overview.png`, `shared-prone-proof.png`, and `shared-sit-proof.png`. They are outside every action `frames[]` list and are not registered as playable frames.
+
 ## Next implementation target
 
 Phase 1 is the smallest honest end-to-end runtime:
