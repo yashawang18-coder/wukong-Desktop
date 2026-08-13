@@ -214,7 +214,7 @@ public sealed class AgentContextAssembler
 
     private static IReadOnlyList<string> NonEmptyFieldNames(OwnerProfileSnapshot profile) => new[]
     {
-        ("call_name", profile.CallName), ("schedule", profile.Schedule),
+        ("call_name", profile.CallName), ("birthday", profile.Birthday), ("pet_call_name", profile.PetCallName), ("schedule", profile.Schedule),
         ("companion_preference", profile.CompanionPreference), ("tone", profile.Tone), ("notes", profile.Notes)
     }.Where(x => !string.IsNullOrWhiteSpace(x.Item2)).Select(x => x.Item1).ToArray();
 }

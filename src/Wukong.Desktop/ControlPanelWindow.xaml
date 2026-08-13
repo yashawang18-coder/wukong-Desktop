@@ -216,13 +216,18 @@
                     <Grid.ColumnDefinitions><ColumnDefinition Width="118" /><ColumnDefinition /></Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                       <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock Text="作息" Grid.Row="0" Style="{StaticResource SubText}" />
-                    <TextBox x:Name="OwnerScheduleText" Grid.Row="0" Grid.Column="1" Text="09:00-18:00 工作，23:30 后安静" Style="{StaticResource Field}" Margin="0,0,0,0" />
-                    <TextBlock Text="陪伴偏好" Grid.Row="1" Style="{StaticResource SubText}" />
-                    <TextBox x:Name="OwnerPreferenceText" Grid.Row="1" Grid.Column="1" Text="安静陪伴，不频繁跳大姿态动作" Style="{StaticResource Field}" Margin="0,8,0,0" />
-                    <TextBlock Text="备注" Grid.Row="2" Style="{StaticResource SubText}" />
-                    <TextBox x:Name="OwnerNotesText" Grid.Row="2" Grid.Column="1" Text="不伪造长期记忆，后续由记忆服务接入。" Style="{StaticResource Field}" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="82" Margin="0,8,0,0" />
+                    <TextBlock Text="生日" Grid.Row="0" Style="{StaticResource SubText}" />
+                    <DatePicker x:Name="OwnerBirthdayPicker" Grid.Row="0" Grid.Column="1" Margin="0,0,0,0" />
+                    <TextBlock Text="宠物称呼" Grid.Row="1" Style="{StaticResource SubText}" />
+                    <TextBox x:Name="OwnerPetCallNameText" Grid.Row="1" Grid.Column="1" Text="悟空" Style="{StaticResource Field}" Margin="0,8,0,0" />
+                    <TextBlock Text="作息" Grid.Row="2" Style="{StaticResource SubText}" />
+                    <TextBox x:Name="OwnerScheduleText" Grid.Row="2" Grid.Column="1" Text="09:00-18:00 工作，23:30 后安静" Style="{StaticResource Field}" Margin="0,8,0,0" />
+                    <TextBlock Text="陪伴偏好" Grid.Row="3" Style="{StaticResource SubText}" />
+                    <TextBox x:Name="OwnerPreferenceText" Grid.Row="3" Grid.Column="1" Text="安静陪伴，不频繁跳大姿态动作" Style="{StaticResource Field}" Margin="0,8,0,0" />
+                    <TextBlock Text="备注" Grid.Row="4" Style="{StaticResource SubText}" />
+                    <TextBox x:Name="OwnerNotesText" Grid.Row="4" Grid.Column="1" Text="不伪造长期记忆，后续由记忆服务接入。" Style="{StaticResource Field}" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="82" Margin="0,8,0,0" />
                   </Grid>
                   <Button Content="保存主人档案" Style="{StaticResource PrimaryButton}" Click="SaveOwnerProfile_Click" HorizontalAlignment="Left" Margin="0,14,0,0" />
                 </StackPanel>
@@ -465,9 +470,17 @@
           <TextBlock Text="Motion library" Style="{StaticResource Eyebrow}" />
           <TextBlock Text="素材" Style="{StaticResource PageTitle}" />
           <TextBlock Text="Repository motions are separated into enabled, preview-only and locked assets." Style="{StaticResource SubText}" Margin="0,2,0,16" />
+          <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+            <Button x:Name="NormalAssetsTabButton" Content="普通素材" Tag="Normal" Style="{StaticResource PrimaryButton}" Click="AssetTab_Click" Margin="0,0,8,0" />
+            <Button x:Name="MagicAssetsTabButton" Content="魔法特辑" Tag="Magic" Style="{StaticResource SecondaryButton}" Click="AssetTab_Click" />
+          </StackPanel>
+          <StackPanel x:Name="NormalAssetSubTabs" Orientation="Horizontal" Margin="0,0,0,14">
+            <Button x:Name="BaseAssetsTabButton" Content="基础动作" Tag="Base" Style="{StaticResource PrimaryButton}" Click="NormalAssetSubTab_Click" Margin="0,0,8,0" />
+            <Button x:Name="CommandAssetsTabButton" Content="口令动作" Tag="Command" Style="{StaticResource SecondaryButton}" Click="NormalAssetSubTab_Click" />
+          </StackPanel>
           <Grid>
             <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="1.1*" /></Grid.ColumnDefinitions>
-            <ScrollViewer MaxHeight="560">
+            <ScrollViewer x:Name="NormalAssetsPanel" MaxHeight="560">
               <ItemsControl x:Name="AssetList">
                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
@@ -490,6 +503,53 @@
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
             </ScrollViewer>
+            <ScrollViewer x:Name="CommandAssetsPanel" MaxHeight="560" Visibility="Collapsed">
+              <ItemsControl x:Name="CommandAssetList">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Style="{StaticResource Card}" Width="310" Margin="0,0,12,12">
+                      <StackPanel>
+                        <Border Height="150" CornerRadius="12" Background="#EEECE5"><Image Source="{Binding FirstFrame}" Stretch="Uniform" /></Border>
+                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" Margin="0,10,0,0" />
+                        <TextBlock Text="{Binding BehaviorId}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding FrameCount, StringFormat=frames: {0}}" />
+                        <TextBlock Text="{Binding PhaseSummary, StringFormat=phases: {0}}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <Button Content="预览动作" Style="{StaticResource PrimaryButton}" Tag="{Binding}" Click="PreviewAsset_Click" Margin="0,10,0,0" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+            <ScrollViewer x:Name="MagicAssetsPanel" MaxHeight="560" Visibility="Collapsed">
+              <ItemsControl x:Name="MagicSpecialList">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Style="{StaticResource Card}" Width="310" Margin="0,0,12,12">
+                      <StackPanel>
+                        <Border Height="150" CornerRadius="12" Background="#EEECE5"><Image Source="{Binding FirstFrame}" Stretch="Uniform" /></Border>
+                        <DockPanel LastChildFill="False" Margin="0,10,0,0">
+                          <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
+                          <Border DockPanel.Dock="Right" Style="{StaticResource Badge}"><TextBlock Text="Mock / Prototype" /></Border>
+                        </DockPanel>
+                        <TextBlock Text="{Binding BehaviorId}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                        <TextBlock Text="{Binding FrameCount, StringFormat=frames: {0}}" />
+                        <TextBlock Text="{Binding PhaseSummary, StringFormat=phases: {0}}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,10,0,0">
+                          <Button Content="预览" Style="{StaticResource SecondaryButton}" Tag="{Binding}" Click="PreviewAsset_Click" />
+                          <Button Content="立即展示" Style="{StaticResource PrimaryButton}" Tag="{Binding}" Click="ShowMagic_Click" />
+                        </WrapPanel>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
             <Border Grid.Column="1" Style="{StaticResource Card}" Margin="16,0,0,16">
               <StackPanel>
                 <TextBlock Text="逐帧预览" FontWeight="SemiBold" />
@@ -497,6 +557,7 @@
                 <Border x:Name="PreviewStage" Height="270" CornerRadius="14" Background="#EEECE5"><Image x:Name="PreviewImage" Stretch="Uniform" /></Border>
                 <TextBlock x:Name="PreviewMeta" Style="{StaticResource SubText}" Margin="0,10,0,0" />
                 <TextBlock x:Name="PreviewFrame" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" />
+                <TextBlock x:Name="MagicShowStatus" Style="{StaticResource SubText}" Margin="0,8,0,0" TextWrapping="Wrap" />
                 <ComboBox x:Name="PreviewPhaseCombo" Margin="0,10,0,0" SelectionChanged="PreviewPhaseCombo_SelectionChanged" />
                 <WrapPanel Margin="0,10,0,0">
                   <Button Content="暂停/继续" Style="{StaticResource SecondaryButton}" Click="PreviewPause_Click" />

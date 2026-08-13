@@ -72,7 +72,9 @@ public sealed record PetProfileSnapshot(string Name, string EnglishName, string 
 
 public sealed record OwnerProfileSnapshot(string CallName, string Schedule, string CompanionPreference, string Tone, string Notes)
 {
-    public static OwnerProfileSnapshot Default { get; } = new("主人", "", "", "亲近自然", "");
+    public string Birthday { get; init; } = "";
+    public string PetCallName { get; init; } = "悟空";
+    public static OwnerProfileSnapshot Default { get; } = new("主人", "", "", "亲近自然", "") { PetCallName = "悟空" };
 }
 
 public sealed record PersonalitySnapshot(double Liveliness, double Affection, double Sensitivity, double Independence, double Mischievousness)

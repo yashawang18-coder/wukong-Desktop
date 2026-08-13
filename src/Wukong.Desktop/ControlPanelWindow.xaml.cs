@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Microsoft.Win32;
+using Wukong.Domain;
 using Wukong.Application;
 
 namespace Wukong.Desktop;
@@ -57,7 +58,18 @@ public partial class ControlPanelWindow : Window
         InitializeComponent();
         DataContext = _runtime;
         TraceList.ItemsSource = _runtime.TraceLines;
-        AssetList.ItemsSource = _runtime.Motions;
+        AssetList.ItemsSource = _runtime.Motions
+            .Where(IsBaseMotion)
+            .OrderBy(x => x.BehaviorId)
+            .ToList();
+        CommandAssetList.ItemsSource = _runtime.Motions
+            .Where(IsCommandMotion)
+            .OrderBy(x => x.BehaviorId)
+            .ToList();
+        MagicSpecialList.ItemsSource = _runtime.MagicMotions
+            .Where(x => !string.Equals(x.BehaviorId, MagicBehaviorIds.PetrificusRelease, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(x => x.DisplayName)
+            .ToList();
         CommandMotionList.ItemsSource = _runtime.Motions
             .Where(x => string.Equals(x.Category, "口令动作", StringComparison.Ordinal))
             .OrderBy(x => x.BehaviorId)
@@ -324,7 +336,11 @@ public partial class ControlPanelWindow : Window
             OwnerScheduleText.Text.Trim(),
             OwnerPreferenceText.Text.Trim(),
             _loadedOwnerProfile.Tone,
-            OwnerNotesText.Text.Trim()));
+            OwnerNotesText.Text.Trim())
+        {
+            Birthday = OwnerBirthdayPicker.SelectedDate?.ToString("yyyy-MM-dd") ?? string.Empty,
+            PetCallName = OwnerPetCallNameText.Text.Trim()
+        });
     }
 
     private async void SaveModelConfig_Click(object sender, RoutedEventArgs e) => await SaveModelConfigurationAsync();
@@ -349,6 +365,8 @@ public partial class ControlPanelWindow : Window
 
         var owner = await ownerTask;
         _loadedOwnerProfile = owner;
+        OwnerBirthdayPicker.SelectedDate = DateTime.TryParse(owner.Birthday, out var ownerBirthday) ? ownerBirthday : null;
+        OwnerPetCallNameText.Text = owner.PetCallName;
         OwnerScheduleText.Text = owner.Schedule;
         OwnerPreferenceText.Text = owner.CompanionPreference;
         OwnerNotesText.Text = owner.Notes;
@@ -714,6 +732,63 @@ public partial class ControlPanelWindow : Window
         var result = await _runtime.SubmitDeveloperMotionAsync(motion.BehaviorId);
         MockStateStatus.Text = $"开发者预览 {motion.DisplayName}: {result}";
     }
+
+    private void AssetTab_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string tab })
+            return;
+
+        NormalAssetsPanel.Visibility = tab == "Normal" ? Visibility.Visible : Visibility.Collapsed;
+        CommandAssetsPanel.Visibility = Visibility.Collapsed;
+        MagicAssetsPanel.Visibility = tab == "Magic" ? Visibility.Visible : Visibility.Collapsed;
+        NormalAssetSubTabs.Visibility = tab == "Normal" ? Visibility.Visible : Visibility.Collapsed;
+        NormalAssetsTabButton.Style = (Style)FindResource(tab == "Normal" ? "PrimaryButton" : "SecondaryButton");
+        MagicAssetsTabButton.Style = (Style)FindResource(tab == "Magic" ? "PrimaryButton" : "SecondaryButton");
+        if (tab == "Normal")
+            SelectNormalAssetSubTab("Base");
+    }
+
+    private void NormalAssetSubTab_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string tab })
+            SelectNormalAssetSubTab(tab);
+    }
+
+    private void SelectNormalAssetSubTab(string tab)
+    {
+        AssetList.Visibility = Visibility.Visible;
+        NormalAssetsPanel.Visibility = tab == "Base" ? Visibility.Visible : Visibility.Collapsed;
+        CommandAssetsPanel.Visibility = tab == "Command" ? Visibility.Visible : Visibility.Collapsed;
+        BaseAssetsTabButton.Style = (Style)FindResource(tab == "Base" ? "PrimaryButton" : "SecondaryButton");
+        CommandAssetsTabButton.Style = (Style)FindResource(tab == "Command" ? "PrimaryButton" : "SecondaryButton");
+    }
+
+    private async void ShowMagic_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: PlayableMotion motion })
+            return;
+
+        MagicShowStatus.Text = $"正在展示 {motion.DisplayName}...";
+        var result = await _runtime.SubmitMagicAsync(motion.BehaviorId, BehaviorRequestSource.ControlPanel);
+        MagicShowStatus.Text = result switch
+        {
+            PetActionResult.Accepted => $"{motion.DisplayName}: 正在展示",
+            PetActionResult.Deferred => $"{motion.DisplayName}: {_runtime.CurrentReason}",
+            PetActionResult.MissingAsset => $"{motion.DisplayName}: 素材缺失",
+            PetActionResult.Interrupted => $"{motion.DisplayName}: 已停止",
+            PetActionResult.Failed => $"{motion.DisplayName}: 展示失败并已恢复",
+            _ => $"{motion.DisplayName}: {result}"
+        };
+    }
+
+    private static bool IsCommandMotion(PlayableMotion motion) =>
+        string.Equals(motion.Category, "口令动作", StringComparison.Ordinal);
+
+    private static bool IsMagicMotion(PlayableMotion motion) =>
+        string.Equals(motion.Category, "宠物魔法", StringComparison.Ordinal);
+
+    private static bool IsBaseMotion(PlayableMotion motion) =>
+        !IsCommandMotion(motion) && !IsMagicMotion(motion);
 
     private void LoadAvatarIfAvailable()
     {

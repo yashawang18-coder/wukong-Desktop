@@ -212,7 +212,11 @@ public sealed class LocalAgentProfileStore : IAgentProfileStore
                 Value(values, "schedule", ""),
                 Value(values, "preference", ""),
                 Value(values, "tone", OwnerProfileSnapshot.Default.Tone),
-                Value(values, "notes", ""));
+                Value(values, "notes", ""))
+            {
+                Birthday = Value(values, "birthday", ""),
+                PetCallName = Value(values, "pet_call_name", OwnerProfileSnapshot.Default.PetCallName)
+            };
         }
         catch (IOException) { return OwnerProfileSnapshot.Default; }
         catch (UnauthorizedAccessException) { return OwnerProfileSnapshot.Default; }

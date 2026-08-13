@@ -20,12 +20,30 @@
           Background="Transparent">
         <Grid.ContextMenu>
             <ContextMenu>
-                <MenuItem Header="Touch" Click="TouchMenuItem_Click" />
-                <MenuItem Header="Quiet" Click="QuietMenuItem_Click" />
-                <MenuItem Header="Chat" Click="ChatMenuItem_Click" />
-                <MenuItem Header="Open Control Panel" Click="OpenPanelMenuItem_Click" />
+                <MenuItem Header="停下" Click="StopMenuItem_Click" />
                 <Separator />
-                <MenuItem Header="Exit Wukong" Click="ExitMenuItem_Click" />
+                <MenuItem Header="聊天" Click="ChatMenuItem_Click" />
+                <MenuItem Header="吃一下" Tag="吃一下" Click="OwnerCommandMenuItem_Click" />
+                <MenuItem Header="玩一下" Tag="玩一下" Click="OwnerCommandMenuItem_Click" />
+                <Separator />
+                <MenuItem Header="口令">
+                    <MenuItem Header="坐" Tag="坐" Click="OwnerCommandMenuItem_Click" />
+                    <MenuItem Header="卧" Tag="卧" Click="OwnerCommandMenuItem_Click" />
+                    <MenuItem Header="停" Tag="停" Click="OwnerCommandMenuItem_Click" />
+                    <MenuItem Header="转圈" Tag="转圈" Click="OwnerCommandMenuItem_Click" />
+                    <MenuItem Header="手" Tag="手" Click="OwnerCommandMenuItem_Click" />
+                    <MenuItem Header="吃" Tag="吃" Click="OwnerCommandMenuItem_Click" />
+                </MenuItem>
+                <MenuItem Header="宠物魔法">
+                    <MenuItem Header="Accio Broom" Tag="wk.magic.accio_broom" Click="MagicMenuItem_Click" />
+                    <MenuItem Header="Apparate" Tag="wk.magic.apparate" Click="MagicMenuItem_Click" />
+                    <MenuItem Header="Petrificus Totalus" Tag="wk.magic.petrificus_totalus" Click="MagicMenuItem_Click" />
+                    <MenuItem Header="Scourgify" Tag="wk.magic.scourgify" Click="MagicMenuItem_Click" />
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="打开面板" Click="OpenPanelMenuItem_Click" />
+                <Separator />
+                <MenuItem Header="退出" Click="ExitMenuItem_Click" />
             </ContextMenu>
         </Grid.ContextMenu>
 

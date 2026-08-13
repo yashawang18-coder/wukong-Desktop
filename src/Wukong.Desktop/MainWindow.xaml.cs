@@ -32,6 +32,8 @@ public partial class MainWindow : Window
     private Point _lastTapCandidate;
     private int _tapCandidateCount;
     private double _petScale = 1.0;
+    private CancellationTokenSource? _effectCancellation;
+    private double _savedOpacity = 1.0;
 
     public MainWindow()
     {
@@ -45,6 +47,7 @@ public partial class MainWindow : Window
         SizeChanged += (_, _) => RepositionChat();
         Closed += (_, _) =>
         {
+            _effectCancellation?.Cancel();
             var chatWindow = _chatWindow;
             _chatWindow = null;
             chatWindow?.Close();
@@ -167,6 +170,7 @@ public partial class MainWindow : Window
         {
             ResetTapCandidates();
             await _runtime.SubmitGestureAsync(PetGestureKind.OwnerTouch, BehaviorRequestSource.OwnerUi);
+            OpenControlPanel();
         }
         else
         {
@@ -197,11 +201,19 @@ public partial class MainWindow : Window
         _lastTapCandidate = default;
     }
 
-    private async void TouchMenuItem_Click(object sender, RoutedEventArgs e) =>
-        await _runtime.SubmitContextMenuIntentAsync(new SemanticIntent(SemanticIntentKind.Touch, "wk.interaction.prone_touch"));
+    private async void StopMenuItem_Click(object sender, RoutedEventArgs e) => await StopCurrentBehaviorAsync("menu:stop");
 
-    private async void QuietMenuItem_Click(object sender, RoutedEventArgs e) =>
-        await _runtime.SubmitContextMenuIntentAsync(new SemanticIntent(SemanticIntentKind.Quiet, "wk.core.prone_idle"));
+    private async void OwnerCommandMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem { Tag: string command })
+            await _runtime.SubmitOwnerCommandAsync(command);
+    }
+
+    private async void MagicMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem { Tag: string behaviorId })
+            await _runtime.SubmitMagicAsync(behaviorId, BehaviorRequestSource.OwnerContextMenu);
+    }
 
     private void OpenPanelMenuItem_Click(object sender, RoutedEventArgs e) => OpenControlPanel();
 
@@ -209,6 +221,8 @@ public partial class MainWindow : Window
 
     private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
     {
+        _effectCancellation?.Cancel();
+        RestoreWindowAfterEffect();
         _animationTimer.Stop();
         _autonomousTimer.Stop();
         _controlPanel?.Close();
@@ -231,6 +245,7 @@ public partial class MainWindow : Window
             _phaseIndex = 0;
             _frameIndex = 0;
             _loopCount = 0;
+            BeginMotionEffect(request);
             _animationTimer.Interval = TimeSpan.FromMilliseconds(request.Motion.FrameDurationMs);
             ShowFirstAvailableFrame(request.Motion);
             _animationTimer.Start();
@@ -291,6 +306,172 @@ public partial class MainWindow : Window
         if (returnToIdle)
             _runtime.CompleteMotion(behaviorId, phase);
     }
+
+    private async Task StopCurrentBehaviorAsync(string reason)
+    {
+        _effectCancellation?.Cancel();
+        RestoreWindowAfterEffect();
+        _animationTimer.Stop();
+        _activeRequest = null;
+        _autonomousTimer.Start();
+        await _runtime.StopAsync(reason);
+    }
+
+    private void BeginMotionEffect(PetMotionRequest request)
+    {
+        _effectCancellation?.Cancel();
+        _effectCancellation?.Dispose();
+        _effectCancellation = new CancellationTokenSource();
+        RestoreWindowAfterEffect();
+
+        if (request.Motion.Effect == DesktopMotionEffect.Petrify)
+            _autonomousTimer.Stop();
+        else if (request.Motion.Effect == DesktopMotionEffect.PetrifyRelease)
+            _autonomousTimer.Start();
+
+        _ = request.Motion.Effect switch
+        {
+            DesktopMotionEffect.BroomFlight => RunBroomFlightAsync(_effectCancellation.Token),
+            DesktopMotionEffect.Apparate => RunApparateAsync(_effectCancellation.Token),
+            DesktopMotionEffect.Scourgify => RunScourgifyAsync(_effectCancellation.Token),
+            _ => Task.CompletedTask
+        };
+    }
+
+    private async Task RunBroomFlightAsync(CancellationToken token)
+    {
+        try
+        {
+            var workArea = SystemParameters.WorkArea;
+            var width = ActualWidth > 0 ? ActualWidth : Width;
+            var height = ActualHeight > 0 ? ActualHeight : Height;
+            var path = new[]
+            {
+                new Point(workArea.Left + workArea.Width * 0.18, workArea.Top + workArea.Height * 0.72),
+                new Point(workArea.Left + workArea.Width * 0.36, workArea.Top + workArea.Height * 0.44),
+                new Point(workArea.Left + workArea.Width * 0.62, workArea.Top + workArea.Height * 0.38),
+                new Point(workArea.Left + workArea.Width * 0.78, workArea.Top + workArea.Height * 0.64),
+                new Point(workArea.Left + workArea.Width * 0.48, workArea.Top + workArea.Height * 0.76)
+            };
+
+            var start = new Point(Left, Top);
+            foreach (var target in path.Select(x => ClampToWorkArea(x, workArea, width, height)))
+            {
+                await MoveWindowAsync(start, target, TimeSpan.FromMilliseconds(620), token);
+                start = target;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _runtime.ReportError($"broom_flight_failed:{ex.GetType().Name}");
+        }
+        finally
+        {
+            ApplyVisiblePlacement(new Point(Left, Top));
+        }
+    }
+
+    private async Task RunApparateAsync(CancellationToken token)
+    {
+        _savedOpacity = Opacity;
+        try
+        {
+            for (var i = 1; i <= 8; i++)
+            {
+                token.ThrowIfCancellationRequested();
+                Opacity = Math.Max(0, _savedOpacity * (1 - i / 8.0));
+                await Task.Delay(55, token);
+            }
+
+            var workArea = SystemParameters.WorkArea;
+            var width = ActualWidth > 0 ? ActualWidth : Width;
+            var height = ActualHeight > 0 ? ActualHeight : Height;
+            var target = ClampToWorkArea(
+                new Point(workArea.Left + workArea.Width * 0.22, workArea.Top + workArea.Height * 0.58),
+                workArea,
+                width,
+                height);
+            Left = target.X;
+            Top = target.Y;
+
+            for (var i = 1; i <= 8; i++)
+            {
+                token.ThrowIfCancellationRequested();
+                Opacity = Math.Min(_savedOpacity, _savedOpacity * i / 8.0);
+                await Task.Delay(55, token);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _runtime.ReportError($"apparate_failed:{ex.GetType().Name}");
+        }
+        finally
+        {
+            RestoreWindowAfterEffect();
+        }
+    }
+
+    private async Task RunScourgifyAsync(CancellationToken token)
+    {
+        try
+        {
+            PhaseBadge.Visibility = Visibility.Visible;
+            PhaseText.Text = "Scourgify";
+            var workArea = SystemParameters.WorkArea;
+            var width = ActualWidth > 0 ? ActualWidth : Width;
+            var height = ActualHeight > 0 ? ActualHeight : Height;
+            var y = Math.Max(workArea.Top, workArea.Bottom - height - 22);
+            var left = ClampToWorkArea(new Point(workArea.Left + 24, y), workArea, width, height);
+            var right = ClampToWorkArea(new Point(workArea.Right - width - 24, y), workArea, width, height);
+            await MoveWindowAsync(new Point(Left, Top), left, TimeSpan.FromMilliseconds(450), token);
+            await MoveWindowAsync(left, right, TimeSpan.FromMilliseconds(1500), token);
+            await MoveWindowAsync(right, left, TimeSpan.FromMilliseconds(1200), token);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _runtime.ReportError($"scourgify_failed:{ex.GetType().Name}");
+        }
+        finally
+        {
+            PhaseBadge.Visibility = Visibility.Collapsed;
+            ApplyVisiblePlacement(new Point(Left, Top));
+        }
+    }
+
+    private async Task MoveWindowAsync(Point from, Point to, TimeSpan duration, CancellationToken token)
+    {
+        var steps = Math.Max(1, (int)(duration.TotalMilliseconds / 24));
+        for (var i = 1; i <= steps; i++)
+        {
+            token.ThrowIfCancellationRequested();
+            var t = EaseInOut(i / (double)steps);
+            Left = from.X + (to.X - from.X) * t;
+            Top = from.Y + (to.Y - from.Y) * t;
+            await Task.Delay(24, token);
+        }
+    }
+
+    private void RestoreWindowAfterEffect()
+    {
+        Opacity = _savedOpacity <= 0 ? 1.0 : _savedOpacity;
+        ApplyVisiblePlacement(new Point(Left, Top));
+    }
+
+    private static Point ClampToWorkArea(Point preferred, Rect workArea, double width, double height) => new(
+        Math.Min(Math.Max(preferred.X, workArea.Left), Math.Max(workArea.Left, workArea.Right - width)),
+        Math.Min(Math.Max(preferred.Y, workArea.Top), Math.Max(workArea.Top, workArea.Bottom - height)));
+
+    private static double EaseInOut(double value) =>
+        value < 0.5 ? 2 * value * value : 1 - Math.Pow(-2 * value + 2, 2) / 2;
 
     private void ShowFirstAvailableFrame(PlayableMotion motion)
     {

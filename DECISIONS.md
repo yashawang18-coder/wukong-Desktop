@@ -71,3 +71,20 @@ Import `WK-COMMAND-ACTION-CANDIDATES-v3` from the remote candidate asset branch 
 These sequences may appear in the asset library and may be force-played in developer mode to collect Windows renderer evidence. They must remain excluded from the autonomous pool and production runtime registry until renderer QA promotes the assets to `runtime-approved` with `runtime_use=true`.
 
 Manual transparent-window validation on 2026-08-12 failed all four command candidates for `color_inconsistency`, `geometry_scale_jitter`, and `uneven_timing`. Keep the integration and developer preview path, but do not approve these assets, do not open production command execution, and do not add them to autonomous behavior selection until a corrected batch passes renderer QA.
+
+## 2026-08-13 - allow owner-only magic mock prototype previews without production approval
+
+Add a Wukong-only magic mock batch for explicit owner-triggered prototype playback while preserving the production runtime gate.
+
+Allowed scope:
+
+- Right-click `宠物魔法` menu and control-panel `魔法特辑` may submit `BehaviorRequest`-equivalent desktop requests with `source=OwnerContextMenu` or `source=ControlPanel` and `executionMode=PrototypePreview`.
+- Only the explicit magic whitelist may use this path: `wk.magic.accio_broom`, `wk.magic.apparate`, `wk.magic.petrificus_totalus`, `wk.magic.petrificus_release`, and `wk.magic.scourgify`.
+- The manifest must keep `prototype_use=true`, `runtime_approved=false`, `runtime_use=false`, and `production_asset=false`.
+
+Forbidden scope:
+
+- Do not add mock magic assets to the production runtime registry or autonomous behavior pool.
+- Do not let Dialogue, model output, memory, personality, or autonomous tick set `PrototypePreview`.
+- Do not treat mock playback as renderer QA or formal asset approval.
+- Do not copy Pupu code, assets, behavior IDs, or mappings.

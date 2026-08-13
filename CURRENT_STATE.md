@@ -69,6 +69,21 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
 - Production command routing may resolve to these stable behavior IDs, but the runtime gate must return `Deferred` until corrected assets pass explicit renderer QA and runtime approval is recorded.
 - The extra seven PNG files in the batch are preview/reference images only: four contact sheets, `all-groups-overview.png`, `shared-prone-proof.png`, and `shared-sit-proof.png`. They are outside every action `frames[]` list and are not registered as playable frames.
 
+## WK-MAGIC-SPECIALS-MOCK-v1
+
+- Added local Wukong-only mock prototype action batch under `assets/action-batches/WK-MAGIC-SPECIALS-MOCK-v1/`.
+- The batch contains transparent PNG frame sequences and manifest records for:
+  - `wk.magic.accio_broom`
+  - `wk.magic.apparate`
+  - `wk.magic.petrificus_totalus`
+  - `wk.magic.petrificus_release`
+  - `wk.magic.scourgify`
+- These assets are code-drawn mock placeholders for interaction/runtime validation only. They are not production artwork, not Pupu assets, and not final Wukong magic art.
+- Batch state remains `runtime_validation=pending`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, with `prototype_use=true`.
+- Prototype playback is allowed only through explicit owner entry points (`OwnerContextMenu` and `ControlPanel`) using `BehaviorExecutionMode.PrototypePreview` and the magic behavior whitelist.
+- Dialogue, model output, autonomous tick, memory, personality, and normal production behavior requests must not use `PrototypePreview`; they continue to resolve through the normal runtime gate and defer until assets are formally approved.
+- The batch is not added to `contracts/runtime/asset-registry.json`, not included in the autonomous pool, and not eligible for production command or model-triggered execution.
+
 ## Next implementation target
 
 Phase 1 is the smallest honest end-to-end runtime:

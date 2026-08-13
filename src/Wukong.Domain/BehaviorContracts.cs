@@ -15,12 +15,22 @@ public enum InputEventKind
 public enum BehaviorRequestSource
 {
     OwnerUi,
+    OwnerContextMenu,
+    ControlPanel,
+    Dialogue,
     ContextMenu,
     Model,
     AutonomousTick,
     DeveloperPreview,
     DeveloperSimulation,
     DeveloperForced
+}
+
+public enum BehaviorExecutionMode
+{
+    Normal,
+    PrototypePreview,
+    DeveloperPreview
 }
 
 public enum RuntimeMode

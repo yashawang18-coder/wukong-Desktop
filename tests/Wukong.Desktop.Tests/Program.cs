@@ -25,6 +25,12 @@ var tests = new (string Name, Action Run)[]
     ("command action candidates are indexed and validated", CommandActionCandidatesAreIndexed),
     ("command candidates stay out of autonomous and production commands", CommandCandidatesStayGated),
     ("developer forced command candidate can request playback", DeveloperForcedCommandCandidateCanRequestPlayback),
+    ("magic mock assets are indexed and validated", MagicMockAssetsAreIndexed),
+    ("owner and panel magic use prototype preview gate", OwnerAndPanelMagicUsePrototypePreviewGate),
+    ("non owner sources cannot prototype preview magic", NonOwnerSourcesCannotPrototypePreviewMagic),
+    ("stop clears petrification and requests idle", StopClearsPetrificationAndRequestsIdle),
+    ("main window context menu matches owner action contract", MainWindowContextMenuMatchesContract),
+    ("control panel exposes magic specials tab", ControlPanelExposesMagicSpecialsTab),
     ("gesture interpreter distinguishes touch stroke drag and rapid tap", GestureInterpreterDistinguishesGestures),
     ("rapid tap has priority over owner touch", RapidTapHasPriorityOverOwnerTouch),
     ("runtime requests touch motion and returns decisions", RuntimeRequestsTouchMotion),
@@ -137,6 +143,8 @@ static void ControlPanelXamlConstructs()
             Assert(panel.FindName("UseLongTermMemoryCheck") is CheckBox, "long term memory switch missing");
             Assert(panel.FindName("UseAlbumMemoryCheck") is CheckBox, "album memory switch missing");
             Assert(panel.FindName("UseShortTermMemoryCheck") is CheckBox, "short term memory switch missing");
+            Assert(panel.FindName("OwnerBirthdayPicker") is DatePicker, "owner birthday field missing");
+            Assert(panel.FindName("OwnerPetCallNameText") is TextBox, "owner pet call name field missing");
             Assert(panel.FindName("PetHarnessCombo") is null, "removed pet harness field is still registered");
             Assert(panel.FindName("OwnerToneCombo") is null, "removed owner tone field is still registered");
             panel.Close();
@@ -354,6 +362,161 @@ static void DeveloperForcedCommandCandidateCanRequestPlayback()
     Assert(request is not null, "developer forced candidate did not request playback");
     Assert(request!.Motion.BehaviorId == CommandBehaviorIds.Jump, "developer forced playback selected wrong motion");
     Assert(request.Motion.FrameCount == 8, "jump candidate frame count wrong");
+}
+
+static void MagicMockAssetsAreIndexed()
+{
+    var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
+    var manifestPath = Path.Combine(output, "WukongAssets", "action-batches", MagicBehaviorIds.AssetBatch, "manifest.json");
+    Assert(File.Exists(manifestPath), "magic mock manifest was not copied to output");
+
+    using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+    Assert(manifest.RootElement.GetProperty("runtime_approved").GetBoolean() == false, "magic mock must not be runtime approved");
+    Assert(manifest.RootElement.GetProperty("runtime_use").GetBoolean() == false, "magic mock must not enable production runtime use");
+    Assert(manifest.RootElement.GetProperty("prototype_use").GetBoolean(), "magic mock must explicitly enable prototype use");
+    var actions = manifest.RootElement.GetProperty("actions").EnumerateArray().ToArray();
+    Assert(actions.Length == 5, "magic mock manifest must include four magic actions plus petrification release");
+
+    foreach (var action in actions)
+    {
+        Assert(!action.GetProperty("runtime_approved").GetBoolean(), "mock action was runtime approved");
+        Assert(!action.GetProperty("runtime_use").GetBoolean(), "mock action enabled production runtime use");
+        Assert(action.GetProperty("prototype_use").GetBoolean(), "mock action did not enable prototype preview");
+        foreach (var phase in action.GetProperty("phases").EnumerateArray())
+        {
+            foreach (var frame in phase.GetProperty("frames").EnumerateArray())
+            {
+                var framePath = Path.Combine(Path.GetDirectoryName(manifestPath)!, frame.GetProperty("path").GetString()!.Replace('/', Path.DirectorySeparatorChar));
+                Assert(File.Exists(framePath), $"magic frame missing: {framePath}");
+                Assert(new FileInfo(framePath).Length == frame.GetProperty("bytes").GetInt64(), "magic frame byte length mismatch");
+                Assert(Sha256(framePath) == frame.GetProperty("sha256").GetString(), "magic frame sha256 mismatch");
+                using var stream = File.OpenRead(framePath);
+                var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+                var bitmap = decoder.Frames.Single();
+                Assert(bitmap.PixelWidth == 256 && bitmap.PixelHeight == 256, "magic mock frame dimensions changed");
+                Assert(HasAlpha(bitmap.Format), "magic mock frame is not alpha-capable");
+            }
+        }
+    }
+
+    var catalog = DesktopMotionCatalog.Load(output);
+    var magic = catalog.Motions.Where(x => x.Category == "宠物魔法").ToArray();
+    Assert(magic.Length == 5, "magic mock assets were not indexed");
+    Assert(magic.All(x => x.PrototypeUse), "all magic mocks must be prototype-use only");
+    Assert(magic.All(x => !x.RuntimeEnabled), "magic mocks must stay out of production runtime");
+}
+
+static void OwnerAndPanelMagicUsePrototypePreviewGate()
+{
+    var runtime = new DesktopRuntimeHost();
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, item) => requests.Add(item);
+
+    var ownerResult = runtime.SubmitMagicAsync(MagicBehaviorIds.AccioBroom, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
+    var panelResult = runtime.SubmitMagicAsync(MagicBehaviorIds.Scourgify, BehaviorRequestSource.ControlPanel).GetAwaiter().GetResult();
+
+    Assert(ownerResult == PetActionResult.Accepted, "owner context menu magic was not accepted");
+    Assert(panelResult == PetActionResult.Accepted, "control panel magic was not accepted");
+    Assert(requests.Count == 2, "accepted magic did not request playback");
+    Assert(requests.All(x => x.ExecutionMode == BehaviorExecutionMode.PrototypePreview), "magic did not use prototype preview execution mode");
+    Assert(requests[0].Source == BehaviorRequestSource.OwnerContextMenu, "owner menu source was not preserved");
+    Assert(requests[1].Source == BehaviorRequestSource.ControlPanel, "control panel source was not preserved");
+}
+
+static void NonOwnerSourcesCannotPrototypePreviewMagic()
+{
+    var runtime = new DesktopRuntimeHost();
+    PetMotionRequest? request = null;
+    runtime.MotionRequested += (_, item) => request = item;
+
+    var dialogueResult = runtime.SubmitMagicAsync(MagicBehaviorIds.AccioBroom, BehaviorRequestSource.Dialogue).GetAwaiter().GetResult();
+    var autonomousResult = runtime.SubmitMagicAsync(MagicBehaviorIds.Apparate, BehaviorRequestSource.AutonomousTick).GetAwaiter().GetResult();
+
+    Assert(dialogueResult == PetActionResult.Deferred, "dialogue was allowed to prototype magic");
+    Assert(autonomousResult == PetActionResult.Deferred, "autonomous tick was allowed to prototype magic");
+    Assert(request is null, "forbidden prototype source requested playback");
+}
+
+static void StopClearsPetrificationAndRequestsIdle()
+{
+    var runtime = new DesktopRuntimeHost();
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, item) => requests.Add(item);
+
+    var petrify = runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
+    Assert(petrify == PetActionResult.Accepted, "petrify was not accepted");
+    Assert(runtime.IsPetrified, "runtime did not enter petrified state");
+    Assert(requests.Last().ReturnToIdle == false, "petrify should hold instead of immediately returning to idle");
+
+    var stop = runtime.StopAsync("test:stop").GetAwaiter().GetResult();
+    Assert(stop == PetActionResult.Interrupted, "stop did not return interrupted");
+    Assert(!runtime.IsPetrified, "stop did not clear petrified state");
+    Assert(requests.Last().Motion.BehaviorId == Phase15BehaviorIds.ProneIdle, "stop did not request idle recovery");
+}
+
+static void MainWindowContextMenuMatchesContract()
+{
+    Exception? failure = null;
+    var thread = new Thread(() =>
+    {
+        try
+        {
+            _ = EnsureTestApplication();
+            var window = new MainWindow();
+            var root = (FrameworkElement)window.FindName("Root");
+            var menu = root.ContextMenu ?? throw new InvalidOperationException("main context menu missing");
+            var headers = menu.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).ToArray();
+            Assert(headers.SequenceEqual(new[] { "停下", "聊天", "吃一下", "玩一下", "口令", "宠物魔法", "打开面板", "退出" }), "top-level context menu order changed");
+
+            var commands = menu.Items.OfType<MenuItem>().Single(x => Equals(x.Header, "口令"));
+            Assert(commands.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).SequenceEqual(new[] { "坐", "卧", "停", "转圈", "手", "吃" }), "command submenu order changed");
+
+            var magic = menu.Items.OfType<MenuItem>().Single(x => Equals(x.Header, "宠物魔法"));
+            Assert(magic.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).SequenceEqual(new[] { "Accio Broom", "Apparate", "Petrificus Totalus", "Scourgify" }), "magic submenu order changed");
+            window.Close();
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+    });
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+    thread.Join();
+    if (failure is not null)
+        throw failure;
+}
+
+static void ControlPanelExposesMagicSpecialsTab()
+{
+    Exception? failure = null;
+    var thread = new Thread(() =>
+    {
+        try
+        {
+            _ = EnsureTestApplication();
+            var panel = new ControlPanelWindow(new DesktopRuntimeHost());
+            Assert(panel.FindName("NormalAssetsPanel") is ScrollViewer, "normal assets panel missing");
+            Assert(panel.FindName("CommandAssetsPanel") is ScrollViewer, "command assets panel missing");
+            var commandList = panel.FindName("CommandAssetList") as ItemsControl;
+            Assert(commandList is not null, "command asset list missing");
+            Assert(panel.FindName("MagicAssetsPanel") is ScrollViewer, "magic specials panel missing");
+            var list = panel.FindName("MagicSpecialList") as ItemsControl;
+            Assert(list is not null, "magic specials list missing");
+            Assert(commandList!.Items.Count == 4, "command assets tab must display four command candidates");
+            Assert(list!.Items.Count == 4, "magic specials must display four owner-facing cards");
+            panel.Close();
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+    });
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+    thread.Join();
+    if (failure is not null)
+        throw failure;
 }
 
 static void GestureInterpreterDistinguishesGestures()

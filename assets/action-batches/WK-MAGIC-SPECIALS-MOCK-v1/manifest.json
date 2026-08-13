@@ -1,0 +1,566 @@
+{
+    "batch_id":  "WK-MAGIC-SPECIALS-MOCK-v1",
+    "identity_profile":  "wukong-magic-mock-prototype-v1",
+    "status":  "mock-runtime-candidate",
+    "runtime_validation":  "pending",
+    "runtime_approved":  false,
+    "runtime_use":  false,
+    "prototype_use":  true,
+    "production_asset":  false,
+    "notes":  [
+                  "OwnerContextMenu and ControlPanel may use PrototypePreview only.",
+                  "Dialogue and AutonomousTick must use Normal gate and cannot run these mock assets.",
+                  "Mock art is a code-drawn Wukong-like placeholder, not Pupu material."
+              ],
+    "actions":  [
+                    {
+                        "behavior_id":  "wk.magic.accio_broom",
+                        "action_id":  "wk.magic.accio_broom",
+                        "display_name":  "Accio Broom",
+                        "description":  "Mock broom flight showcase for owner-triggered prototype preview.",
+                        "source_folder":  "accio_broom",
+                        "frame_count":  14,
+                        "frame_duration_ms":  95,
+                        "total_duration_ms":  1330,
+                        "from_pose":  "prone.awake.left_front",
+                        "to_pose":  "prone.awake.left_front",
+                        "direction":  "left_front",
+                        "interruptible":  true,
+                        "runtime_validation":  "pending",
+                        "runtime_approved":  false,
+                        "runtime_use":  false,
+                        "prototype_use":  true,
+                        "production_asset":  false,
+                        "effect":  "BroomFlight",
+                        "interrupt_exit_strategy":  "cancel_restore_idle",
+                        "phases":  [
+                                       {
+                                           "name":  "intro",
+                                           "loop":  false,
+                                           "frame_count":  3,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "accio_broom/frame-001.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "58fbbafb126fcbde65613baaa6abb2bf1455ca81dba8bb0cd3f8ea4832e064ed",
+                                                              "bytes":  5619
+                                                          },
+                                                          {
+                                                              "path":  "accio_broom/frame-002.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "b9fb8241fc7f50440f6fac9f97f62b8a02235b712f53be9867f72f5d90e42d30",
+                                                              "bytes":  5606
+                                                          },
+                                                          {
+                                                              "path":  "accio_broom/frame-003.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "0837b48dd0a9f90adec1d71137b0a9d43dced1b0c6c357a895cad803bb2573a6",
+                                                              "bytes":  5533
+                                                          }
+                                                      ]
+                                       },
+                                       {
+                                           "name":  "loop",
+                                           "loop":  true,
+                                           "frame_count":  8,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "accio_broom/frame-004.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "09e4d8c05709819096dbc524567d145092a1f92a06b733665c4659650fe57b86",
+                                                              "bytes":  5646
+                                                          },
+                                                          {
+                                                              "path":  "accio_broom/frame-005.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "562444bdfcc9612b630337521f6d9a5056cd2a9e52f16aed5a85e1467be71625",
+                                                              "bytes":  5610
+                                                          },
+                                                          {
+                                                              "path":  "accio_broom/frame-006.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "f35df01014692bace56d88492ce39502d6b689725500b1d4c7f27f9ef1f7ebfb",
+                                                              "bytes":  5545
+                                                          },
+                                                          {
+                                                              "path":  "accio_broom/frame-007.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "926c0234c22e044c2817fa7ff7d5ab5d6d69fd1dfa3f0b0a8991ffce6e09129f",
+                                                              "bytes":  5617
+                                                          },
+                                                          {
+                                                              "path":  "accio_broom/frame-008.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "d82c85f1d5526199ea0ebdc340cca5ec09db3b1cce677a51a5b1e8b66f0a8868",
+                                                              "bytes":  5536
+                                                          },
+                                                          {
+                                                              "path":  "accio_broom/frame-009.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "069819b45f5e7f5d562ac8db8b2d2dacd788493094ca4a9bbb8475ea190316cd",
+                                                              "bytes":  5649
+                                                          },
+                                                          {
+                                                              "path":  "accio_broom/frame-010.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "58068684c696d94cc7a5a0c61c86ca24b49c200e3b6a7974088a2604fef948e7",
+                                                              "bytes":  5733
+                                                          },
+                                                          {
+                                                              "path":  "accio_broom/frame-011.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "110337a79bfe3316cdac7797ef28af5d6f5c6d203f8cac80f9a1c25e270eeb68",
+                                                              "bytes":  5601
+                                                          }
+                                                      ]
+                                       },
+                                       {
+                                           "name":  "exit",
+                                           "loop":  false,
+                                           "frame_count":  3,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "accio_broom/frame-012.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "d7cbf2b3941dc68bfa8f580e558caea5ca75ae1784c45cc1e6468e668b6c0e9b",
+                                                              "bytes":  5697
+                                                          },
+                                                          {
+                                                              "path":  "accio_broom/frame-013.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "e36920c50fc2ecb60e02a8c2ec90db43ed5b6551cebdc4426b6ce2fd8c663434",
+                                                              "bytes":  5689
+                                                          },
+                                                          {
+                                                              "path":  "accio_broom/frame-014.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "12cca6e81231c982188465f4ee495902411a215ebc1f34a3177288d171e1ec8a",
+                                                              "bytes":  5620
+                                                          }
+                                                      ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "behavior_id":  "wk.magic.apparate",
+                        "action_id":  "wk.magic.apparate",
+                        "display_name":  "Apparate",
+                        "description":  "Mock fade-out teleport and fade-in showcase.",
+                        "source_folder":  "apparate",
+                        "frame_count":  9,
+                        "frame_duration_ms":  90,
+                        "total_duration_ms":  810,
+                        "from_pose":  "prone.awake.left_front",
+                        "to_pose":  "prone.awake.left_front",
+                        "direction":  "left_front",
+                        "interruptible":  true,
+                        "runtime_validation":  "pending",
+                        "runtime_approved":  false,
+                        "runtime_use":  false,
+                        "prototype_use":  true,
+                        "production_asset":  false,
+                        "effect":  "Apparate",
+                        "interrupt_exit_strategy":  "cancel_restore_idle",
+                        "phases":  [
+                                       {
+                                           "name":  "intro",
+                                           "loop":  false,
+                                           "frame_count":  4,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "apparate/frame-001.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "00a93059a7b6f5f7ecfade0d5d2e32024167e9a94c040695c7cf508d4e6f6078",
+                                                              "bytes":  8319
+                                                          },
+                                                          {
+                                                              "path":  "apparate/frame-002.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "bf3b434ec030261393535e3a953bf52136f77cbc4f6df846b72042f4fe16a68c",
+                                                              "bytes":  8314
+                                                          },
+                                                          {
+                                                              "path":  "apparate/frame-003.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "8e5b01996156d310fd98c2ae401365730e2b413df6a6ea40a01e7a6f7909a86a",
+                                                              "bytes":  8399
+                                                          },
+                                                          {
+                                                              "path":  "apparate/frame-004.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "55eb49175c684ee452a0e54e0fe2b7dfe9a244533461a4800e9567067751bbf8",
+                                                              "bytes":  8439
+                                                          }
+                                                      ]
+                                       },
+                                       {
+                                           "name":  "loop",
+                                           "loop":  true,
+                                           "frame_count":  1,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "apparate/frame-005.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "2cdade1129fd1334be324b87b2fa67c53df3535eafcc75b74288d3dbe69d3240",
+                                                              "bytes":  8481
+                                                          }
+                                                      ]
+                                       },
+                                       {
+                                           "name":  "exit",
+                                           "loop":  false,
+                                           "frame_count":  4,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "apparate/frame-006.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "34366a8e65e12d8aea42aa1bac28ccfb623f7b93a65fd3fc108c912cf0006ee3",
+                                                              "bytes":  8438
+                                                          },
+                                                          {
+                                                              "path":  "apparate/frame-007.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "a8a30b17bee26e860615407e2d7e8c4d16ef7563b8ebb9c2070129f47d1d1da7",
+                                                              "bytes":  8399
+                                                          },
+                                                          {
+                                                              "path":  "apparate/frame-008.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "d3ce8d9510757c0ffc972261fb93db5008998cb89f20263964da1b287b4db7cb",
+                                                              "bytes":  8314
+                                                          },
+                                                          {
+                                                              "path":  "apparate/frame-009.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "00a93059a7b6f5f7ecfade0d5d2e32024167e9a94c040695c7cf508d4e6f6078",
+                                                              "bytes":  8319
+                                                          }
+                                                      ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "behavior_id":  "wk.magic.petrificus_totalus",
+                        "action_id":  "wk.magic.petrificus_totalus",
+                        "display_name":  "Petrificus Totalus",
+                        "description":  "Mock petrification hold state; trigger again or stop to release.",
+                        "source_folder":  "petrificus_totalus",
+                        "frame_count":  6,
+                        "frame_duration_ms":  130,
+                        "total_duration_ms":  780,
+                        "from_pose":  "prone.awake.left_front",
+                        "to_pose":  "magic.petrified",
+                        "direction":  "left_front",
+                        "interruptible":  true,
+                        "runtime_validation":  "pending",
+                        "runtime_approved":  false,
+                        "runtime_use":  false,
+                        "prototype_use":  true,
+                        "production_asset":  false,
+                        "effect":  "Petrify",
+                        "interrupt_exit_strategy":  "cancel_restore_idle",
+                        "phases":  [
+                                       {
+                                           "name":  "intro",
+                                           "loop":  false,
+                                           "frame_count":  4,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "petrificus_totalus/frame-001.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "30920dc06f6ce5f0fa7df8463a935996de93239461343d5da21dd7970cb41b43",
+                                                              "bytes":  5082
+                                                          },
+                                                          {
+                                                              "path":  "petrificus_totalus/frame-002.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "27dbc8d23993cc09be3bef1c70bce2ea9dc1817e93e814edbdcff3e508d2b35d",
+                                                              "bytes":  5081
+                                                          },
+                                                          {
+                                                              "path":  "petrificus_totalus/frame-003.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "59cc6d6878ee64e5404a2a16ea758220a2daf1fee88883390a90a0a9c3577080",
+                                                              "bytes":  5054
+                                                          },
+                                                          {
+                                                              "path":  "petrificus_totalus/frame-004.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "919b60dcd469629279eef89097c8250dfe9762cd22f69122bfb977c4c295cfce",
+                                                              "bytes":  5052
+                                                          }
+                                                      ]
+                                       },
+                                       {
+                                           "name":  "loop",
+                                           "loop":  true,
+                                           "frame_count":  1,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "petrificus_totalus/frame-005.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "6a12ab84208efa1f2b69d44ec5b74b73d845406b7b8520ce0703c3aa57df3c21",
+                                                              "bytes":  5054
+                                                          }
+                                                      ]
+                                       },
+                                       {
+                                           "name":  "exit",
+                                           "loop":  false,
+                                           "frame_count":  1,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "petrificus_totalus/frame-006.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "5ca2e9e087bb9a9f6a55cea128f9e3832d7d94f37b064fbb934909367cdf1163",
+                                                              "bytes":  5053
+                                                          }
+                                                      ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "behavior_id":  "wk.magic.petrificus_release",
+                        "action_id":  "wk.magic.petrificus_release",
+                        "display_name":  "Petrificus Release",
+                        "description":  "Mock release from petrified state.",
+                        "source_folder":  "petrificus_release",
+                        "frame_count":  6,
+                        "frame_duration_ms":  120,
+                        "total_duration_ms":  720,
+                        "from_pose":  "magic.petrified",
+                        "to_pose":  "prone.awake.left_front",
+                        "direction":  "left_front",
+                        "interruptible":  true,
+                        "runtime_validation":  "pending",
+                        "runtime_approved":  false,
+                        "runtime_use":  false,
+                        "prototype_use":  true,
+                        "production_asset":  false,
+                        "effect":  "PetrifyRelease",
+                        "interrupt_exit_strategy":  "cancel_restore_idle",
+                        "phases":  [
+                                       {
+                                           "name":  "intro",
+                                           "loop":  false,
+                                           "frame_count":  4,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "petrificus_release/frame-001.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "b120731353697bd2a94cf354f9fac06882408691846152659decddd8b23474a8",
+                                                              "bytes":  4987
+                                                          },
+                                                          {
+                                                              "path":  "petrificus_release/frame-002.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "18be388f845c110b1c5f115fa68778c5f8340cc9eb281413c80cf178e56c88c8",
+                                                              "bytes":  4958
+                                                          },
+                                                          {
+                                                              "path":  "petrificus_release/frame-003.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "fdc21a69ed0fc166d7a0eba82fa0e2d2a39c6eb90dba582b564f46b48f31f593",
+                                                              "bytes":  5073
+                                                          },
+                                                          {
+                                                              "path":  "petrificus_release/frame-004.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "b59f1d12d16e039664a315d8793394107b81a9980eb80f1876d0e715c18848de",
+                                                              "bytes":  5016
+                                                          }
+                                                      ]
+                                       },
+                                       {
+                                           "name":  "loop",
+                                           "loop":  true,
+                                           "frame_count":  1,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "petrificus_release/frame-005.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "e881d120dd675d57706c1270680f6c163ded7267d58c504b05fc5dec699c6671",
+                                                              "bytes":  5042
+                                                          }
+                                                      ]
+                                       },
+                                       {
+                                           "name":  "exit",
+                                           "loop":  false,
+                                           "frame_count":  1,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "petrificus_release/frame-006.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "f56fa6d3f260a2a245a25e8c2b76e326e6b15fbce80a30ba261450da7f6e9ebf",
+                                                              "bytes":  5018
+                                                          }
+                                                      ]
+                                       }
+                                   ]
+                    },
+                    {
+                        "behavior_id":  "wk.magic.scourgify",
+                        "action_id":  "wk.magic.scourgify",
+                        "display_name":  "Scourgify",
+                        "description":  "Mock magical cleaning route; no system files are touched.",
+                        "source_folder":  "scourgify",
+                        "frame_count":  12,
+                        "frame_duration_ms":  100,
+                        "total_duration_ms":  1200,
+                        "from_pose":  "prone.awake.left_front",
+                        "to_pose":  "prone.awake.left_front",
+                        "direction":  "left_front",
+                        "interruptible":  true,
+                        "runtime_validation":  "pending",
+                        "runtime_approved":  false,
+                        "runtime_use":  false,
+                        "prototype_use":  true,
+                        "production_asset":  false,
+                        "effect":  "Scourgify",
+                        "interrupt_exit_strategy":  "cancel_restore_idle",
+                        "phases":  [
+                                       {
+                                           "name":  "intro",
+                                           "loop":  false,
+                                           "frame_count":  3,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "scourgify/frame-001.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "58fbbafb126fcbde65613baaa6abb2bf1455ca81dba8bb0cd3f8ea4832e064ed",
+                                                              "bytes":  5619
+                                                          },
+                                                          {
+                                                              "path":  "scourgify/frame-002.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "e42d4ed241eb643043a09ff05c063d9f76185c2a81d5b64acda5fa7d535c217d",
+                                                              "bytes":  5597
+                                                          },
+                                                          {
+                                                              "path":  "scourgify/frame-003.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "11aa976f309d3ee3a3ebdab830bf027e071e3e16f9873fe8524dec47291c1ff4",
+                                                              "bytes":  5689
+                                                          }
+                                                      ]
+                                       },
+                                       {
+                                           "name":  "loop",
+                                           "loop":  true,
+                                           "frame_count":  6,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "scourgify/frame-004.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "d3d7b75add4f98443d0bea6977fe9761d95314321ac2d7a286d9c52bfe7556d4",
+                                                              "bytes":  5660
+                                                          },
+                                                          {
+                                                              "path":  "scourgify/frame-005.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "b543c3ec9443d4f15efd8f07ef327081890bc49016d967739704e3b91c8d0ec1",
+                                                              "bytes":  5626
+                                                          },
+                                                          {
+                                                              "path":  "scourgify/frame-006.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "2b53a224b9d5e2d41f35236cb95d8743dd5e8b41304ed6a7c9ce15d09a7c0090",
+                                                              "bytes":  5545
+                                                          },
+                                                          {
+                                                              "path":  "scourgify/frame-007.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "bd47663813152416dbe9021ea2b9ee33ff0a45dffad37d0aee7695475e520746",
+                                                              "bytes":  5658
+                                                          },
+                                                          {
+                                                              "path":  "scourgify/frame-008.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "a0b220b46725584f5087d5e579ef0dfef197bdbab5ad565a66e16dead614d267",
+                                                              "bytes":  5651
+                                                          },
+                                                          {
+                                                              "path":  "scourgify/frame-009.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "28e08a00c6ad7fbe272f311f39704bc95f8f52f39720f170be0c51df5690d44d",
+                                                              "bytes":  5549
+                                                          }
+                                                      ]
+                                       },
+                                       {
+                                           "name":  "exit",
+                                           "loop":  false,
+                                           "frame_count":  3,
+                                           "frames":  [
+                                                          {
+                                                              "path":  "scourgify/frame-010.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "121803c39eba881b51c0e20e35a151f17348abd9f58c261038776a64e92b6f6a",
+                                                              "bytes":  5538
+                                                          },
+                                                          {
+                                                              "path":  "scourgify/frame-011.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "ce2bd2d20e9859d535a7a939f225ccee94b2296527b8fee16a96eb4ab09c4be3",
+                                                              "bytes":  5683
+                                                          },
+                                                          {
+                                                              "path":  "scourgify/frame-012.png",
+                                                              "width":  256,
+                                                              "height":  256,
+                                                              "sha256":  "b910d8be0768cfdb340eceac70111f5250aec15a09560879366ccab3f9a666ec",
+                                                              "bytes":  5662
+                                                          }
+                                                      ]
+                                       }
+                                   ]
+                    }
+                ]
+}

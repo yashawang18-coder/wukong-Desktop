@@ -26,7 +26,19 @@ public enum PetActionResult
     Accepted,
     Rejected,
     Deferred,
-    MissingAsset
+    MissingAsset,
+    Interrupted,
+    Failed
+}
+
+public enum DesktopMotionEffect
+{
+    None,
+    BroomFlight,
+    Apparate,
+    Petrify,
+    PetrifyRelease,
+    Scourgify
 }
 
 public sealed record GestureSample(Point Down, Point Up, TimeSpan Duration, int ClickCount, bool HitVisibleBody);
@@ -81,7 +93,11 @@ public sealed record PlayableMotion(
     string StartPose = "prone.awake.left_front",
     string EndPose = "prone.awake.left_front",
     string StyleGroup = "wukong-current-adult-v1",
-    string Disposition = "Enabled")
+    string Disposition = "Enabled",
+    bool PrototypeUse = false,
+    string AssetBatch = "built-in",
+    DesktopMotionEffect Effect = DesktopMotionEffect.None,
+    string Description = "")
 {
     public bool IsUsable => Phases.Any(x => x.Frames.Count > 0);
     public string FirstFrame => Phases.SelectMany(x => x.Frames).FirstOrDefault() ?? string.Empty;
@@ -287,9 +303,10 @@ public sealed class DesktopMotionCatalog
         };
 
         var commandCandidates = LoadCommandCandidates(root).ToArray();
-        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; manifest=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json";
+        var magicMocks = LoadMagicMocks(root).ToArray();
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_mocks={magicMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/WK-MAGIC-SPECIALS-MOCK-v1/manifest.json";
         BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
-        return new DesktopMotionCatalog(motions.Concat(commandCandidates), summary);
+        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicMocks), summary);
     }
 
     private static PlayableMotion Motion(
@@ -443,6 +460,97 @@ public sealed class DesktopMotionCatalog
         }
     }
 
+    private static IEnumerable<PlayableMotion> LoadMagicMocks(string root)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", MagicBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("magic_mock_manifest_missing");
+            yield break;
+        }
+
+        MagicMockBatchManifest? manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<MagicMockBatchManifest>(
+                File.ReadAllText(manifestPath),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Magic mock manifest parse failed", ex);
+            yield break;
+        }
+
+        if (manifest?.Actions is null)
+            yield break;
+
+        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        foreach (var action in manifest.Actions)
+        {
+            var phases = new List<MotionPhase>();
+            var errors = new List<string>();
+            foreach (var phase in action.Phases ?? Array.Empty<MagicMockPhaseManifest>())
+            {
+                var frames = new List<string>();
+                foreach (var frame in phase.Frames ?? Array.Empty<CommandActionFrameManifest>())
+                {
+                    var path = Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar));
+                    if (!File.Exists(path))
+                    {
+                        errors.Add($"missing:{frame.Path}");
+                        continue;
+                    }
+
+                    var info = new FileInfo(path);
+                    if (info.Length != frame.Bytes)
+                        errors.Add($"bytes:{frame.Path}");
+                    if (!string.Equals(Sha256(path), frame.Sha256, StringComparison.OrdinalIgnoreCase))
+                        errors.Add($"sha256:{frame.Path}");
+                    frames.Add(path);
+                }
+
+                if (frames.Count != phase.FrameCount)
+                    errors.Add($"phase_frame_count:{phase.Name}:{frames.Count}/{phase.FrameCount}");
+                phases.Add(new MotionPhase(phase.Name, frames, phase.Loop));
+            }
+
+            if (errors.Count > 0)
+            {
+                BootstrapLog.WriteRaw($"magic_mock_invalid behavior={action.BehaviorId} errors={string.Join(",", errors)}");
+                continue;
+            }
+
+            yield return new PlayableMotion(
+                action.BehaviorId,
+                action.DisplayName,
+                "宠物魔法",
+                action.Direction,
+                action.FrameDurationMs,
+                action.Interruptible,
+                phases,
+                Path.Combine(batchRoot, action.SourceFolder.Replace('/', Path.DirectorySeparatorChar)),
+                RuntimeEnabled: false,
+                Status: action.PrototypeUse
+                    ? "Mock / Prototype：允许主人原型展示"
+                    : "Mock / Prototype：原型展示关闭",
+                MissingContent: "formal art and renderer approval",
+                StartPose: action.FromPose,
+                EndPose: action.ToPose,
+                StyleGroup: manifest.IdentityProfile,
+                Disposition: "Prototype preview only",
+                PrototypeUse: action.PrototypeUse,
+                AssetBatch: manifest.BatchId,
+                Effect: ParseMagicEffect(action.Effect),
+                Description: action.Description);
+        }
+    }
+
+    private static DesktopMotionEffect ParseMagicEffect(string? value) =>
+        Enum.TryParse<DesktopMotionEffect>(value, ignoreCase: true, out var effect)
+            ? effect
+            : DesktopMotionEffect.None;
+
     private static string Sha256(string path)
     {
         using var stream = File.OpenRead(path);
@@ -465,10 +573,38 @@ public static class Phase15BehaviorIds
 
 public static class CommandBehaviorIds
 {
+    public const string Sit = "wk.command.sit";
+    public const string LieDown = "wk.command.lie_down";
     public const string PawRise = "wk.command.paw_rise";
     public const string Jump = "wk.command.jump";
     public const string SpinApproachStopSit = "wk.command.spin_approach_stop_sit";
     public const string PawEat = "wk.command.paw_eat";
+}
+
+public static class InteractionBehaviorIds
+{
+    public const string EatOnce = "wk.interaction.eat_once";
+    public const string PlayOnce = "wk.interaction.play_once";
+}
+
+public static class MagicBehaviorIds
+{
+    public const string AssetBatch = "WK-MAGIC-SPECIALS-MOCK-v1";
+    public const string AccioBroom = "wk.magic.accio_broom";
+    public const string Apparate = "wk.magic.apparate";
+    public const string PetrificusTotalus = "wk.magic.petrificus_totalus";
+    public const string PetrificusRelease = "wk.magic.petrificus_release";
+    public const string Scourgify = "wk.magic.scourgify";
+
+    public static readonly IReadOnlySet<string> PrototypeWhitelist =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            AccioBroom,
+            Apparate,
+            PetrificusTotalus,
+            PetrificusRelease,
+            Scourgify
+        };
 }
 
 public sealed record CommandActionBatchManifest(
@@ -494,7 +630,38 @@ public sealed record CommandActionFrameManifest(
     [property: JsonPropertyName("sha256")] string Sha256,
     [property: JsonPropertyName("bytes")] long Bytes);
 
-public sealed record PetMotionRequest(PlayableMotion Motion, string Trigger, bool ReturnToIdle, int LoopCycles);
+public sealed record MagicMockBatchManifest(
+    [property: JsonPropertyName("batch_id")] string BatchId,
+    [property: JsonPropertyName("identity_profile")] string IdentityProfile,
+    [property: JsonPropertyName("actions")] IReadOnlyList<MagicMockActionManifest> Actions);
+
+public sealed record MagicMockActionManifest(
+    [property: JsonPropertyName("behavior_id")] string BehaviorId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("description")] string Description,
+    [property: JsonPropertyName("source_folder")] string SourceFolder,
+    [property: JsonPropertyName("frame_duration_ms")] int FrameDurationMs,
+    [property: JsonPropertyName("from_pose")] string FromPose,
+    [property: JsonPropertyName("to_pose")] string ToPose,
+    [property: JsonPropertyName("direction")] string Direction,
+    [property: JsonPropertyName("interruptible")] bool Interruptible,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("effect")] string Effect,
+    [property: JsonPropertyName("phases")] IReadOnlyList<MagicMockPhaseManifest> Phases);
+
+public sealed record MagicMockPhaseManifest(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("loop")] bool Loop,
+    [property: JsonPropertyName("frame_count")] int FrameCount,
+    [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames);
+
+public sealed record PetMotionRequest(
+    PlayableMotion Motion,
+    string Trigger,
+    bool ReturnToIdle,
+    int LoopCycles,
+    BehaviorRequestSource Source = BehaviorRequestSource.OwnerUi,
+    BehaviorExecutionMode ExecutionMode = BehaviorExecutionMode.Normal);
 
 public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 {
@@ -522,6 +689,11 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public ObservableCollection<string> TraceLines { get; } = new();
     public IReadOnlyList<PlayableMotion> Motions => _catalog.Motions;
+    public IReadOnlyList<PlayableMotion> MagicMotions => _catalog.Motions
+        .Where(x => string.Equals(x.Category, "宠物魔法", StringComparison.OrdinalIgnoreCase))
+        .OrderBy(x => x.DisplayName)
+        .ToArray();
+    public bool IsPetrified { get; private set; }
 
     public string CurrentAction { get; private set; } = "安静趴卧";
     public string CurrentBehaviorId { get; private set; } = Phase15BehaviorIds.ProneIdle;
@@ -547,7 +719,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public PetActionResult StartIdle(string source = "Startup")
     {
         var idle = _catalog.RequiredIdle;
-        Accept(idle, source, "idle_ready", returnToIdle: false, loopCycles: int.MaxValue);
+        Accept(idle, BehaviorRequestSource.OwnerUi, BehaviorExecutionMode.Normal, source, returnToIdle: false, loopCycles: int.MaxValue);
         return PetActionResult.Accepted;
     }
 
@@ -589,17 +761,36 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             SemanticIntentKind.Quiet or SemanticIntentKind.Stop => Phase15BehaviorIds.ProneIdle,
             _ => Phase15BehaviorIds.LookAround
         };
-        return Task.FromResult(SubmitBehavior(BehaviorRequestSource.ContextMenu, behaviorId, $"menu:{intent.Kind}", priority: 5));
+        return Task.FromResult(SubmitBehavior(BehaviorRequestSource.OwnerContextMenu, behaviorId, $"menu:{intent.Kind}", priority: 5));
     }
 
     public Task<PetActionResult> SubmitOwnerCommandAsync(string command)
     {
         var behaviorId = ResolveOwnerCommandBehavior(command);
-        return Task.FromResult(SubmitBehavior(BehaviorRequestSource.OwnerUi, behaviorId, $"owner_command:{command}", priority: 8, force: command == "停下"));
+        if (command is "停下" or "停")
+            return StopAsync("owner_command:stop");
+        return Task.FromResult(SubmitBehavior(BehaviorRequestSource.OwnerContextMenu, behaviorId, $"owner_command:{command}", priority: 8));
     }
 
     public Task<PetActionResult> SubmitDeveloperMotionAsync(string behaviorId) =>
-        Task.FromResult(SubmitBehavior(BehaviorRequestSource.DeveloperForced, behaviorId, $"developer_force:{behaviorId}", priority: 100, force: true));
+        Task.FromResult(SubmitBehavior(BehaviorRequestSource.DeveloperForced, behaviorId, $"developer_force:{behaviorId}", priority: 100, executionMode: BehaviorExecutionMode.DeveloperPreview, bypassRuntimeGate: true));
+
+    public Task<PetActionResult> SubmitMagicAsync(string behaviorId, BehaviorRequestSource source)
+    {
+        if (behaviorId == MagicBehaviorIds.PetrificusTotalus && IsPetrified)
+            behaviorId = MagicBehaviorIds.PetrificusRelease;
+        return Task.FromResult(SubmitBehavior(source, behaviorId, $"magic:{behaviorId}", priority: 20, executionMode: BehaviorExecutionMode.PrototypePreview));
+    }
+
+    public Task<PetActionResult> StopAsync(string reason = "stop")
+    {
+        IsPetrified = false;
+        OnPropertyChanged(nameof(IsPetrified));
+        Trace("stop_requested", reason);
+        StartIdle("stop");
+        UpdateDecision(PetActionResult.Interrupted, BehaviorRequestSource.OwnerContextMenu.ToString(), "stopped", "已停止并恢复安静趴卧");
+        return Task.FromResult(PetActionResult.Interrupted);
+    }
 
     public Task SubmitAutonomousTickAsync()
     {
@@ -624,7 +815,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         Trace("model_reply", Reply);
         _logs.Append(RuntimeMode.Production, "model_response", new { Reply });
         OnPropertyChanged(nameof(Reply));
-        await SubmitContextMenuIntentAsync(new SemanticIntent(SemanticIntentKind.ModelSuggested, Phase15BehaviorIds.LookAround));
+        SubmitBehavior(BehaviorRequestSource.Dialogue, Phase15BehaviorIds.LookAround, $"model:{SemanticIntentKind.ModelSuggested}", priority: 1);
+        await Task.CompletedTask;
     }
 
     public void MarkPhase(string phase, string framePath)
@@ -657,7 +849,13 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         RaiseMetrics();
     }
 
-    private PetActionResult SubmitBehavior(BehaviorRequestSource source, string behaviorId, string trigger, int priority, bool force = false)
+    private PetActionResult SubmitBehavior(
+        BehaviorRequestSource source,
+        string behaviorId,
+        string trigger,
+        int priority,
+        BehaviorExecutionMode executionMode = BehaviorExecutionMode.Normal,
+        bool bypassRuntimeGate = false)
     {
         var motion = _catalog.Find(behaviorId);
         if (motion is null)
@@ -665,26 +863,29 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             UpdateDecision(PetActionResult.MissingAsset, source.ToString(), "missing_asset", $"缺少素材：{behaviorId}");
             return PetActionResult.MissingAsset;
         }
-        if (!force && !motion.RuntimeEnabled)
+        var gate = EvaluateGate(source, executionMode, motion);
+        if (!gate.Allowed)
         {
-            UpdateDecision(PetActionResult.Deferred, source.ToString(), "runtime_locked", $"{trigger} locked: {motion.Status}");
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), gate.ReasonCode, gate.UserFacingReason);
             return PetActionResult.Deferred;
         }
 
         var now = DateTimeOffset.Now;
-        if (!force && !_currentInterruptible && _currentBehaviorId != behaviorId)
+        var ownerExplicit = source is BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel;
+        if (!bypassRuntimeGate && !_currentInterruptible && _currentBehaviorId != behaviorId)
         {
             UpdateDecision(PetActionResult.Deferred, source.ToString(), "current_not_interruptible", "当前动作不能安全中断");
             return PetActionResult.Deferred;
         }
 
-        if (!force && now - _currentStartedAt < TimeSpan.FromSeconds(3) && _currentBehaviorId != Phase15BehaviorIds.ProneIdle)
+        if (!ownerExplicit && !bypassRuntimeGate && now - _currentStartedAt < TimeSpan.FromSeconds(3) && _currentBehaviorId != Phase15BehaviorIds.ProneIdle)
         {
             UpdateDecision(PetActionResult.Deferred, source.ToString(), "minimum_dwell", "当前动作还在最短驻留时间内");
             return PetActionResult.Deferred;
         }
 
-        if (!force &&
+        if (!ownerExplicit &&
+            !bypassRuntimeGate &&
             _lastAccepted.TryGetValue(behaviorId, out var last) &&
             now - last < TimeSpan.FromSeconds(source == BehaviorRequestSource.AutonomousTick ? 25 : 6))
         {
@@ -692,25 +893,63 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             return PetActionResult.Deferred;
         }
 
-        Accept(motion, source.ToString(), trigger, returnToIdle: behaviorId != Phase15BehaviorIds.ProneIdle, loopCycles: behaviorId == Phase15BehaviorIds.ProneIdle ? int.MaxValue : 2);
+        var keepPetrified = motion.Effect == DesktopMotionEffect.Petrify;
+        var loopCycles = behaviorId == Phase15BehaviorIds.ProneIdle || keepPetrified ? int.MaxValue : 2;
+        Accept(motion, source, executionMode, trigger, returnToIdle: behaviorId != Phase15BehaviorIds.ProneIdle && !keepPetrified, loopCycles: loopCycles);
         return PetActionResult.Accepted;
+    }
+
+    private static (bool Allowed, string ReasonCode, string UserFacingReason) EvaluateGate(
+        BehaviorRequestSource source,
+        BehaviorExecutionMode executionMode,
+        PlayableMotion motion)
+    {
+        if (executionMode == BehaviorExecutionMode.DeveloperPreview)
+            return (true, "developer_preview", "开发者预览已允许");
+
+        if (executionMode == BehaviorExecutionMode.PrototypePreview)
+        {
+            var sourceAllowed = source is BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel;
+            if (!sourceAllowed)
+                return (false, "prototype_source_forbidden", "该入口不允许原型展示");
+            if (!MagicBehaviorIds.PrototypeWhitelist.Contains(motion.BehaviorId))
+                return (false, "prototype_not_whitelisted", "该行为不在魔法原型白名单中");
+            if (!motion.PrototypeUse)
+                return (false, "prototype_use_disabled", "该素材未开启原型展示");
+            return (true, "prototype_preview_allowed", "原型展示已允许");
+        }
+
+        if (!motion.RuntimeEnabled)
+            return (false, "runtime_locked", $"{motion.DisplayName} 素材正在返工，暂时不能正式播放。");
+
+        return (true, "runtime_allowed", "正式素材已允许");
     }
 
     private static string ResolveOwnerCommandBehavior(string command) => command.Trim() switch
     {
         "叫过来" => Phase15BehaviorIds.LookAround,
-        "伸爪" or "抬爪" or "握手" => CommandBehaviorIds.PawRise,
+        "吃一下" => InteractionBehaviorIds.EatOnce,
+        "玩一下" => InteractionBehaviorIds.PlayOnce,
+        "坐" => CommandBehaviorIds.Sit,
+        "卧" => CommandBehaviorIds.LieDown,
+        "伸爪" or "抬爪" or "握手" or "手" => CommandBehaviorIds.PawRise,
         "摸摸" => Phase15BehaviorIds.ProneTouch,
         "跳" or "跳跃" => CommandBehaviorIds.Jump,
         "转圈" or "靠近" or "停止坐下" or "转圈靠近停止坐下" => CommandBehaviorIds.SpinApproachStopSit,
-        "喂食" or "吃东西" or "舔爪" => CommandBehaviorIds.PawEat,
+        "喂食" or "吃东西" or "舔爪" or "吃" => CommandBehaviorIds.PawEat,
         "玩耍" => Phase15BehaviorIds.LookAround,
         "邀请外出" => Phase15BehaviorIds.SafeStand,
-        "停下" => Phase15BehaviorIds.ProneIdle,
+        "停下" or "停" => Phase15BehaviorIds.ProneIdle,
         _ => Phase15BehaviorIds.ProneIdle
     };
 
-    private void Accept(PlayableMotion motion, string source, string reason, bool returnToIdle, int loopCycles)
+    private void Accept(
+        PlayableMotion motion,
+        BehaviorRequestSource source,
+        BehaviorExecutionMode executionMode,
+        string reason,
+        bool returnToIdle,
+        int loopCycles)
     {
         _currentBehaviorId = motion.BehaviorId;
         _currentStartedAt = DateTimeOffset.Now;
@@ -720,9 +959,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         CurrentAction = motion.DisplayName;
         LastTrigger = reason;
         LastError = "无";
-        UpdateDecision(PetActionResult.Accepted, source, reason, "接受");
-        MotionRequested?.Invoke(this, new PetMotionRequest(motion, reason, returnToIdle, loopCycles));
-        Trace("motion_requested", $"{motion.BehaviorId} reason={reason}");
+        if (motion.Effect == DesktopMotionEffect.Petrify)
+            IsPetrified = true;
+        else if (motion.Effect == DesktopMotionEffect.PetrifyRelease)
+            IsPetrified = false;
+        OnPropertyChanged(nameof(IsPetrified));
+        UpdateDecision(PetActionResult.Accepted, source.ToString(), reason, executionMode == BehaviorExecutionMode.PrototypePreview ? "正在展示原型魔法" : "接受");
+        MotionRequested?.Invoke(this, new PetMotionRequest(motion, reason, returnToIdle, loopCycles, source, executionMode));
+        Trace("motion_requested", $"{motion.BehaviorId} source={source} mode={executionMode} asset_batch={motion.AssetBatch} reason={reason}");
         OnPropertyChanged(nameof(CurrentBehaviorId));
         OnPropertyChanged(nameof(CurrentAction));
         OnPropertyChanged(nameof(LastTrigger));
