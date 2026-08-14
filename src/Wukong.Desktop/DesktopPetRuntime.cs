@@ -97,7 +97,8 @@ public sealed record PlayableMotion(
     bool PrototypeUse = false,
     string AssetBatch = "built-in",
     DesktopMotionEffect Effect = DesktopMotionEffect.None,
-    string Description = "")
+    string Description = "",
+    IReadOnlyDictionary<string, IReadOnlyList<string>>? DirectionalFrames = null)
 {
     public bool IsUsable => Phases.Any(x => x.Frames.Count > 0);
     public string FirstFrame => Phases.SelectMany(x => x.Frames).FirstOrDefault() ?? string.Empty;
@@ -303,10 +304,10 @@ public sealed class DesktopMotionCatalog
         };
 
         var commandCandidates = LoadCommandCandidates(root).ToArray();
-        var magicMocks = LoadMagicMocks(root).ToArray();
-        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_mocks={magicMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/WK-MAGIC-SPECIALS-MOCK-v1/manifest.json";
+        var magicCandidates = LoadMagicCandidates(root).ToArray();
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json";
         BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
-        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicMocks), summary);
+        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicCandidates), summary);
     }
 
     private static PlayableMotion Motion(
@@ -460,12 +461,12 @@ public sealed class DesktopMotionCatalog
         }
     }
 
-    private static IEnumerable<PlayableMotion> LoadMagicMocks(string root)
+    private static IEnumerable<PlayableMotion> LoadMagicCandidates(string root)
     {
         var manifestPath = Path.Combine(root, "action-batches", MagicBehaviorIds.AssetBatch, "manifest.json");
         if (!File.Exists(manifestPath))
         {
-            BootstrapLog.WriteRaw("magic_mock_manifest_missing");
+            BootstrapLog.WriteRaw("magic_candidate_manifest_missing");
             yield break;
         }
 
@@ -478,7 +479,7 @@ public sealed class DesktopMotionCatalog
         }
         catch (Exception ex)
         {
-            BootstrapLog.Write("Magic mock manifest parse failed", ex);
+            BootstrapLog.Write("Magic candidate manifest parse failed", ex);
             yield break;
         }
 
@@ -486,10 +487,40 @@ public sealed class DesktopMotionCatalog
             yield break;
 
         var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        var directionalFrames = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+        var directionalErrors = new List<string>();
+        foreach (var direction in manifest.BroomDirectionalFlight ?? new Dictionary<string, IReadOnlyList<CommandActionFrameManifest>>())
+        {
+            var frames = new List<string>();
+            foreach (var frame in direction.Value)
+            {
+                var path = Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(path))
+                {
+                    directionalErrors.Add($"missing:{frame.Path}");
+                    continue;
+                }
+                if (new FileInfo(path).Length != frame.Bytes)
+                    directionalErrors.Add($"bytes:{frame.Path}");
+                if (!string.Equals(Sha256(path), frame.Sha256, StringComparison.OrdinalIgnoreCase))
+                    directionalErrors.Add($"sha256:{frame.Path}");
+                frames.Add(path);
+            }
+            if (frames.Count != 8)
+                directionalErrors.Add($"direction_frame_count:{direction.Key}:{frames.Count}/8");
+            directionalFrames[direction.Key] = frames;
+        }
+
         foreach (var action in manifest.Actions)
         {
             var phases = new List<MotionPhase>();
             var errors = new List<string>();
+            if (string.Equals(action.BehaviorId, MagicBehaviorIds.AccioBroom, StringComparison.OrdinalIgnoreCase))
+            {
+                errors.AddRange(directionalErrors);
+                if (directionalFrames.Count != 8)
+                    errors.Add($"direction_count:{directionalFrames.Count}/8");
+            }
             foreach (var phase in action.Phases ?? Array.Empty<MagicMockPhaseManifest>())
             {
                 var frames = new List<string>();
@@ -517,7 +548,7 @@ public sealed class DesktopMotionCatalog
 
             if (errors.Count > 0)
             {
-                BootstrapLog.WriteRaw($"magic_mock_invalid behavior={action.BehaviorId} errors={string.Join(",", errors)}");
+                BootstrapLog.WriteRaw($"magic_candidate_invalid behavior={action.BehaviorId} errors={string.Join(",", errors)}");
                 continue;
             }
 
@@ -532,9 +563,9 @@ public sealed class DesktopMotionCatalog
                 Path.Combine(batchRoot, action.SourceFolder.Replace('/', Path.DirectorySeparatorChar)),
                 RuntimeEnabled: false,
                 Status: action.PrototypeUse
-                    ? "Mock / Prototype：允许主人原型展示"
-                    : "Mock / Prototype：原型展示关闭",
-                MissingContent: "formal art and renderer approval",
+                    ? "Candidate / Prototype：允许主人原型展示"
+                    : "Candidate / Prototype：原型展示关闭",
+                MissingContent: "Windows transparent-renderer approval",
                 StartPose: action.FromPose,
                 EndPose: action.ToPose,
                 StyleGroup: manifest.IdentityProfile,
@@ -542,7 +573,10 @@ public sealed class DesktopMotionCatalog
                 PrototypeUse: action.PrototypeUse,
                 AssetBatch: manifest.BatchId,
                 Effect: ParseMagicEffect(action.Effect),
-                Description: action.Description);
+                Description: action.Description,
+                DirectionalFrames: string.Equals(action.BehaviorId, MagicBehaviorIds.AccioBroom, StringComparison.OrdinalIgnoreCase)
+                    ? directionalFrames
+                    : null);
         }
     }
 
@@ -589,11 +623,12 @@ public static class InteractionBehaviorIds
 
 public static class MagicBehaviorIds
 {
-    public const string AssetBatch = "WK-MAGIC-SPECIALS-MOCK-v1";
+    public const string AssetBatch = "WK-MAGIC-SPECIALS-CANDIDATE-v1";
     public const string AccioBroom = "wk.magic.accio_broom";
     public const string Apparate = "wk.magic.apparate";
     public const string PetrificusTotalus = "wk.magic.petrificus_totalus";
     public const string PetrificusRelease = "wk.magic.petrificus_release";
+    public const string PetrifiedCoin = "wk.magic.petrificus_coin";
     public const string Scourgify = "wk.magic.scourgify";
 
     public static readonly IReadOnlySet<string> PrototypeWhitelist =
@@ -633,6 +668,7 @@ public sealed record CommandActionFrameManifest(
 public sealed record MagicMockBatchManifest(
     [property: JsonPropertyName("batch_id")] string BatchId,
     [property: JsonPropertyName("identity_profile")] string IdentityProfile,
+    [property: JsonPropertyName("broom_directional_flight")] IReadOnlyDictionary<string, IReadOnlyList<CommandActionFrameManifest>>? BroomDirectionalFlight,
     [property: JsonPropertyName("actions")] IReadOnlyList<MagicMockActionManifest> Actions);
 
 public sealed record MagicMockActionManifest(
@@ -655,6 +691,180 @@ public sealed record MagicMockPhaseManifest(
     [property: JsonPropertyName("frame_count")] int FrameCount,
     [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames);
 
+public enum PetrifiedCoinState
+{
+    Vivid,
+    Flat,
+    Faded,
+    Exhausted
+}
+
+public enum PetrifiedCoinSide
+{
+    Front,
+    Back
+}
+
+public sealed record PetrifiedCoinOptions(
+    TimeSpan SettleToFlat,
+    TimeSpan FadeAfter,
+    TimeSpan ExhaustedAfter)
+{
+    public static PetrifiedCoinOptions Default { get; } = new(
+        TimeSpan.FromMilliseconds(800),
+        TimeSpan.FromMinutes(10),
+        TimeSpan.FromMinutes(20));
+}
+
+public sealed record PetrifiedCoinManifest(
+    [property: JsonPropertyName("states")] IReadOnlyList<PetrifiedCoinStateManifest> States,
+    [property: JsonPropertyName("timing")] PetrifiedCoinTimingManifest Timing,
+    [property: JsonPropertyName("flip")] PetrifiedCoinFlipManifest Flip);
+
+public sealed record PetrifiedCoinStateManifest(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("front")] string Front,
+    [property: JsonPropertyName("back")] string Back);
+
+public sealed record PetrifiedCoinTimingManifest(
+    [property: JsonPropertyName("settle_to_flat_ms")] int SettleToFlatMs,
+    [property: JsonPropertyName("fade_step_ms")] int FadeStepMs,
+    [property: JsonPropertyName("exhausted_after_ms")] int ExhaustedAfterMs);
+
+public sealed record PetrifiedCoinFlipManifest(
+    [property: JsonPropertyName("front_to_back")] PetrifiedCoinFlipDirectionManifest FrontToBack);
+
+public sealed record PetrifiedCoinFlipDirectionManifest(
+    [property: JsonPropertyName("directories_by_state")] IReadOnlyDictionary<string, string> DirectoriesByState,
+    [property: JsonPropertyName("frames")] int Frames,
+    [property: JsonPropertyName("frame_duration_ms")] int FrameDurationMs);
+
+public sealed class PetrifiedCoinAssets
+{
+    private readonly IReadOnlyDictionary<PetrifiedCoinState, (string Front, string Back)> _states;
+    private readonly IReadOnlyDictionary<PetrifiedCoinState, IReadOnlyList<string>> _frontToBack;
+
+    private PetrifiedCoinAssets(
+        string root,
+        PetrifiedCoinOptions defaults,
+        IReadOnlyDictionary<PetrifiedCoinState, (string Front, string Back)> states,
+        IReadOnlyDictionary<PetrifiedCoinState, IReadOnlyList<string>> frontToBack,
+        int frameDurationMs)
+    {
+        Root = root;
+        Defaults = defaults;
+        _states = states;
+        _frontToBack = frontToBack;
+        FrameDurationMs = frameDurationMs;
+    }
+
+    public string Root { get; }
+    public PetrifiedCoinOptions Defaults { get; }
+    public int FrameDurationMs { get; }
+
+    public static PetrifiedCoinAssets Load(string baseDirectory)
+    {
+        var root = Path.Combine(baseDirectory, "WukongAssets", "action-batches", MagicBehaviorIds.AssetBatch);
+        var manifestPath = Path.Combine(root, "coin-manifest.json");
+        var manifest = JsonSerializer.Deserialize<PetrifiedCoinManifest>(
+            File.ReadAllText(manifestPath),
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+            ?? throw new InvalidDataException("Coin manifest is empty.");
+
+        var states = new Dictionary<PetrifiedCoinState, (string Front, string Back)>();
+        foreach (var item in manifest.States)
+        {
+            var state = ParseState(item.Id);
+            var front = ResolveExisting(root, item.Front);
+            var back = ResolveExisting(root, item.Back);
+            states[state] = (front, back);
+        }
+
+        var flip = new Dictionary<PetrifiedCoinState, IReadOnlyList<string>>();
+        foreach (var item in manifest.Flip.FrontToBack.DirectoriesByState)
+        {
+            var state = ParseState(item.Key);
+            var directory = Path.Combine(root, item.Value.Replace('/', Path.DirectorySeparatorChar));
+            var frames = Directory.GetFiles(directory, "*.png").OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+            if (frames.Length != manifest.Flip.FrontToBack.Frames)
+                throw new InvalidDataException($"Coin flip frame count mismatch for {item.Key}.");
+            flip[state] = frames;
+        }
+
+        if (states.Count != 4 || flip.Count != 4)
+            throw new InvalidDataException("Coin assets must contain four states and four flip sequences.");
+
+        return new PetrifiedCoinAssets(
+            root,
+            new PetrifiedCoinOptions(
+                TimeSpan.FromMilliseconds(manifest.Timing.SettleToFlatMs),
+                TimeSpan.FromMilliseconds(manifest.Timing.FadeStepMs),
+                TimeSpan.FromMilliseconds(manifest.Timing.ExhaustedAfterMs)),
+            states,
+            flip,
+            manifest.Flip.FrontToBack.FrameDurationMs);
+    }
+
+    public PlayableMotion Static(PetrifiedCoinState state, PetrifiedCoinSide side)
+    {
+        var pair = _states[state];
+        var frame = side == PetrifiedCoinSide.Front ? pair.Front : pair.Back;
+        return Motion($"Coin {side} {state}", new[] { frame }, loop: true);
+    }
+
+    public PlayableMotion Flip(PetrifiedCoinState state, PetrifiedCoinSide from, bool resetToVivid)
+    {
+        IReadOnlyList<string> frames;
+        if (from == PetrifiedCoinSide.Front)
+        {
+            frames = _frontToBack[state];
+        }
+        else if (resetToVivid)
+        {
+            var currentReverse = _frontToBack[state].Reverse().Take(5);
+            var vividReverse = _frontToBack[PetrifiedCoinState.Vivid].Reverse().Skip(5);
+            frames = currentReverse.Concat(vividReverse).ToArray();
+        }
+        else
+        {
+            frames = _frontToBack[state].Reverse().ToArray();
+        }
+
+        return Motion(from == PetrifiedCoinSide.Front ? "Coin flip to back" : "Coin flip to front", frames, loop: false);
+    }
+
+    private PlayableMotion Motion(string displayName, IReadOnlyList<string> frames, bool loop) => new(
+        MagicBehaviorIds.PetrifiedCoin,
+        displayName,
+        "宠物魔法",
+        "front",
+        FrameDurationMs,
+        false,
+        new[] { new MotionPhase(loop ? "coin_hold" : "coin_flip", frames, loop) },
+        Root,
+        RuntimeEnabled: false,
+        Status: "Candidate / Prototype：石化金币互动",
+        MissingContent: "Windows renderer approval",
+        PrototypeUse: true,
+        AssetBatch: MagicBehaviorIds.AssetBatch,
+        Description: "Owner-only interactive petrification coin candidate");
+
+    private static PetrifiedCoinState ParseState(string value) => value.ToLowerInvariant() switch
+    {
+        "vivid" => PetrifiedCoinState.Vivid,
+        "flat" => PetrifiedCoinState.Flat,
+        "faded" => PetrifiedCoinState.Faded,
+        "exhausted" => PetrifiedCoinState.Exhausted,
+        _ => throw new InvalidDataException($"Unknown coin state: {value}")
+    };
+
+    private static string ResolveExisting(string root, string relative)
+    {
+        var path = Path.Combine(root, relative.Replace('/', Path.DirectorySeparatorChar));
+        return File.Exists(path) ? path : throw new FileNotFoundException("Coin asset is missing.", path);
+    }
+}
+
 public sealed record PetMotionRequest(
     PlayableMotion Motion,
     string Trigger,
@@ -666,6 +876,9 @@ public sealed record PetMotionRequest(
 public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 {
     private readonly DesktopMotionCatalog _catalog;
+    private readonly PetrifiedCoinAssets? _coinAssets;
+    private readonly PetrifiedCoinOptions _coinOptions;
+    private readonly Func<DateTimeOffset> _now;
     private readonly Random _random = new(1508);
     private readonly Dictionary<string, DateTimeOffset> _lastAccepted = new(StringComparer.OrdinalIgnoreCase);
     private readonly RollingFileLogStore _logs = RollingFileLogStore.CreateDefault();
@@ -674,10 +887,22 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private DateTimeOffset _currentStartedAt = DateTimeOffset.MinValue;
     private string _currentBehaviorId = Phase15BehaviorIds.ProneIdle;
     private bool _currentInterruptible = true;
+    private DateTimeOffset? _coinActivityAt;
+    private BehaviorRequestSource _coinPreviewSource = BehaviorRequestSource.OwnerContextMenu;
 
-    public DesktopRuntimeHost()
+    public DesktopRuntimeHost(PetrifiedCoinOptions? coinOptions = null, Func<DateTimeOffset>? now = null)
     {
+        _now = now ?? (() => DateTimeOffset.Now);
         _catalog = DesktopMotionCatalog.Load(AppContext.BaseDirectory);
+        try
+        {
+            _coinAssets = PetrifiedCoinAssets.Load(AppContext.BaseDirectory);
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Petrified coin assets failed to load", ex);
+        }
+        _coinOptions = coinOptions ?? _coinAssets?.Defaults ?? PetrifiedCoinOptions.Default;
         CurrentAsset = _catalog.RequiredIdle.FirstFrame;
         CurrentAction = _catalog.RequiredIdle.DisplayName;
         CurrentBehaviorId = _catalog.RequiredIdle.BehaviorId;
@@ -694,6 +919,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         .OrderBy(x => x.DisplayName)
         .ToArray();
     public bool IsPetrified { get; private set; }
+    public bool IsCoinAssetsReady => _coinAssets is not null;
+    public PetrifiedCoinState? CurrentCoinState { get; private set; }
+    public PetrifiedCoinSide? CurrentCoinSide { get; private set; }
 
     public string CurrentAction { get; private set; } = "安静趴卧";
     public string CurrentBehaviorId { get; private set; } = Phase15BehaviorIds.ProneIdle;
@@ -731,7 +959,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public Task<PetActionResult> SubmitGestureAsync(PetGestureKind gesture, BehaviorRequestSource source)
     {
-        var now = DateTimeOffset.Now;
+        var now = _now();
         Trace("gesture", gesture.ToString());
         var behaviorId = gesture switch
         {
@@ -782,9 +1010,64 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         return Task.FromResult(SubmitBehavior(source, behaviorId, $"magic:{behaviorId}", priority: 20, executionMode: BehaviorExecutionMode.PrototypePreview));
     }
 
+    public Task<PetActionResult> SubmitPetrifiedCoinClickAsync(BehaviorRequestSource source = BehaviorRequestSource.OwnerUi)
+    {
+        if (!CanInteractWithCoin(source))
+            return Task.FromResult(PetActionResult.Deferred);
+
+        SetCoin(PetrifiedCoinState.Vivid, PetrifiedCoinSide.Front, _now());
+        _coinPreviewSource = source;
+        RequestCoinMotion(_coinAssets!.Static(PetrifiedCoinState.Vivid, PetrifiedCoinSide.Front), "coin:single_click_reset", int.MaxValue, source);
+        return Task.FromResult(PetActionResult.Accepted);
+    }
+
+    public Task<PetActionResult> SubmitPetrifiedCoinDoubleClickAsync(BehaviorRequestSource source = BehaviorRequestSource.OwnerUi)
+    {
+        if (!CanInteractWithCoin(source) || CurrentCoinState is null || CurrentCoinSide is null)
+            return Task.FromResult(PetActionResult.Deferred);
+
+        var state = CurrentCoinState.Value;
+        var side = CurrentCoinSide.Value;
+        if (side == PetrifiedCoinSide.Front)
+        {
+            SetCoin(state, PetrifiedCoinSide.Back, activityAt: null);
+            _coinPreviewSource = source;
+            RequestCoinMotion(_coinAssets!.Flip(state, side, resetToVivid: false), "coin:double_click_back", 1, source);
+        }
+        else
+        {
+            SetCoin(PetrifiedCoinState.Vivid, PetrifiedCoinSide.Front, _now());
+            _coinPreviewSource = source;
+            RequestCoinMotion(_coinAssets!.Flip(state, side, resetToVivid: true), "coin:double_click_front_reset", 1, source);
+        }
+        return Task.FromResult(PetActionResult.Accepted);
+    }
+
+    public bool RefreshPetrifiedCoinState(DateTimeOffset? at = null)
+    {
+        if (!IsPetrified || _coinAssets is null || _coinActivityAt is null || CurrentCoinSide is null)
+            return false;
+
+        var elapsed = (at ?? _now()) - _coinActivityAt.Value;
+        var next = elapsed >= _coinOptions.ExhaustedAfter
+            ? PetrifiedCoinState.Exhausted
+            : elapsed >= _coinOptions.FadeAfter
+                ? PetrifiedCoinState.Faded
+                : elapsed >= _coinOptions.SettleToFlat
+                    ? PetrifiedCoinState.Flat
+                    : PetrifiedCoinState.Vivid;
+        if (next == CurrentCoinState)
+            return false;
+
+        SetCoin(next, CurrentCoinSide.Value, activityAt: null);
+        RequestCoinMotion(_coinAssets.Static(next, CurrentCoinSide.Value), $"coin:inactivity:{next}", int.MaxValue, _coinPreviewSource);
+        return true;
+    }
+
     public Task<PetActionResult> StopAsync(string reason = "stop")
     {
         IsPetrified = false;
+        ClearCoin();
         OnPropertyChanged(nameof(IsPetrified));
         Trace("stop_requested", reason);
         StartIdle("stop");
@@ -800,7 +1083,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         Comfort = Clamp01(Comfort + 0.004);
         RaiseMetrics();
 
-        if (DateTimeOffset.Now - _currentStartedAt < TimeSpan.FromSeconds(14))
+        if (_now() - _currentStartedAt < TimeSpan.FromSeconds(14))
             return Task.CompletedTask;
 
         var choice = ChooseAutonomousBehavior();
@@ -870,9 +1153,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             return PetActionResult.Deferred;
         }
 
-        var now = DateTimeOffset.Now;
+        var now = _now();
         var ownerExplicit = source is BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel;
-        if (!bypassRuntimeGate && !_currentInterruptible && _currentBehaviorId != behaviorId)
+        if (!ownerExplicit && !bypassRuntimeGate && !_currentInterruptible && _currentBehaviorId != behaviorId)
         {
             UpdateDecision(PetActionResult.Deferred, source.ToString(), "current_not_interruptible", "当前动作不能安全中断");
             return PetActionResult.Deferred;
@@ -952,7 +1235,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         int loopCycles)
     {
         _currentBehaviorId = motion.BehaviorId;
-        _currentStartedAt = DateTimeOffset.Now;
+        _currentStartedAt = _now();
         _currentInterruptible = motion.Interruptible;
         _lastAccepted[motion.BehaviorId] = _currentStartedAt;
         CurrentBehaviorId = motion.BehaviorId;
@@ -960,9 +1243,18 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         LastTrigger = reason;
         LastError = "无";
         if (motion.Effect == DesktopMotionEffect.Petrify)
+        {
             IsPetrified = true;
+            _coinPreviewSource = source;
+            var transitionFrames = motion.Phases.TakeWhile(x => !x.Loop).Sum(x => x.Frames.Count);
+            var coinVisibleAt = _currentStartedAt + TimeSpan.FromMilliseconds(transitionFrames * motion.FrameDurationMs);
+            SetCoin(PetrifiedCoinState.Vivid, PetrifiedCoinSide.Front, coinVisibleAt);
+        }
         else if (motion.Effect == DesktopMotionEffect.PetrifyRelease)
+        {
             IsPetrified = false;
+            ClearCoin();
+        }
         OnPropertyChanged(nameof(IsPetrified));
         UpdateDecision(PetActionResult.Accepted, source.ToString(), reason, executionMode == BehaviorExecutionMode.PrototypePreview ? "正在展示原型魔法" : "接受");
         MotionRequested?.Invoke(this, new PetMotionRequest(motion, reason, returnToIdle, loopCycles, source, executionMode));
@@ -971,6 +1263,56 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         OnPropertyChanged(nameof(CurrentAction));
         OnPropertyChanged(nameof(LastTrigger));
         OnPropertyChanged(nameof(LastError));
+    }
+
+    private bool CanInteractWithCoin(BehaviorRequestSource source)
+    {
+        var sourceAllowed = source is BehaviorRequestSource.OwnerUi or BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel;
+        if (IsPetrified && sourceAllowed && _coinAssets is not null)
+            return true;
+        UpdateDecision(PetActionResult.Deferred, source.ToString(), "coin_interaction_forbidden", "石化金币当前不可互动");
+        return false;
+    }
+
+    private void RequestCoinMotion(PlayableMotion motion, string trigger, int loopCycles, BehaviorRequestSource source)
+    {
+        _currentBehaviorId = motion.BehaviorId;
+        _currentStartedAt = _now();
+        _currentInterruptible = false;
+        CurrentBehaviorId = motion.BehaviorId;
+        CurrentAction = motion.DisplayName;
+        LastTrigger = trigger;
+        UpdateDecision(PetActionResult.Accepted, source.ToString(), trigger, "正在展示石化金币原型互动");
+        MotionRequested?.Invoke(this, new PetMotionRequest(
+            motion,
+            trigger,
+            ReturnToIdle: false,
+            loopCycles,
+            source,
+            BehaviorExecutionMode.PrototypePreview));
+        Trace("coin_motion_requested", $"state={CurrentCoinState} side={CurrentCoinSide} trigger={trigger}");
+        OnPropertyChanged(nameof(CurrentBehaviorId));
+        OnPropertyChanged(nameof(CurrentAction));
+        OnPropertyChanged(nameof(LastTrigger));
+    }
+
+    private void SetCoin(PetrifiedCoinState state, PetrifiedCoinSide side, DateTimeOffset? activityAt)
+    {
+        CurrentCoinState = state;
+        CurrentCoinSide = side;
+        if (activityAt is not null)
+            _coinActivityAt = activityAt;
+        OnPropertyChanged(nameof(CurrentCoinState));
+        OnPropertyChanged(nameof(CurrentCoinSide));
+    }
+
+    private void ClearCoin()
+    {
+        _coinActivityAt = null;
+        CurrentCoinState = null;
+        CurrentCoinSide = null;
+        OnPropertyChanged(nameof(CurrentCoinState));
+        OnPropertyChanged(nameof(CurrentCoinSide));
     }
 
     private (string BehaviorId, string Reason) ChooseAutonomousBehavior()

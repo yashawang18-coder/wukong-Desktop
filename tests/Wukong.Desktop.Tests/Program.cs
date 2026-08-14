@@ -25,11 +25,16 @@ var tests = new (string Name, Action Run)[]
     ("command action candidates are indexed and validated", CommandActionCandidatesAreIndexed),
     ("command candidates stay out of autonomous and production commands", CommandCandidatesStayGated),
     ("developer forced command candidate can request playback", DeveloperForcedCommandCandidateCanRequestPlayback),
-    ("magic mock assets are indexed and validated", MagicMockAssetsAreIndexed),
+    ("magic candidate assets are indexed and validated", MagicCandidateAssetsAreIndexed),
+    ("petrified coin assets and checksums are complete", PetrifiedCoinAssetsAndChecksumsAreComplete),
     ("owner and panel magic use prototype preview gate", OwnerAndPanelMagicUsePrototypePreviewGate),
     ("non owner sources cannot prototype preview magic", NonOwnerSourcesCannotPrototypePreviewMagic),
+    ("petrified coin inactivity reaches all four states", PetrifiedCoinInactivityReachesAllFourStates),
+    ("petrified coin timing is configurable", PetrifiedCoinTimingIsConfigurable),
+    ("petrified coin clicks reset and double clicks flip", PetrifiedCoinClicksResetAndDoubleClicksFlip),
     ("stop clears petrification and requests idle", StopClearsPetrificationAndRequestsIdle),
     ("main window context menu matches owner action contract", MainWindowContextMenuMatchesContract),
+    ("broom direction quantizer covers eight directions", BroomDirectionQuantizerCoversEightDirections),
     ("control panel exposes magic specials tab", ControlPanelExposesMagicSpecialsTab),
     ("gesture interpreter distinguishes touch stroke drag and rapid tap", GestureInterpreterDistinguishesGestures),
     ("rapid tap has priority over owner touch", RapidTapHasPriorityOverOwnerTouch),
@@ -364,24 +369,24 @@ static void DeveloperForcedCommandCandidateCanRequestPlayback()
     Assert(request.Motion.FrameCount == 8, "jump candidate frame count wrong");
 }
 
-static void MagicMockAssetsAreIndexed()
+static void MagicCandidateAssetsAreIndexed()
 {
     var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
     var manifestPath = Path.Combine(output, "WukongAssets", "action-batches", MagicBehaviorIds.AssetBatch, "manifest.json");
-    Assert(File.Exists(manifestPath), "magic mock manifest was not copied to output");
+    Assert(File.Exists(manifestPath), "magic candidate manifest was not copied to output");
 
     using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
-    Assert(manifest.RootElement.GetProperty("runtime_approved").GetBoolean() == false, "magic mock must not be runtime approved");
-    Assert(manifest.RootElement.GetProperty("runtime_use").GetBoolean() == false, "magic mock must not enable production runtime use");
-    Assert(manifest.RootElement.GetProperty("prototype_use").GetBoolean(), "magic mock must explicitly enable prototype use");
+    Assert(manifest.RootElement.GetProperty("runtime_approved").GetBoolean() == false, "magic candidate must not be runtime approved");
+    Assert(manifest.RootElement.GetProperty("runtime_use").GetBoolean() == false, "magic candidate must not enable production runtime use");
+    Assert(manifest.RootElement.GetProperty("prototype_use").GetBoolean(), "magic candidate must explicitly enable prototype use");
     var actions = manifest.RootElement.GetProperty("actions").EnumerateArray().ToArray();
-    Assert(actions.Length == 5, "magic mock manifest must include four magic actions plus petrification release");
+    Assert(actions.Length == 5, "magic candidate manifest must include four magic actions plus petrification release");
 
     foreach (var action in actions)
     {
-        Assert(!action.GetProperty("runtime_approved").GetBoolean(), "mock action was runtime approved");
-        Assert(!action.GetProperty("runtime_use").GetBoolean(), "mock action enabled production runtime use");
-        Assert(action.GetProperty("prototype_use").GetBoolean(), "mock action did not enable prototype preview");
+        Assert(!action.GetProperty("runtime_approved").GetBoolean(), "candidate action was runtime approved");
+        Assert(!action.GetProperty("runtime_use").GetBoolean(), "candidate action enabled production runtime use");
+        Assert(action.GetProperty("prototype_use").GetBoolean(), "candidate action did not enable prototype preview");
         foreach (var phase in action.GetProperty("phases").EnumerateArray())
         {
             foreach (var frame in phase.GetProperty("frames").EnumerateArray())
@@ -393,17 +398,65 @@ static void MagicMockAssetsAreIndexed()
                 using var stream = File.OpenRead(framePath);
                 var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
                 var bitmap = decoder.Frames.Single();
-                Assert(bitmap.PixelWidth == 256 && bitmap.PixelHeight == 256, "magic mock frame dimensions changed");
-                Assert(HasAlpha(bitmap.Format), "magic mock frame is not alpha-capable");
+                Assert(bitmap.PixelWidth == frame.GetProperty("width").GetInt32(), "magic candidate frame width mismatch");
+                Assert(bitmap.PixelHeight == frame.GetProperty("height").GetInt32(), "magic candidate frame height mismatch");
+                Assert(HasAlpha(bitmap.Format), "magic candidate frame is not alpha-capable");
             }
         }
     }
 
     var catalog = DesktopMotionCatalog.Load(output);
     var magic = catalog.Motions.Where(x => x.Category == "宠物魔法").ToArray();
-    Assert(magic.Length == 5, "magic mock assets were not indexed");
-    Assert(magic.All(x => x.PrototypeUse), "all magic mocks must be prototype-use only");
-    Assert(magic.All(x => !x.RuntimeEnabled), "magic mocks must stay out of production runtime");
+    Assert(magic.Length == 5, "magic candidate assets were not indexed");
+    Assert(magic.All(x => x.PrototypeUse), "all magic candidates must be prototype-use only");
+    Assert(magic.All(x => !x.RuntimeEnabled), "magic candidates must stay out of production runtime");
+    Assert(magic.Single(x => x.BehaviorId == MagicBehaviorIds.AccioBroom).FrameCount == 24, "broom playback mapping is incomplete");
+    Assert(magic.Single(x => x.BehaviorId == MagicBehaviorIds.AccioBroom).DirectionalFrames?.Count == 8, "broom eight-way frame map is incomplete");
+    Assert(magic.Single(x => x.BehaviorId == MagicBehaviorIds.Apparate).FrameCount == 29, "apparate playback mapping is incomplete");
+    Assert(magic.Single(x => x.BehaviorId == MagicBehaviorIds.PetrificusTotalus).FrameCount == 18, "petrification-to-coin mapping is incomplete");
+}
+
+static void PetrifiedCoinAssetsAndChecksumsAreComplete()
+{
+    var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
+    var root = Path.Combine(output, "WukongAssets", "action-batches", MagicBehaviorIds.AssetBatch);
+    var manifestPath = Path.Combine(root, "coin-manifest.json");
+    var checksumPath = Path.Combine(root, "coin-checksums.sha256");
+    Assert(File.Exists(manifestPath), "coin manifest missing from output");
+    Assert(File.Exists(checksumPath), "coin checksum file missing from output");
+
+    using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+    var states = manifest.RootElement.GetProperty("states").EnumerateArray().ToArray();
+    Assert(states.Length == 4, "coin must expose vivid, flat, faded, and exhausted states");
+    var pngPaths = states.SelectMany(x => new[]
+    {
+        x.GetProperty("front").GetString()!,
+        x.GetProperty("back").GetString()!
+    }).ToList();
+    foreach (var directory in manifest.RootElement.GetProperty("flip").GetProperty("front_to_back").GetProperty("directories_by_state").EnumerateObject())
+    {
+        var files = Directory.GetFiles(Path.Combine(root, directory.Value.GetString()!.Replace('/', Path.DirectorySeparatorChar)), "*.png").OrderBy(x => x).ToArray();
+        Assert(files.Length == 9, $"coin flip {directory.Name} must have nine frames");
+        pngPaths.AddRange(files.Select(x => Path.GetRelativePath(root, x).Replace(Path.DirectorySeparatorChar, '/')));
+    }
+    Assert(pngPaths.Count == 44, "coin package must contain eight faces and 36 flip frames");
+
+    var checksums = File.ReadAllLines(checksumPath)
+        .Where(x => !string.IsNullOrWhiteSpace(x))
+        .Select(x => x.Split("  ", 2, StringSplitOptions.None))
+        .ToDictionary(x => x[1], x => x[0], StringComparer.Ordinal);
+    foreach (var relative in pngPaths)
+    {
+        var path = Path.Combine(root, relative.Replace('/', Path.DirectorySeparatorChar));
+        Assert(File.Exists(path), $"coin frame missing: {relative}");
+        Assert(checksums.TryGetValue(relative, out var expected), $"coin checksum missing: {relative}");
+        Assert(Sha256(path) == expected, $"coin checksum mismatch: {relative}");
+        using var stream = File.OpenRead(path);
+        var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+        var bitmap = decoder.Frames.Single();
+        Assert(bitmap.PixelWidth == 1024 && bitmap.PixelHeight == 1024, "coin frame size must be normalized to 1024 square");
+        Assert(HasAlpha(bitmap.Format), "coin frame is not alpha-capable");
+    }
 }
 
 static void OwnerAndPanelMagicUsePrototypePreviewGate()
@@ -435,6 +488,85 @@ static void NonOwnerSourcesCannotPrototypePreviewMagic()
     Assert(dialogueResult == PetActionResult.Deferred, "dialogue was allowed to prototype magic");
     Assert(autonomousResult == PetActionResult.Deferred, "autonomous tick was allowed to prototype magic");
     Assert(request is null, "forbidden prototype source requested playback");
+}
+
+static void PetrifiedCoinInactivityReachesAllFourStates()
+{
+    var now = new DateTimeOffset(2026, 8, 15, 12, 0, 0, TimeSpan.Zero);
+    var runtime = new DesktopRuntimeHost(now: () => now);
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, item) => requests.Add(item);
+
+    Assert(runtime.IsCoinAssetsReady, "coin assets failed to load");
+    Assert(runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult() == PetActionResult.Accepted, "petrification was not accepted");
+    Assert(runtime.CurrentCoinState == PetrifiedCoinState.Vivid && runtime.CurrentCoinSide == PetrifiedCoinSide.Front, "coin did not start vivid front");
+
+    now += TimeSpan.FromSeconds(3);
+    Assert(runtime.RefreshPetrifiedCoinState(), "coin did not settle to flat");
+    Assert(runtime.CurrentCoinState == PetrifiedCoinState.Flat, "coin settled to wrong state");
+
+    now = new DateTimeOffset(2026, 8, 15, 12, 10, 2, TimeSpan.Zero);
+    Assert(runtime.RefreshPetrifiedCoinState(), "coin did not fade at ten minutes");
+    Assert(runtime.CurrentCoinState == PetrifiedCoinState.Faded, "coin ten-minute state is wrong");
+
+    now = new DateTimeOffset(2026, 8, 15, 12, 20, 2, TimeSpan.Zero);
+    Assert(runtime.RefreshPetrifiedCoinState(), "coin did not exhaust at twenty minutes");
+    Assert(runtime.CurrentCoinState == PetrifiedCoinState.Exhausted, "coin twenty-minute state is wrong");
+    Assert(requests.Last().Motion.Phases.Single().Frames.Single().EndsWith("state-04-exhausted.png", StringComparison.OrdinalIgnoreCase), "exhausted state requested wrong frame");
+}
+
+static void PetrifiedCoinClicksResetAndDoubleClicksFlip()
+{
+    var now = new DateTimeOffset(2026, 8, 15, 12, 0, 0, TimeSpan.Zero);
+    var runtime = new DesktopRuntimeHost(now: () => now);
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, item) => requests.Add(item);
+    runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
+
+    now += TimeSpan.FromMinutes(10) + TimeSpan.FromSeconds(2);
+    runtime.RefreshPetrifiedCoinState();
+    Assert(runtime.CurrentCoinState == PetrifiedCoinState.Faded, "test setup did not reach faded state");
+
+    var toBack = runtime.SubmitPetrifiedCoinDoubleClickAsync().GetAwaiter().GetResult();
+    Assert(toBack == PetActionResult.Accepted, "front double click was not accepted");
+    Assert(runtime.CurrentCoinSide == PetrifiedCoinSide.Back && runtime.CurrentCoinState == PetrifiedCoinState.Faded, "front double click did not preserve color state on back");
+    Assert(requests.Last().Motion.FrameCount == 9, "front-to-back flip must have nine frames");
+
+    var toFront = runtime.SubmitPetrifiedCoinDoubleClickAsync().GetAwaiter().GetResult();
+    Assert(toFront == PetActionResult.Accepted, "back double click was not accepted");
+    Assert(runtime.CurrentCoinSide == PetrifiedCoinSide.Front && runtime.CurrentCoinState == PetrifiedCoinState.Vivid, "back double click did not reset to vivid front");
+    Assert(requests.Last().Motion.FrameCount == 9, "back-to-front flip must have nine frames");
+    Assert(requests.Last().Motion.Phases.Single().Frames.Last().Contains("vivid", StringComparison.OrdinalIgnoreCase), "back-to-front reset did not end on vivid artwork");
+
+    now += TimeSpan.FromMinutes(20);
+    runtime.RefreshPetrifiedCoinState();
+    Assert(runtime.CurrentCoinState == PetrifiedCoinState.Exhausted, "reset inactivity clock did not continue aging");
+    var click = runtime.SubmitPetrifiedCoinClickAsync().GetAwaiter().GetResult();
+    Assert(click == PetActionResult.Accepted, "single coin click was not accepted");
+    Assert(runtime.CurrentCoinSide == PetrifiedCoinSide.Front && runtime.CurrentCoinState == PetrifiedCoinState.Vivid, "single click did not restore vivid front");
+    Assert(runtime.SubmitPetrifiedCoinClickAsync(BehaviorRequestSource.Dialogue).GetAwaiter().GetResult() == PetActionResult.Deferred, "dialogue was allowed to mutate coin state");
+}
+
+static void PetrifiedCoinTimingIsConfigurable()
+{
+    var started = new DateTimeOffset(2026, 8, 15, 12, 0, 0, TimeSpan.Zero);
+    var now = started;
+    var options = new PetrifiedCoinOptions(
+        TimeSpan.FromMilliseconds(100),
+        TimeSpan.FromSeconds(2),
+        TimeSpan.FromSeconds(4));
+    var runtime = new DesktopRuntimeHost(options, () => now);
+    runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.ControlPanel).GetAwaiter().GetResult();
+
+    now = started + TimeSpan.FromSeconds(1.8);
+    Assert(runtime.RefreshPetrifiedCoinState(), "custom settle threshold was not used");
+    Assert(runtime.CurrentCoinState == PetrifiedCoinState.Flat, "custom settle threshold selected wrong state");
+    now = started + TimeSpan.FromSeconds(3.7);
+    Assert(runtime.RefreshPetrifiedCoinState(), "custom fade threshold was not used");
+    Assert(runtime.CurrentCoinState == PetrifiedCoinState.Faded, "custom fade threshold selected wrong state");
+    now = started + TimeSpan.FromSeconds(5.7);
+    Assert(runtime.RefreshPetrifiedCoinState(), "custom exhausted threshold was not used");
+    Assert(runtime.CurrentCoinState == PetrifiedCoinState.Exhausted, "custom exhausted threshold selected wrong state");
 }
 
 static void StopClearsPetrificationAndRequestsIdle()
@@ -485,6 +617,19 @@ static void MainWindowContextMenuMatchesContract()
     thread.Join();
     if (failure is not null)
         throw failure;
+}
+
+static void BroomDirectionQuantizerCoversEightDirections()
+{
+    var origin = new Point(10, 10);
+    Assert(MainWindow.ResolveEightWayDirection(origin, new Point(20, 10)) == "right", "right direction mismatch");
+    Assert(MainWindow.ResolveEightWayDirection(origin, new Point(20, 20)) == "down-right", "down-right direction mismatch");
+    Assert(MainWindow.ResolveEightWayDirection(origin, new Point(10, 20)) == "down", "down direction mismatch");
+    Assert(MainWindow.ResolveEightWayDirection(origin, new Point(0, 20)) == "down-left", "down-left direction mismatch");
+    Assert(MainWindow.ResolveEightWayDirection(origin, new Point(0, 10)) == "left", "left direction mismatch");
+    Assert(MainWindow.ResolveEightWayDirection(origin, new Point(0, 0)) == "up-left", "up-left direction mismatch");
+    Assert(MainWindow.ResolveEightWayDirection(origin, new Point(10, 0)) == "up", "up direction mismatch");
+    Assert(MainWindow.ResolveEightWayDirection(origin, new Point(20, 0)) == "up-right", "up-right direction mismatch");
 }
 
 static void ControlPanelExposesMagicSpecialsTab()

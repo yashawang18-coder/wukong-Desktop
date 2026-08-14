@@ -1,6 +1,6 @@
 # Current state
 
-Last verified: 2026-08-09 (Asia/Singapore), `main` at `2f7e949c21bd88d2a4cc49977778f4c517dd962a`.
+Last verified: 2026-08-15 (Asia/Singapore), integration branch `agent/windows-runtime-assets-integration`.
 
 ## Repository summary
 
@@ -69,20 +69,26 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
 - Production command routing may resolve to these stable behavior IDs, but the runtime gate must return `Deferred` until corrected assets pass explicit renderer QA and runtime approval is recorded.
 - The extra seven PNG files in the batch are preview/reference images only: four contact sheets, `all-groups-overview.png`, `shared-prone-proof.png`, and `shared-sit-proof.png`. They are outside every action `frames[]` list and are not registered as playable frames.
 
-## WK-MAGIC-SPECIALS-MOCK-v1
+## WK-MAGIC-SPECIALS-CANDIDATE-v1
 
-- Added local Wukong-only mock prototype action batch under `assets/action-batches/WK-MAGIC-SPECIALS-MOCK-v1/`.
-- The batch contains transparent PNG frame sequences and manifest records for:
+- Added the integrated Wukong-only candidate action batch under `assets/action-batches/WK-MAGIC-SPECIALS-CANDIDATE-v1/` while retaining `WK-MAGIC-SPECIALS-MOCK-v1` as historical prototype evidence.
+- The active owner-preview batch contains 207 transparent RGBA PNG files: 195 reviewed 1024×1024 broom/invisibility/petrification/coin frames plus 12 existing 256×256 Scourgify mock frames pending replacement.
+- The playable manifest records:
   - `wk.magic.accio_broom`
   - `wk.magic.apparate`
   - `wk.magic.petrificus_totalus`
   - `wk.magic.petrificus_release`
   - `wk.magic.scourgify`
-- These assets are code-drawn mock placeholders for interaction/runtime validation only. They are not production artwork, not Pupu assets, and not final Wukong magic art.
+- Accio Broom packages all eight directional loops and preserves animation phase while the desktop path changes direction; the current showcase uses reviewed takeoff and seated landing sequences.
+- Apparate plays disappear, invisible relocation cut, and appear phases.
+- Petrificus Totalus plays the stone transition and enters an interactive coin hold. The coin starts vivid/front, settles to flat after 800 ms, fades after 10 minutes of inactivity, and reaches exhausted after 20 minutes. Timing is configurable through `PetrifiedCoinOptions`.
+- A single coin click restores vivid/front and restarts the inactivity clock. A front double-click flips to the matching-color back without resetting time; a back double-click flips to vivid/front and resets time. Pointer single-click is deferred for double-click disambiguation.
+- Coin faces and all four nine-frame flip sequences are normalized to the same 1024×1024 transparent canvas. `coin-checksums.sha256` covers all 44 coin PNG files.
 - Batch state remains `runtime_validation=pending`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, with `prototype_use=true`.
-- Prototype playback is allowed only through explicit owner entry points (`OwnerContextMenu` and `ControlPanel`) using `BehaviorExecutionMode.PrototypePreview` and the magic behavior whitelist.
+- Initial magic playback is allowed only through explicit owner entry points (`OwnerContextMenu` and `ControlPanel`) using `BehaviorExecutionMode.PrototypePreview` and the magic behavior whitelist. Pointer interaction is accepted only while the owner-started petrification preview is active.
 - Dialogue, model output, autonomous tick, memory, personality, and normal production behavior requests must not use `PrototypePreview`; they continue to resolve through the normal runtime gate and defer until assets are formally approved.
 - The batch is not added to `contracts/runtime/asset-registry.json`, not included in the autonomous pool, and not eligible for production command or model-triggered execution.
+- Asset/hash/gate tests pass in the Linux checkout. The checkout does not contain a .NET SDK or Windows transparent renderer, so WPF build execution and real-renderer QA remain pending and no runtime approval is claimed.
 
 ## Next implementation target
 

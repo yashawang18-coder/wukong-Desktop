@@ -88,3 +88,20 @@ Forbidden scope:
 - Do not let Dialogue, model output, memory, personality, or autonomous tick set `PrototypePreview`.
 - Do not treat mock playback as renderer QA or formal asset approval.
 - Do not copy Pupu code, assets, behavior IDs, or mappings.
+
+## 2026-08-15 - integrate reviewed magic candidates and interactive petrification coin behind the prototype gate
+
+Replace the active magic playback source with `WK-MAGIC-SPECIALS-CANDIDATE-v1` while retaining the former mock batch as non-active historical evidence. The new batch packages reviewed V8 broom, invisibility, petrification, and restore frames; Scourgify remains explicitly identified as mock artwork until a reviewed replacement exists.
+
+The broom motion may select any of eight directional frame loops from the velocity vector and must retain the loop phase across direction changes. The existing ordered-PNG player remains the frame consumer; this change does not introduce a sprite-atlas runtime dependency.
+
+After the petrification transition, the runtime enters an owner-interactive coin state machine:
+
+- `vivid/front` is the initial state; it settles to `flat` after 800 ms.
+- Inactivity changes the current face to `faded` after 10 minutes and `exhausted` after 20 minutes by default. These thresholds are configurable without changing asset identity.
+- A single click resolves to `vivid/front` and resets inactivity.
+- A front double-click flips to the same-state back and preserves inactivity.
+- A back double-click flips to `vivid/front` and resets inactivity.
+- Single-click dispatch is deferred until the double-click window expires.
+
+Coin interaction is valid only while petrification was entered through an owner `PrototypePreview`. Dialogue, autonomous, model, and memory sources remain forbidden. All candidate and coin manifests retain `runtime_validation=pending`, `runtime_approved=false`, `runtime_use=false`, and `production_asset=false`; the runtime registry remains empty until a Windows transparent-renderer run is reviewed.

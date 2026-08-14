@@ -1,0 +1,15 @@
+{
+  "asset_id": "WK-MAGIC-SPECIALS-CANDIDATE-v1",
+  "asset_type": "action-batch",
+  "status": "runtime-candidate",
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "prototype_use": true,
+  "production_asset": false,
+  "owner_preview_entry_points": [
+    "OwnerContextMenu",
+    "ControlPanel"
+  ],
+  "notes": "Integrated V8 magic and interactive coin candidate; production registry remains closed."
+}

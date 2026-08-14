@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "asset_id": "WK-MAGIC-PETRIFY-COIN-v1-candidate",
+  "behavior_id": "wk.magic.petrificus_totalus",
+  "status": "candidate",
+  "canvas": {
+    "width": 1024,
+    "height": 1024,
+    "format": "png",
+    "color_mode": "rgba",
+    "transparent_background": true,
+    "shared_visible_bounds": {
+      "x": 62,
+      "y": 70,
+      "width": 900,
+      "height": 882
+    },
+    "anchor": {
+      "x": 512,
+      "y": 952,
+      "meaning": "bottom_center"
+    }
+  },
+  "states": [
+    {
+      "id": "vivid",
+      "front": "petrificus_coin/front/state-01-vivid.png",
+      "back": "petrificus_coin/back/state-01-vivid.png"
+    },
+    {
+      "id": "flat",
+      "front": "petrificus_coin/front/state-02-flat.png",
+      "back": "petrificus_coin/back/state-02-flat.png"
+    },
+    {
+      "id": "faded",
+      "front": "petrificus_coin/front/state-03-faded.png",
+      "back": "petrificus_coin/back/state-03-faded.png"
+    },
+    {
+      "id": "exhausted",
+      "front": "petrificus_coin/front/state-04-exhausted.png",
+      "back": "petrificus_coin/back/state-04-exhausted.png"
+    }
+  ],
+  "timing": {
+    "settle_to_flat_ms": 800,
+    "fade_step_ms": 600000,
+    "exhausted_after_ms": 1200000,
+    "configurable": [
+      "settle_to_flat_ms",
+      "fade_step_ms",
+      "exhausted_after_ms"
+    ]
+  },
+  "state_machine": {
+    "initial": {
+      "side": "front",
+      "state": "vivid"
+    },
+    "settle": {
+      "after_ms": 800,
+      "from": "vivid",
+      "to": "flat",
+      "does_not_reset_inactivity_clock": true
+    },
+    "inactivity": [
+      {
+        "at_ms": 600000,
+        "to": "faded"
+      },
+      {
+        "at_ms": 1200000,
+        "to": "exhausted"
+      }
+    ],
+    "single_click": {
+      "side": "front",
+      "state": "vivid",
+      "reset_inactivity_clock": true,
+      "restart_settle_timer": true
+    },
+    "double_click_front": {
+      "side": "back",
+      "preserve_state": true,
+      "preserve_inactivity_clock": true
+    },
+    "double_click_back": {
+      "side": "front",
+      "state": "vivid",
+      "reset_inactivity_clock": true,
+      "restart_settle_timer": true
+    },
+    "click_disambiguation": {
+      "defer_single_click_until_system_double_click_timeout": true,
+      "cancel_pending_single_click_on_double_click": true
+    }
+  },
+  "flip": {
+    "front_to_back": {
+      "directories_by_state": {
+        "vivid": "petrificus_coin/flip/vivid/front-to-back",
+        "flat": "petrificus_coin/flip/flat/front-to-back",
+        "faded": "petrificus_coin/flip/faded/front-to-back",
+        "exhausted": "petrificus_coin/flip/exhausted/front-to-back"
+      },
+      "frames": 9,
+      "filename_pattern": "frame-{index:03d}.png",
+      "frame_duration_ms": 80,
+      "preserve_state_during_flip": true
+    },
+    "back_to_front": {
+      "strategy": "reverse_front_to_back",
+      "reset_to_vivid_on_complete": true
+    },
+    "swap_face_at_frame": 6,
+    "total_sequences": 4,
+    "total_frames": 36
+  },
+  "integration": {
+    "runtime_mode": "ordered_png_frames",
+    "execution_mode": "PrototypePreview",
+    "allowed_sources": [
+      "OwnerContextMenu",
+      "ControlPanel"
+    ],
+    "prototype_use": true,
+    "production_asset": false,
+    "fallback": "wk.core.prone_idle",
+    "renderer_qa": "pending",
+    "runtime_use": false
+  }
+}

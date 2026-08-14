@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
     "behavior_id":  "wk.magic.petrificus_totalus",
-    "phase":  "P1.5-magic-mock-prototype",
+    "phase":  "P1.5-magic-candidate-prototype",
     "availability":  "prototype_preview_only_not_runtime_approved",
     "eligibility":  {
                         "allowed_poses":  [
@@ -34,6 +34,10 @@
     "fallback":  "wk.core.prone_idle",
     "state_effects":  {
                           "interaction":  "magic_petrify",
+                          "coin_initial":  "vivid/front then flat after 800ms",
+                          "coin_inactivity":  "faded after 10m; exhausted after 20m; configurable",
+                          "coin_single_click":  "vivid/front and reset inactivity",
+                          "coin_double_click":  "front-to-matching-back preserves state; back-to-vivid-front resets inactivity",
                           "execution_mode":  "PrototypePreview only"
                       },
     "interrupt_policy":  {

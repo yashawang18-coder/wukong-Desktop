@@ -15,6 +15,8 @@ public partial class MainWindow : Window
     private readonly DesktopAgentRuntime _agentRuntime;
     private readonly DispatcherTimer _autonomousTimer;
     private readonly DispatcherTimer _animationTimer;
+    private readonly DispatcherTimer _coinStateTimer;
+    private readonly DispatcherTimer _coinSingleClickTimer;
     private readonly Dictionary<string, BitmapImage> _imageCache = new(StringComparer.OrdinalIgnoreCase);
     private const double BaseWindowSize = 320;
     private const double BasePetImageSize = 310;
@@ -34,6 +36,7 @@ public partial class MainWindow : Window
     private double _petScale = 1.0;
     private CancellationTokenSource? _effectCancellation;
     private double _savedOpacity = 1.0;
+    private string _broomDirection = "right";
 
     public MainWindow()
     {
@@ -48,6 +51,8 @@ public partial class MainWindow : Window
         Closed += (_, _) =>
         {
             _effectCancellation?.Cancel();
+            _coinStateTimer.Stop();
+            _coinSingleClickTimer.Stop();
             var chatWindow = _chatWindow;
             _chatWindow = null;
             chatWindow?.Close();
@@ -59,6 +64,17 @@ public partial class MainWindow : Window
 
         _autonomousTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
         _autonomousTimer.Tick += async (_, _) => await _runtime.SubmitAutonomousTickAsync();
+
+        _coinStateTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+        _coinStateTimer.Tick += (_, _) => _runtime.RefreshPetrifiedCoinState();
+
+        _coinSingleClickTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(520) };
+        _coinSingleClickTimer.Tick += async (_, _) =>
+        {
+            _coinSingleClickTimer.Stop();
+            if (_runtime.IsPetrified)
+                await _runtime.SubmitPetrifiedCoinClickAsync();
+        };
 
         ApplyPetScale(LoadPetScale(), persist: false);
         _runtime.StartIdle();
@@ -72,6 +88,7 @@ public partial class MainWindow : Window
             Height,
             24));
         _autonomousTimer.Start();
+        _coinStateTimer.Start();
         BootstrapLog.WriteRaw("mainwindow_loaded_handler");
         BootstrapLog.Write("MainWindow Loaded", this.Snapshot());
     }
@@ -161,6 +178,23 @@ public partial class MainWindow : Window
         else if (tapCandidateCount == 2)
             gesture = PetGestureKind.DoubleClick;
 
+        if (_runtime.IsPetrified && tapCandidateCount > 0)
+        {
+            if (gesture == PetGestureKind.DoubleClick || tapCandidateCount >= 2)
+            {
+                _coinSingleClickTimer.Stop();
+                ResetTapCandidates();
+                await _runtime.SubmitPetrifiedCoinDoubleClickAsync();
+            }
+            else
+            {
+                _coinSingleClickTimer.Stop();
+                _coinSingleClickTimer.Start();
+            }
+            e.Handled = true;
+            return;
+        }
+
         if (gesture == PetGestureKind.RapidTap)
         {
             ResetTapCandidates();
@@ -224,6 +258,8 @@ public partial class MainWindow : Window
         _effectCancellation?.Cancel();
         RestoreWindowAfterEffect();
         _animationTimer.Stop();
+        _coinStateTimer.Stop();
+        _coinSingleClickTimer.Stop();
         _autonomousTimer.Stop();
         _controlPanel?.Close();
         Close();
@@ -271,11 +307,19 @@ public partial class MainWindow : Window
         }
 
         var phase = phases[_phaseIndex];
-        var frame = phase.Frames[Math.Clamp(_frameIndex, 0, phase.Frames.Count - 1)];
+        var phaseFrames = phase.Frames;
+        if (phase.Loop &&
+            _activeRequest.Motion.Effect == DesktopMotionEffect.BroomFlight &&
+            _activeRequest.Motion.DirectionalFrames?.TryGetValue(_broomDirection, out var directional) == true &&
+            directional.Count > 0)
+        {
+            phaseFrames = directional;
+        }
+        var frame = phaseFrames[Math.Clamp(_frameIndex, 0, phaseFrames.Count - 1)];
         SetFrame(frame, phase.Name);
         _frameIndex++;
 
-        if (_frameIndex < phase.Frames.Count)
+        if (_frameIndex < phaseFrames.Count)
             return;
 
         if (phase.Loop)
@@ -301,6 +345,7 @@ public partial class MainWindow : Window
         var behaviorId = _activeRequest.Motion.BehaviorId;
         var phase = _runtime.CurrentPhase;
         _animationTimer.Stop();
+        _coinSingleClickTimer.Stop();
         var returnToIdle = _activeRequest.ReturnToIdle;
         _activeRequest = null;
         if (returnToIdle)
@@ -312,6 +357,7 @@ public partial class MainWindow : Window
         _effectCancellation?.Cancel();
         RestoreWindowAfterEffect();
         _animationTimer.Stop();
+        _coinSingleClickTimer.Stop();
         _activeRequest = null;
         _autonomousTimer.Start();
         await _runtime.StopAsync(reason);
@@ -449,6 +495,8 @@ public partial class MainWindow : Window
 
     private async Task MoveWindowAsync(Point from, Point to, TimeSpan duration, CancellationToken token)
     {
+        if (_activeRequest?.Motion.Effect == DesktopMotionEffect.BroomFlight)
+            _broomDirection = ResolveEightWayDirection(from, to);
         var steps = Math.Max(1, (int)(duration.TotalMilliseconds / 24));
         for (var i = 1; i <= steps; i++)
         {
@@ -472,6 +520,22 @@ public partial class MainWindow : Window
 
     private static double EaseInOut(double value) =>
         value < 0.5 ? 2 * value * value : 1 - Math.Pow(-2 * value + 2, 2) / 2;
+
+    internal static string ResolveEightWayDirection(Point from, Point to)
+    {
+        var angle = Math.Atan2(to.Y - from.Y, to.X - from.X) * 180 / Math.PI;
+        return angle switch
+        {
+            >= -22.5 and < 22.5 => "right",
+            >= 22.5 and < 67.5 => "down-right",
+            >= 67.5 and < 112.5 => "down",
+            >= 112.5 and < 157.5 => "down-left",
+            >= 157.5 or < -157.5 => "left",
+            >= -157.5 and < -112.5 => "up-left",
+            >= -112.5 and < -67.5 => "up",
+            _ => "up-right"
+        };
+    }
 
     private void ShowFirstAvailableFrame(PlayableMotion motion)
     {

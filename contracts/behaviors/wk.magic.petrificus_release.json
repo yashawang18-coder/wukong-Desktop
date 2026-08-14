@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
     "behavior_id":  "wk.magic.petrificus_release",
-    "phase":  "P1.5-magic-mock-prototype",
+    "phase":  "P1.5-magic-candidate-prototype",
     "availability":  "prototype_preview_only_not_runtime_approved",
     "eligibility":  {
                         "allowed_poses":  [

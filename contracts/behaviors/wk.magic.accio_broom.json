@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
     "behavior_id":  "wk.magic.accio_broom",
-    "phase":  "P1.5-magic-mock-prototype",
+    "phase":  "P1.5-magic-candidate-prototype",
     "availability":  "prototype_preview_only_not_runtime_approved",
     "eligibility":  {
                         "allowed_poses":  [
@@ -34,6 +34,7 @@
     "fallback":  "wk.core.prone_idle",
     "state_effects":  {
                           "interaction":  "magic_accio_broom",
+                          "direction_selection":  "velocity-quantized 8-way with phase continuity",
                           "execution_mode":  "PrototypePreview only"
                       },
     "interrupt_policy":  {
