@@ -521,7 +521,7 @@ public partial class MainWindow : Window
     private static double EaseInOut(double value) =>
         value < 0.5 ? 2 * value * value : 1 - Math.Pow(-2 * value + 2, 2) / 2;
 
-    internal static string ResolveEightWayDirection(Point from, Point to)
+    public static string ResolveEightWayDirection(Point from, Point to)
     {
         var angle = Math.Atan2(to.Y - from.Y, to.X - from.X) * 180 / Math.PI;
         return angle switch

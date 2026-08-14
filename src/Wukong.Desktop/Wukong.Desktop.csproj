@@ -27,5 +27,9 @@
              LinkBase="WukongAssets"
              CopyToOutputDirectory="PreserveNewest"
              CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\assets\**\*.sha256"
+             LinkBase="WukongAssets"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
