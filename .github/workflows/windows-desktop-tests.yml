@@ -23,7 +23,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Python validators
-        run: python -m pip install pillow jsonschema
+        run: python -m pip install pillow jsonschema numpy
 
       - name: Build Windows solution
         run: dotnet build Wukong.sln --configuration Release
