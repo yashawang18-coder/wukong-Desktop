@@ -11,5 +11,14 @@
     "OwnerContextMenu",
     "ControlPanel"
   ],
-  "notes": "Integrated V8 magic and interactive coin candidate; production registry remains closed."
+  "notes": "Integrated V8 magic and interactive coin candidate; production registry remains closed.",
+  "revision_notes": [
+    {
+      "date": "2026-08-15",
+      "change": "Sharpened state-01-vivid and state-02-flat coin back edges to match the clear double pressed rim on later back states; preserved frosted coin face and paw mark; rebuilt vivid/flat flip frames, preview GIF, and coin checksums.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    }
+  ]
 }

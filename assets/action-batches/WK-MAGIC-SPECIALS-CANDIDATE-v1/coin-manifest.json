@@ -129,5 +129,23 @@
     "fallback": "wk.core.prone_idle",
     "renderer_qa": "pending",
     "runtime_use": false
-  }
+  },
+  "revision_notes": [
+    {
+      "date": "2026-08-15",
+      "change": "Sharpened state-01-vivid and state-02-flat coin back edges to match the clear double pressed rim on later back states; preserved frosted coin face and paw mark; rebuilt vivid/flat flip frames, preview GIF, and coin checksums.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    }
+  ],
+  "previews": [
+    {
+      "kind": "back-edge-fix-review",
+      "path": "petrificus_coin/previews/coin-back-edge-fix-preview.gif",
+      "frames": 4,
+      "frame_duration_ms": 700,
+      "sha256": "e49398727f2504ccd5187583ca13efb6dde600b71f54b89f77845a0608bc7916"
+    }
+  ]
 }
