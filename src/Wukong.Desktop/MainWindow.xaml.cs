@@ -49,6 +49,7 @@ public partial class MainWindow : Window
         _runtime = new DesktopRuntimeHost();
         _agentRuntime = DesktopAgentRuntime.CreateDefault();
         _runtime.MotionRequested += Runtime_MotionRequested;
+        _runtime.PetPixelSizeRequested += Runtime_PetPixelSizeRequested;
         LocationChanged += (_, _) => RepositionChat();
         SizeChanged += (_, _) => RepositionChat();
         Closed += (_, _) =>
@@ -297,6 +298,23 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
+
+    private void Runtime_PetPixelSizeRequested(object? sender, int pixels)
+    {
+        Dispatcher.Invoke(() => SetPetScaleForTest(pixels / BasePetImageSize));
+    }
+
+    private void SetAnimationIntervalForCurrentFrame(PlayableMotion motion, int phaseIndex, int frameIndex, bool useDirectionalFrames)
+    {
+        var phases = motion.Phases.Where(x => x.Frames.Count > 0).ToList();
+        if (phaseIndex < 0 || phaseIndex >= phases.Count)
+            return;
+
+        var phase = phases[phaseIndex];
+        var duration = useDirectionalFrames ? motion.FrameDurationMs : phase.DurationForFrame(frameIndex, motion.FrameDurationMs);
+        _animationTimer.Interval = TimeSpan.FromMilliseconds(Math.Max(16, duration));
+    }
+
     private void Runtime_MotionRequested(object? sender, PetMotionRequest request)
     {
         Dispatcher.Invoke(() =>
@@ -306,7 +324,7 @@ public partial class MainWindow : Window
             _frameIndex = 0;
             _loopCount = 0;
             BeginMotionEffect(request);
-            _animationTimer.Interval = TimeSpan.FromMilliseconds(request.Motion.FrameDurationMs);
+            SetAnimationIntervalForCurrentFrame(request.Motion, phaseIndex: 0, frameIndex: 0, useDirectionalFrames: false);
             ShowFirstAvailableFrame(request.Motion);
             _animationTimer.Start();
         });
@@ -331,6 +349,11 @@ public partial class MainWindow : Window
         }
 
         var phase = phases[_phaseIndex];
+        if (phase.Name is "interrupt_exit" or "fallback")
+        {
+            FinishCurrentMotion();
+            return;
+        }
         var phaseFrames = phase.Frames;
         if (phase.Loop &&
             _activeRequest.Motion.Effect == DesktopMotionEffect.BroomFlight &&
@@ -344,7 +367,10 @@ public partial class MainWindow : Window
         _frameIndex++;
 
         if (_frameIndex < phaseFrames.Count)
+        {
+            SetAnimationIntervalForCurrentFrame(_activeRequest.Motion, _phaseIndex, _frameIndex, !ReferenceEquals(phaseFrames, phase.Frames));
             return;
+        }
 
         if (phase.Loop)
         {
@@ -352,6 +378,7 @@ public partial class MainWindow : Window
             if (_activeRequest.LoopCycles == int.MaxValue || _loopCount < _activeRequest.LoopCycles)
             {
                 _frameIndex = 0;
+                SetAnimationIntervalForCurrentFrame(_activeRequest.Motion, _phaseIndex, _frameIndex, !ReferenceEquals(phaseFrames, phase.Frames));
                 return;
             }
         }
@@ -359,6 +386,7 @@ public partial class MainWindow : Window
         _phaseIndex++;
         _frameIndex = 0;
         _loopCount = 0;
+        SetAnimationIntervalForCurrentFrame(_activeRequest.Motion, _phaseIndex, _frameIndex, useDirectionalFrames: false);
     }
 
     private void FinishCurrentMotion()

@@ -637,6 +637,43 @@
               </ItemsControl>
             </StackPanel>
           </Border>
+          <Border Style="{StaticResource Card}" Visibility="{Binding ElementName=DeveloperDiagnosticsPanel, Path=Visibility}">
+            <StackPanel>
+              <DockPanel LastChildFill="False">
+                <TextBlock Text="?????? profile" FontWeight="SemiBold" />
+                <WrapPanel DockPanel.Dock="Right">
+                  <Button Content="128px" Tag="128" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
+                  <Button Content="192px" Tag="192" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
+                  <Button Content="256px" Tag="256" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
+                </WrapPanel>
+              </DockPanel>
+              <TextBlock Text="??? P2 Windows ?????????????????????????????" Style="{StaticResource SubText}" Margin="0,4,0,12" />
+              <ItemsControl x:Name="LifecycleCandidateList">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Background="#F7F5F0" CornerRadius="12" Padding="10" Margin="0,0,10,10" Width="290">
+                      <StackPanel>
+                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding BehaviorId}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding PhaseSummary}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding CandidateProfile, StringFormat=profile: {0}}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,8,0,0">
+                          <Button Content="??" Tag="{Binding}" Style="{StaticResource SecondaryButton}" Click="PreviewAsset_Click" />
+                          <Button Content="????" Tag="{Binding}" Style="{StaticResource PrimaryButton}" Click="ForceLifecycleCandidate_Click" />
+                        </WrapPanel>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
           <Border Style="{StaticResource Card}">
             <StackPanel>
               <TextBlock Text="本地运行 Trace" FontWeight="SemiBold" />

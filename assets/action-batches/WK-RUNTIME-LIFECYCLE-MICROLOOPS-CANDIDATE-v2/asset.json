@@ -1,0 +1,32 @@
+{
+  "id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
+  "asset_role": "runtime_candidate_developer_profile",
+  "runtime_validation": "passed_windows_renderer_qa",
+  "runtime_approved": true,
+  "runtime_use": true,
+  "developer_candidate_profile_only": true,
+  "may_register_in_runtime_manifest": false,
+  "source_packages": [
+    "wukong-lively-daily-approved-candidate-v1",
+    "wukong-lifecycle-microloops-candidate-v2.1-recovered"
+  ],
+  "known_visual_risks": [
+    "half_rise_to_near_stand_width_shrink_needs_windows_review",
+    "loop_seam_needs_real_renderer_review",
+    "sit_04_05_edges_need_real_renderer_review"
+  ],
+  "notes": "P2 lifecycle/microloop candidate. Not production runtime, not command assets, not right-click user actions.",
+  "visual_approved": true,
+  "art_candidate": false,
+  "windows_renderer_qa": {
+    "date": "2026-08-15",
+    "result": "passed",
+    "reviewer": "owner_manual",
+    "notes": [
+      "Full lifecycle playback, exit, and interrupt passed manual Windows transparent-window acceptance.",
+      "stand-idle, sit-idle, and prone-idle six-frame loops passed manual visual acceptance.",
+      "No visible foot jitter, transparent edge artifact, or y=930/y=932 baseline artifact was observed.",
+      "Strict non-zero alpha audit remains recorded separately; approved PNG files were not edited."
+    ]
+  }
+}

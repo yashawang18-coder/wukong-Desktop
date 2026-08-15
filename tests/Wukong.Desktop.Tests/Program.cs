@@ -22,6 +22,8 @@ var tests = new (string Name, Action Run)[]
     ("main window pet scale changes image size", MainWindowPetScaleChangesImageSize),
     ("initial placement stays in work area", InitialPlacementStaysInWorkArea),
     ("phase15 motion assets are copied and decodable", Phase15MotionAssetsAreCopiedAndDecodable),
+    ("lifecycle microloop candidates are indexed and gated", LifecycleMicroloopCandidatesAreIndexedAndGated),
+    ("developer lifecycle candidate can request playback", DeveloperLifecycleCandidateCanRequestPlayback),
     ("command action candidates are indexed and validated", CommandActionCandidatesAreIndexed),
     ("command candidates stay out of autonomous and production commands", CommandCandidatesStayGated),
     ("developer forced command candidate can request playback", DeveloperForcedCommandCandidateCanRequestPlayback),
@@ -311,6 +313,83 @@ static void Phase15MotionAssetsAreCopiedAndDecodable()
     Assert(catalog.RequiredIdle.FrameCount >= 5, "idle motion is not animated");
 }
 
+
+static void LifecycleMicroloopCandidatesAreIndexedAndGated()
+{
+    var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
+    var manifestPath = Path.Combine(output, "WukongAssets", "action-batches", LifecycleCandidateBehaviorIds.AssetBatch, "manifest.json");
+    Assert(File.Exists(manifestPath), "lifecycle candidate manifest was not copied to output");
+
+    using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+    Assert(manifest.RootElement.GetProperty("runtime_approved").GetBoolean(), "lifecycle batch must be runtime approved after P3 QA");
+    Assert(manifest.RootElement.GetProperty("runtime_use").GetBoolean(), "lifecycle batch must enable autonomous runtime use after P3 QA");
+    Assert(manifest.RootElement.GetProperty("developer_candidate_profile_only").GetBoolean(), "lifecycle batch must still expose developer profile controls");
+    var actions = manifest.RootElement.GetProperty("actions").EnumerateArray().ToArray();
+    Assert(actions.Length == 4, "lifecycle manifest must describe full lifecycle plus three microloops");
+    Assert(actions.All(x => !x.GetProperty("behavior_id").GetString()!.StartsWith("wk.command.", StringComparison.Ordinal)), "lifecycle candidates must not use command IDs");
+
+    foreach (var action in actions)
+    {
+        Assert(action.GetProperty("runtime_approved").GetBoolean(), "lifecycle action was not runtime approved after P3 QA");
+        Assert(action.GetProperty("runtime_use").GetBoolean(), "lifecycle action did not enable runtime use after P3 QA");
+        foreach (var phase in action.GetProperty("phases").EnumerateArray())
+        {
+            var frames = phase.GetProperty("frames").EnumerateArray().ToArray();
+            Assert(frames.Length == phase.GetProperty("frame_count").GetInt32(), "lifecycle phase frame count mismatch");
+            foreach (var frame in frames)
+            {
+                var framePath = Path.Combine(Path.GetDirectoryName(manifestPath)!, frame.GetProperty("path").GetString()!.Replace('/', Path.DirectorySeparatorChar));
+                Assert(File.Exists(framePath), $"lifecycle frame missing: {framePath}");
+                Assert(new FileInfo(framePath).Length == frame.GetProperty("bytes").GetInt64(), "lifecycle frame byte length mismatch");
+                Assert(Sha256(framePath) == frame.GetProperty("sha256").GetString(), "lifecycle frame sha256 mismatch");
+                Assert(frame.GetProperty("duration_ms").GetInt32() > 0, "lifecycle frame duration missing");
+                using var stream = File.OpenRead(framePath);
+                var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+                var bitmap = decoder.Frames.Single();
+                Assert(bitmap.PixelWidth == 1024 && bitmap.PixelHeight == 1024, "lifecycle frame must stay 1024x1024");
+                Assert(HasAlpha(bitmap.Format), "lifecycle frame is not alpha-capable");
+            }
+        }
+    }
+
+    var microCycles = actions.Where(x => x.TryGetProperty("cycle_ms", out _)).Select(x => x.GetProperty("cycle_ms").GetInt32()).OrderBy(x => x).ToArray();
+    Assert(microCycles.SequenceEqual(new[] { 7240, 7680, 8900 }), "microloop cycle durations changed");
+
+    var catalog = DesktopMotionCatalog.Load(output);
+    var lifecycle = catalog.Motions.Where(x => x.Category == "??????").ToArray();
+    Assert(lifecycle.Length == 4, "lifecycle candidates were not indexed");
+    Assert(lifecycle.All(x => x.RuntimeEnabled), "P3 lifecycle candidates must be enabled for autonomous runtime");
+    Assert(lifecycle.All(x => x.CandidateProfile == "developer_lifecycle_microloops_v2"), "candidate profile was not preserved");
+    Assert(lifecycle.Single(x => x.BehaviorId == LifecycleCandidateBehaviorIds.LivelyDailyP2).Phases.Select(x => x.Name).SequenceEqual(new[] { "intro", "loop", "exit", "interrupt_exit", "fallback" }), "full lifecycle phases are wrong");
+    Assert(lifecycle.Single(x => x.BehaviorId == LifecycleCandidateBehaviorIds.StandIdleMicroloop).Phases.Single().DurationTotalMs(180) == 7240, "stand microloop timing changed");
+    Assert(lifecycle.Single(x => x.BehaviorId == LifecycleCandidateBehaviorIds.LivelyDailyP2).MissingContent == "None", "approved lifecycle motion still reports missing runtime content");
+}
+
+static void DeveloperLifecycleCandidateCanRequestPlayback()
+{
+    var runtime = new DesktopRuntimeHost();
+    PetMotionRequest? request = null;
+    int? requestedSize = null;
+    runtime.MotionRequested += (_, item) => request = item;
+    runtime.PetPixelSizeRequested += (_, pixels) => requestedSize = pixels;
+
+    var ownerResult = runtime.SubmitContextMenuIntentAsync(new SemanticIntent(SemanticIntentKind.Quiet, NaturalLanguage: "test")).GetAwaiter().GetResult();
+    Assert(ownerResult == PetActionResult.Accepted, "test setup idle request failed");
+    request = null;
+
+    var normal = runtime.SubmitOwnerCommandAsync("\u505c").GetAwaiter().GetResult();
+    Assert(normal == PetActionResult.Interrupted, "stop path changed");
+
+    var result = runtime.SubmitDeveloperCandidateMotionAsync(LifecycleCandidateBehaviorIds.LivelyDailyP2).GetAwaiter().GetResult();
+    Assert(result == PetActionResult.Accepted, "developer lifecycle candidate was not accepted");
+    Assert(request is not null, "developer lifecycle candidate did not request playback");
+    Assert(request!.Motion.BehaviorId == LifecycleCandidateBehaviorIds.LivelyDailyP2, "wrong lifecycle behavior requested");
+    Assert(request.Motion.Phases.Any(x => x.Name == "interrupt_exit"), "lifecycle candidate missing interrupt_exit");
+    Assert(request.Motion.HasVariableFrameDurations, "lifecycle candidate did not preserve per-frame durations");
+    runtime.RequestPetPixelSize(192);
+    Assert(requestedSize == 192, "developer size switch did not emit 192px request");
+}
+
 static void CommandActionCandidatesAreIndexed()
 {
     var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
@@ -362,6 +441,7 @@ static void CommandCandidatesStayGated()
         .SetValue(runtime, DateTimeOffset.Now - TimeSpan.FromSeconds(30));
     runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
     Assert(request is null || !request.Motion.BehaviorId.StartsWith("wk.command.", StringComparison.Ordinal), "autonomous pool selected command candidate");
+    Assert(request is null || !request.Motion.BehaviorId.StartsWith("wk.magic.", StringComparison.Ordinal), "autonomous pool selected magic candidate");
 }
 
 static void DeveloperForcedCommandCandidateCanRequestPlayback()
@@ -657,10 +737,13 @@ static void ControlPanelExposesMagicSpecialsTab()
             var commandList = panel.FindName("CommandAssetList") as ItemsControl;
             Assert(commandList is not null, "command asset list missing");
             Assert(panel.FindName("MagicAssetsPanel") is ScrollViewer, "magic specials panel missing");
+            Assert(panel.FindName("LifecycleCandidateList") is ItemsControl, "lifecycle candidate developer list missing");
             var list = panel.FindName("MagicSpecialList") as ItemsControl;
             Assert(list is not null, "magic specials list missing");
             Assert(commandList!.Items.Count == 4, "command assets tab must display four command candidates");
             Assert(list!.Items.Count == 4, "magic specials must display four owner-facing cards");
+            var lifecycle = (ItemsControl)panel.FindName("LifecycleCandidateList")!;
+            Assert(lifecycle.Items.Count == 4, "developer lifecycle profile must display four candidate motions");
             panel.Close();
         }
         catch (Exception ex)
@@ -836,9 +919,10 @@ static void AutonomousTickCanRequestMotion()
     runtime.MotionRequested += (_, item) => request = item;
     typeof(DesktopRuntimeHost)
         .GetField("_currentStartedAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
-        .SetValue(runtime, DateTimeOffset.Now - TimeSpan.FromSeconds(30));
+        .SetValue(runtime, DateTimeOffset.Now - TimeSpan.FromSeconds(60));
     runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
     Assert(request is not null, "autonomous tick did not leave a playable motion request trail");
+    Assert(request.Motion.BehaviorId is LifecycleCandidateBehaviorIds.ProneIdleMicroloop or LifecycleCandidateBehaviorIds.LivelyDailyP2 or Phase15BehaviorIds.ProneBreath or Phase15BehaviorIds.ProneIdle, "autonomous tick selected an out-of-scope behavior");
 }
 
 static void BootstrapLogRedactsAndDoesNotThrow()

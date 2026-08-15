@@ -93,6 +93,18 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
 - The batch is not added to `contracts/runtime/asset-registry.json`, not included in the autonomous pool, and not eligible for production command or model-triggered execution.
 - Asset/hash/gate tests pass in the Linux checkout. The checkout does not contain a .NET SDK or Windows transparent renderer, so WPF build execution and real-renderer QA remain pending and no runtime approval is claimed.
 
+## WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2
+
+- Added a P2 developer-profile lifecycle candidate batch under `assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2/`.
+- Source inputs were the 14-state lively daily candidate package and the recovered lifecycle microloops v2.1 package; the broken v2 ZIP was not used.
+- This is a self-directed daily behavior candidate only: it does not use `wk.command.*`, is not training data, is not exposed in the normal right-click menu, and is not added to the default autonomous pool.
+- Lifecycle mapping is `intro` = 14-state stand/walk/lookback/sit/prone, `loop` = prone-idle microloop, `exit` = prone-to-sit plus sit-to-stand, `interrupt_exit` = nearest stable anchor back to stand, and `fallback` = stable stand frame 01.
+- Stable duplicate SHA anchors are referenced through canonical runtime frame paths where used by lifecycle phases: forward 01/stable stand, forward 10/stable sit, and forward 11/12/14 for the reverse path.
+- Stand, sit, and prone idle microloops remain low-frequency developer candidates with recovered manifest timings of 7240 ms, 7680 ms, and 8900 ms per cycle.
+- P2 Windows manual transparent-renderer QA passed on 2026-08-15. Batch state is now `visual_approved=true`, `art_candidate=false`, `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, and `runtime_use=true` for the autonomous lifecycle profile.
+- Strict non-zero-alpha audit still records 17 frame references extending to y=932. The owner observed no visible foot jitter, transparent edge issue, or y=930/y=932 artifact in Windows renderer QA; PNGs were not cropped, recolored, resized, or baseline-shifted after acceptance.
+- It is not added to `contracts/runtime/asset-registry.json`, `pet_assets.json`, production command routing, right-click menus, training data, magic, or coin flows. It is activated only in the formal autonomous lifecycle mapping: full lifecycle as a low-frequency self-directed daily behavior, stand-idle for stable stand, sit-idle for stable sit, and prone-idle for stable prone.
+
 ## Next implementation target
 
 Phase 1 is the smallest honest end-to-end runtime:

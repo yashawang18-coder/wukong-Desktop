@@ -76,7 +76,24 @@ public static class GestureInterpreter
     }
 }
 
-public sealed record MotionPhase(string Name, IReadOnlyList<string> Frames, bool Loop);
+public sealed record MotionPhase(
+    string Name,
+    IReadOnlyList<string> Frames,
+    bool Loop,
+    IReadOnlyList<int>? FrameDurationsMs = null)
+{
+    public int DurationForFrame(int frameIndex, int fallbackMs)
+    {
+        if (FrameDurationsMs is null || FrameDurationsMs.Count == 0)
+            return fallbackMs;
+        var index = Math.Clamp(frameIndex, 0, FrameDurationsMs.Count - 1);
+        var value = FrameDurationsMs[index];
+        return value > 0 ? value : fallbackMs;
+    }
+
+    public bool HasVariableDurations => FrameDurationsMs is not null && FrameDurationsMs.Count > 0;
+    public int DurationTotalMs(int fallbackMs) => Frames.Select((_, index) => DurationForFrame(index, fallbackMs)).Sum();
+}
 
 public sealed record PlayableMotion(
     string BehaviorId,
@@ -98,7 +115,8 @@ public sealed record PlayableMotion(
     string AssetBatch = "built-in",
     DesktopMotionEffect Effect = DesktopMotionEffect.None,
     string Description = "",
-    IReadOnlyDictionary<string, IReadOnlyList<string>>? DirectionalFrames = null)
+    IReadOnlyDictionary<string, IReadOnlyList<string>>? DirectionalFrames = null,
+    string CandidateProfile = "")
 {
     public bool IsUsable => Phases.Any(x => x.Frames.Count > 0);
     public string FirstFrame => Phases.SelectMany(x => x.Frames).FirstOrDefault() ?? string.Empty;
@@ -108,6 +126,7 @@ public sealed record PlayableMotion(
     public string PreviewStatus => IsUsable ? "Preview ready" : "Missing frames";
     public string RuntimeStatus => RuntimeEnabled ? "Runtime enabled" : "Preview only / locked";
     public string PhaseSummary => string.Join(" / ", Phases.Select(x => $"{x.Name}:{x.Frames.Count}"));
+    public bool HasVariableFrameDurations => Phases.Any(x => x.HasVariableDurations);
 }
 
 public sealed class DesktopMotionCatalog
@@ -305,9 +324,10 @@ public sealed class DesktopMotionCatalog
 
         var commandCandidates = LoadCommandCandidates(root).ToArray();
         var magicCandidates = LoadMagicCandidates(root).ToArray();
-        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json";
+        var lifecycleCandidates = LoadLifecycleCandidates(root).ToArray();
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json";
         BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
-        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicCandidates), summary);
+        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates), summary);
     }
 
     private static PlayableMotion Motion(
@@ -461,6 +481,104 @@ public sealed class DesktopMotionCatalog
         }
     }
 
+
+    private static IEnumerable<PlayableMotion> LoadLifecycleCandidates(string root)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", LifecycleCandidateBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("lifecycle_candidate_manifest_missing");
+            yield break;
+        }
+
+        LifecycleCandidateBatchManifest? manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<LifecycleCandidateBatchManifest>(
+                File.ReadAllText(manifestPath),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Lifecycle candidate manifest parse failed", ex);
+            yield break;
+        }
+
+        if (manifest?.Actions is null)
+            yield break;
+
+        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        foreach (var action in manifest.Actions)
+        {
+            if (action.BehaviorId.StartsWith("wk.command.", StringComparison.OrdinalIgnoreCase))
+            {
+                BootstrapLog.WriteRaw($"lifecycle_candidate_invalid behavior={action.BehaviorId} errors=command_namespace_forbidden");
+                continue;
+            }
+
+            var phases = new List<MotionPhase>();
+            var errors = new List<string>();
+            foreach (var phase in action.Phases ?? Array.Empty<LifecycleCandidatePhaseManifest>())
+            {
+                var frames = new List<string>();
+                var durations = new List<int>();
+                foreach (var frame in phase.Frames ?? Array.Empty<CommandActionFrameManifest>())
+                {
+                    var path = Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar));
+                    if (!File.Exists(path))
+                    {
+                        errors.Add($"missing:{frame.Path}");
+                        continue;
+                    }
+
+                    var info = new FileInfo(path);
+                    if (info.Length != frame.Bytes)
+                        errors.Add($"bytes:{frame.Path}");
+                    if (!string.Equals(Sha256(path), frame.Sha256, StringComparison.OrdinalIgnoreCase))
+                        errors.Add($"sha256:{frame.Path}");
+                    frames.Add(path);
+                    durations.Add(frame.DurationMs.GetValueOrDefault(action.FrameDurationMs));
+                }
+
+                if (frames.Count != phase.FrameCount)
+                    errors.Add($"phase_frame_count:{phase.Name}:{frames.Count}/{phase.FrameCount}");
+                phases.Add(new MotionPhase(phase.Name, frames, phase.Loop, durations));
+            }
+
+            if (!action.RuntimeApproved || !action.RuntimeUse)
+                errors.Add("runtime_gate_not_enabled_after_windows_qa");
+
+            if (errors.Count > 0)
+            {
+                BootstrapLog.WriteRaw($"lifecycle_candidate_invalid behavior={action.BehaviorId} errors={string.Join(",", errors)}");
+                continue;
+            }
+
+            yield return new PlayableMotion(
+                action.BehaviorId,
+                action.DisplayName,
+                "??????",
+                action.Direction,
+                action.FrameDurationMs,
+                action.Interruptible,
+                phases,
+                Path.Combine(batchRoot, action.SourceFolder.Replace('/', Path.DirectorySeparatorChar)),
+                RuntimeEnabled: action.RuntimeApproved && action.RuntimeUse,
+                Status: action.RuntimeApproved && action.RuntimeUse
+                    ? "Runtime approved?Windows renderer QA passed"
+                    : "Developer candidate?? Windows renderer QA",
+                MissingContent: action.RuntimeApproved && action.RuntimeUse ? "None" : "runtime approval / production profile binding",
+                StartPose: action.FromPose,
+                EndPose: action.ToPose,
+                StyleGroup: "wukong-standard-shiba-reference-v23-candidate",
+                Disposition: "Developer candidate profile only",
+                PrototypeUse: false,
+                AssetBatch: manifest.BatchId,
+                Description: action.Description,
+                CandidateProfile: action.CandidateProfile ?? manifest.CandidateProfile);
+        }
+    }
+
     private static IEnumerable<PlayableMotion> LoadMagicCandidates(string root)
     {
         var manifestPath = Path.Combine(root, "action-batches", MagicBehaviorIds.AssetBatch, "manifest.json");
@@ -605,6 +723,15 @@ public static class Phase15BehaviorIds
     public const string ProneTouch = "wk.phase15.prone_touch";
 }
 
+public static class LifecycleCandidateBehaviorIds
+{
+    public const string AssetBatch = "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2";
+    public const string LivelyDailyP2 = "wk.candidate.lifecycle.lively_daily_p2";
+    public const string StandIdleMicroloop = "wk.candidate.lifecycle.stand_idle_microloop";
+    public const string SitIdleMicroloop = "wk.candidate.lifecycle.sit_idle_microloop";
+    public const string ProneIdleMicroloop = "wk.candidate.lifecycle.prone_idle_microloop";
+}
+
 public static class CommandBehaviorIds
 {
     public const string Sit = "wk.command.sit";
@@ -663,7 +790,38 @@ public sealed record CommandActionFrameManifest(
     [property: JsonPropertyName("width")] int Width,
     [property: JsonPropertyName("height")] int Height,
     [property: JsonPropertyName("sha256")] string Sha256,
-    [property: JsonPropertyName("bytes")] long Bytes);
+    [property: JsonPropertyName("bytes")] long Bytes,
+    [property: JsonPropertyName("duration_ms")] int? DurationMs = null);
+
+
+public sealed record LifecycleCandidateBatchManifest(
+    [property: JsonPropertyName("batch_id")] string BatchId,
+    [property: JsonPropertyName("candidate_profile")] string CandidateProfile,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("actions")] IReadOnlyList<LifecycleCandidateActionManifest> Actions);
+
+public sealed record LifecycleCandidateActionManifest(
+    [property: JsonPropertyName("behavior_id")] string BehaviorId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("description")] string Description,
+    [property: JsonPropertyName("source_folder")] string SourceFolder,
+    [property: JsonPropertyName("frame_duration_ms")] int FrameDurationMs,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("candidate_profile")] string? CandidateProfile,
+    [property: JsonPropertyName("autonomous_mapping")] string? AutonomousMapping,
+    [property: JsonPropertyName("from_pose")] string FromPose,
+    [property: JsonPropertyName("to_pose")] string ToPose,
+    [property: JsonPropertyName("direction")] string Direction,
+    [property: JsonPropertyName("interruptible")] bool Interruptible,
+    [property: JsonPropertyName("phases")] IReadOnlyList<LifecycleCandidatePhaseManifest> Phases);
+
+public sealed record LifecycleCandidatePhaseManifest(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("loop")] bool Loop,
+    [property: JsonPropertyName("frame_count")] int FrameCount,
+    [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames);
 
 public sealed record MagicMockBatchManifest(
     [property: JsonPropertyName("batch_id")] string BatchId,
@@ -911,12 +1069,17 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
     public event EventHandler<PetMotionRequest>? MotionRequested;
+    public event EventHandler<int>? PetPixelSizeRequested;
 
     public ObservableCollection<string> TraceLines { get; } = new();
     public IReadOnlyList<PlayableMotion> Motions => _catalog.Motions;
     public IReadOnlyList<PlayableMotion> MagicMotions => _catalog.Motions
         .Where(x => string.Equals(x.Category, "宠物魔法", StringComparison.OrdinalIgnoreCase))
         .OrderBy(x => x.DisplayName)
+        .ToArray();
+    public IReadOnlyList<PlayableMotion> LifecycleCandidateMotions => _catalog.Motions
+        .Where(x => string.Equals(x.Category, "??????", StringComparison.OrdinalIgnoreCase))
+        .OrderBy(x => x.BehaviorId)
         .ToArray();
     public bool IsPetrified { get; private set; }
     public bool IsCoinAssetsReady => _coinAssets is not null;
@@ -1002,6 +1165,16 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public Task<PetActionResult> SubmitDeveloperMotionAsync(string behaviorId) =>
         Task.FromResult(SubmitBehavior(BehaviorRequestSource.DeveloperForced, behaviorId, $"developer_force:{behaviorId}", priority: 100, executionMode: BehaviorExecutionMode.DeveloperPreview, bypassRuntimeGate: true));
+
+    public Task<PetActionResult> SubmitDeveloperCandidateMotionAsync(string behaviorId) =>
+        Task.FromResult(SubmitBehavior(BehaviorRequestSource.DeveloperForced, behaviorId, $"developer_candidate:{behaviorId}", priority: 100, executionMode: BehaviorExecutionMode.DeveloperPreview, bypassRuntimeGate: true));
+
+    public void RequestPetPixelSize(int pixels)
+    {
+        var clamped = Math.Clamp(pixels, 128, 256);
+        PetPixelSizeRequested?.Invoke(this, clamped);
+        Trace("developer_size", $"candidate_profile={LifecycleCandidateBehaviorIds.AssetBatch} pixels={clamped}");
+    }
 
     public Task<PetActionResult> SubmitMagicAsync(string behaviorId, BehaviorRequestSource source)
     {
@@ -1319,11 +1492,18 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     {
         var hour = DateTimeOffset.Now.Hour;
         var workQuiet = hour is >= 9 and <= 18;
-        var candidates = new[]
+        var elapsed = _now() - _currentStartedAt;
+        var candidates = new List<(string BehaviorId, double Score, string Reason)>
         {
-            (BehaviorId: Phase15BehaviorIds.ProneBreath, Score: Comfort + (workQuiet ? 0.35 : 0.10), Reason: "autonomous:comfort_breath"),
-            (BehaviorId: Phase15BehaviorIds.ProneIdle, Score: 0.55 + Comfort * 0.25, Reason: "autonomous:quiet_idle")
+            (Phase15BehaviorIds.ProneBreath, Comfort + (workQuiet ? 0.35 : 0.10), "autonomous:comfort_breath"),
+            (Phase15BehaviorIds.ProneIdle, 0.55 + Comfort * 0.25, "autonomous:quiet_idle")
         };
+
+        if (_catalog.Find(LifecycleCandidateBehaviorIds.ProneIdleMicroloop)?.RuntimeEnabled == true)
+            candidates.Add((LifecycleCandidateBehaviorIds.ProneIdleMicroloop, 0.62 + Comfort * 0.16, "autonomous:stable_prone_microloop"));
+
+        if (elapsed >= TimeSpan.FromSeconds(45) && _catalog.Find(LifecycleCandidateBehaviorIds.LivelyDailyP2)?.RuntimeEnabled == true)
+            candidates.Add((LifecycleCandidateBehaviorIds.LivelyDailyP2, 0.34 + Curiosity * 0.32 + Mood * 0.10 - Stress * 0.20, "autonomous:low_frequency_lively_daily"));
 
         return candidates
             .Select(x => x with { Score = x.Score + _random.NextDouble() * 0.08 })

@@ -74,6 +74,9 @@ public partial class ControlPanelWindow : Window
             .Where(x => string.Equals(x.Category, "口令动作", StringComparison.Ordinal))
             .OrderBy(x => x.BehaviorId)
             .ToList();
+        LifecycleCandidateList.ItemsSource = _runtime.LifecycleCandidateMotions
+            .OrderBy(x => x.BehaviorId)
+            .ToList();
         AlbumList.ItemsSource = _albumFolders;
         AlbumMediaList.ItemsSource = _albumMediaBindings;
         OwnerChatList.ItemsSource = _chatItems;
@@ -718,6 +721,31 @@ public partial class ControlPanelWindow : Window
         }
     }
 
+
+    private async void ForceLifecycleCandidate_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: PlayableMotion motion })
+            return;
+        if (!_agent.DeveloperSession.IsAuthenticated)
+        {
+            MockStateStatus.Text = "???????????????";
+            UpdateDeveloperVisibility();
+            return;
+        }
+
+        var result = await _runtime.SubmitDeveloperCandidateMotionAsync(motion.BehaviorId);
+        MockStateStatus.Text = $"?????? {motion.DisplayName}: {result}";
+    }
+
+    private void CandidateSize_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string value } && int.TryParse(value, out var pixels))
+        {
+            _runtime.RequestPetPixelSize(pixels);
+            MockStateStatus.Text = $"?????????? {pixels}px";
+        }
+    }
+
     private async void ForceCommandMotion_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not Button { Tag: PlayableMotion motion })
@@ -822,7 +850,7 @@ public partial class ControlPanelWindow : Window
 
         _previewMotion = motion;
         PreviewTitle.Text = $"{motion.DisplayName} - {motion.BehaviorId}";
-        PreviewMeta.Text = $"{motion.Category} - {motion.Direction} - {motion.FrameCount} frames - {motion.Fps:F2} fps - {motion.RuntimeStatus}";
+        PreviewMeta.Text = $"{motion.Category} - {motion.Direction} - {motion.FrameCount} frames - {motion.Fps:F2} fps - {motion.RuntimeStatus} - profile: {motion.CandidateProfile}";
         PreviewPhaseCombo.ItemsSource = motion.Phases;
         PreviewPhaseCombo.DisplayMemberPath = nameof(MotionPhase.Name);
         PreviewPhaseCombo.SelectedIndex = 0;
@@ -868,12 +896,18 @@ public partial class ControlPanelWindow : Window
         _previewFrames = phase?.Frames ?? Array.Empty<string>();
         _previewIndex = 0;
         _previewPaused = false;
-        _previewTimer.Interval = TimeSpan.FromMilliseconds(_previewMotion?.FrameDurationMs ?? 125);
+        _previewTimer.Interval = TimeSpan.FromMilliseconds(PreviewDurationForCurrentFrame());
         ShowPreviewFrame();
         if (_previewFrames.Count > 1)
             _previewTimer.Start();
         else
             _previewTimer.Stop();
+    }
+
+    private int PreviewDurationForCurrentFrame()
+    {
+        var fallback = _previewMotion?.FrameDurationMs ?? 125;
+        return Math.Max(16, _previewPhase?.DurationForFrame(_previewIndex, fallback) ?? fallback);
     }
 
     private void AdvancePreview()
@@ -892,6 +926,7 @@ public partial class ControlPanelWindow : Window
                 _previewPaused = true;
             }
         }
+        _previewTimer.Interval = TimeSpan.FromMilliseconds(PreviewDurationForCurrentFrame());
         ShowPreviewFrame();
     }
 
@@ -908,7 +943,7 @@ public partial class ControlPanelWindow : Window
         try
         {
             PreviewImage.Source = LoadBitmap(path);
-            PreviewFrame.Text = $"{_previewIndex + 1}/{_previewFrames.Count} - {Path.GetFileName(path)}";
+            PreviewFrame.Text = $"{_previewIndex + 1}/{_previewFrames.Count} - {Path.GetFileName(path)} - duration {PreviewDurationForCurrentFrame()} ms - phase {_previewPhase?.Name ?? "n/a"}";
         }
         catch (Exception ex)
         {

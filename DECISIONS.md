@@ -105,3 +105,21 @@ After the petrification transition, the runtime enters an owner-interactive coin
 - Single-click dispatch is deferred until the double-click window expires.
 
 Coin interaction is valid only while petrification was entered through an owner `PrototypePreview`. Dialogue, autonomous, model, and memory sources remain forbidden. All candidate and coin manifests retain `runtime_validation=pending`, `runtime_approved=false`, `runtime_use=false`, and `production_asset=false`; the runtime registry remains empty until a Windows transparent-renderer run is reviewed.
+
+## 2026-08-15 - promote P2 lifecycle microloops to autonomous runtime after Windows QA
+
+The forward 14-state lively daily sequence, P0/P1 reverse transitions, and stand/sit/prone microloops passed owner Windows transparent-renderer QA on 2026-08-15 and may be used by the formal autonomous lifecycle profile.
+
+Allowed scope:
+
+- Index `WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2` through the existing Wukong asset catalog.
+- Set `visual_approved=true`, `art_candidate=false`, `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, and `runtime_use=true`.
+- Activate only these autonomous mappings: full lifecycle as low-frequency self-directed daily behavior, stand-idle for stable stand, sit-idle for stable sit, and prone-idle for stable prone.
+- Keep developer diagnostics for phase/frame/duration/profile inspection and 128/192/256 sizing.
+
+Forbidden scope:
+
+- Do not use `wk.command.*` IDs.
+- Do not expose these candidates in the normal right-click menu or production command routing.
+- Do not add them to `contracts/runtime/asset-registry.json`, `pet_assets.json`, magic, coins, training data, or command behavior mappings.
+- Do not edit the 32 manually accepted PNGs to hide the strict y=932 non-zero-alpha audit finding; document that Windows QA found no visible artifact instead.
