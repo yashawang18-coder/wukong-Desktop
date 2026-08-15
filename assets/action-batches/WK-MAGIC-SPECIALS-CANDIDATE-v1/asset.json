@@ -19,6 +19,13 @@
       "runtime_validation": "pending",
       "runtime_approved": false,
       "runtime_use": false
+    },
+    {
+      "date": "2026-08-15",
+      "change": "Replaced state-01-vivid and state-02-flat coin fronts from the local V2.3 coin masters; generated matching gold-luster backs with clear double pressed rims and paw embossing; rebuilt vivid/flat flip frames, review preview GIF, and coin checksums while keeping runtime gates unchanged.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
     }
   ]
 }

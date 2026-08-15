@@ -243,7 +243,15 @@ static void MainWindowPetScaleChangesImageSize()
             var window = new MainWindow();
             window.SetPetScaleForTest(1.25);
             Assert(Math.Abs(window.PetScale - 1.25) < 0.001, "pet scale was not applied");
-            Assert(Math.Abs(window.Width - 400) < 0.001, "window width did not scale");
+            Assert(Math.Abs(window.Width - 400) < 0.001, "window width did not scale up");
+
+            window.SetPetScaleForTest(0.65);
+            Assert(Math.Abs(window.PetScale - 0.65) < 0.001, "pet scale did not shrink");
+            Assert(Math.Abs(window.Width - 208) < 0.001, "window width did not scale down");
+
+            window.SetPetScaleForTest(0.2);
+            Assert(Math.Abs(window.PetScale - 0.5) < 0.001, "pet scale did not clamp to minimum");
+            Assert(Math.Abs(window.Width - 160) < 0.001, "minimum window width changed");
             window.Close();
         }
         catch (Exception ex)
@@ -598,13 +606,16 @@ static void MainWindowContextMenuMatchesContract()
             var root = (FrameworkElement)window.FindName("Root");
             var menu = root.ContextMenu ?? throw new InvalidOperationException("main context menu missing");
             var headers = menu.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).ToArray();
-            Assert(headers.SequenceEqual(new[] { "停下", "聊天", "吃一下", "玩一下", "口令", "宠物魔法", "打开面板", "退出" }), "top-level context menu order changed");
+            Assert(headers.SequenceEqual(new[] { "停下", "聊天", "吃一下", "玩一下", "口令", "宠物魔法", "大小", "打开面板", "退出" }), "top-level context menu order changed");
 
             var commands = menu.Items.OfType<MenuItem>().Single(x => Equals(x.Header, "口令"));
             Assert(commands.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).SequenceEqual(new[] { "坐", "卧", "停", "转圈", "手", "吃" }), "command submenu order changed");
 
             var magic = menu.Items.OfType<MenuItem>().Single(x => Equals(x.Header, "宠物魔法"));
             Assert(magic.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).SequenceEqual(new[] { "Accio Broom", "Apparate", "Petrificus Totalus", "Scourgify" }), "magic submenu order changed");
+
+            var scale = menu.Items.OfType<MenuItem>().Single(x => Equals(x.Header, "大小"));
+            Assert(scale.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).SequenceEqual(new[] { "放大", "缩小", "重置大小" }), "scale submenu order changed");
             window.Close();
         }
         catch (Exception ex)

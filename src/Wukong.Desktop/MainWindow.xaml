@@ -41,6 +41,12 @@
                     <MenuItem Header="Scourgify" Tag="wk.magic.scourgify" Click="MagicMenuItem_Click" />
                 </MenuItem>
                 <Separator />
+                <MenuItem Header="大小">
+                    <MenuItem Header="放大" Tag="increase" Click="PetScaleMenuItem_Click" />
+                    <MenuItem Header="缩小" Tag="decrease" Click="PetScaleMenuItem_Click" />
+                    <MenuItem Header="重置大小" Tag="reset" Click="PetScaleMenuItem_Click" />
+                </MenuItem>
+                <Separator />
                 <MenuItem Header="打开面板" Click="OpenPanelMenuItem_Click" />
                 <Separator />
                 <MenuItem Header="退出" Click="ExitMenuItem_Click" />

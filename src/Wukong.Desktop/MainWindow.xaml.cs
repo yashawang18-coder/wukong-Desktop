@@ -21,6 +21,9 @@ public partial class MainWindow : Window
     private const double BaseWindowSize = 320;
     private const double BasePetImageSize = 310;
     private const double BaseFallbackSize = 240;
+    private const double MinPetScale = 0.5;
+    private const double MaxPetScale = 1.5;
+    private const double PetScaleStep = 0.08;
     private ControlPanelWindow? _controlPanel;
     private DesktopChatWindow? _chatWindow;
     private PetMotionRequest? _activeRequest;
@@ -253,6 +256,27 @@ public partial class MainWindow : Window
 
     private void ChatMenuItem_Click(object sender, RoutedEventArgs e) => ToggleChat();
 
+    private void PetScaleMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem { Tag: string action })
+            return;
+
+        switch (action)
+        {
+            case "increase":
+                AdjustPetScale(PetScaleStep);
+                break;
+            case "decrease":
+                AdjustPetScale(-PetScaleStep);
+                break;
+            case "reset":
+                ApplyPetScale(1.0, persist: true);
+                break;
+        }
+    }
+
+    private void AdjustPetScale(double delta) => ApplyPetScale(_petScale + delta, persist: true);
+
     private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
     {
         _effectCancellation?.Cancel();
@@ -268,8 +292,8 @@ public partial class MainWindow : Window
 
     private void Window_MouseWheel(object sender, MouseWheelEventArgs e)
     {
-        var step = e.Delta > 0 ? 0.08 : -0.08;
-        ApplyPetScale(_petScale + step, persist: true);
+        var step = e.Delta > 0 ? PetScaleStep : -PetScaleStep;
+        AdjustPetScale(step);
         e.Handled = true;
     }
 
@@ -658,7 +682,7 @@ public partial class MainWindow : Window
 
     private void ApplyPetScale(double scale, bool persist)
     {
-        _petScale = Math.Clamp(scale, 0.75, 1.5);
+        _petScale = Math.Clamp(scale, MinPetScale, MaxPetScale);
         Width = BaseWindowSize * _petScale;
         Height = BaseWindowSize * _petScale;
         MinWidth = 240 * _petScale;

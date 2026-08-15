@@ -137,6 +137,13 @@
       "runtime_validation": "pending",
       "runtime_approved": false,
       "runtime_use": false
+    },
+    {
+      "date": "2026-08-15",
+      "change": "Replaced state-01-vivid and state-02-flat coin fronts from the local V2.3 coin masters; generated matching gold-luster backs with clear double pressed rims and paw embossing; rebuilt vivid/flat flip frames, review preview GIF, and coin checksums while keeping runtime gates unchanged.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
     }
   ],
   "previews": [
@@ -146,6 +153,13 @@
       "frames": 4,
       "frame_duration_ms": 700,
       "sha256": "e49398727f2504ccd5187583ca13efb6dde600b71f54b89f77845a0608bc7916"
+    },
+    {
+      "kind": "front-master-v23-review",
+      "path": "petrificus_coin/previews/coin-front-master-v23-preview.gif",
+      "frames": 4,
+      "frame_duration_ms": 700,
+      "sha256": "34f7f8fd670b5f98ddb0065c697f3a09e186e474393c2cc57bc174e47a465218"
     }
   ]
 }
