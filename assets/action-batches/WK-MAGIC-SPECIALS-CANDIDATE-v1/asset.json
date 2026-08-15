@@ -26,6 +26,13 @@
       "runtime_validation": "pending",
       "runtime_approved": false,
       "runtime_use": false
+    },
+    {
+      "date": "2026-08-15",
+      "change": "Replaced state-01-vivid and state-02-flat coin backs from the local shared back master with large paw embossing and crisp coin rim; rebuilt vivid/flat flip frames, review preview GIF, and coin checksums while preserving the shared visible bounds and runtime gates.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
     }
   ]
 }

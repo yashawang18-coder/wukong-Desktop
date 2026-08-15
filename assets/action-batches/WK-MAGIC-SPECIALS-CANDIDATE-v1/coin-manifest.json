@@ -144,6 +144,13 @@
       "runtime_validation": "pending",
       "runtime_approved": false,
       "runtime_use": false
+    },
+    {
+      "date": "2026-08-15",
+      "change": "Replaced state-01-vivid and state-02-flat coin backs from the local shared back master with large paw embossing and crisp coin rim; rebuilt vivid/flat flip frames, review preview GIF, and coin checksums while preserving the shared visible bounds and runtime gates.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
     }
   ],
   "previews": [
@@ -160,6 +167,13 @@
       "frames": 4,
       "frame_duration_ms": 700,
       "sha256": "34f7f8fd670b5f98ddb0065c697f3a09e186e474393c2cc57bc174e47a465218"
+    },
+    {
+      "kind": "back-master-v23-review",
+      "path": "petrificus_coin/previews/coin-back-master-v23-preview.gif",
+      "frames": 4,
+      "frame_duration_ms": 700,
+      "sha256": "b63ef5f7d8fa4ebdd609b2d4a99c4f18d1609f370d7bac3aa0fc946e0681dbd9"
     }
   ]
 }
