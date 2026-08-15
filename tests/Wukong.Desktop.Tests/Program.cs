@@ -3,12 +3,16 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wukong.Desktop;
 using Wukong.Domain;
 
 if (args.Contains("--show-panel-smoke", StringComparer.Ordinal))
     return ShowPanelSmoke();
+if (args.Contains("--capture-panel-screens", StringComparer.Ordinal))
+    return CapturePanelScreens(args.SkipWhile(x => x != "--capture-panel-screens").Skip(1).FirstOrDefault() ?? Path.Combine(".publish-check", "ux-panel-album-coin-fixes-v1", "screenshots"));
 
 var tests = new (string Name, Action Run)[]
 {
@@ -33,11 +37,14 @@ var tests = new (string Name, Action Run)[]
     ("non owner sources cannot prototype preview magic", NonOwnerSourcesCannotPrototypePreviewMagic),
     ("petrified coin inactivity reaches all four states", PetrifiedCoinInactivityReachesAllFourStates),
     ("petrified coin timing is configurable", PetrifiedCoinTimingIsConfigurable),
+    ("petrified coin default timing and visual scale are stable", PetrifiedCoinDefaultTimingAndVisualScaleAreStable),
+    ("motion visual sizing normalizes alpha bounds", MotionVisualSizingNormalizesAlphaBounds),
     ("petrified coin clicks reset and double clicks flip", PetrifiedCoinClicksResetAndDoubleClicksFlip),
     ("stop clears petrification and requests idle", StopClearsPetrificationAndRequestsIdle),
     ("main window context menu matches owner action contract", MainWindowContextMenuMatchesContract),
     ("broom direction quantizer covers eight directions", BroomDirectionQuantizerCoversEightDirections),
     ("control panel exposes magic specials tab", ControlPanelExposesMagicSpecialsTab),
+    ("control panel tab buttons share visual metrics", ControlPanelTabButtonsShareVisualMetrics),
     ("gesture interpreter distinguishes touch stroke drag and rapid tap", GestureInterpreterDistinguishesGestures),
     ("rapid tap has priority over owner touch", RapidTapHasPriorityOverOwnerTouch),
     ("runtime requests touch motion and returns decisions", RuntimeRequestsTouchMotion),
@@ -45,6 +52,7 @@ var tests = new (string Name, Action Run)[]
     ("album folder item reads local markdown album", AlbumFolderItemReadsLocalMarkdownAlbum),
     ("album folder item reads xhs markdown album", AlbumFolderItemReadsXhsMarkdownAlbum),
     ("album markdown update preserves unknown fields", AlbumMarkdownUpdatePreservesUnknownFields),
+    ("album media unlink handles persistence and keeps files", AlbumMediaUnlinkHandlesPersistenceAndKeepsFiles),
     ("autonomous tick can request a motion after dwell", AutonomousTickCanRequestMotion),
     ("bootstrap log redacts and does not throw", BootstrapLogRedactsAndDoesNotThrow)
 };
@@ -89,13 +97,208 @@ static int ShowPanelSmoke()
     });
     thread.SetApartmentState(ApartmentState.STA);
     thread.Start();
-    thread.Join();
+    if (!thread.Join(TimeSpan.FromSeconds(45)))
+        return 2;
     if (failure is not null)
     {
         Console.Error.WriteLine(failure);
         return 1;
     }
     return 0;
+}
+
+static int CapturePanelScreens(string outputRoot)
+{
+    Exception? failure = null;
+    var thread = new Thread(() =>
+    {
+        string? previousAlbumRoot = Environment.GetEnvironmentVariable("WUKONG_ALBUM_ROOT");
+        string? screenshotAlbumRoot = null;
+        try
+        {
+            var app = EnsureTestApplication();
+            Directory.CreateDirectory(outputRoot);
+            screenshotAlbumRoot = CreateScreenshotAlbumRoot();
+            Environment.SetEnvironmentVariable("WUKONG_ALBUM_ROOT", screenshotAlbumRoot);
+            var panel = new ControlPanelWindow(new DesktopRuntimeHost())
+            {
+                Width = 1180,
+                Height = 760
+            };
+            app.MainWindow = panel;
+            panel.Show();
+            panel.UpdateLayout();
+
+            CapturePanel(panel, outputRoot, "owner-current.png");
+            ClickNavByTag(panel, "Profile");
+            CapturePanel(panel, outputRoot, "profile-tabs.png");
+            ClickNavByTag(panel, "Album");
+            CapturePanel(panel, outputRoot, "album-all-media-list.png");
+            if (panel.FindName("AlbumMediaList") is ListBox mediaList && mediaList.Items.Count > 1)
+            {
+                mediaList.SelectedIndex = 1;
+                panel.UpdateLayout();
+                CapturePanel(panel, outputRoot, "subalbum-selected-preview.png");
+                ClickNamedButton(panel, "UnbindAlbumMediaButton");
+                CapturePanel(panel, outputRoot, "album-unbind-after.png");
+            }
+            ClickNavByTag(panel, "Model");
+            CapturePanel(panel, outputRoot, "model-tabs.png");
+            ClickNamedButton(panel, "MemoryConfigTabButton");
+            CapturePanel(panel, outputRoot, "memory-config-toggle.png");
+            ClickNavByTag(panel, "Assets");
+            CapturePanel(panel, outputRoot, "assets-normal-base.png");
+            ClickNamedButton(panel, "CommandAssetsTabButton");
+            CapturePanel(panel, outputRoot, "assets-normal-command.png");
+            ClickNamedButton(panel, "MagicAssetsTabButton");
+            CapturePanel(panel, outputRoot, "assets-magic-specials.png");
+            CaptureVisualSizeComparison(outputRoot);
+            panel.Close();
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("WUKONG_ALBUM_ROOT", previousAlbumRoot);
+            if (!string.IsNullOrWhiteSpace(screenshotAlbumRoot))
+                TryDeleteDirectory(screenshotAlbumRoot);
+        }
+    });
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+    if (!thread.Join(TimeSpan.FromSeconds(45)))
+    {
+        Console.Error.WriteLine("panel screenshot capture timed out");
+        return 2;
+    }
+    if (failure is not null)
+    {
+        Console.Error.WriteLine(failure);
+        return 1;
+    }
+
+    Console.WriteLine($"screenshots: {Path.GetFullPath(outputRoot)}");
+    return 0;
+}
+
+static string CreateScreenshotAlbumRoot()
+{
+    var root = Path.Combine(Path.GetTempPath(), "wukong-panel-screens-" + Guid.NewGuid().ToString("N"));
+    var album = Path.Combine(root, "daily-home");
+    Directory.CreateDirectory(album);
+    var runtime = new DesktopRuntimeHost();
+    var frames = runtime.Motions.Take(3).Select(x => x.FirstFrame).Where(File.Exists).ToArray();
+    for (var i = 0; i < frames.Length; i++)
+        File.Copy(frames[i], Path.Combine(album, $"sample-{i + 1:00}.png"), overwrite: true);
+    File.WriteAllText(Path.Combine(album, "album.md"), string.Join(Environment.NewLine, new[] { "---", "title: daily-home", "time: 2026-08-15", "media:", "  - \"sample-01.png\"", "  - \"sample-02.png\"", "  - \"sample-03.png\"", "---", "", "# daily-home", "", "## ??", "", "screenshot fixture", "", "## ??", "", "- `sample-01.png`", "- `sample-02.png`", "- `sample-03.png`" }), System.Text.Encoding.UTF8);
+    return root;
+}
+
+static void CaptureVisualSizeComparison(string outputRoot)
+{
+    var runtime = new DesktopRuntimeHost();
+    var reference = runtime.ReferenceVisualFramePath;
+    var normal = runtime.Motions.First(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle);
+    var magic = runtime.MagicMotions.First(x => x.BehaviorId == MagicBehaviorIds.AccioBroom);
+    var coin = runtime.MagicMotions.First(x => x.BehaviorId == MagicBehaviorIds.PetrificusTotalus);
+    var panel = new Grid { Width = 760, Height = 280, Background = Brushes.White };
+    panel.ColumnDefinitions.Add(new ColumnDefinition());
+    panel.ColumnDefinitions.Add(new ColumnDefinition());
+    panel.ColumnDefinitions.Add(new ColumnDefinition());
+    AddVisualSample(panel, normal, reference, "????", 0);
+    AddVisualSample(panel, magic, reference, "????", 1);
+    AddVisualSample(panel, coin, reference, "??/??", 2);
+    panel.Measure(new Size(panel.Width, panel.Height));
+    panel.Arrange(new Rect(0, 0, panel.Width, panel.Height));
+    var bitmap = new RenderTargetBitmap((int)panel.Width, (int)panel.Height, 96, 96, PixelFormats.Pbgra32);
+    bitmap.Render(panel);
+    var encoder = new PngBitmapEncoder();
+    encoder.Frames.Add(BitmapFrame.Create(bitmap));
+    using var stream = File.Create(Path.Combine(outputRoot, "visual-size-comparison.png"));
+    encoder.Save(stream);
+}
+
+static void AddVisualSample(Grid root, PlayableMotion motion, string reference, string label, int column)
+{
+    var size = MotionVisualSizer.PreviewRenderSize(motion.FirstFrame, reference, motion.VisualScale, 190);
+    var stack = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+    stack.Children.Add(new Border
+    {
+        Width = 210,
+        Height = 210,
+        Background = new SolidColorBrush(Color.FromRgb(238, 236, 229)),
+        CornerRadius = new CornerRadius(12),
+        Child = new Image { Source = BitmapFrame.Create(new Uri(motion.FirstFrame, UriKind.Absolute)), Width = size, Height = size, Stretch = Stretch.Uniform }
+    });
+    stack.Children.Add(new TextBlock { Text = $"{label} / {motion.VisibleSubjectHeight}px", HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 0) });
+    Grid.SetColumn(stack, column);
+    root.Children.Add(stack);
+}
+static void CapturePanel(ControlPanelWindow panel, string outputRoot, string fileName)
+{
+    panel.UpdateLayout();
+    var width = Math.Max(1, (int)Math.Ceiling(panel.ActualWidth));
+    var height = Math.Max(1, (int)Math.Ceiling(panel.ActualHeight));
+    var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+    bitmap.Render(panel);
+    var encoder = new PngBitmapEncoder();
+    encoder.Frames.Add(BitmapFrame.Create(bitmap));
+    using var stream = File.Create(Path.Combine(outputRoot, fileName));
+    encoder.Save(stream);
+}
+
+static void ClickNamedButton(ControlPanelWindow panel, string name)
+{
+    if (panel.FindName(name) is Button button)
+        button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    panel.UpdateLayout();
+}
+
+static void ClickNavByTag(ControlPanelWindow panel, string tag)
+{
+    var button = FindButtonByTag(panel, tag) ?? throw new InvalidOperationException($"nav button not found: {tag}");
+    button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    panel.UpdateLayout();
+}
+
+static Button? FindButtonByTag(DependencyObject root, string tag)
+{
+    if (root is Button button && string.Equals(button.Tag?.ToString(), tag, StringComparison.Ordinal))
+        return button;
+    for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+    {
+        var found = FindButtonByTag(VisualTreeHelper.GetChild(root, i), tag);
+        if (found is not null)
+            return found;
+    }
+    return null;
+}
+
+static void ClickButtonByContent(DependencyObject root, string content)
+{
+    var button = FindButtonByContent(root, content) ?? throw new InvalidOperationException($"button not found: {content}");
+    button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    if (root is UIElement element)
+        element.UpdateLayout();
+}
+
+static Button? FindButtonByContent(DependencyObject root, string content)
+{
+    foreach (var child in LogicalTreeHelper.GetChildren(root).OfType<object>())
+    {
+        if (child is Button button && string.Equals(button.Content?.ToString(), content, StringComparison.Ordinal))
+            return button;
+        if (child is DependencyObject dependencyObject)
+        {
+            var match = FindButtonByContent(dependencyObject, content);
+            if (match is not null)
+                return match;
+        }
+    }
+
+    return null;
 }
 
 static void InputAdapterEmitsEvents()
@@ -147,9 +350,9 @@ static void ControlPanelXamlConstructs()
             Assert(panel.FindName("ModelConfigPanel") is not null, "model configuration tab panel missing");
             Assert(panel.FindName("MemoryConfigPanel") is not null, "memory configuration tab panel missing");
             Assert(panel.FindName("PetSettingPanel") is not null, "pet setting tab panel missing");
-            Assert(panel.FindName("UseLongTermMemoryCheck") is CheckBox, "long term memory switch missing");
-            Assert(panel.FindName("UseAlbumMemoryCheck") is CheckBox, "album memory switch missing");
-            Assert(panel.FindName("UseShortTermMemoryCheck") is CheckBox, "short term memory switch missing");
+            Assert(panel.FindName("UseLongTermMemoryCheck") is ToggleButton, "long term memory switch missing");
+            Assert(panel.FindName("UseAlbumMemoryCheck") is ToggleButton, "album memory switch missing");
+            Assert(panel.FindName("UseShortTermMemoryCheck") is ToggleButton, "short term memory switch missing");
             Assert(panel.FindName("OwnerBirthdayPicker") is DatePicker, "owner birthday field missing");
             Assert(panel.FindName("OwnerPetCallNameText") is TextBox, "owner pet call name field missing");
             Assert(panel.FindName("PetHarnessCombo") is null, "removed pet harness field is still registered");
@@ -356,7 +559,7 @@ static void LifecycleMicroloopCandidatesAreIndexedAndGated()
     Assert(microCycles.SequenceEqual(new[] { 7240, 7680, 8900 }), "microloop cycle durations changed");
 
     var catalog = DesktopMotionCatalog.Load(output);
-    var lifecycle = catalog.Motions.Where(x => x.Category == "??????").ToArray();
+    var lifecycle = catalog.Motions.Where(x => x.Category == "候选动作").ToArray();
     Assert(lifecycle.Length == 4, "lifecycle candidates were not indexed");
     Assert(lifecycle.All(x => x.RuntimeEnabled), "P3 lifecycle candidates must be enabled for autonomous runtime");
     Assert(lifecycle.All(x => x.CandidateProfile == "developer_lifecycle_microloops_v2"), "candidate profile was not preserved");
@@ -588,9 +791,14 @@ static void PetrifiedCoinInactivityReachesAllFourStates()
     Assert(runtime.IsCoinAssetsReady, "coin assets failed to load");
     Assert(runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult() == PetActionResult.Accepted, "petrification was not accepted");
     Assert(runtime.CurrentCoinState == PetrifiedCoinState.Vivid && runtime.CurrentCoinSide == PetrifiedCoinSide.Front, "coin did not start vivid front");
+    Assert(runtime.SubmitPetrifiedCoinClickAsync().GetAwaiter().GetResult() == PetActionResult.Accepted, "coin activity reset was not accepted");
 
-    now += TimeSpan.FromSeconds(3);
-    Assert(runtime.RefreshPetrifiedCoinState(), "coin did not settle to flat");
+    now += TimeSpan.FromSeconds(4.9);
+    Assert(!runtime.RefreshPetrifiedCoinState(), "coin settled before five seconds");
+    Assert(runtime.CurrentCoinState == PetrifiedCoinState.Vivid, "coin did not remain vivid for the full initial hold");
+
+    now += TimeSpan.FromMilliseconds(250);
+    Assert(runtime.RefreshPetrifiedCoinState(), "coin did not settle to flat after five seconds");
     Assert(runtime.CurrentCoinState == PetrifiedCoinState.Flat, "coin settled to wrong state");
 
     now = new DateTimeOffset(2026, 8, 15, 12, 10, 2, TimeSpan.Zero);
@@ -657,6 +865,63 @@ static void PetrifiedCoinTimingIsConfigurable()
     Assert(runtime.CurrentCoinState == PetrifiedCoinState.Exhausted, "custom exhausted threshold selected wrong state");
 }
 
+static void PetrifiedCoinDefaultTimingAndVisualScaleAreStable()
+{
+    var started = new DateTimeOffset(2026, 8, 15, 12, 0, 0, TimeSpan.Zero);
+    var now = started;
+    var runtime = new DesktopRuntimeHost(now: () => now);
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, item) => requests.Add(item);
+
+    runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
+    Assert(requests.Last().Motion.VisualScale > 1.34 && requests.Last().Motion.VisualScale < 1.36, "petrification intro must render at enlarged magic pet scale");
+    Assert(runtime.SubmitPetrifiedCoinClickAsync().GetAwaiter().GetResult() == PetActionResult.Accepted, "coin activity reset was not accepted");
+
+    now = started + TimeSpan.FromSeconds(4.99);
+    Assert(!runtime.RefreshPetrifiedCoinState(), "default coin hold changed before five seconds");
+    runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusRelease, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
+    now = started + TimeSpan.FromSeconds(20);
+    runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
+    Assert(runtime.SubmitPetrifiedCoinClickAsync().GetAwaiter().GetResult() == PetActionResult.Accepted, "retriggered coin activity reset was not accepted");
+    now += TimeSpan.FromSeconds(4.99);
+    Assert(!runtime.RefreshPetrifiedCoinState(), "retriggered coin did not restart the five-second timer");
+    now += TimeSpan.FromMilliseconds(20);
+    Assert(runtime.RefreshPetrifiedCoinState(), "coin did not advance after restarted five-second hold");
+    Assert(requests.Last().Motion.VisualScale > 0.66 && requests.Last().Motion.VisualScale < 0.67, "coin hold motion must render at two-thirds visual scale");
+}
+
+static void MotionVisualSizingNormalizesAlphaBounds()
+{
+    static double VisibleHeightRatio(PlayableMotion motion, string referenceFrame)
+    {
+        var metrics = MotionVisualSizer.Measure(motion.FirstFrame);
+        var scale = MotionVisualSizer.RenderScaleFor(motion.FirstFrame, referenceFrame, motion.VisualScale);
+        return metrics.VisibleHeight / (double)metrics.CanvasHeight * scale;
+    }
+
+    var runtime = new DesktopRuntimeHost();
+    var reference = runtime.ReferenceVisualFramePath;
+    var normal = runtime.Motions.First(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle);
+    var broom = runtime.MagicMotions.First(x => x.BehaviorId == MagicBehaviorIds.AccioBroom);
+    var petrify = runtime.MagicMotions.First(x => x.BehaviorId == MagicBehaviorIds.PetrificusTotalus);
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, item) => requests.Add(item);
+
+    var normalHeight = VisibleHeightRatio(normal, reference);
+    var broomRatio = VisibleHeightRatio(broom, reference) / normalHeight;
+    var petrifyRatio = VisibleHeightRatio(petrify, reference) / normalHeight;
+
+    runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
+    runtime.SubmitPetrifiedCoinClickAsync().GetAwaiter().GetResult();
+    var coinRatio = VisibleHeightRatio(requests.Last().Motion, reference) / normalHeight;
+
+    Assert(broomRatio is > 1.20 and < 1.45, $"magic pet visual height ratio was {broomRatio:0.000}");
+    Assert(petrifyRatio is > 1.20 and < 1.45, $"petrification intro visual height ratio was {petrifyRatio:0.000}");
+    Assert(coinRatio is > 0.62 and < 0.72, $"petrified coin visual height ratio was {coinRatio:0.000}");
+    Assert(broom.VisibleSubjectHeight > 0 && petrify.VisibleSubjectHeight > 0, "visible alpha bounds were not measured");
+}
+
+
 static void StopClearsPetrificationAndRequestsIdle()
 {
     var runtime = new DesktopRuntimeHost();
@@ -686,7 +951,10 @@ static void MainWindowContextMenuMatchesContract()
             var root = (FrameworkElement)window.FindName("Root");
             var menu = root.ContextMenu ?? throw new InvalidOperationException("main context menu missing");
             var headers = menu.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).ToArray();
-            Assert(headers.SequenceEqual(new[] { "停下", "聊天", "吃一下", "玩一下", "口令", "宠物魔法", "大小", "打开面板", "退出" }), "top-level context menu order changed");
+            Assert(headers.SequenceEqual(new[] { "聊天", "吃一下", "玩一下", "口令", "宠物魔法", "停下", "打开面板", "退出" }), $"top-level context menu order changed: {string.Join(",", headers)}");
+            Assert(!headers.Contains("大小", StringComparer.Ordinal), "scale menu must not be shown in the context menu");
+            var stopIndex = Array.IndexOf(headers, "停下");
+            Assert(stopIndex >= 0 && stopIndex + 1 < headers.Length && headers[stopIndex + 1] == "打开面板", "stop must sit immediately above open panel");
 
             var commands = menu.Items.OfType<MenuItem>().Single(x => Equals(x.Header, "口令"));
             Assert(commands.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).SequenceEqual(new[] { "坐", "卧", "停", "转圈", "手", "吃" }), "command submenu order changed");
@@ -694,8 +962,6 @@ static void MainWindowContextMenuMatchesContract()
             var magic = menu.Items.OfType<MenuItem>().Single(x => Equals(x.Header, "宠物魔法"));
             Assert(magic.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).SequenceEqual(new[] { "Accio Broom", "Apparate", "Petrificus Totalus", "Scourgify" }), "magic submenu order changed");
 
-            var scale = menu.Items.OfType<MenuItem>().Single(x => Equals(x.Header, "大小"));
-            Assert(scale.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).SequenceEqual(new[] { "放大", "缩小", "重置大小" }), "scale submenu order changed");
             window.Close();
         }
         catch (Exception ex)
@@ -744,6 +1010,53 @@ static void ControlPanelExposesMagicSpecialsTab()
             Assert(list!.Items.Count == 4, "magic specials must display four owner-facing cards");
             var lifecycle = (ItemsControl)panel.FindName("LifecycleCandidateList")!;
             Assert(lifecycle.Items.Count == 4, "developer lifecycle profile must display four candidate motions");
+            panel.Close();
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+    });
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+    thread.Join();
+    if (failure is not null)
+        throw failure;
+}
+
+static void ControlPanelTabButtonsShareVisualMetrics()
+{
+    Exception? failure = null;
+    var thread = new Thread(() =>
+    {
+        try
+        {
+            _ = EnsureTestApplication();
+            var panel = new ControlPanelWindow(new DesktopRuntimeHost());
+            var selected = (Style)panel.FindResource("PanelTabButtonSelected");
+            var normal = (Style)panel.FindResource("PanelTabButton");
+            var tabNames = new[]
+            {
+                "ProfilePetTabButton",
+                "ProfileOwnerTabButton",
+                "ProfileRelationTabButton",
+                "ProfileMemoryTabButton",
+                "ModelConfigTabButton",
+                "MemoryConfigTabButton",
+                "PetSettingTabButton",
+                "NormalAssetsTabButton",
+                "MagicAssetsTabButton",
+                "BaseAssetsTabButton",
+                "CommandAssetsTabButton"
+            };
+            foreach (var name in tabNames)
+            {
+                var button = panel.FindName(name) as Button;
+                Assert(button is not null, $"tab button missing: {name}");
+                Assert(ReferenceEquals(button!.Style, selected) || ReferenceEquals(button.Style, normal), $"tab button does not use shared style: {name}");
+                Assert(button.MinWidth >= 104 && button.MinHeight >= 40, $"tab button visual metrics are too small: {name}");
+                Assert(button.HorizontalContentAlignment == HorizontalAlignment.Center && button.VerticalContentAlignment == VerticalAlignment.Center, $"tab button alignment changed: {name}");
+            }
             panel.Close();
         }
         catch (Exception ex)
@@ -912,6 +1225,90 @@ static void AlbumMarkdownUpdatePreservesUnknownFields()
     }
 }
 
+static void AlbumMediaUnlinkHandlesPersistenceAndKeepsFiles()
+{
+    var root = Path.Combine(Path.GetTempPath(), "wukong-album-unlink-" + Guid.NewGuid().ToString("N"));
+    try
+    {
+        var album = Path.Combine(root, "home-day");
+        Directory.CreateDirectory(album);
+        var keepFile = Path.Combine(album, "keep.webp");
+        var removeFile = Path.Combine(album, "remove.webp");
+        File.WriteAllBytes(keepFile, new byte[] { 1, 2, 3 });
+        File.WriteAllBytes(removeFile, new byte[] { 4, 5, 6 });
+        var markdownText = string.Join(Environment.NewLine, new[]
+        {
+            "---",
+            "title: home-day",
+            "time: 2026-08-15",
+            "media:",
+            "  - \"keep.webp\"",
+            "  - \"remove.webp\"",
+            "---",
+            string.Empty,
+            "# home-day",
+            string.Empty,
+            "## Body",
+            string.Empty,
+            "album body",
+            string.Empty,
+            "## ??",
+            string.Empty,
+            "- `keep.webp`",
+            "- `remove.webp`",
+            string.Empty
+        });
+        File.WriteAllText(Path.Combine(album, "album.md"), markdownText, System.Text.Encoding.UTF8);
+
+        var bindings = new List<AlbumMediaItem>
+        {
+            new("keep.webp", keepFile, "found"),
+            new("remove.webp", removeFile, "found")
+        };
+        var noSelection = AlbumMediaBindingEditor.Unbind(null, bindings, _ => true);
+        Assert(noSelection.Status == AlbumMediaUnbindStatus.NoSelection, "no selection should be reported");
+        Assert(bindings.Count == 2, "no selection must not change bindings");
+
+        var notFound = AlbumMediaBindingEditor.Unbind("missing.webp", bindings, _ => true);
+        Assert(notFound.Status == AlbumMediaUnbindStatus.NotFound, "missing binding should be reported");
+        Assert(bindings.Count == 2, "missing binding must not change bindings");
+
+        var failure = AlbumMediaBindingEditor.Unbind("remove.webp", bindings, _ => throw new IOException("locked"));
+        Assert(failure.Status == AlbumMediaUnbindStatus.PersistenceFailed, "persistence failure should be reported");
+        Assert(bindings.Select(x => x.FileName).SequenceEqual(new[] { "keep.webp", "remove.webp" }), "failed persistence must restore bindings");
+
+        var item = AlbumFolderItem.FromDirectory(album);
+        bindings = item.MediaFiles.Select(x => new AlbumMediaItem(x, Path.Combine(album, x), "found")).ToList();
+        var success = AlbumMediaBindingEditor.Unbind("remove.webp", bindings, mediaFiles =>
+        {
+            File.WriteAllText(item.MarkdownPath, item.CreateMarkdown("2026-08-15", item.Description, mediaFiles.Select(x => x.FileName).ToArray()), System.Text.Encoding.UTF8);
+            return true;
+        });
+        Assert(success.Status == AlbumMediaUnbindStatus.Success, "normal unlink should succeed");
+        Assert(File.Exists(removeFile), "unlink must not delete local original file");
+        var reloaded = AlbumFolderItem.FromDirectory(album);
+        Assert(reloaded.MediaFiles.SequenceEqual(new[] { "keep.webp" }), "restart should preserve the unbound media state");
+        var markdown = File.ReadAllText(item.MarkdownPath, System.Text.Encoding.UTF8);
+        Assert(markdown.Contains("keep.webp", StringComparison.Ordinal), "remaining binding was not persisted");
+        Assert(!markdown.Contains("- `remove.webp`", StringComparison.Ordinal) && !markdown.Contains("- \"remove.webp\"", StringComparison.Ordinal), "removed binding was still persisted");
+
+        var deleteItem = AlbumFolderItem.FromDirectory(album);
+        bindings = deleteItem.MediaFiles.Select(x => new AlbumMediaItem(x, Path.Combine(album, x), "found")).ToList();
+        var delete = AlbumMediaBindingEditor.Delete("keep.webp", bindings, mediaFiles =>
+        {
+            File.WriteAllText(deleteItem.MarkdownPath, deleteItem.CreateMarkdown("2026-08-15", deleteItem.Description, mediaFiles.Select(x => x.FileName).ToArray()), System.Text.Encoding.UTF8);
+            return true;
+        });
+        Assert(delete.Status == AlbumMediaUnbindStatus.Success, "delete record should succeed");
+        Assert(File.Exists(keepFile), "delete record must not delete local original file by default");
+        var afterDeleteReload = AlbumFolderItem.FromDirectory(album);
+        Assert(afterDeleteReload.MediaFiles.Count == 0, "restart should preserve deleted media record state");
+    }
+    finally
+    {
+        TryDeleteDirectory(root);
+    }
+}
 static void AutonomousTickCanRequestMotion()
 {
     var runtime = new DesktopRuntimeHost();

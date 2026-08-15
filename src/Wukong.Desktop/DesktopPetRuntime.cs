@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows;
+using System.Windows.Media.Imaging;
 using Wukong.Domain;
 using Wukong.Infrastructure;
 
@@ -116,7 +117,8 @@ public sealed record PlayableMotion(
     DesktopMotionEffect Effect = DesktopMotionEffect.None,
     string Description = "",
     IReadOnlyDictionary<string, IReadOnlyList<string>>? DirectionalFrames = null,
-    string CandidateProfile = "")
+    string CandidateProfile = "",
+    double VisualScale = 1.0)
 {
     public bool IsUsable => Phases.Any(x => x.Frames.Count > 0);
     public string FirstFrame => Phases.SelectMany(x => x.Frames).FirstOrDefault() ?? string.Empty;
@@ -127,6 +129,78 @@ public sealed record PlayableMotion(
     public string RuntimeStatus => RuntimeEnabled ? "Runtime enabled" : "Preview only / locked";
     public string PhaseSummary => string.Join(" / ", Phases.Select(x => $"{x.Name}:{x.Frames.Count}"));
     public bool HasVariableFrameDurations => Phases.Any(x => x.HasVariableDurations);
+    public MotionVisibleMetrics VisibleMetrics => MotionVisualSizer.Measure(FirstFrame);
+    public int VisibleSubjectWidth => VisibleMetrics.VisibleWidth;
+    public int VisibleSubjectHeight => VisibleMetrics.VisibleHeight;
+    public double PreviewRenderSize => MotionVisualSizer.PreviewRenderSize(FirstFrame, DesktopMotionCatalog.ReferenceFramePath, VisualScale, 150);
+}
+
+public sealed record MotionVisibleMetrics(int CanvasWidth, int CanvasHeight, Int32Rect Bounds)
+{
+    public int VisibleWidth => Bounds.Width;
+    public int VisibleHeight => Bounds.Height;
+    public double VisibleHeightRatio => CanvasHeight <= 0 ? 1.0 : VisibleHeight / (double)CanvasHeight;
+}
+
+public static class MotionVisualSizer
+{
+    private static readonly Dictionary<string, MotionVisibleMetrics> Cache = new(StringComparer.OrdinalIgnoreCase);
+    private const double DefaultVisibleRatio = 0.72;
+
+    public static MotionVisibleMetrics Measure(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+            return new MotionVisibleMetrics(1024, 1024, new Int32Rect(0, 0, 1024, 1024));
+        if (Cache.TryGetValue(path, out var cached))
+            return cached;
+
+        var bitmap = BitmapFrame.Create(new Uri(path, UriKind.Absolute), BitmapCreateOptions.IgnoreColorProfile, BitmapCacheOption.OnLoad);
+        var width = bitmap.PixelWidth;
+        var height = bitmap.PixelHeight;
+        var stride = Math.Max(1, width * 4);
+        var pixels = new byte[stride * height];
+        BitmapSource converted = bitmap.Format == System.Windows.Media.PixelFormats.Bgra32 || bitmap.Format == System.Windows.Media.PixelFormats.Pbgra32
+            ? bitmap
+            : new FormatConvertedBitmap(bitmap, System.Windows.Media.PixelFormats.Bgra32, null, 0);
+        converted.CopyPixels(pixels, stride, 0);
+
+        var minX = width;
+        var minY = height;
+        var maxX = -1;
+        var maxY = -1;
+        for (var y = 0; y < height; y++)
+        {
+            var row = y * stride;
+            for (var x = 0; x < width; x++)
+            {
+                if (pixels[row + x * 4 + 3] <= 18)
+                    continue;
+                minX = Math.Min(minX, x);
+                minY = Math.Min(minY, y);
+                maxX = Math.Max(maxX, x);
+                maxY = Math.Max(maxY, y);
+            }
+        }
+
+        var bounds = maxX < minX || maxY < minY
+            ? new Int32Rect(0, 0, width, height)
+            : new Int32Rect(minX, minY, maxX - minX + 1, maxY - minY + 1);
+        var result = new MotionVisibleMetrics(width, height, bounds);
+        Cache[path] = result;
+        return result;
+    }
+
+    public static double RenderScaleFor(string? framePath, string? referenceFramePath, double targetVisibleRatio)
+    {
+        var current = Measure(framePath);
+        var reference = Measure(referenceFramePath);
+        var referenceRatio = reference.VisibleHeightRatio > 0 ? reference.VisibleHeightRatio : DefaultVisibleRatio;
+        var currentRatio = current.VisibleHeightRatio > 0 ? current.VisibleHeightRatio : DefaultVisibleRatio;
+        return Math.Clamp(referenceRatio * targetVisibleRatio / currentRatio, 0.35, 3.0);
+    }
+
+    public static double PreviewRenderSize(string? framePath, string? referenceFramePath, double targetVisibleRatio, double stageSize)
+        => Math.Clamp(stageSize * RenderScaleFor(framePath, referenceFramePath, targetVisibleRatio), stageSize * 0.45, stageSize * 2.6);
 }
 
 public sealed class DesktopMotionCatalog
@@ -141,6 +215,7 @@ public sealed class DesktopMotionCatalog
 
     public IReadOnlyList<PlayableMotion> Motions => _motions.Values.OrderBy(x => x.BehaviorId).ToList();
     public string LoadSummary { get; }
+    public static string ReferenceFramePath { get; private set; } = string.Empty;
 
     public PlayableMotion? Find(string behaviorId) =>
         _motions.TryGetValue(behaviorId, out var motion) ? motion : null;
@@ -322,6 +397,7 @@ public sealed class DesktopMotionCatalog
                 disposition: "Transition locked")
         };
 
+        ReferenceFramePath = motions.FirstOrDefault(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle)?.FirstFrame ?? string.Empty;
         var commandCandidates = LoadCommandCandidates(root).ToArray();
         var magicCandidates = LoadMagicCandidates(root).ToArray();
         var lifecycleCandidates = LoadLifecycleCandidates(root).ToArray();
@@ -557,7 +633,7 @@ public sealed class DesktopMotionCatalog
             yield return new PlayableMotion(
                 action.BehaviorId,
                 action.DisplayName,
-                "??????",
+                "候选动作",
                 action.Direction,
                 action.FrameDurationMs,
                 action.Interruptible,
@@ -694,7 +770,8 @@ public sealed class DesktopMotionCatalog
                 Description: action.Description,
                 DirectionalFrames: string.Equals(action.BehaviorId, MagicBehaviorIds.AccioBroom, StringComparison.OrdinalIgnoreCase)
                     ? directionalFrames
-                    : null);
+                    : null,
+                VisualScale: 1.35);
         }
     }
 
@@ -869,7 +946,7 @@ public sealed record PetrifiedCoinOptions(
     TimeSpan ExhaustedAfter)
 {
     public static PetrifiedCoinOptions Default { get; } = new(
-        TimeSpan.FromMilliseconds(800),
+        TimeSpan.FromSeconds(5),
         TimeSpan.FromMinutes(10),
         TimeSpan.FromMinutes(20));
 }
@@ -1005,7 +1082,8 @@ public sealed class PetrifiedCoinAssets
         MissingContent: "Windows renderer approval",
         PrototypeUse: true,
         AssetBatch: MagicBehaviorIds.AssetBatch,
-        Description: "Owner-only interactive petrification coin candidate");
+        Description: "Owner-only interactive petrification coin candidate",
+        VisualScale: 2.0 / 3.0);
 
     private static PetrifiedCoinState ParseState(string value) => value.ToLowerInvariant() switch
     {
@@ -1073,12 +1151,13 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public ObservableCollection<string> TraceLines { get; } = new();
     public IReadOnlyList<PlayableMotion> Motions => _catalog.Motions;
+    public string ReferenceVisualFramePath => _catalog.RequiredIdle.FirstFrame;
     public IReadOnlyList<PlayableMotion> MagicMotions => _catalog.Motions
         .Where(x => string.Equals(x.Category, "宠物魔法", StringComparison.OrdinalIgnoreCase))
         .OrderBy(x => x.DisplayName)
         .ToArray();
     public IReadOnlyList<PlayableMotion> LifecycleCandidateMotions => _catalog.Motions
-        .Where(x => string.Equals(x.Category, "??????", StringComparison.OrdinalIgnoreCase))
+        .Where(x => string.Equals(x.Category, "候选动作", StringComparison.OrdinalIgnoreCase))
         .OrderBy(x => x.BehaviorId)
         .ToArray();
     public bool IsPetrified { get; private set; }

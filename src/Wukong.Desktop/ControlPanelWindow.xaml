@@ -1,4 +1,4 @@
-<Window x:Class="Wukong.Desktop.ControlPanelWindow"
+﻿<Window x:Class="Wukong.Desktop.ControlPanelWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Wukong Control"
@@ -176,10 +176,10 @@
             <Button DockPanel.Dock="Right" Content="保存" Style="{StaticResource PrimaryButton}" IsEnabled="False" />
           </DockPanel>
           <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
-            <Button Content="宠物档案" Style="{StaticResource PrimaryButton}" Tag="Pet" Click="ProfileTab_Click" Margin="0,0,8,0" />
-            <Button Content="主人档案" Style="{StaticResource SecondaryButton}" Tag="Owner" Click="ProfileTab_Click" Margin="0,0,8,0" />
-            <Button Content="性格与关系" Style="{StaticResource SecondaryButton}" Tag="Relation" Click="ProfileTab_Click" Margin="0,0,8,0" />
-            <Button Content="记忆" Style="{StaticResource SecondaryButton}" Tag="Memory" Click="ProfileTab_Click" />
+            <Button x:Name="ProfilePetTabButton" Content="宠物档案" Style="{StaticResource PanelTabButtonSelected}" Tag="Pet" Click="ProfileTab_Click" />
+            <Button x:Name="ProfileOwnerTabButton" Content="主人档案" Style="{StaticResource PanelTabButton}" Tag="Owner" Click="ProfileTab_Click" />
+            <Button x:Name="ProfileRelationTabButton" Content="性格与关系" Style="{StaticResource PanelTabButton}" Tag="Relation" Click="ProfileTab_Click" />
+            <Button x:Name="ProfileMemoryTabButton" Content="记忆" Style="{StaticResource PanelTabButton}" Tag="Memory" Click="ProfileTab_Click" />
           </StackPanel>
           <Grid>
             <Border x:Name="ProfilePetPanel" Style="{StaticResource Card}">
@@ -331,19 +331,42 @@
             </Border>
             <Border Grid.Column="1" Style="{StaticResource Card}" Margin="16,0,0,0" VerticalAlignment="Top">
               <StackPanel>
-                <TextBlock Text="照片记忆" FontWeight="SemiBold" />
-                <Border Height="150" Background="#EEECE5" CornerRadius="12" Margin="0,12,0,12"><Image x:Name="AlbumPreviewImage" Stretch="Uniform" /></Border>
-                <TextBlock x:Name="AlbumSelectedNameText" Text="未选择子相册" FontWeight="SemiBold" />
+                <TextBlock Text="子相册编辑" FontWeight="SemiBold" />
+                <TextBlock x:Name="AlbumSelectedNameText" Text="未选择子相册" FontWeight="SemiBold" Margin="0,10,0,0" />
                 <DatePicker x:Name="AlbumDatePicker" Margin="0,10,0,0" />
-                <TextBox x:Name="AlbumDescriptionText" Style="{StaticResource Field}" MinHeight="140" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,10,0,0" />
+                <TextBox x:Name="AlbumDescriptionText" Style="{StaticResource Field}" MinHeight="112" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,10,0,0" />
                 <TextBlock x:Name="AlbumMarkdownPathText" Style="{StaticResource SubText}" TextWrapping="Wrap" Margin="0,8,0,0" />
-                <TextBlock Text="绑定素材" FontWeight="SemiBold" Margin="0,12,0,6" />
-                <ListBox x:Name="AlbumMediaList" MaxHeight="92" />
-                <TextBlock Text="新建素材会复制图片到当前子相册并写入 Markdown media；解绑只移除绑定，不删除本地图片。图片裁剪、涂抹、滤镜等内容编辑器仍待解锁。" Style="{StaticResource SubText}" Margin="0,8,0,0" />
+                <TextBlock Text="预览" FontWeight="SemiBold" Margin="0,12,0,6" />
+                <Border Height="190" Background="#EEECE5" CornerRadius="12" Margin="0,0,0,10"><Image x:Name="AlbumPreviewImage" Stretch="Uniform" /></Border>
+                <DockPanel LastChildFill="False" Margin="0,0,0,8">
+                  <Button Content="上一张" Style="{StaticResource SecondaryButton}" Click="AlbumPreviousMedia_Click" />
+                  <Button Content="下一张" Style="{StaticResource SecondaryButton}" Click="AlbumNextMedia_Click" />
+                  <TextBlock x:Name="AlbumMediaStatusText" DockPanel.Dock="Right" Text="未选择图片" Style="{StaticResource SubText}" VerticalAlignment="Center" />
+                </DockPanel>
+                <TextBlock Text="当前素材" FontWeight="SemiBold" Margin="0,8,0,6" />
+                <ListBox x:Name="AlbumMediaList" MaxHeight="0" Height="0" Visibility="Collapsed" SelectionChanged="AlbumMediaList_SelectionChanged" ScrollViewer.VerticalScrollBarVisibility="Disabled" BorderThickness="0">
+                  <ListBox.ItemsPanel><ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate></ListBox.ItemsPanel>
+                  <ListBox.ItemTemplate>
+                    <DataTemplate>
+                      <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="10" Padding="8" Margin="0,0,0,8" Background="#F7F5F0">
+                        <DockPanel>
+                          <Border Width="64" Height="64" Background="#EEECE5" CornerRadius="8" ClipToBounds="True"><Image Source="{Binding FullPath}" Stretch="Uniform" /></Border>
+                          <StackPanel Margin="10,0,0,0">
+                            <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" />
+                          </StackPanel>
+                        </DockPanel>
+                      </Border>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <Border x:Name="AlbumMediaEmptyState" Style="{StaticResource Badge}" Visibility="Collapsed"><TextBlock Text="该子相册暂无图片素材" /></Border>
+                <TextBlock Text="使用上一张/下一张切换预览；解绑只更新 markdown media，不删除本地原图。" Style="{StaticResource SubText}" Margin="0,8,0,0" />
                 <WrapPanel Margin="0,12,0,0">
                   <Button Content="保存描述" Style="{StaticResource PrimaryButton}" Click="SaveAlbumDescription_Click" />
                   <Button Content="新增图片素材" Style="{StaticResource SecondaryButton}" Click="AddAlbumMedia_Click" />
-                  <Button Content="解绑选中素材" Style="{StaticResource SecondaryButton}" Click="UnbindAlbumMedia_Click" />
+                  <Button x:Name="UnbindAlbumMediaButton" Content="解绑素材" Style="{StaticResource SecondaryButton}" Click="UnbindAlbumMedia_Click" />
+                  <Button x:Name="DeleteAlbumMediaButton" Content="删除记录" Style="{StaticResource SecondaryButton}" Click="DeleteAlbumMedia_Click" />
                   <Button Content="打开子相册" Style="{StaticResource SecondaryButton}" Click="OpenSelectedAlbum_Click" />
                 </WrapPanel>
               </StackPanel>
@@ -356,9 +379,9 @@
           <TextBlock Text="大模型" Style="{StaticResource PageTitle}" />
           <TextBlock Text="模型、记忆和宠物设定拆分保存；右侧调试区按页签隔离会话。" Style="{StaticResource SubText}" Margin="0,2,0,14" />
           <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-            <Button x:Name="ModelConfigTabButton" Content="大模型" Style="{StaticResource PrimaryButton}" Tag="Model" Click="ModelTab_Click" Margin="0,0,8,0" />
-            <Button x:Name="MemoryConfigTabButton" Content="记忆配置" Style="{StaticResource SecondaryButton}" Tag="Memory" Click="ModelTab_Click" Margin="0,0,8,0" />
-            <Button x:Name="PetSettingTabButton" Content="宠物设定" Style="{StaticResource SecondaryButton}" Tag="Pet" Click="ModelTab_Click" />
+            <Button x:Name="ModelConfigTabButton" Content="大模型" Style="{StaticResource PanelTabButtonSelected}" Tag="Model" Click="ModelTab_Click" Margin="0,0,8,0" />
+            <Button x:Name="MemoryConfigTabButton" Content="记忆配置" Style="{StaticResource PanelTabButton}" Tag="Memory" Click="ModelTab_Click" Margin="0,0,8,0" />
+            <Button x:Name="PetSettingTabButton" Content="宠物设定" Style="{StaticResource PanelTabButton}" Tag="Pet" Click="ModelTab_Click" />
           </StackPanel>
           <Grid Height="520">
             <Grid.ColumnDefinitions><ColumnDefinition Width="1*" /><ColumnDefinition Width="1.15*" /></Grid.ColumnDefinitions>
@@ -403,16 +426,36 @@
                 <TextBlock Text="开关会真实影响下一轮上下文注入，不会删除已保存的记忆或相册描述。" Style="{StaticResource SubText}" Margin="0,6,0,14" />
                 <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="14" Background="White">
                   <StackPanel>
-                    <CheckBox x:Name="UseLongTermMemoryCheck" Content="使用长期记忆" Padding="14" Checked="MemoryConfig_Changed" Unchecked="MemoryConfig_Changed" />
+                    <Grid Style="{StaticResource SettingRow}">
+                      <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                      <StackPanel>
+                        <TextBlock Text="使用长期记忆" FontWeight="SemiBold" />
+                        <TextBlock Text="回答前检索档案、互动和习惯记忆。" Style="{StaticResource SubText}" Margin="0,4,0,0" />
+                      </StackPanel>
+                      <ToggleButton x:Name="UseLongTermMemoryCheck" Grid.Column="1" Style="{StaticResource SwitchToggle}" Checked="MemoryConfig_Changed" Unchecked="MemoryConfig_Changed" />
+                    </Grid>
                     <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
-                      <CheckBox x:Name="UseAlbumMemoryCheck" Content="使用相册记忆" Padding="14" Checked="MemoryConfig_Changed" Unchecked="MemoryConfig_Changed" />
+                      <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel>
+                          <TextBlock Text="使用相册记忆" FontWeight="SemiBold" />
+                          <TextBlock Text="允许检索已保存描述的相册照片。" Style="{StaticResource SubText}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <ToggleButton x:Name="UseAlbumMemoryCheck" Grid.Column="1" Style="{StaticResource SwitchToggle}" Checked="MemoryConfig_Changed" Unchecked="MemoryConfig_Changed" />
+                      </Grid>
                     </Border>
                     <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
-                      <CheckBox x:Name="UseShortTermMemoryCheck" Content="使用短期记忆" Padding="14" Checked="MemoryConfig_Changed" Unchecked="MemoryConfig_Changed" />
+                      <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel>
+                          <TextBlock Text="使用短期记忆" FontWeight="SemiBold" />
+                          <TextBlock Text="保留有限轮次的当前会话上下文。" Style="{StaticResource SubText}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <ToggleButton x:Name="UseShortTermMemoryCheck" Grid.Column="1" Style="{StaticResource SwitchToggle}" Checked="MemoryConfig_Changed" Unchecked="MemoryConfig_Changed" />
+                      </Grid>
                     </Border>
                   </StackPanel>
                 </Border>
-                <TextBlock Text="长期记忆只读取人工确认候选；相册记忆只检索已保存描述；短期记忆控制有限轮次历史。" Style="{StaticResource SubText}" Margin="0,12,0,0" />
               </StackPanel>
             </Border>
             <Border x:Name="PetSettingPanel" Style="{StaticResource Card}" Margin="0,0,8,0" Visibility="Collapsed">
@@ -471,12 +514,12 @@
           <TextBlock Text="素材" Style="{StaticResource PageTitle}" />
           <TextBlock Text="Repository motions are separated into enabled, preview-only and locked assets." Style="{StaticResource SubText}" Margin="0,2,0,16" />
           <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-            <Button x:Name="NormalAssetsTabButton" Content="普通素材" Tag="Normal" Style="{StaticResource PrimaryButton}" Click="AssetTab_Click" Margin="0,0,8,0" />
-            <Button x:Name="MagicAssetsTabButton" Content="魔法特辑" Tag="Magic" Style="{StaticResource SecondaryButton}" Click="AssetTab_Click" />
+            <Button x:Name="NormalAssetsTabButton" Content="普通素材" Tag="Normal" Style="{StaticResource PanelTabButtonSelected}" Click="AssetTab_Click" Margin="0,0,8,0" />
+            <Button x:Name="MagicAssetsTabButton" Content="魔法特辑" Tag="Magic" Style="{StaticResource PanelTabButton}" Click="AssetTab_Click" />
           </StackPanel>
           <StackPanel x:Name="NormalAssetSubTabs" Orientation="Horizontal" Margin="0,0,0,14">
-            <Button x:Name="BaseAssetsTabButton" Content="基础动作" Tag="Base" Style="{StaticResource PrimaryButton}" Click="NormalAssetSubTab_Click" Margin="0,0,8,0" />
-            <Button x:Name="CommandAssetsTabButton" Content="口令动作" Tag="Command" Style="{StaticResource SecondaryButton}" Click="NormalAssetSubTab_Click" />
+            <Button x:Name="BaseAssetsTabButton" Content="基础动作" Tag="Base" Style="{StaticResource PanelTabButtonSelected}" Click="NormalAssetSubTab_Click" Margin="0,0,8,0" />
+            <Button x:Name="CommandAssetsTabButton" Content="口令动作" Tag="Command" Style="{StaticResource PanelTabButton}" Click="NormalAssetSubTab_Click" />
           </StackPanel>
           <Grid>
             <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="1.1*" /></Grid.ColumnDefinitions>
@@ -487,7 +530,7 @@
                   <DataTemplate>
                     <Border Style="{StaticResource Card}" Width="310" Margin="0,0,12,12">
                       <StackPanel>
-                        <Border Height="150" CornerRadius="12" Background="#EEECE5"><Image Source="{Binding FirstFrame}" Stretch="Uniform" /></Border>
+                        <Border Height="150" CornerRadius="12" Background="#EEECE5" ClipToBounds="True"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Stretch="Uniform" /></Border>
                         <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" Margin="0,10,0,0" />
                         <TextBlock Text="{Binding BehaviorId}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Category}" Margin="0,6,0,0" />
@@ -510,7 +553,7 @@
                   <DataTemplate>
                     <Border Style="{StaticResource Card}" Width="310" Margin="0,0,12,12">
                       <StackPanel>
-                        <Border Height="150" CornerRadius="12" Background="#EEECE5"><Image Source="{Binding FirstFrame}" Stretch="Uniform" /></Border>
+                        <Border Height="150" CornerRadius="12" Background="#EEECE5" ClipToBounds="True"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Stretch="Uniform" /></Border>
                         <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" Margin="0,10,0,0" />
                         <TextBlock Text="{Binding BehaviorId}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding FrameCount, StringFormat=frames: {0}}" />
@@ -530,7 +573,7 @@
                   <DataTemplate>
                     <Border Style="{StaticResource Card}" Width="310" Margin="0,0,12,12">
                       <StackPanel>
-                        <Border Height="150" CornerRadius="12" Background="#EEECE5"><Image Source="{Binding FirstFrame}" Stretch="Uniform" /></Border>
+                        <Border Height="150" CornerRadius="12" Background="#EEECE5" ClipToBounds="True"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Stretch="Uniform" /></Border>
                         <DockPanel LastChildFill="False" Margin="0,10,0,0">
                           <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
                           <Border DockPanel.Dock="Right" Style="{StaticResource Badge}"><TextBlock Text="Mock / Prototype" /></Border>
@@ -640,14 +683,14 @@
           <Border Style="{StaticResource Card}" Visibility="{Binding ElementName=DeveloperDiagnosticsPanel, Path=Visibility}">
             <StackPanel>
               <DockPanel LastChildFill="False">
-                <TextBlock Text="?????? profile" FontWeight="SemiBold" />
+                <TextBlock Text="候选动作 profile" FontWeight="SemiBold" />
                 <WrapPanel DockPanel.Dock="Right">
                   <Button Content="128px" Tag="128" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
                   <Button Content="192px" Tag="192" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
                   <Button Content="256px" Tag="256" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
                 </WrapPanel>
               </DockPanel>
-              <TextBlock Text="??? P2 Windows ?????????????????????????????" Style="{StaticResource SubText}" Margin="0,4,0,12" />
+              <TextBlock Text="P2 Windows 验收已通过；此区仅用于开发者调试候选 profile。" Style="{StaticResource SubText}" Margin="0,4,0,12" />
               <ItemsControl x:Name="LifecycleCandidateList">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
@@ -664,8 +707,8 @@
                         <TextBlock Text="{Binding CandidateProfile, StringFormat=profile: {0}}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
                         <WrapPanel Margin="0,8,0,0">
-                          <Button Content="??" Tag="{Binding}" Style="{StaticResource SecondaryButton}" Click="PreviewAsset_Click" />
-                          <Button Content="????" Tag="{Binding}" Style="{StaticResource PrimaryButton}" Click="ForceLifecycleCandidate_Click" />
+                          <Button Content="预览" Tag="{Binding}" Style="{StaticResource SecondaryButton}" Click="PreviewAsset_Click" />
+                          <Button Content="立即展示" Tag="{Binding}" Style="{StaticResource PrimaryButton}" Click="ForceLifecycleCandidate_Click" />
                         </WrapPanel>
                       </StackPanel>
                     </Border>

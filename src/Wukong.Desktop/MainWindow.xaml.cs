@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -40,6 +40,7 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _effectCancellation;
     private double _savedOpacity = 1.0;
     private string _broomDirection = "right";
+    private string _currentFramePath = string.Empty;
 
     public MainWindow()
     {
@@ -606,6 +607,8 @@ public partial class MainWindow : Window
         try
         {
             PetImage.Source = LoadImage(path);
+            _currentFramePath = path;
+            ApplyFrameVisualScale(path, _activeRequest?.Motion.VisualScale ?? 1.0);
             FallbackBadge.Visibility = Visibility.Collapsed;
             PhaseBadge.Visibility = Visibility.Collapsed;
             _runtime.MarkPhase(phase, path);
@@ -638,6 +641,8 @@ public partial class MainWindow : Window
     private void ShowFallback(string reason)
     {
         PetImage.Source = null;
+        _currentFramePath = string.Empty;
+        ApplyFrameVisualScale(null, 1.0);
         FallbackBadge.Visibility = Visibility.Visible;
         PhaseBadge.Visibility = Visibility.Visible;
         PhaseText.Text = $"Fallback: {reason}";
@@ -715,15 +720,26 @@ public partial class MainWindow : Window
         Height = BaseWindowSize * _petScale;
         MinWidth = 240 * _petScale;
         MinHeight = 240 * _petScale;
-        PetImage.Width = BasePetImageSize * _petScale;
-        PetImage.Height = BasePetImageSize * _petScale;
-        FallbackBadge.Width = BaseFallbackSize * _petScale;
-        FallbackBadge.Height = BaseFallbackSize * _petScale;
-        FallbackBadge.CornerRadius = new CornerRadius((BaseFallbackSize * _petScale) / 2);
+        ApplyFrameVisualScale(string.IsNullOrWhiteSpace(_currentFramePath) ? null : _currentFramePath, _activeRequest?.Motion.VisualScale ?? 1.0);
         if (!double.IsNaN(Left) && !double.IsNaN(Top))
             ApplyVisiblePlacement(new Point(Left, Top));
         if (persist)
             File.WriteAllText(PetScalePath(), _petScale.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    private void ApplyFrameVisualScale(string? framePath, double targetVisibleRatio)
+    {
+        var frameScale = MotionVisualSizer.RenderScaleFor(framePath, _runtime.ReferenceVisualFramePath, targetVisibleRatio);
+        var windowScale = Math.Max(1.0, frameScale);
+        Width = BaseWindowSize * _petScale * windowScale;
+        Height = BaseWindowSize * _petScale * windowScale;
+        MinWidth = 240 * _petScale * windowScale;
+        MinHeight = 240 * _petScale * windowScale;
+        PetImage.Width = BasePetImageSize * _petScale * frameScale;
+        PetImage.Height = BasePetImageSize * _petScale * frameScale;
+        FallbackBadge.Width = BaseFallbackSize * _petScale;
+        FallbackBadge.Height = BaseFallbackSize * _petScale;
+        FallbackBadge.CornerRadius = new CornerRadius((BaseFallbackSize * _petScale) / 2);
     }
 
     public double PetScale => _petScale;

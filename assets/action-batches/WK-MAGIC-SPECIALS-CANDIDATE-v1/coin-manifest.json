@@ -44,7 +44,7 @@
     }
   ],
   "timing": {
-    "settle_to_flat_ms": 800,
+    "settle_to_flat_ms": 5000,
     "fade_step_ms": 600000,
     "exhausted_after_ms": 1200000,
     "configurable": [

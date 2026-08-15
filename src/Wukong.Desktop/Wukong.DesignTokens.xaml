@@ -76,6 +76,64 @@
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
+
+    <Style x:Key="PanelTabButtonBase" TargetType="Button">
+        <Setter Property="Margin" Value="0,0,8,8" />
+        <Setter Property="Padding" Value="16,9" />
+        <Setter Property="MinWidth" Value="104" />
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Chrome"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="10"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.55" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PanelTabButton" TargetType="Button" BasedOn="{StaticResource PanelTabButtonBase}">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource OrangeSoftBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource OrangeBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="PanelTabButtonSelected" TargetType="Button" BasedOn="{StaticResource PanelTabButtonBase}">
+        <Setter Property="Background" Value="{StaticResource InkBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderBrush" Value="{StaticResource InkBrush}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#34372F" />
+                <Setter Property="BorderBrush" Value="#34372F" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
     <Style x:Key="DisabledButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
         <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
         <Setter Property="Opacity" Value="0.62" />
@@ -104,6 +162,55 @@
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="Padding" Value="7,4" />
         <Setter Property="Background" Value="{StaticResource GreenSoftBrush}" />
+    </Style>
+
+
+    <Style x:Key="SettingRow" TargetType="Grid">
+        <Setter Property="MinHeight" Value="74" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="SwitchToggle" TargetType="ToggleButton">
+        <Setter Property="Width" Value="54" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Margin" Value="16,0,0,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Background" Value="#D8D8D2" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Track"
+                            Width="54"
+                            Height="30"
+                            CornerRadius="15"
+                            Background="{TemplateBinding Background}">
+                        <Grid>
+                            <Ellipse x:Name="Knob"
+                                     Width="24"
+                                     Height="24"
+                                     Margin="3"
+                                     HorizontalAlignment="Left"
+                                     Fill="White" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="{StaticResource GreenBrush}" />
+                            <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Track" Property="Opacity" Value="0.88" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Track" Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="Field" TargetType="TextBox">

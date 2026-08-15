@@ -19,7 +19,7 @@ public partial class ControlPanelWindow : Window
     private readonly bool _ownsAgent;
     private readonly DispatcherTimer _previewTimer;
     private readonly ObservableCollection<AlbumFolderItem> _albumFolders = new();
-    private readonly ObservableCollection<string> _albumMediaBindings = new();
+    private readonly ObservableCollection<AlbumMediaItem> _albumMediaBindings = new();
     private readonly ObservableCollection<ChatDisplayItem> _chatItems = new();
     private readonly Dictionary<string, ObservableCollection<ChatDisplayItem>> _modelDebugItems = new(StringComparer.Ordinal);
     private readonly ObservableCollection<ConversationMemoryCandidate> _memoryCandidates = new();
@@ -29,6 +29,7 @@ public partial class ControlPanelWindow : Window
     private IReadOnlyList<string> _previewFrames = Array.Empty<string>();
     private AlbumFolderItem? _selectedAlbum;
     private string _albumRoot = AlbumFolderItem.GetDefaultAlbumRoot();
+    private bool _albumUnbindInProgress;
     private int _previewIndex;
     private bool _previewPaused;
     private bool _previewDark;
@@ -196,6 +197,26 @@ public partial class ControlPanelWindow : Window
             OpenFolder(_selectedAlbum.DirectoryPath);
     }
 
+    private void AlbumMediaList_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateSelectedAlbumMediaPreview();
+
+    private void AlbumPreviousMedia_Click(object sender, RoutedEventArgs e) => MoveAlbumMediaSelection(-1);
+
+    private void AlbumNextMedia_Click(object sender, RoutedEventArgs e) => MoveAlbumMediaSelection(1);
+
+    private void MoveAlbumMediaSelection(int delta)
+    {
+        if (_albumMediaBindings.Count == 0)
+        {
+            UpdateSelectedAlbumMediaPreview();
+            return;
+        }
+
+        var current = AlbumMediaList.SelectedIndex;
+        var next = Math.Clamp(current < 0 ? 0 : current + delta, 0, _albumMediaBindings.Count - 1);
+        AlbumMediaList.SelectedIndex = next;
+        AlbumMediaList.ScrollIntoView(_albumMediaBindings[next]);
+    }
+
     private void AddAlbumMedia_Click(object sender, RoutedEventArgs e)
     {
         if (_selectedAlbum is null)
@@ -217,8 +238,8 @@ public partial class ControlPanelWindow : Window
             var target = Path.Combine(_selectedAlbum.DirectoryPath, fileName);
             if (!string.Equals(source, target, StringComparison.OrdinalIgnoreCase))
                 File.Copy(source, target);
-            if (!_albumMediaBindings.Contains(fileName, StringComparer.OrdinalIgnoreCase))
-                _albumMediaBindings.Add(fileName);
+            if (!_albumMediaBindings.Any(x => string.Equals(x.FileName, fileName, StringComparison.OrdinalIgnoreCase)))
+                _albumMediaBindings.Add(CreateAlbumMediaItem(fileName));
         }
 
         SaveSelectedAlbumMarkdown();
@@ -226,19 +247,73 @@ public partial class ControlPanelWindow : Window
 
     private void UnbindAlbumMedia_Click(object sender, RoutedEventArgs e)
     {
-        if (AlbumMediaList.SelectedItem is not string fileName)
+        if (_albumUnbindInProgress)
+            return;
+
+        _albumUnbindInProgress = true;
+        try
         {
-            AlbumStatusText.Text = "请先选择要解绑的素材。";
+            var selected = AlbumMediaList.SelectedItem as AlbumMediaItem;
+            var selectedIndex = AlbumMediaList.SelectedIndex;
+            var result = AlbumMediaBindingEditor.Unbind(
+                selected?.FileName,
+                _albumMediaBindings,
+                mediaFiles =>
+                {
+                    SaveSelectedAlbumMarkdown(mediaFiles);
+                    return true;
+                });
+            AlbumStatusText.Text = result.UserMessage;
+            if (result.Status == AlbumMediaUnbindStatus.Success)
+                SelectAlbumMediaAfterMutation(selectedIndex);
+            else
+                UpdateSelectedAlbumMediaPreview();
+        }
+        finally
+        {
+            _albumUnbindInProgress = false;
+        }
+    }
+
+    private void DeleteAlbumMedia_Click(object sender, RoutedEventArgs e)
+    {
+        if (_albumUnbindInProgress)
+            return;
+
+        var selected = AlbumMediaList.SelectedItem as AlbumMediaItem;
+        if (selected is null)
+        {
+            AlbumStatusText.Text = "请先选择要删除的素材记录。";
+            UpdateSelectedAlbumMediaPreview();
             return;
         }
 
-        if (!_albumMediaBindings.Remove(fileName))
-        {
-            AlbumStatusText.Text = "未找到要解绑的素材。";
+        var confirm = MessageBox.Show(this, $"删除素材记录 {selected.FileName}？本操作不会删除本地原始图片。", "删除素材记录", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes)
             return;
+
+        _albumUnbindInProgress = true;
+        try
+        {
+            var selectedIndex = AlbumMediaList.SelectedIndex;
+            var result = AlbumMediaBindingEditor.Delete(
+                selected.FileName,
+                _albumMediaBindings,
+                mediaFiles =>
+                {
+                    SaveSelectedAlbumMarkdown(mediaFiles);
+                    return true;
+                });
+            AlbumStatusText.Text = result.UserMessage;
+            if (result.Status == AlbumMediaUnbindStatus.Success)
+                SelectAlbumMediaAfterMutation(selectedIndex);
+            else
+                UpdateSelectedAlbumMediaPreview();
         }
-        SaveSelectedAlbumMarkdown();
-        AlbumStatusText.Text = $"已解绑 {fileName}";
+        finally
+        {
+            _albumUnbindInProgress = false;
+        }
     }
 
     private void UploadPetAvatar_Click(object sender, RoutedEventArgs e)
@@ -264,13 +339,21 @@ public partial class ControlPanelWindow : Window
 
     private void ProfileTab_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button { Tag: string tab })
-            return;
+        if (sender is Button { Tag: string tab })
+            SelectProfileTab(tab);
+    }
 
-        ProfilePetPanel.Visibility = tab == "Pet" ? Visibility.Visible : Visibility.Collapsed;
-        ProfileOwnerPanel.Visibility = tab == "Owner" ? Visibility.Visible : Visibility.Collapsed;
-        ProfileRelationPanel.Visibility = tab == "Relation" ? Visibility.Visible : Visibility.Collapsed;
-        ProfileMemoryPanel.Visibility = tab == "Memory" ? Visibility.Visible : Visibility.Collapsed;
+    private void SelectProfileTab(string tab)
+    {
+        var activeTab = tab is "Owner" or "Relation" or "Memory" ? tab : "Pet";
+        ProfilePetPanel.Visibility = activeTab == "Pet" ? Visibility.Visible : Visibility.Collapsed;
+        ProfileOwnerPanel.Visibility = activeTab == "Owner" ? Visibility.Visible : Visibility.Collapsed;
+        ProfileRelationPanel.Visibility = activeTab == "Relation" ? Visibility.Visible : Visibility.Collapsed;
+        ProfileMemoryPanel.Visibility = activeTab == "Memory" ? Visibility.Visible : Visibility.Collapsed;
+        ProfilePetTabButton.Style = PanelTabStyle(activeTab == "Pet");
+        ProfileOwnerTabButton.Style = PanelTabStyle(activeTab == "Owner");
+        ProfileRelationTabButton.Style = PanelTabStyle(activeTab == "Relation");
+        ProfileMemoryTabButton.Style = PanelTabStyle(activeTab == "Memory");
     }
 
     private void ModelTab_Click(object sender, RoutedEventArgs e)
@@ -285,9 +368,9 @@ public partial class ControlPanelWindow : Window
         ModelConfigPanel.Visibility = _activeModelTab == "Model" ? Visibility.Visible : Visibility.Collapsed;
         MemoryConfigPanel.Visibility = _activeModelTab == "Memory" ? Visibility.Visible : Visibility.Collapsed;
         PetSettingPanel.Visibility = _activeModelTab == "Pet" ? Visibility.Visible : Visibility.Collapsed;
-        ModelConfigTabButton.Style = (Style)FindResource(_activeModelTab == "Model" ? "PrimaryButton" : "SecondaryButton");
-        MemoryConfigTabButton.Style = (Style)FindResource(_activeModelTab == "Memory" ? "PrimaryButton" : "SecondaryButton");
-        PetSettingTabButton.Style = (Style)FindResource(_activeModelTab == "Pet" ? "PrimaryButton" : "SecondaryButton");
+        ModelConfigTabButton.Style = PanelTabStyle(_activeModelTab == "Model");
+        MemoryConfigTabButton.Style = PanelTabStyle(_activeModelTab == "Memory");
+        PetSettingTabButton.Style = PanelTabStyle(_activeModelTab == "Pet");
         ModelChatList.ItemsSource = _modelDebugItems[_activeModelTab];
         SetChatStatus(_activeModelTab switch
         {
@@ -728,13 +811,13 @@ public partial class ControlPanelWindow : Window
             return;
         if (!_agent.DeveloperSession.IsAuthenticated)
         {
-            MockStateStatus.Text = "???????????????";
+            MockStateStatus.Text = "开发者会话已失效，请重新登录。";
             UpdateDeveloperVisibility();
             return;
         }
 
         var result = await _runtime.SubmitDeveloperCandidateMotionAsync(motion.BehaviorId);
-        MockStateStatus.Text = $"?????? {motion.DisplayName}: {result}";
+        MockStateStatus.Text = $"候选预览 {motion.DisplayName}: {result}";
     }
 
     private void CandidateSize_Click(object sender, RoutedEventArgs e)
@@ -742,7 +825,7 @@ public partial class ControlPanelWindow : Window
         if (sender is Button { Tag: string value } && int.TryParse(value, out var pixels))
         {
             _runtime.RequestPetPixelSize(pixels);
-            MockStateStatus.Text = $"?????????? {pixels}px";
+            MockStateStatus.Text = $"候选尺寸已设为 {pixels}px";
         }
     }
 
@@ -770,8 +853,8 @@ public partial class ControlPanelWindow : Window
         CommandAssetsPanel.Visibility = Visibility.Collapsed;
         MagicAssetsPanel.Visibility = tab == "Magic" ? Visibility.Visible : Visibility.Collapsed;
         NormalAssetSubTabs.Visibility = tab == "Normal" ? Visibility.Visible : Visibility.Collapsed;
-        NormalAssetsTabButton.Style = (Style)FindResource(tab == "Normal" ? "PrimaryButton" : "SecondaryButton");
-        MagicAssetsTabButton.Style = (Style)FindResource(tab == "Magic" ? "PrimaryButton" : "SecondaryButton");
+        NormalAssetsTabButton.Style = PanelTabStyle(tab == "Normal");
+        MagicAssetsTabButton.Style = PanelTabStyle(tab == "Magic");
         if (tab == "Normal")
             SelectNormalAssetSubTab("Base");
     }
@@ -787,9 +870,11 @@ public partial class ControlPanelWindow : Window
         AssetList.Visibility = Visibility.Visible;
         NormalAssetsPanel.Visibility = tab == "Base" ? Visibility.Visible : Visibility.Collapsed;
         CommandAssetsPanel.Visibility = tab == "Command" ? Visibility.Visible : Visibility.Collapsed;
-        BaseAssetsTabButton.Style = (Style)FindResource(tab == "Base" ? "PrimaryButton" : "SecondaryButton");
-        CommandAssetsTabButton.Style = (Style)FindResource(tab == "Command" ? "PrimaryButton" : "SecondaryButton");
+        BaseAssetsTabButton.Style = PanelTabStyle(tab == "Base");
+        CommandAssetsTabButton.Style = PanelTabStyle(tab == "Command");
     }
+
+    private Style PanelTabStyle(bool selected) => (Style)FindResource(selected ? "PanelTabButtonSelected" : "PanelTabButton");
 
     private async void ShowMagic_Click(object sender, RoutedEventArgs e)
     {
@@ -992,17 +1077,52 @@ public partial class ControlPanelWindow : Window
         AlbumDescriptionText.Text = item.Description;
         _albumMediaBindings.Clear();
         foreach (var fileName in item.MediaFiles)
-            _albumMediaBindings.Add(fileName);
+            _albumMediaBindings.Add(CreateAlbumMediaItem(fileName));
+        AlbumMediaList.SelectedIndex = _albumMediaBindings.Count > 0 ? 0 : -1;
         AlbumMarkdownPathText.Text = string.IsNullOrWhiteSpace(item.MarkdownPath)
             ? "\u672a\u627e\u5230 markdown\uff0c\u4fdd\u5b58\u540e\u4f1a\u521b\u5efa album.md"
             : item.MarkdownPath;
-        AlbumPreviewImage.Source = LoadBitmap(item.ThumbnailPath);
+        UpdateSelectedAlbumMediaPreview();
+    }
+
+    private AlbumMediaItem CreateAlbumMediaItem(string fileName)
+    {
+        var fullPath = _selectedAlbum is null ? fileName : Path.Combine(_selectedAlbum.DirectoryPath, fileName);
+        return new AlbumMediaItem(fileName, fullPath, File.Exists(fullPath) ? "已找到本地文件" : "本地文件缺失");
+    }
+
+    private void UpdateSelectedAlbumMediaPreview()
+    {
+        var selected = AlbumMediaList.SelectedItem as AlbumMediaItem;
+        AlbumPreviewImage.Source = LoadBitmap(selected?.FullPath);
+        AlbumMediaStatusText.Text = selected is null
+            ? (_albumMediaBindings.Count == 0 ? "暂无图片素材" : "请选择图片")
+            : $"{AlbumMediaList.SelectedIndex + 1}/{_albumMediaBindings.Count} - {selected.FileName}";
+        AlbumMediaEmptyState.Visibility = _albumMediaBindings.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        UnbindAlbumMediaButton.IsEnabled = selected is not null;
+        DeleteAlbumMediaButton.IsEnabled = selected is not null;
+    }
+
+    private void SelectAlbumMediaAfterMutation(int previousIndex)
+    {
+        if (_albumMediaBindings.Count == 0)
+        {
+            AlbumMediaList.SelectedIndex = -1;
+            UpdateSelectedAlbumMediaPreview();
+            return;
+        }
+
+        AlbumMediaList.SelectedIndex = Math.Clamp(previousIndex, 0, _albumMediaBindings.Count - 1);
+        AlbumMediaList.ScrollIntoView(_albumMediaBindings[AlbumMediaList.SelectedIndex]);
+        UpdateSelectedAlbumMediaPreview();
     }
 
     private static string ProfileDirectory() =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Wukong", "profile");
 
-    private void SaveSelectedAlbumMarkdown()
+    private void SaveSelectedAlbumMarkdown() => SaveSelectedAlbumMarkdown(_albumMediaBindings);
+
+    private void SaveSelectedAlbumMarkdown(IReadOnlyList<AlbumMediaItem> mediaFiles)
     {
         if (_selectedAlbum is null)
             return;
@@ -1012,7 +1132,7 @@ public partial class ControlPanelWindow : Window
         var markdownPath = string.IsNullOrWhiteSpace(_selectedAlbum.MarkdownPath)
             ? Path.Combine(_selectedAlbum.DirectoryPath, "album.md")
             : _selectedAlbum.MarkdownPath;
-        File.WriteAllText(markdownPath, _selectedAlbum.CreateMarkdown(CurrentAlbumDateText(), AlbumDescriptionText.Text, _albumMediaBindings));
+        File.WriteAllText(markdownPath, _selectedAlbum.CreateMarkdown(CurrentAlbumDateText(), AlbumDescriptionText.Text, mediaFiles.Select(x => x.FileName).ToArray()));
         RefreshAlbumView();
         var updated = _albumFolders.FirstOrDefault(x => string.Equals(x.DirectoryPath, selectedPath, StringComparison.OrdinalIgnoreCase));
         if (updated is not null)
@@ -1078,6 +1198,72 @@ public partial class ControlPanelWindow : Window
     }
 }
 
+public sealed record AlbumMediaItem(string FileName, string FullPath, string Status);
+
+public enum AlbumMediaUnbindStatus
+{
+    Success,
+    NoSelection,
+    NotFound,
+    PersistenceFailed
+}
+
+public sealed record AlbumMediaUnbindResult(AlbumMediaUnbindStatus Status, string UserMessage);
+
+public static class AlbumMediaBindingEditor
+{
+    public static AlbumMediaUnbindResult Unbind(
+        string? selectedFileName,
+        IList<AlbumMediaItem> mediaBindings,
+        Func<IReadOnlyList<AlbumMediaItem>, bool> persist)
+    {
+        if (string.IsNullOrWhiteSpace(selectedFileName))
+            return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.NoSelection, "请先选择要解绑的素材。");
+
+        var index = IndexOf(mediaBindings, selectedFileName);
+        if (index < 0)
+            return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.NotFound, "未找到要解绑的素材。");
+
+        var removed = mediaBindings[index];
+        mediaBindings.RemoveAt(index);
+        try
+        {
+            if (!persist(mediaBindings.ToArray()))
+                throw new IOException("album media persistence returned false");
+        }
+        catch (Exception ex)
+        {
+            mediaBindings.Insert(Math.Min(index, mediaBindings.Count), removed);
+            return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.PersistenceFailed, $"解绑失败：{ex.GetType().Name}");
+        }
+
+        return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.Success, $"已解绑 {removed}");
+    }
+
+
+    public static AlbumMediaUnbindResult Delete(
+        string? selectedFileName,
+        IList<AlbumMediaItem> mediaBindings,
+        Func<IReadOnlyList<AlbumMediaItem>, bool> persist)
+    {
+        var result = Unbind(selectedFileName, mediaBindings, persist);
+        return result.Status == AlbumMediaUnbindStatus.Success && !string.IsNullOrWhiteSpace(selectedFileName)
+            ? result with { UserMessage = $"已删除素材记录 {selectedFileName}" }
+            : result;
+    }
+
+    private static int IndexOf(IList<AlbumMediaItem> mediaBindings, string selectedFileName)
+    {
+        for (var i = 0; i < mediaBindings.Count; i++)
+        {
+            if (string.Equals(mediaBindings[i].FileName, selectedFileName, StringComparison.OrdinalIgnoreCase))
+                return i;
+        }
+
+        return -1;
+    }
+}
+
 public sealed record AlbumFolderItem(
     string Name,
     string DirectoryPath,
@@ -1114,7 +1300,7 @@ public sealed record AlbumFolderItem(
 
     public static void SaveAlbumRootPreference(string path)
     {
-        Directory.CreateDirectory(ProfileDirectory());
+        Directory.CreateDirectory(AlbumProfileDirectory());
         File.WriteAllText(AlbumRootPreferencePath(), path);
     }
 
@@ -1128,12 +1314,11 @@ public sealed record AlbumFolderItem(
         var metadata = string.IsNullOrWhiteSpace(markdown)
             ? MarkdownAlbumMetadata.Empty
             : MarkdownAlbumMetadata.Read(markdown);
-        var orderedImages = metadata.MediaFiles.Count == 0
+        var orderedImages = string.IsNullOrWhiteSpace(markdown)
             ? images
             : metadata.MediaFiles
                 .Select(x => Path.Combine(directory, x))
                 .Where(File.Exists)
-                .Concat(images.Where(x => !metadata.MediaFiles.Contains(Path.GetFileName(x), StringComparer.OrdinalIgnoreCase)))
                 .ToList();
         var description = string.IsNullOrWhiteSpace(markdown)
             ? "\u672a\u627e\u5230 markdown \u63cf\u8ff0"
@@ -1165,10 +1350,10 @@ public sealed record AlbumFolderItem(
             : MarkdownAlbumMetadata.CreateNew(title, timeText, description, mediaFiles);
     }
 
-    private static string ProfileDirectory() =>
+    private static string AlbumProfileDirectory() =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Wukong", "profile");
 
-    private static string AlbumRootPreferencePath() => Path.Combine(ProfileDirectory(), "album-root.txt");
+    private static string AlbumRootPreferencePath() => Path.Combine(AlbumProfileDirectory(), "album-root.txt");
 
     internal static string BuildMarkdown(string title, string timeText, string description, IReadOnlyList<string> mediaFiles, IReadOnlyList<string>? preservedFrontMatter = null, IReadOnlyList<string>? preservedBodySections = null)
     {
@@ -1341,11 +1526,12 @@ public sealed record MarkdownAlbumMetadata(string Title, string TimeText, string
     {
         var result = new List<string>();
         var skippingManagedSection = false;
-        foreach (var raw in lines)
+        for (var i = 0; i < lines.Count; i++)
         {
+            var raw = lines[i];
             var line = raw.Trim();
             if (line.StartsWith("# ", StringComparison.Ordinal) ||
-                line.StartsWith("\u65f6\u95f4:", StringComparison.OrdinalIgnoreCase) ||
+                line.StartsWith("时间:", StringComparison.OrdinalIgnoreCase) ||
                 line.StartsWith("date:", StringComparison.OrdinalIgnoreCase))
             {
                 continue;
@@ -1354,8 +1540,9 @@ public sealed record MarkdownAlbumMetadata(string Title, string TimeText, string
             if (line.StartsWith("## ", StringComparison.Ordinal))
             {
                 skippingManagedSection =
-                    line.Equals("## \u6b63\u6587", StringComparison.OrdinalIgnoreCase) ||
-                    line.Equals("## \u7d20\u6750", StringComparison.OrdinalIgnoreCase);
+                    line.Equals("## 正文", StringComparison.OrdinalIgnoreCase) ||
+                    line.Equals("## 素材", StringComparison.OrdinalIgnoreCase) ||
+                    LooksLikeLegacyMediaSection(lines, i + 1);
                 if (!skippingManagedSection)
                     result.Add(raw);
                 continue;
@@ -1366,6 +1553,28 @@ public sealed record MarkdownAlbumMetadata(string Title, string TimeText, string
         }
 
         return result;
+    }
+
+    private static bool LooksLikeLegacyMediaSection(IReadOnlyList<string> lines, int start)
+    {
+        var inspected = 0;
+        for (var i = start; i < lines.Count; i++)
+        {
+            var line = lines[i].Trim();
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+            if (line.StartsWith("## ", StringComparison.Ordinal))
+                return false;
+            inspected++;
+            if (!line.StartsWith("- ", StringComparison.Ordinal))
+                return false;
+            var lower = line.ToLowerInvariant();
+            if (lower.Contains(".png") || lower.Contains(".jpg") || lower.Contains(".jpeg") || lower.Contains(".webp") || lower.Contains(".bmp"))
+                return true;
+            if (inspected >= 3)
+                return false;
+        }
+        return false;
     }
 
     private static string ReadBodyDescription(IReadOnlyList<string> lines)
