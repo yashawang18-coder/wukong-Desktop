@@ -1,4 +1,4 @@
-﻿<Window x:Class="Wukong.Desktop.ControlPanelWindow"
+<Window x:Class="Wukong.Desktop.ControlPanelWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Wukong Control"
@@ -567,6 +567,7 @@
               </ItemsControl>
             </ScrollViewer>
             <ScrollViewer x:Name="MagicAssetsPanel" MaxHeight="560" Visibility="Collapsed">
+              <StackPanel>
               <ItemsControl x:Name="MagicSpecialList">
                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
@@ -592,6 +593,33 @@
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
+              <TextBlock Text="Car ride candidate" FontWeight="SemiBold" Margin="0,8,0,8" />
+              <ItemsControl x:Name="CarRideSpecialList">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Style="{StaticResource Card}" Width="310" Margin="0,0,12,12">
+                      <StackPanel>
+                        <Border Height="150" CornerRadius="12" Background="#EEECE5" ClipToBounds="True"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Stretch="Uniform" /></Border>
+                        <DockPanel LastChildFill="False" Margin="0,10,0,0">
+                          <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
+                          <Border DockPanel.Dock="Right" Style="{StaticResource Badge}"><TextBlock Text="Candidate" /></Border>
+                        </DockPanel>
+                        <TextBlock Text="{Binding BehaviorId}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                        <TextBlock Text="{Binding FrameCount, StringFormat=frames: {0}}" />
+                        <TextBlock Text="{Binding PhaseSummary, StringFormat=phases: {0}}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,10,0,0">
+                          <Button Content="Preview" Style="{StaticResource SecondaryButton}" Tag="{Binding}" Click="PreviewAsset_Click" />
+                          <Button Content="Play car ride" Style="{StaticResource PrimaryButton}" Tag="{Binding}" Click="ShowCarRide_Click" />
+                        </WrapPanel>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              </StackPanel>
             </ScrollViewer>
             <Border Grid.Column="1" Style="{StaticResource Card}" Margin="16,0,0,16">
               <StackPanel>
@@ -681,6 +709,34 @@
             </StackPanel>
           </Border>
           <Border Style="{StaticResource Card}" Visibility="{Binding ElementName=DeveloperDiagnosticsPanel, Path=Visibility}">
+            <StackPanel>
+              <TextBlock Text="Car ride candidate debug" FontWeight="SemiBold" />
+              <TextBlock Text="Owner-only PrototypePreview candidate. It is not runtime approved and is not in autonomous scheduling." Style="{StaticResource SubText}" Margin="0,4,0,12" />
+              <ItemsControl x:Name="CarRideCandidateList">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Background="#F7F5F0" CornerRadius="12" Padding="10" Margin="0,0,10,10" Width="290">
+                      <StackPanel>
+                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding BehaviorId}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding PhaseSummary}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,8,0,0">
+                          <Button Content="Preview" Tag="{Binding}" Style="{StaticResource SecondaryButton}" Click="PreviewAsset_Click" />
+                          <Button Content="Play car ride" Tag="{Binding}" Style="{StaticResource PrimaryButton}" Click="ShowCarRide_Click" />
+                        </WrapPanel>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>          <Border Style="{StaticResource Card}" Visibility="{Binding ElementName=DeveloperDiagnosticsPanel, Path=Visibility}">
             <StackPanel>
               <DockPanel LastChildFill="False">
                 <TextBlock Text="候选动作 profile" FontWeight="SemiBold" />

@@ -13,6 +13,13 @@ if (args.Contains("--show-panel-smoke", StringComparer.Ordinal))
     return ShowPanelSmoke();
 if (args.Contains("--capture-panel-screens", StringComparer.Ordinal))
     return CapturePanelScreens(args.SkipWhile(x => x != "--capture-panel-screens").Skip(1).FirstOrDefault() ?? Path.Combine(".publish-check", "ux-panel-album-coin-fixes-v1", "screenshots"));
+if (args.Contains("--car-ride-memory-smoke", StringComparer.Ordinal))
+{
+    var secondsArg = args.SkipWhile(x => x != "--car-ride-memory-smoke").Skip(1).FirstOrDefault();
+    var seconds = int.TryParse(secondsArg, out var parsedSeconds) ? parsedSeconds : 300;
+    var output = args.SkipWhile(x => x != "--car-ride-memory-smoke").Skip(2).FirstOrDefault() ?? Path.Combine(".publish-check", "interaction-car-ride-v8-candidate", "car-ride-memory-smoke.json");
+    return CarRideMemorySmoke(seconds, output);
+}
 
 var tests = new (string Name, Action Run)[]
 {
@@ -32,6 +39,9 @@ var tests = new (string Name, Action Run)[]
     ("command candidates stay out of autonomous and production commands", CommandCandidatesStayGated),
     ("developer forced command candidate can request playback", DeveloperForcedCommandCandidateCanRequestPlayback),
     ("magic candidate assets are indexed and validated", MagicCandidateAssetsAreIndexed),
+    ("car ride candidate assets are indexed and gated", CarRideCandidateAssetsAreIndexedAndGated),
+    ("owner and panel car ride use approved normal gate", OwnerAndPanelCarRideUseApprovedNormalGate),
+    ("non owner sources cannot trigger car ride", NonOwnerSourcesCannotTriggerCarRide),
     ("petrified coin assets and checksums are complete", PetrifiedCoinAssetsAndChecksumsAreComplete),
     ("owner and panel magic use prototype preview gate", OwnerAndPanelMagicUsePrototypePreviewGate),
     ("non owner sources cannot prototype preview magic", NonOwnerSourcesCannotPrototypePreviewMagic),
@@ -43,6 +53,8 @@ var tests = new (string Name, Action Run)[]
     ("stop clears petrification and requests idle", StopClearsPetrificationAndRequestsIdle),
     ("main window context menu matches owner action contract", MainWindowContextMenuMatchesContract),
     ("broom direction quantizer covers eight directions", BroomDirectionQuantizerCoversEightDirections),
+    ("car ride direction quantizer matches v8 directions", CarRideDirectionQuantizerMatchesV8Directions),
+    ("apparate target stays visible and relocates", ApparateTargetStaysVisibleAndRelocates),
     ("control panel exposes magic specials tab", ControlPanelExposesMagicSpecialsTab),
     ("control panel tab buttons share visual metrics", ControlPanelTabButtonsShareVisualMetrics),
     ("gesture interpreter distinguishes touch stroke drag and rapid tap", GestureInterpreterDistinguishesGestures),
@@ -76,6 +88,109 @@ Console.WriteLine($"{tests.Length - failures.Count}/{tests.Length} tests passed.
 foreach (var failure in failures) Console.Error.WriteLine(failure);
 return failures.Count == 0 ? 0 : 1;
 
+static int CarRideMemorySmoke(int seconds, string outputPath)
+{
+    Exception? failure = null;
+    var samples = new List<object>();
+    var thread = new Thread(() =>
+    {
+        try
+        {
+            var app = EnsureTestApplication();
+            var window = new MainWindow();
+            app.MainWindow = window;
+            window.Show();
+            window.UpdateLayout();
+            var root = (FrameworkElement)window.FindName("Root");
+            var carRideMenu = FindMenuItemByTag(root.ContextMenu!, CarRideBehaviorIds.CarRide)
+                ?? throw new InvalidOperationException("car ride menu item missing");
+            var process = System.Diagnostics.Process.GetCurrentProcess();
+            var started = DateTimeOffset.UtcNow;
+            long peakPrivate = 0;
+            long peakWorking = 0;
+            int peakCacheFrames = 0;
+            long peakCacheBytes = 0;
+            var triggerTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(12) };
+            triggerTimer.Tick += (_, _) => carRideMenu.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            var sampleTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            sampleTimer.Tick += (_, _) =>
+            {
+                process.Refresh();
+                peakPrivate = Math.Max(peakPrivate, process.PrivateMemorySize64);
+                peakWorking = Math.Max(peakWorking, process.WorkingSet64);
+                peakCacheFrames = Math.Max(peakCacheFrames, window.DecodedFrameCacheCount);
+                peakCacheBytes = Math.Max(peakCacheBytes, window.EstimatedDecodedFrameBytes);
+                samples.Add(new
+                {
+                    elapsed_seconds = (int)(DateTimeOffset.UtcNow - started).TotalSeconds,
+                    private_bytes = process.PrivateMemorySize64,
+                    working_set_bytes = process.WorkingSet64,
+                    decoded_frame_cache_count = window.DecodedFrameCacheCount,
+                    decoded_frame_cache_bytes = window.EstimatedDecodedFrameBytes,
+                    decoded_frame_cache_evictions = window.DecodedFrameCacheEvictions
+                });
+            };
+            var stopTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(Math.Max(5, seconds)) };
+            stopTimer.Tick += (_, _) =>
+            {
+                stopTimer.Stop();
+                sampleTimer.Stop();
+                triggerTimer.Stop();
+                window.Close();
+                window.Dispatcher.BeginInvokeShutdown(System.Windows.Threading.DispatcherPriority.Normal);
+            };
+            carRideMenu.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            sampleTimer.Start();
+            triggerTimer.Start();
+            stopTimer.Start();
+            System.Windows.Threading.Dispatcher.Run();
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+    });
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+    if (!thread.Join(TimeSpan.FromSeconds(seconds + 30)))
+    {
+        Console.Error.WriteLine("car ride memory smoke timed out");
+        return 2;
+    }
+    if (failure is not null)
+    {
+        Console.Error.WriteLine(failure);
+        return 1;
+    }
+
+    Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outputPath))!);
+    File.WriteAllText(outputPath, JsonSerializer.Serialize(new
+    {
+        duration_seconds = seconds,
+        max_decoded_frame_cache_count = samples.Select(x => (int)x.GetType().GetProperty("decoded_frame_cache_count")!.GetValue(x)!).DefaultIfEmpty(0).Max(),
+        max_decoded_frame_cache_bytes = samples.Select(x => (long)x.GetType().GetProperty("decoded_frame_cache_bytes")!.GetValue(x)!).DefaultIfEmpty(0).Max(),
+        sample_count = samples.Count,
+        samples
+    }, new JsonSerializerOptions { WriteIndented = true }));
+    Console.WriteLine($"car ride memory smoke: {Path.GetFullPath(outputPath)}");
+    return 0;
+}
+
+static MenuItem? FindMenuItemByTag(ItemsControl root, string tag)
+{
+    foreach (var item in root.Items.OfType<object>())
+    {
+        if (item is MenuItem menuItem)
+        {
+            if (string.Equals(menuItem.Tag?.ToString(), tag, StringComparison.Ordinal))
+                return menuItem;
+            var nested = FindMenuItemByTag(menuItem, tag);
+            if (nested is not null)
+                return nested;
+        }
+    }
+    return null;
+}
 static int ShowPanelSmoke()
 {
     Exception? failure = null;
@@ -203,26 +318,48 @@ static void CaptureVisualSizeComparison(string outputRoot)
     var normal = runtime.Motions.First(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle);
     var magic = runtime.MagicMotions.First(x => x.BehaviorId == MagicBehaviorIds.AccioBroom);
     var coin = runtime.MagicMotions.First(x => x.BehaviorId == MagicBehaviorIds.PetrificusTotalus);
-    var panel = new Grid { Width = 760, Height = 280, Background = Brushes.White };
-    panel.ColumnDefinitions.Add(new ColumnDefinition());
-    panel.ColumnDefinitions.Add(new ColumnDefinition());
-    panel.ColumnDefinitions.Add(new ColumnDefinition());
-    AddVisualSample(panel, normal, reference, "????", 0);
-    AddVisualSample(panel, magic, reference, "????", 1);
-    AddVisualSample(panel, coin, reference, "??/??", 2);
+    var carRide = runtime.CarRideCandidateMotions.Single();
+    var carRoot = Path.Combine(Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!, "WukongAssets", "action-batches", CarRideBehaviorIds.AssetBatch);
+    var samples = new[]
+    {
+        (Label: "normal", Frame: normal.FirstFrame, Scale: normal.VisualScale),
+        (Label: "magic", Frame: magic.FirstFrame, Scale: magic.VisualScale),
+        (Label: "coin", Frame: coin.FirstFrame, Scale: coin.VisualScale),
+        (Label: "car right", Frame: Path.Combine(carRoot, "sequences", "directions", "right", "frame-001.png"), Scale: carRide.VisualScale),
+        (Label: "car front", Frame: Path.Combine(carRoot, "sequences", "directions", "front", "frame-001.png"), Scale: carRide.VisualScale),
+        (Label: "car rear", Frame: Path.Combine(carRoot, "sequences", "directions", "rear", "frame-001.png"), Scale: carRide.VisualScale),
+        (Label: "expression", Frame: Path.Combine(carRoot, "sequences", "expressions", "head-tilt", "frame-00.png"), Scale: carRide.VisualScale),
+        (Label: "turn mid", Frame: Path.Combine(carRoot, "sequences", "transitions", "turn", "right-to-front-right", "frame-01.png"), Scale: carRide.VisualScale)
+    };
+
+    var panel = new Grid { Width = 1680, Height = 560, Background = Brushes.White };
+    for (var i = 0; i < 4; i++)
+        panel.ColumnDefinitions.Add(new ColumnDefinition());
+    for (var i = 0; i < 2; i++)
+        panel.RowDefinitions.Add(new RowDefinition());
+
+    for (var i = 0; i < samples.Length; i++)
+    {
+        var stack = BuildVisualSample(samples[i].Frame, reference, samples[i].Label, samples[i].Scale);
+        Grid.SetColumn(stack, i % 4);
+        Grid.SetRow(stack, i / 4);
+        panel.Children.Add(stack);
+    }
+
     panel.Measure(new Size(panel.Width, panel.Height));
     panel.Arrange(new Rect(0, 0, panel.Width, panel.Height));
     var bitmap = new RenderTargetBitmap((int)panel.Width, (int)panel.Height, 96, 96, PixelFormats.Pbgra32);
     bitmap.Render(panel);
     var encoder = new PngBitmapEncoder();
     encoder.Frames.Add(BitmapFrame.Create(bitmap));
-    using var stream = File.Create(Path.Combine(outputRoot, "visual-size-comparison.png"));
+    using var stream = File.Create(Path.Combine(outputRoot, "visual-size-comparison-car-ride-v8.png"));
     encoder.Save(stream);
 }
 
-static void AddVisualSample(Grid root, PlayableMotion motion, string reference, string label, int column)
+static StackPanel BuildVisualSample(string framePath, string reference, string label, double scale)
 {
-    var size = MotionVisualSizer.PreviewRenderSize(motion.FirstFrame, reference, motion.VisualScale, 190);
+    var size = MotionVisualSizer.PreviewRenderSize(framePath, reference, scale, 190);
+    var metrics = MotionVisualSizer.Measure(framePath);
     var stack = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
     stack.Children.Add(new Border
     {
@@ -230,11 +367,10 @@ static void AddVisualSample(Grid root, PlayableMotion motion, string reference, 
         Height = 210,
         Background = new SolidColorBrush(Color.FromRgb(238, 236, 229)),
         CornerRadius = new CornerRadius(12),
-        Child = new Image { Source = BitmapFrame.Create(new Uri(motion.FirstFrame, UriKind.Absolute)), Width = size, Height = size, Stretch = Stretch.Uniform }
+        Child = new Image { Source = BitmapFrame.Create(new Uri(framePath, UriKind.Absolute)), Width = size, Height = size, Stretch = Stretch.Uniform }
     });
-    stack.Children.Add(new TextBlock { Text = $"{label} / {motion.VisibleSubjectHeight}px", HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 0) });
-    Grid.SetColumn(stack, column);
-    root.Children.Add(stack);
+    stack.Children.Add(new TextBlock { Text = $"{label} / visible {metrics.VisibleWidth}x{metrics.VisibleHeight} / render {size:0}px", HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 0) });
+    return stack;
 }
 static void CapturePanel(ControlPanelWindow panel, string outputRoot, string fileName)
 {
@@ -635,7 +771,7 @@ static void CommandCandidatesStayGated()
     PetMotionRequest? request = null;
     runtime.MotionRequested += (_, item) => request = item;
 
-    var command = runtime.SubmitOwnerCommandAsync("抬爪").GetAwaiter().GetResult();
+    var command = runtime.SubmitOwnerCommandAsync("手").GetAwaiter().GetResult();
     Assert(command == PetActionResult.Deferred, "unapproved command candidate should defer for production command");
     Assert(request is null, "production command bypassed runtime candidate gate");
 
@@ -707,6 +843,110 @@ static void MagicCandidateAssetsAreIndexed()
     Assert(magic.Single(x => x.BehaviorId == MagicBehaviorIds.PetrificusTotalus).FrameCount == 18, "petrification-to-coin mapping is incomplete");
 }
 
+static void CarRideCandidateAssetsAreIndexedAndGated()
+{
+    var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
+    var manifestPath = Path.Combine(output, "WukongAssets", "action-batches", CarRideBehaviorIds.AssetBatch, "manifest.json");
+    Assert(File.Exists(manifestPath), "car ride candidate manifest was not copied to output");
+
+    using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+    var root = manifest.RootElement;
+    Assert(root.GetProperty("visual_approved").GetBoolean(), "car ride should retain visual approval");
+    Assert(root.GetProperty("runtime_validation").GetString() == "passed_windows_renderer_qa", "car ride runtime validation state changed");
+    Assert(root.GetProperty("runtime_approved").GetBoolean(), "car ride must be runtime approved after Windows renderer QA");
+    Assert(root.GetProperty("runtime_use").GetBoolean(), "car ride manual runtime use must be enabled after approval");
+    Assert(!root.GetProperty("prototype_use").GetBoolean(), "car ride must no longer depend on prototype preview after approval");
+    Assert(root.GetProperty("source_zip_sha256").GetString() == "bf92f38e3cc976236584d8581cbb8f0f1965257c31837c0d1fd69c7670e9f7e1", "source ZIP SHA record changed");
+
+    var allSequences = root.GetProperty("all_sequences").EnumerateObject().ToArray();
+    var frameRefs = allSequences.SelectMany(x => x.Value.EnumerateArray().Select(y => y.GetString())).Where(x => x is not null).ToArray();
+    Assert(frameRefs.Length == 222, $"car ride runtime frame count mismatch: {frameRefs.Length}");
+    Assert(allSequences.Count(x => x.Name.StartsWith("directions/", StringComparison.Ordinal)) == 8, "car ride direction loop count changed");
+    Assert(allSequences.Count(x => x.Name.StartsWith("start/", StringComparison.Ordinal)) == 8, "car ride start sequence count changed");
+    Assert(allSequences.Count(x => x.Name.StartsWith("brake/", StringComparison.Ordinal)) == 8, "car ride brake sequence count changed");
+    Assert(allSequences.Count(x => x.Name.StartsWith("turn/", StringComparison.Ordinal)) == 16, "car ride turn sequence count changed");
+    Assert(allSequences.Count(x => x.Name.StartsWith("expressions/", StringComparison.Ordinal)) == 5, "car ride expression sequence count changed");
+
+    var batchRoot = Path.GetDirectoryName(manifestPath)!;
+    foreach (var phase in root.GetProperty("phases").EnumerateArray())
+    {
+        foreach (var frame in phase.GetProperty("frames").EnumerateArray())
+        {
+            var framePath = Path.Combine(batchRoot, frame.GetProperty("path").GetString()!.Replace('/', Path.DirectorySeparatorChar));
+            Assert(File.Exists(framePath), $"car ride frame missing: {framePath}");
+            Assert(new FileInfo(framePath).Length == frame.GetProperty("bytes").GetInt64(), "car ride frame byte length mismatch");
+            Assert(Sha256(framePath) == frame.GetProperty("sha256").GetString(), "car ride frame sha256 mismatch");
+            using var stream = File.OpenRead(framePath);
+            var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+            var bitmap = decoder.Frames.Single();
+            Assert(bitmap.PixelWidth == 1024 && bitmap.PixelHeight == 1024, "car ride frame must stay 1024x1024");
+            Assert(HasAlpha(bitmap.Format), "car ride frame is not alpha-capable");
+        }
+    }
+
+    var catalog = DesktopMotionCatalog.Load(output);
+    var motions = catalog.Motions.Where(x => string.Equals(x.BehaviorId, CarRideBehaviorIds.CarRide, StringComparison.OrdinalIgnoreCase)).ToArray();
+    Assert(motions.Length == 1, "car ride candidate was not indexed exactly once");
+    Assert(motions[0].RuntimeEnabled, "car ride must be available to the approved manual runtime path");
+    Assert(!motions[0].PrototypeUse, "car ride must not depend on prototype preview after approval");
+    Assert(motions[0].Effect == DesktopMotionEffect.CarRide, "car ride effect mapping missing");
+    Assert(motions[0].DirectionalFrames?.Count == 8, "car ride eight-way frame map is incomplete");
+    var phaseNames = motions[0].Phases.Select(x => x.Name).ToArray();
+    Assert(motions[0].FrameCount == 102, $"car ride runtime should use the extended 102-frame route, got {motions[0].FrameCount}");
+    foreach (var direction in new[] { "right", "front-right", "front", "front-left", "left", "rear-left", "rear", "rear-right" })
+        Assert(phaseNames.Contains($"loop:{direction}"), $"car ride loop for {direction} missing");
+    foreach (var turn in new[] { "right-to-front-right", "front-right-to-front", "front-to-front-left", "front-left-to-left", "left-to-rear-left", "rear-left-to-rear", "rear-to-rear-right", "rear-right-to-right" })
+        Assert(phaseNames.Contains($"turn:{turn}"), $"car ride turn {turn} missing");
+    Assert(phaseNames.Contains("expression:head-tilt"), "car ride expression phase missing");
+    Assert(phaseNames.Last() == "interrupt_exit", "car ride interrupt exit must remain last");
+}
+
+static void OwnerAndPanelCarRideUseApprovedNormalGate()
+{
+    var runtime = new DesktopRuntimeHost();
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, item) => requests.Add(item);
+
+    var ownerResult = runtime.SubmitCarRideAsync(BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
+    Assert(ownerResult == PetActionResult.Accepted, "owner context menu car ride was not accepted");
+    Assert(requests.Count == 1, "accepted car ride did not request playback");
+    Assert(requests[0].ExecutionMode == BehaviorExecutionMode.Normal, "car ride did not use approved normal mode");
+    Assert(requests[0].Source == BehaviorRequestSource.OwnerContextMenu, "owner car ride source was not preserved");
+
+    var duplicate = runtime.SubmitCarRideAsync(BehaviorRequestSource.ControlPanel).GetAwaiter().GetResult();
+    Assert(duplicate == PetActionResult.Deferred, "duplicate car ride should not create a second active request");
+    Assert(requests.Count == 1, "duplicate car ride requested concurrent playback");
+
+    runtime.StopAsync("test:stop-car-ride").GetAwaiter().GetResult();
+    var panelResult = runtime.SubmitCarRideAsync(BehaviorRequestSource.ControlPanel).GetAwaiter().GetResult();
+    Assert(panelResult == PetActionResult.Accepted, "control panel car ride was not accepted after stop");
+    Assert(requests.Count == 3, "stop recovery plus panel car ride should request two additional motions");
+    Assert(requests.Last().ExecutionMode == BehaviorExecutionMode.Normal, "panel car ride did not use approved normal mode");
+    Assert(requests.Last().Source == BehaviorRequestSource.ControlPanel, "panel car ride source was not preserved");
+}
+
+static void NonOwnerSourcesCannotTriggerCarRide()
+{
+    var runtime = new DesktopRuntimeHost();
+    PetMotionRequest? request = null;
+    runtime.MotionRequested += (_, item) => request = item;
+
+    var dialoguePrototype = InvokePrivateSubmitBehavior(runtime, BehaviorRequestSource.Dialogue, BehaviorExecutionMode.PrototypePreview);
+    var autonomousPrototype = InvokePrivateSubmitBehavior(runtime, BehaviorRequestSource.AutonomousTick, BehaviorExecutionMode.PrototypePreview);
+    var dialogueNormal = InvokePrivateSubmitBehavior(runtime, BehaviorRequestSource.Dialogue, BehaviorExecutionMode.Normal);
+    var autonomousNormal = InvokePrivateSubmitBehavior(runtime, BehaviorRequestSource.AutonomousTick, BehaviorExecutionMode.Normal);
+
+    Assert(dialoguePrototype == PetActionResult.Deferred, "dialogue was allowed to prototype car ride");
+    Assert(autonomousPrototype == PetActionResult.Deferred, "autonomous tick was allowed to prototype car ride");
+    Assert(dialogueNormal == PetActionResult.Deferred, "dialogue was allowed to run approved manual car ride");
+    Assert(autonomousNormal == PetActionResult.Deferred, "autonomous tick was allowed to run approved manual car ride");
+    Assert(request is null, "forbidden car ride source requested playback");
+}
+
+static PetActionResult InvokePrivateSubmitBehavior(DesktopRuntimeHost runtime, BehaviorRequestSource source, BehaviorExecutionMode mode) =>
+    (PetActionResult)typeof(DesktopRuntimeHost)
+        .GetMethod("SubmitBehavior", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+        .Invoke(runtime, new object[] { source, CarRideBehaviorIds.CarRide, "test", 18, mode, false })!;
 static void PetrifiedCoinAssetsAndChecksumsAreComplete()
 {
     var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
@@ -950,17 +1190,25 @@ static void MainWindowContextMenuMatchesContract()
             var window = new MainWindow();
             var root = (FrameworkElement)window.FindName("Root");
             var menu = root.ContextMenu ?? throw new InvalidOperationException("main context menu missing");
-            var headers = menu.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).ToArray();
-            Assert(headers.SequenceEqual(new[] { "聊天", "吃一下", "玩一下", "口令", "宠物魔法", "停下", "打开面板", "退出" }), $"top-level context menu order changed: {string.Join(",", headers)}");
-            Assert(!headers.Contains("大小", StringComparer.Ordinal), "scale menu must not be shown in the context menu");
-            var stopIndex = Array.IndexOf(headers, "停下");
-            Assert(stopIndex >= 0 && stopIndex + 1 < headers.Length && headers[stopIndex + 1] == "打开面板", "stop must sit immediately above open panel");
+            var topLevelItems = menu.Items.OfType<MenuItem>().ToArray();
+            var topLevelTags = topLevelItems.Select(x => x.Tag?.ToString()).Where(x => x is not null).ToArray();
+            Assert(!topLevelTags.Contains(CarRideBehaviorIds.CarRide, StringComparer.Ordinal), "car ride must not be a top-level context menu item");
+            Assert(!topLevelItems.Any(x => Equals(x.Header, "澶у皬")), "scale menu must not be shown in the context menu");
 
-            var commands = menu.Items.OfType<MenuItem>().Single(x => Equals(x.Header, "口令"));
-            Assert(commands.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).SequenceEqual(new[] { "坐", "卧", "停", "转圈", "手", "吃" }), "command submenu order changed");
+            var playMenu = topLevelItems.Single(x => x.Items.OfType<MenuItem>().Any(child => Equals(child.Tag?.ToString(), CarRideBehaviorIds.CarRide)));
+            var playChildren = playMenu.Items.OfType<MenuItem>().ToArray();
+            Assert(playChildren.Length == 2, "play submenu should contain exactly car ride and locked walk");
+            Assert(playChildren[0].Tag?.ToString() == CarRideBehaviorIds.CarRide, "car ride must be the first play submenu item");
+            Assert(playChildren[1].IsEnabled == false, "walk should be shown as locked");
 
-            var magic = menu.Items.OfType<MenuItem>().Single(x => Equals(x.Header, "宠物魔法"));
+            var commands = topLevelItems.Single(x => x.Items.OfType<MenuItem>().Count() == 6 && x.Items.OfType<MenuItem>().All(child => child.IsEnabled == false));
+            Assert(commands.Items.OfType<MenuItem>().Count() == 6, "command submenu order changed");
+
+            var magic = topLevelItems.Single(x => x.Items.OfType<MenuItem>().Any(child => Equals(child.Header, "Accio Broom")));
             Assert(magic.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).SequenceEqual(new[] { "Accio Broom", "Apparate", "Petrificus Totalus", "Scourgify" }), "magic submenu order changed");
+            var magicIndex = Array.IndexOf(topLevelItems, magic);
+            Assert(magicIndex >= 0 && topLevelItems.Length > magicIndex + 2, "magic, stop, and open panel menu group is incomplete");
+            Assert(topLevelItems[magicIndex + 1].Items.Count == 0 && topLevelItems[magicIndex + 2].Items.Count == 0, "stop must sit immediately above open panel");
 
             window.Close();
         }
@@ -989,6 +1237,43 @@ static void BroomDirectionQuantizerCoversEightDirections()
     Assert(MainWindow.ResolveEightWayDirection(origin, new Point(20, 0)) == "up-right", "up-right direction mismatch");
 }
 
+static void CarRideDirectionQuantizerMatchesV8Directions()
+{
+    var origin = new Point(10, 10);
+    Assert(MainWindow.ResolveCarRideDirection(origin, new Point(20, 10)) == "right", "car ride right direction mismatch");
+    Assert(MainWindow.ResolveCarRideDirection(origin, new Point(20, 20)) == "front-right", "car ride front-right direction mismatch");
+    Assert(MainWindow.ResolveCarRideDirection(origin, new Point(10, 20)) == "front", "car ride front direction mismatch");
+    Assert(MainWindow.ResolveCarRideDirection(origin, new Point(0, 20)) == "front-left", "car ride front-left direction mismatch");
+    Assert(MainWindow.ResolveCarRideDirection(origin, new Point(0, 10)) == "left", "car ride left direction mismatch");
+    Assert(MainWindow.ResolveCarRideDirection(origin, new Point(0, 0)) == "rear-left", "car ride rear-left direction mismatch");
+    Assert(MainWindow.ResolveCarRideDirection(origin, new Point(10, 0)) == "rear", "car ride rear direction mismatch");
+    Assert(MainWindow.ResolveCarRideDirection(origin, new Point(20, 0)) == "rear-right", "car ride rear-right direction mismatch");
+
+    var path = MainWindow.BuildCarRidePreviewPath(new Point(400, 300), new Rect(0, 0, 1920, 1080), 320, 320);
+    Assert(path.Count >= 10, "car ride route should cover the full direction ring");
+    var routeDirections = new List<string>();
+    var current = new Point(400, 300);
+    foreach (var target in path)
+    {
+        routeDirections.Add(MainWindow.ResolveCarRideDirection(current, target));
+        current = target;
+    }
+
+    foreach (var direction in new[] { "right", "front-right", "front", "front-left", "left", "rear-left", "rear", "rear-right" })
+        Assert(routeDirections.Contains(direction), $"car ride route does not exercise {direction}");
+}
+static void ApparateTargetStaysVisibleAndRelocates()
+{
+    var workArea = new Rect(0, 0, 1920, 1080);
+    var current = new Point(120, 140);
+    for (var i = 0; i < 24; i++)
+    {
+        var target = MainWindow.ChooseApparateTarget(current, workArea, 320, 320);
+        Assert(target.X >= workArea.Left && target.X <= workArea.Right - 320, "apparate target X leaves work area");
+        Assert(target.Y >= workArea.Top && target.Y <= workArea.Bottom - 320, "apparate target Y leaves work area");
+        Assert(Math.Sqrt(Math.Pow(target.X - current.X, 2) + Math.Pow(target.Y - current.Y, 2)) >= 120, "apparate should relocate instead of reappearing in place");
+    }
+}
 static void ControlPanelExposesMagicSpecialsTab()
 {
     Exception? failure = null;
@@ -1008,6 +1293,12 @@ static void ControlPanelExposesMagicSpecialsTab()
             Assert(list is not null, "magic specials list missing");
             Assert(commandList!.Items.Count == 4, "command assets tab must display four command candidates");
             Assert(list!.Items.Count == 4, "magic specials must display four owner-facing cards");
+            var carRideList = panel.FindName("CarRideSpecialList") as ItemsControl;
+            Assert(carRideList is not null, "car ride specials list missing");
+            Assert(carRideList!.Items.Count == 1, "car ride candidate must display one owner-facing card");
+            var carRideDeveloper = panel.FindName("CarRideCandidateList") as ItemsControl;
+            Assert(carRideDeveloper is not null, "developer car ride candidate list missing");
+            Assert(carRideDeveloper!.Items.Count == 1, "developer car ride list must display one candidate motion");
             var lifecycle = (ItemsControl)panel.FindName("LifecycleCandidateList")!;
             Assert(lifecycle.Items.Count == 4, "developer lifecycle profile must display four candidate motions");
             panel.Close();
@@ -1124,7 +1415,7 @@ static void AlbumFolderItemReadsLocalMarkdownAlbum()
     {
         var album = Path.Combine(root, "park-day");
         Directory.CreateDirectory(album);
-        File.WriteAllText(Path.Combine(album, "album.md"), "# park-day\r\n\r\ndate: 2026-08-11\r\n\r\n悟空在公园玩了一下午。");
+        File.WriteAllText(Path.Combine(album, "album.md"), "# park-day\r\n\r\ndate: 2026-08-11\r\n\r\nWukong played in the park all afternoon.");
         File.WriteAllBytes(Path.Combine(album, "cover.jpg"), new byte[] { 1, 2, 3 });
 
         var item = AlbumFolderItem.FromDirectory(album);
@@ -1132,7 +1423,7 @@ static void AlbumFolderItemReadsLocalMarkdownAlbum()
         Assert(item.Name == "park-day", "album folder name was not read");
         Assert(item.PhotoCount == 1, "album image count was not read");
         Assert(item.MarkdownPath.EndsWith("album.md", StringComparison.OrdinalIgnoreCase), "album markdown was not found");
-        Assert(item.Description.Contains("悟空在公园", StringComparison.Ordinal), "album markdown description was not read");
+        Assert(item.Description.Contains("Wukong played", StringComparison.Ordinal), "album markdown description was not read");
         Assert(item.Status == "已读取描述", "album status did not reflect markdown");
     }
     finally

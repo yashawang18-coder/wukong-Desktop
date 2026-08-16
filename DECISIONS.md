@@ -123,3 +123,67 @@ Forbidden scope:
 - Do not expose these candidates in the normal right-click menu or production command routing.
 - Do not add them to `contracts/runtime/asset-registry.json`, `pet_assets.json`, magic, coins, training data, or command behavior mappings.
 - Do not edit the 32 manually accepted PNGs to hide the strict y=932 non-zero-alpha audit finding; document that Windows QA found no visible artifact instead.
+
+## 2026-08-16 - accept car ride v8 as visually approved runtime candidate for prototype preview only (superseded)
+
+Decision: accept `WK-INTERACTION-CAR-RIDE-CANDIDATE-v8` as a visually approved, runtime-pending candidate asset package and allow it to be exercised only through `PrototypePreview` in a candidate EXE for Windows human QA.
+
+Superseded on 2026-08-16 by the runtime promotion decision below after owner Windows transparent WPF visual QA passed.
+
+Reason: the source material and extracted QA previews have completed owner visual confirmation. Code build, contract validation, automated tests, controlled launch, and bounded-cache smoke have passed. Windows transparent WPF renderer human QA has not yet been completed.
+
+Runtime restrictions:
+
+- `Normal` continues to reject this candidate action.
+- Dialogue and AutonomousTick must not use `PrototypePreview`.
+- Do not add it to the autonomous behavior pool.
+- Do not add it to model routing.
+- Do not add it to command routing.
+- Do not add it to the formal runtime registry.
+- Keep `runtime_approved=false`.
+- Keep `runtime_use=false`.
+- Only after owner-completed Windows human visual QA and explicit runtime approval may these runtime states change.
+
+Verification facts preserved with this decision:
+
+- UX closure baseline: `d5136a0810592b1eb23c6eaf7da0f0c5ea26f2ac`.
+- Car ride branch baseline: `d5136a0810592b1eb23c6eaf7da0f0c5ea26f2ac`.
+- Original ZIP SHA-256: `bf92f38e3cc976236584d8581cbb8f0f1965257c31837c0d1fd69c7670e9f7e1`.
+- Published directory PNG count: 253.
+- Manifest runtime frame references: 222.
+- Five-minute cache smoke: 299 samples; Private MB 93.5 -> peak 238.3 -> end 228.9; Working Set MB 154.8 -> peak 303.5 -> end 295.9; decoded cache peak 36 frames / 144 MB; evictions 1215.
+- The cache smoke proves the runtime did not keep all 222 frames resident at once; it is not a substitute for real renderer QA or long-duration acceptance.
+- Release build passed with 4 existing warnings.
+- Contract validation passed with 0 errors and the existing 9 known gaps.
+- Python tests passed 35/35.
+- All C# console self-tests passed.
+- Controlled launch and exact-PID termination passed.
+- `MainWindowHandle=0` is not used as a transparent WPF visibility failure criterion.
+
+## Decision: Promote WK-INTERACTION-CAR-RIDE-CANDIDATE-v8 to approved manual owner runtime
+
+Date: 2026-08-16
+
+Decision:
+The owner completed Windows transparent WPF runtime visual QA for the v8 candidate EXE and approved `wk.interaction.car_ride` for the normal manual owner interaction path: `玩一下 > 兜风`.
+
+Runtime state:
+
+- `visual_approved=true`
+- `runtime_validation=passed_windows_renderer_qa`
+- `runtime_approved=true`
+- `runtime_use=true`
+- `prototype_use=false`
+
+Reason:
+The source package and automated validation had already passed, and the owner has now confirmed real desktop renderer behavior for the candidate EXE, including the locked menu labels and Apparate regression fixes.
+
+Scope restrictions:
+
+- Only explicit owner UI selection of `玩一下 > 兜风` may trigger the action through the normal approved runtime gate.
+- Do not add v8 to `AutonomousTick`.
+- Do not add v8 to dialogue/model routing.
+- Do not add v8 to command/口令 routing.
+- Do not use v8 for `吃一下`, `散步`, startup auto-play, or any locked feature.
+- Keep PrototypePreview infrastructure for other candidate assets; v8 no longer depends on it.
+- No installer or public release is approved by this decision.

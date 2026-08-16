@@ -1,0 +1,1141 @@
+{
+    "schema_version":  1,
+    "asset_id":  "WK-INTERACTION-CAR-RIDE-CANDIDATE-v8",
+    "behavior_id":  "wk.interaction.car_ride",
+    "display_name":  "Car ride candidate v8",
+    "category":  "Candidate interaction",
+    "source_zip":  "WK-INTERACTION-CAR-RIDE-CANDIDATE-v8.zip",
+    "source_zip_sha256":  "bf92f38e3cc976236584d8581cbb8f0f1965257c31837c0d1fd69c7670e9f7e1",
+    "imported_at":  "2026-08-16T00:54:24+08:00",
+    "target_branch":  "agent/interaction-car-ride-v8",
+    "source_note":  "Local owner-provided candidate package. ZIP is not committed.",
+    "package_file_count":  298,
+    "package_total_bytes":  209067699,
+    "visual_approved":  true,
+    "art_candidate":  true,
+    "runtime_validation":  "passed_windows_renderer_qa",
+    "runtime_approved":  true,
+    "runtime_use":  true,
+    "prototype_use":  false,
+    "production_asset":  true,
+    "frame_duration_ms":  90,
+    "directions":  [
+                       "right",
+                       "front-right",
+                       "front",
+                       "front-left",
+                       "left",
+                       "rear-left",
+                       "rear",
+                       "rear-right"
+                   ],
+    "direction_ring":  [
+                           "right",
+                           "front-right",
+                           "front",
+                           "front-left",
+                           "left",
+                           "rear-left",
+                           "rear",
+                           "rear-right"
+                       ],
+    "expressions":  [
+                        "head-tilt",
+                        "happy-squint",
+                        "side-glance",
+                        "curious-gaze",
+                        "knowing-look"
+                    ],
+    "canvas":  {
+                   "width":  1024,
+                   "height":  1024,
+                   "format":  "PNG",
+                   "color_mode":  "RGBA",
+                   "normal_subject_height_px":  605,
+                   "transition_subject_height_range_px":  [
+                                                              599,
+                                                              607
+                                                          ],
+                   "wheel_baseline_y":  900
+               },
+    "cache_policy":  {
+                         "max_decoded_frames":  36,
+                         "estimated_max_decoded_bytes":  150994944
+                     },
+    "phases":  [
+                   {
+                       "name":  "intro",
+                       "loop":  false,
+                       "frame_count":  6,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/transitions/start/right/frame-00.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "703988d7e221b0b85044ea611298783f67f1e97ad9afd8c65e0b956871d58b55",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/start/right/frame-01.png",
+                                          "bytes":  489912,
+                                          "sha256":  "aa9dee4e2bebeea0fdf5a61ca305328a17854eab2fe5717e8203f5e6bdf4fe09",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/start/right/frame-02.png",
+                                          "bytes":  484827,
+                                          "sha256":  "eedba2c436f86fc6911bc17a316b351c4503dbfa31d79bea51c9124c78c324ec",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/start/right/frame-03.png",
+                                          "bytes":  477122,
+                                          "sha256":  "ccf1d62aca65826697d48c1167a5d8b5af562b42cfe726b1cb3e4adad9085647",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/start/right/frame-04.png",
+                                          "bytes":  477475,
+                                          "sha256":  "97cb439b70c086a00ff007d938aa4447c88410d5bba7b622e4b454b1a2ea2cd5",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/start/right/frame-05.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "703988d7e221b0b85044ea611298783f67f1e97ad9afd8c65e0b956871d58b55",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "loop:right",
+                       "loop":  true,
+                       "frame_count":  6,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/directions/right/frame-001.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "99baf9d21340161cfded8096d9fcce29ffb186f10af4578f536393c0c2870442",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/right/frame-002.png",
+                                          "bytes":  1532669,
+                                          "sha256":  "1ee65c2390cc4ead2746049234602b9d1ad5b9a6a2a1239df98bbfcbb1c8c898",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/right/frame-003.png",
+                                          "bytes":  1532669,
+                                          "sha256":  "1ee65c2390cc4ead2746049234602b9d1ad5b9a6a2a1239df98bbfcbb1c8c898",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/right/frame-004.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "a2822764b04927ebb7ecabaa5f4abd161a47e73425537a2e764ae2b97a31f783",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/right/frame-005.png",
+                                          "bytes":  1532657,
+                                          "sha256":  "8d4c76472617c2c090c9a040f6157226908bea29f59de27d2c5b026b26b6e8d8",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/right/frame-006.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "41c24afad87c3503342ba1786d1604f6fbe874cc142664d3cdd965a9e507ccb1",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "expression:head-tilt",
+                       "loop":  false,
+                       "frame_count":  6,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/expressions/head-tilt/frame-00.png",
+                                          "bytes":  404317,
+                                          "sha256":  "f733eaede665006f1c64d630308e00254cc00307547f1b4603adc4e3da14165f",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/expressions/head-tilt/frame-01.png",
+                                          "bytes":  404293,
+                                          "sha256":  "3b8f9154829c7527c95086448713f542c105bdcac5f137e430f03a8c9c12c71a",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/expressions/head-tilt/frame-02.png",
+                                          "bytes":  404293,
+                                          "sha256":  "3b8f9154829c7527c95086448713f542c105bdcac5f137e430f03a8c9c12c71a",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/expressions/head-tilt/frame-03.png",
+                                          "bytes":  404317,
+                                          "sha256":  "1150cfb832b0f8dbd33a02246e28dae7b8780c945e9a4ae373b3c63798673379",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/expressions/head-tilt/frame-04.png",
+                                          "bytes":  404348,
+                                          "sha256":  "44f36556d62c2ea8a8eb5d177470f8c64410a5810da4530e076a376e70a3c898",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/expressions/head-tilt/frame-05.png",
+                                          "bytes":  404317,
+                                          "sha256":  "1150cfb832b0f8dbd33a02246e28dae7b8780c945e9a4ae373b3c63798673379",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "turn:right-to-front-right",
+                       "loop":  false,
+                       "frame_count":  3,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/transitions/turn/right-to-front-right/frame-00.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "703988d7e221b0b85044ea611298783f67f1e97ad9afd8c65e0b956871d58b55",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/right-to-front-right/frame-01.png",
+                                          "bytes":  439882,
+                                          "sha256":  "f9dac9deffff47f42efc481ab5d4eda1fe79036432b1dd7f788b3858ba8635b8",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/right-to-front-right/frame-02.png",
+                                          "bytes":  497124,
+                                          "sha256":  "1cfd2f2140cfb9180609311d873f44a04b88019cf8da9894b8106c896ff0e4c9",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "loop:front-right",
+                       "loop":  true,
+                       "frame_count":  6,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/directions/front-right/frame-001.png",
+                                          "bytes":  497124,
+                                          "sha256":  "6745d7c6d7e9faa468a056b9eade779ef539898ff677a2f95bdb0e8441acf705",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front-right/frame-002.png",
+                                          "bytes":  497126,
+                                          "sha256":  "2701ab2c2e2bd69b65821094fcf51bf6db027252acc895e080ce6b8d7219668d",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front-right/frame-003.png",
+                                          "bytes":  497126,
+                                          "sha256":  "2701ab2c2e2bd69b65821094fcf51bf6db027252acc895e080ce6b8d7219668d",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front-right/frame-004.png",
+                                          "bytes":  497124,
+                                          "sha256":  "6745d7c6d7e9faa468a056b9eade779ef539898ff677a2f95bdb0e8441acf705",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front-right/frame-005.png",
+                                          "bytes":  497123,
+                                          "sha256":  "8d10fbd6e995914cb8315596132ac5baff694d1b786261a299ff29568de23b58",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front-right/frame-006.png",
+                                          "bytes":  497124,
+                                          "sha256":  "91bbb45034d42872cf3d5b7f436aab113f4950ec0fc54f34573a717f44c1c13b",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "turn:front-right-to-front",
+                       "loop":  false,
+                       "frame_count":  3,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/transitions/turn/front-right-to-front/frame-00.png",
+                                          "bytes":  497124,
+                                          "sha256":  "1cfd2f2140cfb9180609311d873f44a04b88019cf8da9894b8106c896ff0e4c9",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/front-right-to-front/frame-01.png",
+                                          "bytes":  352872,
+                                          "sha256":  "2d32f4a9f676974b6a211f4fdb8fc21232475b20f99d28ff536a9b61604a1af0",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/front-right-to-front/frame-02.png",
+                                          "bytes":  372533,
+                                          "sha256":  "ed05100ffba3d5a2bfe0527330aa7b7560d17301d7c9ee3b7cd7a9d1233e9bea",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "loop:front",
+                       "loop":  true,
+                       "frame_count":  6,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/directions/front/frame-001.png",
+                                          "bytes":  372533,
+                                          "sha256":  "65c0fea5ba1ee6871bbcf615775ed57ff28504f99f3a1e759eaaf04d369c6e7e",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front/frame-002.png",
+                                          "bytes":  372552,
+                                          "sha256":  "f571c106fbe1f853582d33c63923e1f31171f8864dd222c64ed2c1d8f6606c37",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front/frame-003.png",
+                                          "bytes":  372552,
+                                          "sha256":  "f571c106fbe1f853582d33c63923e1f31171f8864dd222c64ed2c1d8f6606c37",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front/frame-004.png",
+                                          "bytes":  372533,
+                                          "sha256":  "65c0fea5ba1ee6871bbcf615775ed57ff28504f99f3a1e759eaaf04d369c6e7e",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front/frame-005.png",
+                                          "bytes":  372531,
+                                          "sha256":  "4c75877ab3dff3e7aaffb4f0fb48551744f7ebbf1f9f845886f7a8e82a92b652",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front/frame-006.png",
+                                          "bytes":  372533,
+                                          "sha256":  "a5b59cfc8c73f6fc98fd0989b42a7c10dfdaa4e6fc6e2123034baf0c7a8ec228",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "turn:front-to-front-left",
+                       "loop":  false,
+                       "frame_count":  3,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/transitions/turn/front-to-front-left/frame-00.png",
+                                          "bytes":  372533,
+                                          "sha256":  "ed05100ffba3d5a2bfe0527330aa7b7560d17301d7c9ee3b7cd7a9d1233e9bea",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/front-to-front-left/frame-01.png",
+                                          "bytes":  381885,
+                                          "sha256":  "b7ad63ffae30fd770e27e999a75fe7e6d85a6c9e329c2e86f664746316e2f38f",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/front-to-front-left/frame-02.png",
+                                          "bytes":  495509,
+                                          "sha256":  "d8d9fdc7a112ec342fa5d75ae86d22672ce58c5aa8e905a35f10642f7db8b8b2",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "loop:front-left",
+                       "loop":  true,
+                       "frame_count":  6,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/directions/front-left/frame-001.png",
+                                          "bytes":  495509,
+                                          "sha256":  "9d1aa9f213e6e4abcbf0bf8d0ba3124a3b0fbac2b1c192b54c0fa77957735311",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front-left/frame-002.png",
+                                          "bytes":  495498,
+                                          "sha256":  "9def3d968e4fcfcc495994c92ab77df8f3b1f31939dde0d7f782accabe619114",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front-left/frame-003.png",
+                                          "bytes":  495498,
+                                          "sha256":  "9def3d968e4fcfcc495994c92ab77df8f3b1f31939dde0d7f782accabe619114",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front-left/frame-004.png",
+                                          "bytes":  495509,
+                                          "sha256":  "9d1aa9f213e6e4abcbf0bf8d0ba3124a3b0fbac2b1c192b54c0fa77957735311",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front-left/frame-005.png",
+                                          "bytes":  495507,
+                                          "sha256":  "a41ab4c6943016e8addc786c9ca353b28864742ba67379559468f96c9f786b58",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/front-left/frame-006.png",
+                                          "bytes":  495509,
+                                          "sha256":  "d7081d46a8e91a85ad2cc21344efb657b65a667e5dd8a76c6fcd4a2d9eb5bcc9",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "turn:front-left-to-left",
+                       "loop":  false,
+                       "frame_count":  3,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/transitions/turn/front-left-to-left/frame-00.png",
+                                          "bytes":  495509,
+                                          "sha256":  "d8d9fdc7a112ec342fa5d75ae86d22672ce58c5aa8e905a35f10642f7db8b8b2",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/front-left-to-left/frame-01.png",
+                                          "bytes":  417478,
+                                          "sha256":  "32a19290034e87f4536aa365387fd90c4ee928f166e7ed8e6f0a42a53f764a81",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/front-left-to-left/frame-02.png",
+                                          "bytes":  1533163,
+                                          "sha256":  "9f2968f3a5c9c086396c5214ed9b0338d9941ff34f3730303f7bc5d9256a1dbf",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "loop:left",
+                       "loop":  true,
+                       "frame_count":  6,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/directions/left/frame-001.png",
+                                          "bytes":  1533163,
+                                          "sha256":  "6d9ef5bf1a3702f3528cdab398d8763df9d2fc5695a809fc41b756c28ac22445",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/left/frame-002.png",
+                                          "bytes":  1533182,
+                                          "sha256":  "bc11b029277696e0812d3ffa1b51192187a8107eb834b8ebe00491794d7687ad",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/left/frame-003.png",
+                                          "bytes":  1533182,
+                                          "sha256":  "383199cdaa7c3e0632abfbf835751153727367443861e47edbb6734ac64b6afc",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/left/frame-004.png",
+                                          "bytes":  1533163,
+                                          "sha256":  "c147ed9583d11ca5b5ab709eee1960cedb54ad22d358139a124b51960a0da44c",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/left/frame-005.png",
+                                          "bytes":  1533140,
+                                          "sha256":  "d18df60a06b92cbcb65a59f907e88641cb238676140b38f6988c9ed35fc3749f",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/left/frame-006.png",
+                                          "bytes":  1533163,
+                                          "sha256":  "0b1976f67800375b08754640f2c939d2fc5726b298480f9a0255b8d0ddb581a9",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "turn:left-to-rear-left",
+                       "loop":  false,
+                       "frame_count":  3,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/transitions/turn/left-to-rear-left/frame-00.png",
+                                          "bytes":  1533163,
+                                          "sha256":  "9f2968f3a5c9c086396c5214ed9b0338d9941ff34f3730303f7bc5d9256a1dbf",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/left-to-rear-left/frame-01.png",
+                                          "bytes":  428099,
+                                          "sha256":  "8df948dab5b8ebcc533b01a94ebf4461c085e7c3988f2498295b6530a1fb5608",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/left-to-rear-left/frame-02.png",
+                                          "bytes":  1442974,
+                                          "sha256":  "42a41ebaae8d47152420bb002f5d6c44847539f21c6c19bf784774d8193e0de8",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "loop:rear-left",
+                       "loop":  true,
+                       "frame_count":  6,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/directions/rear-left/frame-001.png",
+                                          "bytes":  1442974,
+                                          "sha256":  "47712367b4dff00d3d797555a88999a9c845f37f245443dc79f693c35be8d027",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear-left/frame-002.png",
+                                          "bytes":  1442957,
+                                          "sha256":  "468d267886f55883356e13ba585d56ab15fc214c200253ef54a5ee4725cfd7c2",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear-left/frame-003.png",
+                                          "bytes":  1442957,
+                                          "sha256":  "468d267886f55883356e13ba585d56ab15fc214c200253ef54a5ee4725cfd7c2",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear-left/frame-004.png",
+                                          "bytes":  1442974,
+                                          "sha256":  "ba2ea29effbe0ae1e63a358efed360747c74dc1d4946212d506735eb57d008b3",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear-left/frame-005.png",
+                                          "bytes":  1442968,
+                                          "sha256":  "35a697f4150cf1a5c8029e271123ac82952be96dee22142b90eb581988620b4c",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear-left/frame-006.png",
+                                          "bytes":  1442974,
+                                          "sha256":  "6c51f60361c6564ceab804841cacf32a6826bb06df968b55588fea6ebbf29da3",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "turn:rear-left-to-rear",
+                       "loop":  false,
+                       "frame_count":  3,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/transitions/turn/rear-left-to-rear/frame-00.png",
+                                          "bytes":  1442974,
+                                          "sha256":  "42a41ebaae8d47152420bb002f5d6c44847539f21c6c19bf784774d8193e0de8",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/rear-left-to-rear/frame-01.png",
+                                          "bytes":  402219,
+                                          "sha256":  "d2ee34802694cc7fa28f15da0a7ec6de17820c3294b9a7f769841bede061278d",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/rear-left-to-rear/frame-02.png",
+                                          "bytes":  1092098,
+                                          "sha256":  "984e77c6764a229843d3a29984f563e98268bf8ef595a5e75e67eb5a75db8b60",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "loop:rear",
+                       "loop":  true,
+                       "frame_count":  6,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/directions/rear/frame-001.png",
+                                          "bytes":  1092098,
+                                          "sha256":  "02b2cc9b038e688b596b3a94c7527bc9047eb3d917cdedda49aed085dd7f4e2d",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear/frame-002.png",
+                                          "bytes":  1092150,
+                                          "sha256":  "51bd7a63cc8e8ff23f8c959ffe0445efe3fc33dd93fd3bfe366bec44a1cbf237",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear/frame-003.png",
+                                          "bytes":  1092150,
+                                          "sha256":  "9466cacca0573790e4b6f9c0567fd8803a5049e45c368797f85566970e96ead3",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear/frame-004.png",
+                                          "bytes":  1092098,
+                                          "sha256":  "d90fc76a806700a6456ec653b23dbfdf8606a90c0408fc425b737ec5a4d02b2b",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear/frame-005.png",
+                                          "bytes":  1092140,
+                                          "sha256":  "4bd366fae0c081bcaa04562855fbf58657ef7541a4a878182e4535f43b86ce00",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear/frame-006.png",
+                                          "bytes":  1092098,
+                                          "sha256":  "d90fc76a806700a6456ec653b23dbfdf8606a90c0408fc425b737ec5a4d02b2b",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "turn:rear-to-rear-right",
+                       "loop":  false,
+                       "frame_count":  3,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/transitions/turn/rear-to-rear-right/frame-00.png",
+                                          "bytes":  1092098,
+                                          "sha256":  "984e77c6764a229843d3a29984f563e98268bf8ef595a5e75e67eb5a75db8b60",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/rear-to-rear-right/frame-01.png",
+                                          "bytes":  388014,
+                                          "sha256":  "c914acdbca1193df5c47d12c1510256fb73738fbd1bb91f26f8840c2ed43894b",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/rear-to-rear-right/frame-02.png",
+                                          "bytes":  1440317,
+                                          "sha256":  "7947c22a95cd3e9cb4a08d0290d33ea7cb89f17246394bedcc2b1d91b453c2dd",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "loop:rear-right",
+                       "loop":  true,
+                       "frame_count":  6,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/directions/rear-right/frame-001.png",
+                                          "bytes":  1440317,
+                                          "sha256":  "92077e11a6d94c2800933173ee8e28059b0dd28f1cbbc3b1319f04cd6ccd335a",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear-right/frame-002.png",
+                                          "bytes":  1440339,
+                                          "sha256":  "425098e2927937db844fc4258cbc3d9561bc7e5497e70f6ac17fe0d0005e17df",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear-right/frame-003.png",
+                                          "bytes":  1440339,
+                                          "sha256":  "69acbf1fca06567e213f66b399508d8dc5903bb16ef03a1ab4def0eee15c5285",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear-right/frame-004.png",
+                                          "bytes":  1440317,
+                                          "sha256":  "e1c044f5a373e397e0e2cad5704b09d1d80f4e980525161992420f6a8234bc35",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear-right/frame-005.png",
+                                          "bytes":  1440328,
+                                          "sha256":  "4150b5cbd6d72ab93377bd18029b39de0ce63f8452e29d1783f6052a62eb2639",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/rear-right/frame-006.png",
+                                          "bytes":  1440317,
+                                          "sha256":  "8218ff6aa062f669220379d7da7c9a86c94eacc459a1f19a11620657a2c8c73c",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "turn:rear-right-to-right",
+                       "loop":  false,
+                       "frame_count":  3,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/transitions/turn/rear-right-to-right/frame-00.png",
+                                          "bytes":  1440317,
+                                          "sha256":  "7947c22a95cd3e9cb4a08d0290d33ea7cb89f17246394bedcc2b1d91b453c2dd",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/rear-right-to-right/frame-01.png",
+                                          "bytes":  424746,
+                                          "sha256":  "ace1dc3b2fb9ea0367bde156bef5892c5b10aed05abf67b6853b0ea5edfa5714",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/turn/rear-right-to-right/frame-02.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "703988d7e221b0b85044ea611298783f67f1e97ad9afd8c65e0b956871d58b55",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "loop:right",
+                       "loop":  true,
+                       "frame_count":  6,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/directions/right/frame-001.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "99baf9d21340161cfded8096d9fcce29ffb186f10af4578f536393c0c2870442",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/right/frame-002.png",
+                                          "bytes":  1532669,
+                                          "sha256":  "1ee65c2390cc4ead2746049234602b9d1ad5b9a6a2a1239df98bbfcbb1c8c898",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/right/frame-003.png",
+                                          "bytes":  1532669,
+                                          "sha256":  "1ee65c2390cc4ead2746049234602b9d1ad5b9a6a2a1239df98bbfcbb1c8c898",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/right/frame-004.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "a2822764b04927ebb7ecabaa5f4abd161a47e73425537a2e764ae2b97a31f783",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/right/frame-005.png",
+                                          "bytes":  1532657,
+                                          "sha256":  "8d4c76472617c2c090c9a040f6157226908bea29f59de27d2c5b026b26b6e8d8",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/directions/right/frame-006.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "41c24afad87c3503342ba1786d1604f6fbe874cc142664d3cdd965a9e507ccb1",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "exit",
+                       "loop":  false,
+                       "frame_count":  6,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/transitions/brake/right/frame-00.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "703988d7e221b0b85044ea611298783f67f1e97ad9afd8c65e0b956871d58b55",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/brake/right/frame-01.png",
+                                          "bytes":  495420,
+                                          "sha256":  "183b973d129c7ac3552419fecf6ac719fbb2c98d2ebbeec15df57c826e29f80b",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/brake/right/frame-02.png",
+                                          "bytes":  490489,
+                                          "sha256":  "c1c333c71b3843b6946434be9e2d2503bb8851d429d629a59a71a685f5ea4934",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/brake/right/frame-03.png",
+                                          "bytes":  486883,
+                                          "sha256":  "4742513e6fbbb92049850b21412f14d7e7a53a79c97cccfe22212079ed5cbb93",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/brake/right/frame-04.png",
+                                          "bytes":  494386,
+                                          "sha256":  "7f17a7d96d52836e5554e80613b4d423f7f8bb7680b355fcb6d85ac6e1fd82dd",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/brake/right/frame-05.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "703988d7e221b0b85044ea611298783f67f1e97ad9afd8c65e0b956871d58b55",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   },
+                   {
+                       "name":  "interrupt_exit",
+                       "loop":  false,
+                       "frame_count":  6,
+                       "frames":  [
+                                      {
+                                          "path":  "sequences/transitions/brake/right/frame-00.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "703988d7e221b0b85044ea611298783f67f1e97ad9afd8c65e0b956871d58b55",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/brake/right/frame-01.png",
+                                          "bytes":  495420,
+                                          "sha256":  "183b973d129c7ac3552419fecf6ac719fbb2c98d2ebbeec15df57c826e29f80b",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/brake/right/frame-02.png",
+                                          "bytes":  490489,
+                                          "sha256":  "c1c333c71b3843b6946434be9e2d2503bb8851d429d629a59a71a685f5ea4934",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/brake/right/frame-03.png",
+                                          "bytes":  486883,
+                                          "sha256":  "4742513e6fbbb92049850b21412f14d7e7a53a79c97cccfe22212079ed5cbb93",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/brake/right/frame-04.png",
+                                          "bytes":  494386,
+                                          "sha256":  "7f17a7d96d52836e5554e80613b4d423f7f8bb7680b355fcb6d85ac6e1fd82dd",
+                                          "duration_ms":  90
+                                      },
+                                      {
+                                          "path":  "sequences/transitions/brake/right/frame-05.png",
+                                          "bytes":  1532659,
+                                          "sha256":  "703988d7e221b0b85044ea611298783f67f1e97ad9afd8c65e0b956871d58b55",
+                                          "duration_ms":  90
+                                      }
+                                  ]
+                   }
+               ],
+    "all_sequences":  {
+                          "directions/right":  [
+                                                   "sequences/directions/right/frame-001.png",
+                                                   "sequences/directions/right/frame-002.png",
+                                                   "sequences/directions/right/frame-003.png",
+                                                   "sequences/directions/right/frame-004.png",
+                                                   "sequences/directions/right/frame-005.png",
+                                                   "sequences/directions/right/frame-006.png"
+                                               ],
+                          "directions/front-right":  [
+                                                         "sequences/directions/front-right/frame-001.png",
+                                                         "sequences/directions/front-right/frame-002.png",
+                                                         "sequences/directions/front-right/frame-003.png",
+                                                         "sequences/directions/front-right/frame-004.png",
+                                                         "sequences/directions/front-right/frame-005.png",
+                                                         "sequences/directions/front-right/frame-006.png"
+                                                     ],
+                          "directions/front":  [
+                                                   "sequences/directions/front/frame-001.png",
+                                                   "sequences/directions/front/frame-002.png",
+                                                   "sequences/directions/front/frame-003.png",
+                                                   "sequences/directions/front/frame-004.png",
+                                                   "sequences/directions/front/frame-005.png",
+                                                   "sequences/directions/front/frame-006.png"
+                                               ],
+                          "directions/front-left":  [
+                                                        "sequences/directions/front-left/frame-001.png",
+                                                        "sequences/directions/front-left/frame-002.png",
+                                                        "sequences/directions/front-left/frame-003.png",
+                                                        "sequences/directions/front-left/frame-004.png",
+                                                        "sequences/directions/front-left/frame-005.png",
+                                                        "sequences/directions/front-left/frame-006.png"
+                                                    ],
+                          "directions/left":  [
+                                                  "sequences/directions/left/frame-001.png",
+                                                  "sequences/directions/left/frame-002.png",
+                                                  "sequences/directions/left/frame-003.png",
+                                                  "sequences/directions/left/frame-004.png",
+                                                  "sequences/directions/left/frame-005.png",
+                                                  "sequences/directions/left/frame-006.png"
+                                              ],
+                          "directions/rear-left":  [
+                                                       "sequences/directions/rear-left/frame-001.png",
+                                                       "sequences/directions/rear-left/frame-002.png",
+                                                       "sequences/directions/rear-left/frame-003.png",
+                                                       "sequences/directions/rear-left/frame-004.png",
+                                                       "sequences/directions/rear-left/frame-005.png",
+                                                       "sequences/directions/rear-left/frame-006.png"
+                                                   ],
+                          "directions/rear":  [
+                                                  "sequences/directions/rear/frame-001.png",
+                                                  "sequences/directions/rear/frame-002.png",
+                                                  "sequences/directions/rear/frame-003.png",
+                                                  "sequences/directions/rear/frame-004.png",
+                                                  "sequences/directions/rear/frame-005.png",
+                                                  "sequences/directions/rear/frame-006.png"
+                                              ],
+                          "directions/rear-right":  [
+                                                        "sequences/directions/rear-right/frame-001.png",
+                                                        "sequences/directions/rear-right/frame-002.png",
+                                                        "sequences/directions/rear-right/frame-003.png",
+                                                        "sequences/directions/rear-right/frame-004.png",
+                                                        "sequences/directions/rear-right/frame-005.png",
+                                                        "sequences/directions/rear-right/frame-006.png"
+                                                    ],
+                          "expressions/head-tilt":  [
+                                                        "sequences/expressions/head-tilt/frame-00.png",
+                                                        "sequences/expressions/head-tilt/frame-01.png",
+                                                        "sequences/expressions/head-tilt/frame-02.png",
+                                                        "sequences/expressions/head-tilt/frame-03.png",
+                                                        "sequences/expressions/head-tilt/frame-04.png",
+                                                        "sequences/expressions/head-tilt/frame-05.png"
+                                                    ],
+                          "expressions/happy-squint":  [
+                                                           "sequences/expressions/happy-squint/frame-00.png",
+                                                           "sequences/expressions/happy-squint/frame-01.png",
+                                                           "sequences/expressions/happy-squint/frame-02.png",
+                                                           "sequences/expressions/happy-squint/frame-03.png",
+                                                           "sequences/expressions/happy-squint/frame-04.png",
+                                                           "sequences/expressions/happy-squint/frame-05.png"
+                                                       ],
+                          "expressions/side-glance":  [
+                                                          "sequences/expressions/side-glance/frame-00.png",
+                                                          "sequences/expressions/side-glance/frame-01.png",
+                                                          "sequences/expressions/side-glance/frame-02.png",
+                                                          "sequences/expressions/side-glance/frame-03.png",
+                                                          "sequences/expressions/side-glance/frame-04.png",
+                                                          "sequences/expressions/side-glance/frame-05.png"
+                                                      ],
+                          "expressions/curious-gaze":  [
+                                                           "sequences/expressions/curious-gaze/frame-00.png",
+                                                           "sequences/expressions/curious-gaze/frame-01.png",
+                                                           "sequences/expressions/curious-gaze/frame-02.png",
+                                                           "sequences/expressions/curious-gaze/frame-03.png",
+                                                           "sequences/expressions/curious-gaze/frame-04.png",
+                                                           "sequences/expressions/curious-gaze/frame-05.png"
+                                                       ],
+                          "expressions/knowing-look":  [
+                                                           "sequences/expressions/knowing-look/frame-00.png",
+                                                           "sequences/expressions/knowing-look/frame-01.png",
+                                                           "sequences/expressions/knowing-look/frame-02.png",
+                                                           "sequences/expressions/knowing-look/frame-03.png",
+                                                           "sequences/expressions/knowing-look/frame-04.png",
+                                                           "sequences/expressions/knowing-look/frame-05.png"
+                                                       ],
+                          "start/right":  [
+                                              "sequences/transitions/start/right/frame-00.png",
+                                              "sequences/transitions/start/right/frame-01.png",
+                                              "sequences/transitions/start/right/frame-02.png",
+                                              "sequences/transitions/start/right/frame-03.png",
+                                              "sequences/transitions/start/right/frame-04.png",
+                                              "sequences/transitions/start/right/frame-05.png"
+                                          ],
+                          "start/front-right":  [
+                                                    "sequences/transitions/start/front-right/frame-00.png",
+                                                    "sequences/transitions/start/front-right/frame-01.png",
+                                                    "sequences/transitions/start/front-right/frame-02.png",
+                                                    "sequences/transitions/start/front-right/frame-03.png",
+                                                    "sequences/transitions/start/front-right/frame-04.png",
+                                                    "sequences/transitions/start/front-right/frame-05.png"
+                                                ],
+                          "start/front":  [
+                                              "sequences/transitions/start/front/frame-00.png",
+                                              "sequences/transitions/start/front/frame-01.png",
+                                              "sequences/transitions/start/front/frame-02.png",
+                                              "sequences/transitions/start/front/frame-03.png",
+                                              "sequences/transitions/start/front/frame-04.png",
+                                              "sequences/transitions/start/front/frame-05.png"
+                                          ],
+                          "start/front-left":  [
+                                                   "sequences/transitions/start/front-left/frame-00.png",
+                                                   "sequences/transitions/start/front-left/frame-01.png",
+                                                   "sequences/transitions/start/front-left/frame-02.png",
+                                                   "sequences/transitions/start/front-left/frame-03.png",
+                                                   "sequences/transitions/start/front-left/frame-04.png",
+                                                   "sequences/transitions/start/front-left/frame-05.png"
+                                               ],
+                          "start/left":  [
+                                             "sequences/transitions/start/left/frame-00.png",
+                                             "sequences/transitions/start/left/frame-01.png",
+                                             "sequences/transitions/start/left/frame-02.png",
+                                             "sequences/transitions/start/left/frame-03.png",
+                                             "sequences/transitions/start/left/frame-04.png",
+                                             "sequences/transitions/start/left/frame-05.png"
+                                         ],
+                          "start/rear-left":  [
+                                                  "sequences/transitions/start/rear-left/frame-00.png",
+                                                  "sequences/transitions/start/rear-left/frame-01.png",
+                                                  "sequences/transitions/start/rear-left/frame-02.png",
+                                                  "sequences/transitions/start/rear-left/frame-03.png",
+                                                  "sequences/transitions/start/rear-left/frame-04.png",
+                                                  "sequences/transitions/start/rear-left/frame-05.png"
+                                              ],
+                          "start/rear":  [
+                                             "sequences/transitions/start/rear/frame-00.png",
+                                             "sequences/transitions/start/rear/frame-01.png",
+                                             "sequences/transitions/start/rear/frame-02.png",
+                                             "sequences/transitions/start/rear/frame-03.png",
+                                             "sequences/transitions/start/rear/frame-04.png",
+                                             "sequences/transitions/start/rear/frame-05.png"
+                                         ],
+                          "start/rear-right":  [
+                                                   "sequences/transitions/start/rear-right/frame-00.png",
+                                                   "sequences/transitions/start/rear-right/frame-01.png",
+                                                   "sequences/transitions/start/rear-right/frame-02.png",
+                                                   "sequences/transitions/start/rear-right/frame-03.png",
+                                                   "sequences/transitions/start/rear-right/frame-04.png",
+                                                   "sequences/transitions/start/rear-right/frame-05.png"
+                                               ],
+                          "brake/right":  [
+                                              "sequences/transitions/brake/right/frame-00.png",
+                                              "sequences/transitions/brake/right/frame-01.png",
+                                              "sequences/transitions/brake/right/frame-02.png",
+                                              "sequences/transitions/brake/right/frame-03.png",
+                                              "sequences/transitions/brake/right/frame-04.png",
+                                              "sequences/transitions/brake/right/frame-05.png"
+                                          ],
+                          "brake/front-right":  [
+                                                    "sequences/transitions/brake/front-right/frame-00.png",
+                                                    "sequences/transitions/brake/front-right/frame-01.png",
+                                                    "sequences/transitions/brake/front-right/frame-02.png",
+                                                    "sequences/transitions/brake/front-right/frame-03.png",
+                                                    "sequences/transitions/brake/front-right/frame-04.png",
+                                                    "sequences/transitions/brake/front-right/frame-05.png"
+                                                ],
+                          "brake/front":  [
+                                              "sequences/transitions/brake/front/frame-00.png",
+                                              "sequences/transitions/brake/front/frame-01.png",
+                                              "sequences/transitions/brake/front/frame-02.png",
+                                              "sequences/transitions/brake/front/frame-03.png",
+                                              "sequences/transitions/brake/front/frame-04.png",
+                                              "sequences/transitions/brake/front/frame-05.png"
+                                          ],
+                          "brake/front-left":  [
+                                                   "sequences/transitions/brake/front-left/frame-00.png",
+                                                   "sequences/transitions/brake/front-left/frame-01.png",
+                                                   "sequences/transitions/brake/front-left/frame-02.png",
+                                                   "sequences/transitions/brake/front-left/frame-03.png",
+                                                   "sequences/transitions/brake/front-left/frame-04.png",
+                                                   "sequences/transitions/brake/front-left/frame-05.png"
+                                               ],
+                          "brake/left":  [
+                                             "sequences/transitions/brake/left/frame-00.png",
+                                             "sequences/transitions/brake/left/frame-01.png",
+                                             "sequences/transitions/brake/left/frame-02.png",
+                                             "sequences/transitions/brake/left/frame-03.png",
+                                             "sequences/transitions/brake/left/frame-04.png",
+                                             "sequences/transitions/brake/left/frame-05.png"
+                                         ],
+                          "brake/rear-left":  [
+                                                  "sequences/transitions/brake/rear-left/frame-00.png",
+                                                  "sequences/transitions/brake/rear-left/frame-01.png",
+                                                  "sequences/transitions/brake/rear-left/frame-02.png",
+                                                  "sequences/transitions/brake/rear-left/frame-03.png",
+                                                  "sequences/transitions/brake/rear-left/frame-04.png",
+                                                  "sequences/transitions/brake/rear-left/frame-05.png"
+                                              ],
+                          "brake/rear":  [
+                                             "sequences/transitions/brake/rear/frame-00.png",
+                                             "sequences/transitions/brake/rear/frame-01.png",
+                                             "sequences/transitions/brake/rear/frame-02.png",
+                                             "sequences/transitions/brake/rear/frame-03.png",
+                                             "sequences/transitions/brake/rear/frame-04.png",
+                                             "sequences/transitions/brake/rear/frame-05.png"
+                                         ],
+                          "brake/rear-right":  [
+                                                   "sequences/transitions/brake/rear-right/frame-00.png",
+                                                   "sequences/transitions/brake/rear-right/frame-01.png",
+                                                   "sequences/transitions/brake/rear-right/frame-02.png",
+                                                   "sequences/transitions/brake/rear-right/frame-03.png",
+                                                   "sequences/transitions/brake/rear-right/frame-04.png",
+                                                   "sequences/transitions/brake/rear-right/frame-05.png"
+                                               ],
+                          "turn/front-left-to-front":  [
+                                                           "sequences/transitions/turn/front-left-to-front/frame-00.png",
+                                                           "sequences/transitions/turn/front-left-to-front/frame-01.png",
+                                                           "sequences/transitions/turn/front-left-to-front/frame-02.png"
+                                                       ],
+                          "turn/front-left-to-left":  [
+                                                          "sequences/transitions/turn/front-left-to-left/frame-00.png",
+                                                          "sequences/transitions/turn/front-left-to-left/frame-01.png",
+                                                          "sequences/transitions/turn/front-left-to-left/frame-02.png"
+                                                      ],
+                          "turn/front-right-to-front":  [
+                                                            "sequences/transitions/turn/front-right-to-front/frame-00.png",
+                                                            "sequences/transitions/turn/front-right-to-front/frame-01.png",
+                                                            "sequences/transitions/turn/front-right-to-front/frame-02.png"
+                                                        ],
+                          "turn/front-right-to-right":  [
+                                                            "sequences/transitions/turn/front-right-to-right/frame-00.png",
+                                                            "sequences/transitions/turn/front-right-to-right/frame-01.png",
+                                                            "sequences/transitions/turn/front-right-to-right/frame-02.png"
+                                                        ],
+                          "turn/front-to-front-left":  [
+                                                           "sequences/transitions/turn/front-to-front-left/frame-00.png",
+                                                           "sequences/transitions/turn/front-to-front-left/frame-01.png",
+                                                           "sequences/transitions/turn/front-to-front-left/frame-02.png"
+                                                       ],
+                          "turn/front-to-front-right":  [
+                                                            "sequences/transitions/turn/front-to-front-right/frame-00.png",
+                                                            "sequences/transitions/turn/front-to-front-right/frame-01.png",
+                                                            "sequences/transitions/turn/front-to-front-right/frame-02.png"
+                                                        ],
+                          "turn/left-to-front-left":  [
+                                                          "sequences/transitions/turn/left-to-front-left/frame-00.png",
+                                                          "sequences/transitions/turn/left-to-front-left/frame-01.png",
+                                                          "sequences/transitions/turn/left-to-front-left/frame-02.png"
+                                                      ],
+                          "turn/left-to-rear-left":  [
+                                                         "sequences/transitions/turn/left-to-rear-left/frame-00.png",
+                                                         "sequences/transitions/turn/left-to-rear-left/frame-01.png",
+                                                         "sequences/transitions/turn/left-to-rear-left/frame-02.png"
+                                                     ],
+                          "turn/rear-left-to-left":  [
+                                                         "sequences/transitions/turn/rear-left-to-left/frame-00.png",
+                                                         "sequences/transitions/turn/rear-left-to-left/frame-01.png",
+                                                         "sequences/transitions/turn/rear-left-to-left/frame-02.png"
+                                                     ],
+                          "turn/rear-left-to-rear":  [
+                                                         "sequences/transitions/turn/rear-left-to-rear/frame-00.png",
+                                                         "sequences/transitions/turn/rear-left-to-rear/frame-01.png",
+                                                         "sequences/transitions/turn/rear-left-to-rear/frame-02.png"
+                                                     ],
+                          "turn/rear-right-to-rear":  [
+                                                          "sequences/transitions/turn/rear-right-to-rear/frame-00.png",
+                                                          "sequences/transitions/turn/rear-right-to-rear/frame-01.png",
+                                                          "sequences/transitions/turn/rear-right-to-rear/frame-02.png"
+                                                      ],
+                          "turn/rear-right-to-right":  [
+                                                           "sequences/transitions/turn/rear-right-to-right/frame-00.png",
+                                                           "sequences/transitions/turn/rear-right-to-right/frame-01.png",
+                                                           "sequences/transitions/turn/rear-right-to-right/frame-02.png"
+                                                       ],
+                          "turn/rear-to-rear-left":  [
+                                                         "sequences/transitions/turn/rear-to-rear-left/frame-00.png",
+                                                         "sequences/transitions/turn/rear-to-rear-left/frame-01.png",
+                                                         "sequences/transitions/turn/rear-to-rear-left/frame-02.png"
+                                                     ],
+                          "turn/rear-to-rear-right":  [
+                                                          "sequences/transitions/turn/rear-to-rear-right/frame-00.png",
+                                                          "sequences/transitions/turn/rear-to-rear-right/frame-01.png",
+                                                          "sequences/transitions/turn/rear-to-rear-right/frame-02.png"
+                                                      ],
+                          "turn/right-to-front-right":  [
+                                                            "sequences/transitions/turn/right-to-front-right/frame-00.png",
+                                                            "sequences/transitions/turn/right-to-front-right/frame-01.png",
+                                                            "sequences/transitions/turn/right-to-front-right/frame-02.png"
+                                                        ],
+                          "turn/right-to-rear-right":  [
+                                                           "sequences/transitions/turn/right-to-rear-right/frame-00.png",
+                                                           "sequences/transitions/turn/right-to-rear-right/frame-01.png",
+                                                           "sequences/transitions/turn/right-to-rear-right/frame-02.png"
+                                                       ]
+                      },
+    "preview_flow_note":  "Owner candidate preview traverses the full eight-direction ring so Windows QA can inspect all cruise headings and adjacent turns. Runtime gates remain closed."
+}

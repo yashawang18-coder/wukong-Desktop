@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -71,6 +71,7 @@ public partial class ControlPanelWindow : Window
             .Where(x => !string.Equals(x.BehaviorId, MagicBehaviorIds.PetrificusRelease, StringComparison.OrdinalIgnoreCase))
             .OrderBy(x => x.DisplayName)
             .ToList();
+        CarRideSpecialList.ItemsSource = _runtime.CarRideCandidateMotions.ToList();
         CommandMotionList.ItemsSource = _runtime.Motions
             .Where(x => string.Equals(x.Category, "口令动作", StringComparison.Ordinal))
             .OrderBy(x => x.BehaviorId)
@@ -78,6 +79,7 @@ public partial class ControlPanelWindow : Window
         LifecycleCandidateList.ItemsSource = _runtime.LifecycleCandidateMotions
             .OrderBy(x => x.BehaviorId)
             .ToList();
+        CarRideCandidateList.ItemsSource = _runtime.CarRideCandidateMotions.ToList();
         AlbumList.ItemsSource = _albumFolders;
         AlbumMediaList.ItemsSource = _albumMediaBindings;
         OwnerChatList.ItemsSource = _chatItems;
@@ -894,14 +896,32 @@ public partial class ControlPanelWindow : Window
         };
     }
 
+    private async void ShowCarRide_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: PlayableMotion })
+            return;
+
+        MagicShowStatus.Text = "Showing car ride candidate...";
+        var result = await _runtime.SubmitCarRideAsync(BehaviorRequestSource.ControlPanel);
+        MagicShowStatus.Text = result switch
+        {
+            PetActionResult.Accepted => "Car ride candidate is showing.",
+            PetActionResult.Deferred => "Car ride candidate is deferred by the runtime gate.",
+            PetActionResult.Rejected => "Car ride candidate is rejected.",
+            _ => result.ToString()
+        };
+    }
     private static bool IsCommandMotion(PlayableMotion motion) =>
         string.Equals(motion.Category, "口令动作", StringComparison.Ordinal);
 
     private static bool IsMagicMotion(PlayableMotion motion) =>
         string.Equals(motion.Category, "宠物魔法", StringComparison.Ordinal);
 
+    private static bool IsCarRideMotion(PlayableMotion motion) =>
+        string.Equals(motion.BehaviorId, CarRideBehaviorIds.CarRide, StringComparison.OrdinalIgnoreCase);
+
     private static bool IsBaseMotion(PlayableMotion motion) =>
-        !IsCommandMotion(motion) && !IsMagicMotion(motion);
+        !IsCommandMotion(motion) && !IsMagicMotion(motion) && !IsCarRideMotion(motion);
 
     private void LoadAvatarIfAvailable()
     {

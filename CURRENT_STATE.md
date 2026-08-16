@@ -1,3 +1,45 @@
+
+## WK-INTERACTION-CAR-RIDE-CANDIDATE-v8 runtime promotion - 2026-08-16
+
+Windows owner visual QA passed on 2026-08-16 using the local transparent WPF candidate EXE generated from this branch.
+
+Current runtime state:
+
+- `source_material_visual_approval`: `approved`
+- `visual_approved`: `true`
+- `windows_owner_visual_qa`: `passed`
+- `windows_owner_visual_qa_date`: `2026-08-16`
+- `runtime_validation`: `passed_windows_renderer_qa`
+- `runtime_approved`: `true`
+- `runtime_use`: `true`
+- `prototype_use`: `false`
+- `normal_runtime_available`: `true`, only for the manual owner `玩一下 > 兜风` path
+- `release_status`: `not_released`
+- `git_status`: `runtime_approved_local_unpublished`
+
+`visual_approved=true` records source visual approval. It is separate from runtime approval. Runtime approval for v8 is granted only because the owner separately completed Windows transparent WPF renderer QA on 2026-08-16.
+
+Approval scope is intentionally narrow: only explicit owner UI selection of `玩一下 > 兜风` may trigger `wk.interaction.car_ride` through the normal approved runtime gate.
+
+Still forbidden for v8:
+
+- `AutonomousTick`
+- Dialogue and model routing
+- command/口令 routing
+- startup auto-play
+- `吃一下`, `散步`, or any locked command path
+- concurrent second car-ride playback
+
+Traceability retained:
+
+- Asset/batch: `WK-INTERACTION-CAR-RIDE-CANDIDATE-v8`
+- Original ZIP SHA-256: `bf92f38e3cc976236584d8581cbb8f0f1965257c31837c0d1fd69c7670e9f7e1`
+- Published directory PNG count: 253
+- Manifest runtime frame references: 222
+- `SOURCE-FREEZE-SHA256SUMS.txt`
+- `IMPORT-VALIDATION-REPORT.json`
+
+The formal installer has not been generated in this branch.
 # Current state
 
 Last verified: 2026-08-15 (Asia/Singapore), integration branch `agent/windows-runtime-assets-integration`.

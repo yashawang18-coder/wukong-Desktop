@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -18,6 +18,9 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _coinStateTimer;
     private readonly DispatcherTimer _coinSingleClickTimer;
     private readonly Dictionary<string, BitmapImage> _imageCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Queue<string> _imageCacheOrder = new();
+    private int _imageCacheEvictions;
+    private const int MaxDecodedFrameCache = 36;
     private const double BaseWindowSize = 320;
     private const double BasePetImageSize = 310;
     private const double BaseFallbackSize = 240;
@@ -40,6 +43,8 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _effectCancellation;
     private double _savedOpacity = 1.0;
     private string _broomDirection = "right";
+    private string _carRideDirection = "right";
+    private bool _suspendAnimationFrames;
     private string _currentFramePath = string.Empty;
 
     public MainWindow()
@@ -61,6 +66,8 @@ public partial class MainWindow : Window
             var chatWindow = _chatWindow;
             _chatWindow = null;
             chatWindow?.Close();
+            _imageCache.Clear();
+            _imageCacheOrder.Clear();
             _agentRuntime.Dispose();
         };
 
@@ -254,6 +261,9 @@ public partial class MainWindow : Window
             await _runtime.SubmitMagicAsync(behaviorId, BehaviorRequestSource.OwnerContextMenu);
     }
 
+    private async void CarRideMenuItem_Click(object sender, RoutedEventArgs e) =>
+        await _runtime.SubmitCarRideAsync(BehaviorRequestSource.OwnerContextMenu);
+
     private void OpenPanelMenuItem_Click(object sender, RoutedEventArgs e) => OpenControlPanel();
 
     private void ChatMenuItem_Click(object sender, RoutedEventArgs e) => ToggleChat();
@@ -333,7 +343,7 @@ public partial class MainWindow : Window
 
     private void AdvanceFrame()
     {
-        if (_activeRequest is null)
+        if (_activeRequest is null || _suspendAnimationFrames)
             return;
 
         var phases = _activeRequest.Motion.Phases.Where(x => x.Frames.Count > 0).ToList();
@@ -356,9 +366,15 @@ public partial class MainWindow : Window
             return;
         }
         var phaseFrames = phase.Frames;
+        var directionKey = _activeRequest.Motion.Effect switch
+        {
+            DesktopMotionEffect.BroomFlight => _broomDirection,
+            DesktopMotionEffect.CarRide => _carRideDirection,
+            _ => string.Empty
+        };
         if (phase.Loop &&
-            _activeRequest.Motion.Effect == DesktopMotionEffect.BroomFlight &&
-            _activeRequest.Motion.DirectionalFrames?.TryGetValue(_broomDirection, out var directional) == true &&
+            !string.IsNullOrWhiteSpace(directionKey) &&
+            _activeRequest.Motion.DirectionalFrames?.TryGetValue(directionKey, out var directional) == true &&
             directional.Count > 0)
         {
             phaseFrames = directional;
@@ -411,6 +427,7 @@ public partial class MainWindow : Window
         RestoreWindowAfterEffect();
         _animationTimer.Stop();
         _coinSingleClickTimer.Stop();
+        _suspendAnimationFrames = false;
         _activeRequest = null;
         _autonomousTimer.Start();
         await _runtime.StopAsync(reason);
@@ -431,8 +448,9 @@ public partial class MainWindow : Window
         _ = request.Motion.Effect switch
         {
             DesktopMotionEffect.BroomFlight => RunBroomFlightAsync(_effectCancellation.Token),
-            DesktopMotionEffect.Apparate => RunApparateAsync(_effectCancellation.Token),
+            DesktopMotionEffect.Apparate => RunApparateAsync(request, _effectCancellation.Token),
             DesktopMotionEffect.Scourgify => RunScourgifyAsync(_effectCancellation.Token),
+            DesktopMotionEffect.CarRide => RunCarRideAsync(_effectCancellation.Token),
             _ => Task.CompletedTask
         };
     }
@@ -473,34 +491,36 @@ public partial class MainWindow : Window
         }
     }
 
-    private async Task RunApparateAsync(CancellationToken token)
+    private async Task RunApparateAsync(PetMotionRequest request, CancellationToken token)
     {
         _savedOpacity = Opacity;
+        _suspendAnimationFrames = true;
         try
         {
-            for (var i = 1; i <= 8; i++)
+            ShowFirstAvailableFrame(request.Motion);
+            for (var i = 1; i <= 18; i++)
             {
                 token.ThrowIfCancellationRequested();
-                Opacity = Math.Max(0, _savedOpacity * (1 - i / 8.0));
-                await Task.Delay(55, token);
+                Opacity = Math.Max(0, _savedOpacity * (1 - i / 18.0));
+                await Task.Delay(80, token);
             }
+
+            Opacity = 0;
+            await Task.Delay(Random.Shared.Next(5000, 10001), token);
 
             var workArea = SystemParameters.WorkArea;
             var width = ActualWidth > 0 ? ActualWidth : Width;
             var height = ActualHeight > 0 ? ActualHeight : Height;
-            var target = ClampToWorkArea(
-                new Point(workArea.Left + workArea.Width * 0.22, workArea.Top + workArea.Height * 0.58),
-                workArea,
-                width,
-                height);
+            var target = ChooseApparateTarget(new Point(Left, Top), workArea, width, height);
             Left = target.X;
             Top = target.Y;
 
-            for (var i = 1; i <= 8; i++)
+            for (var i = 1; i <= 18; i++)
             {
                 token.ThrowIfCancellationRequested();
-                Opacity = Math.Min(_savedOpacity, _savedOpacity * i / 8.0);
-                await Task.Delay(55, token);
+                ShowApparateReappearFrame(request.Motion, i, 18);
+                Opacity = Math.Min(_savedOpacity, _savedOpacity * i / 18.0);
+                await Task.Delay(80, token);
             }
         }
         catch (OperationCanceledException)
@@ -513,9 +533,21 @@ public partial class MainWindow : Window
         finally
         {
             RestoreWindowAfterEffect();
+            _suspendAnimationFrames = false;
+            if (ReferenceEquals(_activeRequest, request))
+                FinishCurrentMotion();
         }
     }
 
+    private void ShowApparateReappearFrame(PlayableMotion motion, int step, int totalSteps)
+    {
+        var exit = motion.Phases.FirstOrDefault(x => string.Equals(x.Name, "exit", StringComparison.OrdinalIgnoreCase));
+        if (exit?.Frames.Count > 0 != true)
+            return;
+
+        var frameIndex = Math.Clamp((int)Math.Floor((step - 1) / (double)Math.Max(1, totalSteps) * exit.Frames.Count), 0, exit.Frames.Count - 1);
+        SetFrame(exit.Frames[frameIndex], "apparate_reappear", motion.VisualScale);
+    }
     private async Task RunScourgifyAsync(CancellationToken token)
     {
         try
@@ -546,10 +578,41 @@ public partial class MainWindow : Window
         }
     }
 
+    private async Task RunCarRideAsync(CancellationToken token)
+    {
+        try
+        {
+            var workArea = SystemParameters.WorkArea;
+            var width = ActualWidth > 0 ? ActualWidth : Width;
+            var height = ActualHeight > 0 ? ActualHeight : Height;
+            var start = ClampToWorkArea(new Point(Left, Top), workArea, width, height);
+            var path = BuildCarRidePreviewPath(start, workArea, width, height);
+
+            var current = start;
+            foreach (var target in path)
+            {
+                await MoveWindowAsync(current, target, TimeSpan.FromMilliseconds(1350), token);
+                current = target;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _runtime.ReportError($"car_ride_failed:{ex.GetType().Name}");
+        }
+        finally
+        {
+            ApplyVisiblePlacement(new Point(Left, Top));
+        }
+    }
     private async Task MoveWindowAsync(Point from, Point to, TimeSpan duration, CancellationToken token)
     {
         if (_activeRequest?.Motion.Effect == DesktopMotionEffect.BroomFlight)
             _broomDirection = ResolveEightWayDirection(from, to);
+        else if (_activeRequest?.Motion.Effect == DesktopMotionEffect.CarRide)
+            _carRideDirection = ResolveCarRideDirection(from, to);
         var steps = Math.Max(1, (int)(duration.TotalMilliseconds / 24));
         for (var i = 1; i <= steps; i++)
         {
@@ -567,10 +630,48 @@ public partial class MainWindow : Window
         ApplyVisiblePlacement(new Point(Left, Top));
     }
 
+    public static Point ChooseApparateTarget(Point current, Rect workArea, double width, double height)
+    {
+        var maxX = Math.Max(workArea.Left, workArea.Right - width);
+        var maxY = Math.Max(workArea.Top, workArea.Bottom - height);
+        var minDistance = Math.Max(Math.Min(width, height) * 0.75, 120);
+
+        for (var attempt = 0; attempt < 12; attempt++)
+        {
+            var candidate = new Point(
+                Random.Shared.NextDouble() * (maxX - workArea.Left) + workArea.Left,
+                Random.Shared.NextDouble() * (maxY - workArea.Top) + workArea.Top);
+            if (Distance(current, candidate) >= minDistance)
+                return ClampToWorkArea(candidate, workArea, width, height);
+        }
+
+        return ClampToWorkArea(new Point(maxX, maxY), workArea, width, height);
+    }
+
     private static Point ClampToWorkArea(Point preferred, Rect workArea, double width, double height) => new(
         Math.Min(Math.Max(preferred.X, workArea.Left), Math.Max(workArea.Left, workArea.Right - width)),
         Math.Min(Math.Max(preferred.Y, workArea.Top), Math.Max(workArea.Top, workArea.Bottom - height)));
 
+    public static IReadOnlyList<Point> BuildCarRidePreviewPath(Point start, Rect workArea, double width, double height)
+    {
+        var horizontal = Math.Max(width * 1.3, workArea.Width * 0.12);
+        var vertical = Math.Max(height * 0.62, workArea.Height * 0.09);
+        var raw = new[]
+        {
+            new Point(start.X + horizontal, start.Y),
+            new Point(start.X + horizontal * 1.45, start.Y + vertical),
+            new Point(start.X + horizontal * 1.45, start.Y + vertical * 1.85),
+            new Point(start.X + horizontal * 1.02, start.Y + vertical * 2.35),
+            new Point(start.X - horizontal * 0.68, start.Y + vertical * 2.25),
+            new Point(start.X - horizontal * 1.45, start.Y + vertical * 1.25),
+            new Point(start.X - horizontal * 1.22, start.Y - vertical * 0.55),
+            new Point(start.X - horizontal * 0.18, start.Y - vertical * 1.32),
+            new Point(start.X + horizontal * 0.92, start.Y - vertical * 0.52),
+            new Point(start.X + horizontal * 1.18, start.Y + vertical * 0.18)
+        };
+
+        return raw.Select(point => ClampToWorkArea(point, workArea, width, height)).ToArray();
+    }
     private static double EaseInOut(double value) =>
         value < 0.5 ? 2 * value * value : 1 - Math.Pow(-2 * value + 2, 2) / 2;
 
@@ -590,6 +691,21 @@ public partial class MainWindow : Window
         };
     }
 
+    public static string ResolveCarRideDirection(Point from, Point to)
+    {
+        var angle = Math.Atan2(to.Y - from.Y, to.X - from.X) * 180 / Math.PI;
+        return angle switch
+        {
+            >= -22.5 and < 22.5 => "right",
+            >= 22.5 and < 67.5 => "front-right",
+            >= 67.5 and < 112.5 => "front",
+            >= 112.5 and < 157.5 => "front-left",
+            >= 157.5 or < -157.5 => "left",
+            >= -157.5 and < -112.5 => "rear-left",
+            >= -112.5 and < -67.5 => "rear",
+            _ => "rear-right"
+        };
+    }
     private void ShowFirstAvailableFrame(PlayableMotion motion)
     {
         var frame = motion.Phases.SelectMany(x => x.Frames).FirstOrDefault();
@@ -602,13 +718,13 @@ public partial class MainWindow : Window
         SetFrame(frame, motion.Phases.First(x => x.Frames.Count > 0).Name);
     }
 
-    private void SetFrame(string path, string phase)
+    private void SetFrame(string path, string phase, double? visualScale = null)
     {
         try
         {
             PetImage.Source = LoadImage(path);
             _currentFramePath = path;
-            ApplyFrameVisualScale(path, _activeRequest?.Motion.VisualScale ?? 1.0);
+            ApplyFrameVisualScale(path, visualScale ?? _activeRequest?.Motion.VisualScale ?? 1.0);
             FallbackBadge.Visibility = Visibility.Collapsed;
             PhaseBadge.Visibility = Visibility.Collapsed;
             _runtime.MarkPhase(phase, path);
@@ -635,9 +751,33 @@ public partial class MainWindow : Window
         image.EndInit();
         image.Freeze();
         _imageCache[path] = image;
+        _imageCacheOrder.Enqueue(path);
+        TrimImageCache();
         return image;
     }
 
+    private void TrimImageCache()
+    {
+        while (_imageCache.Count > MaxDecodedFrameCache && _imageCacheOrder.Count > 0)
+        {
+            var candidate = _imageCacheOrder.Dequeue();
+            if (!_imageCache.ContainsKey(candidate))
+                continue;
+            if (string.Equals(candidate, _currentFramePath, StringComparison.OrdinalIgnoreCase))
+            {
+                _imageCacheOrder.Enqueue(candidate);
+                break;
+            }
+            _imageCache.Remove(candidate);
+            _imageCacheEvictions++;
+        }
+    }
+
+    public int DecodedFrameCacheCount => _imageCache.Count;
+
+    public long EstimatedDecodedFrameBytes => _imageCache.Values.Sum(x => (long)x.PixelWidth * x.PixelHeight * 4);
+
+    public int DecodedFrameCacheEvictions => _imageCacheEvictions;
     private void ShowFallback(string reason)
     {
         PetImage.Source = null;

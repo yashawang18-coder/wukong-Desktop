@@ -39,7 +39,8 @@ public enum DesktopMotionEffect
     Apparate,
     Petrify,
     PetrifyRelease,
-    Scourgify
+    Scourgify,
+    CarRide
 }
 
 public sealed record GestureSample(Point Down, Point Up, TimeSpan Duration, int ClickCount, bool HitVisibleBody);
@@ -401,9 +402,10 @@ public sealed class DesktopMotionCatalog
         var commandCandidates = LoadCommandCandidates(root).ToArray();
         var magicCandidates = LoadMagicCandidates(root).ToArray();
         var lifecycleCandidates = LoadLifecycleCandidates(root).ToArray();
-        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json";
+        var carRideCandidates = LoadCarRideCandidates(root).ToArray();
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json";
         BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
-        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates), summary);
+        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(carRideCandidates), summary);
     }
 
     private static PlayableMotion Motion(
@@ -780,6 +782,125 @@ public sealed class DesktopMotionCatalog
             ? effect
             : DesktopMotionEffect.None;
 
+
+    private static IEnumerable<PlayableMotion> LoadCarRideCandidates(string root)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", CarRideBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("car_ride_candidate_manifest_missing");
+            yield break;
+        }
+
+        CarRideCandidateManifest? manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<CarRideCandidateManifest>(
+                File.ReadAllText(manifestPath),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Car ride candidate manifest parse failed", ex);
+            yield break;
+        }
+
+        if (manifest?.Phases is null || !string.Equals(manifest.BehaviorId, CarRideBehaviorIds.CarRide, StringComparison.OrdinalIgnoreCase))
+            yield break;
+
+        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        var phases = new List<MotionPhase>();
+        var errors = new List<string>();
+        foreach (var phase in manifest.Phases)
+        {
+            var frames = new List<string>();
+            var durations = new List<int>();
+            foreach (var frame in phase.Frames ?? Array.Empty<CommandActionFrameManifest>())
+            {
+                var path = Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(path))
+                {
+                    errors.Add($"missing:{frame.Path}");
+                    continue;
+                }
+
+                var info = new FileInfo(path);
+                if (info.Length != frame.Bytes)
+                    errors.Add($"bytes:{frame.Path}");
+                if (!string.Equals(Sha256(path), frame.Sha256, StringComparison.OrdinalIgnoreCase))
+                    errors.Add($"sha256:{frame.Path}");
+                frames.Add(path);
+                durations.Add(frame.DurationMs.GetValueOrDefault(manifest.FrameDurationMs));
+            }
+
+            if (frames.Count != phase.FrameCount)
+                errors.Add($"phase_frame_count:{phase.Name}:{frames.Count}/{phase.FrameCount}");
+            phases.Add(new MotionPhase(phase.Name, frames, phase.Loop, durations));
+        }
+
+        if (!manifest.RuntimeApproved)
+            errors.Add("runtime_approved_false");
+        if (!manifest.RuntimeUse)
+            errors.Add("runtime_use_false");
+        if (manifest.PrototypeUse)
+            errors.Add("prototype_use_still_enabled");
+        if (!string.Equals(manifest.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.OrdinalIgnoreCase))
+            errors.Add("runtime_validation_not_passed_windows_renderer_qa");
+
+        if (errors.Count > 0)
+        {
+            BootstrapLog.WriteRaw($"car_ride_candidate_invalid behavior={manifest.BehaviorId} errors={string.Join(",", errors)}");
+            yield break;
+        }
+
+        yield return new PlayableMotion(
+            manifest.BehaviorId,
+            manifest.DisplayName,
+            "主人互动",
+            "right",
+            manifest.FrameDurationMs,
+            Interruptible: true,
+            phases,
+            batchRoot,
+            RuntimeEnabled: manifest.RuntimeApproved && manifest.RuntimeUse,
+            Status: "正式运行：主人手动兜风",
+            MissingContent: "None",
+            StartPose: "stand.neutral.right",
+            EndPose: "stand.neutral.right",
+            StyleGroup: "wukong-current-adult-v1",
+            Disposition: "Owner manual runtime only",
+            PrototypeUse: manifest.PrototypeUse,
+            AssetBatch: manifest.AssetId,
+            Effect: DesktopMotionEffect.CarRide,
+            DirectionalFrames: BuildCarRideDirectionalFrames(manifest, batchRoot),
+            Description: "Owner-only car ride v8 runtime approved interaction",
+            CandidateProfile: manifest.AssetId,
+            VisualScale: 1.18);
+    }
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> BuildCarRideDirectionalFrames(CarRideCandidateManifest manifest, string batchRoot)
+    {
+        var result = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+        if (manifest.AllSequences is null)
+            return result;
+
+        foreach (var entry in manifest.AllSequences)
+        {
+            const string prefix = "directions/";
+            if (!entry.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var direction = entry.Key[prefix.Length..];
+            var frames = entry.Value
+                .Select(relative => Path.Combine(batchRoot, relative.Replace('/', Path.DirectorySeparatorChar)))
+                .Where(File.Exists)
+                .ToArray();
+            if (frames.Length > 0)
+                result[direction] = frames;
+        }
+
+        return result;
+    }
     private static string Sha256(string path)
     {
         using var stream = File.OpenRead(path);
@@ -825,8 +946,16 @@ public static class InteractionBehaviorIds
     public const string PlayOnce = "wk.interaction.play_once";
 }
 
-public static class MagicBehaviorIds
+public static class CarRideBehaviorIds
 {
+    public const string AssetBatch = "WK-INTERACTION-CAR-RIDE-CANDIDATE-v8";
+    public const string CarRide = "wk.interaction.car_ride";
+
+    public static readonly IReadOnlySet<string> PrototypeWhitelist =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { CarRide };
+}
+
+public static class MagicBehaviorIds{
     public const string AssetBatch = "WK-MAGIC-SPECIALS-CANDIDATE-v1";
     public const string AccioBroom = "wk.magic.accio_broom";
     public const string Apparate = "wk.magic.apparate";
@@ -900,8 +1029,19 @@ public sealed record LifecycleCandidatePhaseManifest(
     [property: JsonPropertyName("frame_count")] int FrameCount,
     [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames);
 
-public sealed record MagicMockBatchManifest(
-    [property: JsonPropertyName("batch_id")] string BatchId,
+public sealed record CarRideCandidateManifest(
+    [property: JsonPropertyName("asset_id")] string AssetId,
+    [property: JsonPropertyName("behavior_id")] string BehaviorId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("frame_duration_ms")] int FrameDurationMs,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("all_sequences")] IReadOnlyDictionary<string, IReadOnlyList<string>>? AllSequences,
+    [property: JsonPropertyName("phases")] IReadOnlyList<LifecycleCandidatePhaseManifest> Phases);
+
+public sealed record MagicMockBatchManifest(    [property: JsonPropertyName("batch_id")] string BatchId,
     [property: JsonPropertyName("identity_profile")] string IdentityProfile,
     [property: JsonPropertyName("broom_directional_flight")] IReadOnlyDictionary<string, IReadOnlyList<CommandActionFrameManifest>>? BroomDirectionalFlight,
     [property: JsonPropertyName("actions")] IReadOnlyList<MagicMockActionManifest> Actions);
@@ -1160,6 +1300,10 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         .Where(x => string.Equals(x.Category, "候选动作", StringComparison.OrdinalIgnoreCase))
         .OrderBy(x => x.BehaviorId)
         .ToArray();
+    public IReadOnlyList<PlayableMotion> CarRideCandidateMotions => _catalog.Motions
+        .Where(x => string.Equals(x.BehaviorId, CarRideBehaviorIds.CarRide, StringComparison.OrdinalIgnoreCase))
+        .OrderBy(x => x.BehaviorId)
+        .ToArray();
     public bool IsPetrified { get; private set; }
     public bool IsCoinAssetsReady => _coinAssets is not null;
     public PetrifiedCoinState? CurrentCoinState { get; private set; }
@@ -1261,6 +1405,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             behaviorId = MagicBehaviorIds.PetrificusRelease;
         return Task.FromResult(SubmitBehavior(source, behaviorId, $"magic:{behaviorId}", priority: 20, executionMode: BehaviorExecutionMode.PrototypePreview));
     }
+
+    public Task<PetActionResult> SubmitCarRideAsync(BehaviorRequestSource source) =>
+        Task.FromResult(SubmitBehavior(source, CarRideBehaviorIds.CarRide, "owner:car_ride_v8", priority: 18, executionMode: BehaviorExecutionMode.Normal));
 
     public Task<PetActionResult> SubmitPetrifiedCoinClickAsync(BehaviorRequestSource source = BehaviorRequestSource.OwnerUi)
     {
@@ -1407,6 +1554,12 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
         var now = _now();
         var ownerExplicit = source is BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel;
+        if (behaviorId == CarRideBehaviorIds.CarRide && _currentBehaviorId == behaviorId)
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "car_ride_already_running", "兜风已经在进行中");
+            return PetActionResult.Deferred;
+        }
+
         if (!ownerExplicit && !bypassRuntimeGate && !_currentInterruptible && _currentBehaviorId != behaviorId)
         {
             UpdateDecision(PetActionResult.Deferred, source.ToString(), "current_not_interruptible", "当前动作不能安全中断");
@@ -1429,7 +1582,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         }
 
         var keepPetrified = motion.Effect == DesktopMotionEffect.Petrify;
-        var loopCycles = behaviorId == Phase15BehaviorIds.ProneIdle || keepPetrified ? int.MaxValue : 2;
+        var loopCycles = behaviorId == Phase15BehaviorIds.ProneIdle || keepPetrified
+            ? int.MaxValue
+            : behaviorId == CarRideBehaviorIds.CarRide ? 2 : 2;
         Accept(motion, source, executionMode, trigger, returnToIdle: behaviorId != Phase15BehaviorIds.ProneIdle && !keepPetrified, loopCycles: loopCycles);
         return PetActionResult.Accepted;
     }
@@ -1447,12 +1602,18 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             var sourceAllowed = source is BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel;
             if (!sourceAllowed)
                 return (false, "prototype_source_forbidden", "该入口不允许原型展示");
-            if (!MagicBehaviorIds.PrototypeWhitelist.Contains(motion.BehaviorId))
-                return (false, "prototype_not_whitelisted", "该行为不在魔法原型白名单中");
+            if (!MagicBehaviorIds.PrototypeWhitelist.Contains(motion.BehaviorId) &&
+                !CarRideBehaviorIds.PrototypeWhitelist.Contains(motion.BehaviorId))
+                return (false, "prototype_not_whitelisted", "该行为不在原型白名单中");
             if (!motion.PrototypeUse)
                 return (false, "prototype_use_disabled", "该素材未开启原型展示");
             return (true, "prototype_preview_allowed", "原型展示已允许");
         }
+
+        if (string.Equals(motion.BehaviorId, CarRideBehaviorIds.CarRide, StringComparison.OrdinalIgnoreCase) &&
+            executionMode == BehaviorExecutionMode.Normal &&
+            source is not (BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel))
+            return (false, "car_ride_source_forbidden", "兜风只允许主人从玩一下菜单或面板手动触发");
 
         if (!motion.RuntimeEnabled)
             return (false, "runtime_locked", $"{motion.DisplayName} 素材正在返工，暂时不能正式播放。");
