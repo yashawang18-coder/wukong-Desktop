@@ -1,4 +1,3 @@
-
 ## WK-INTERACTION-CAR-RIDE-CANDIDATE-v8 runtime promotion - 2026-08-16
 
 Windows owner visual QA passed on 2026-08-16 using the local transparent WPF candidate EXE generated from this branch.
@@ -13,9 +12,16 @@ Current runtime state:
 - `runtime_approved`: `true`
 - `runtime_use`: `true`
 - `prototype_use`: `false`
+- `production_asset`: `true`
 - `normal_runtime_available`: `true`, only for the manual owner `玩一下 > 兜风` path
 - `release_status`: `not_released`
-- `git_status`: `runtime_approved_local_unpublished`
+- `git_status`: `runtime_approved_branch_published_draft_pr`
+- `branch`: `agent/interaction-car-ride-v8`
+- `initial_published_commit`: `65d7e8b09404b5dfefef1b41d5260b4cf5d0ce15`
+- `draft_pr`: `#9`
+- `base`: `agent/windows-runtime-assets-integration`
+- `merged`: `false`
+- `installer_generated`: `false`
 
 `visual_approved=true` records source visual approval. It is separate from runtime approval. Runtime approval for v8 is granted only because the owner separately completed Windows transparent WPF renderer QA on 2026-08-16.
 

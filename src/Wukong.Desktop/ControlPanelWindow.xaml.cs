@@ -901,13 +901,13 @@ public partial class ControlPanelWindow : Window
         if (sender is not Button { Tag: PlayableMotion })
             return;
 
-        MagicShowStatus.Text = "Showing car ride candidate...";
+        MagicShowStatus.Text = "正在展示兜风...";
         var result = await _runtime.SubmitCarRideAsync(BehaviorRequestSource.ControlPanel);
         MagicShowStatus.Text = result switch
         {
-            PetActionResult.Accepted => "Car ride candidate is showing.",
-            PetActionResult.Deferred => "Car ride candidate is deferred by the runtime gate.",
-            PetActionResult.Rejected => "Car ride candidate is rejected.",
+            PetActionResult.Accepted => "兜风正在运行。",
+            PetActionResult.Deferred => $"兜风暂时不能运行：{_runtime.CurrentReason}",
+            PetActionResult.Rejected => "兜风请求被拒绝。",
             _ => result.ToString()
         };
     }

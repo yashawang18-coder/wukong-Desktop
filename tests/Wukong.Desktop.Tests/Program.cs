@@ -56,6 +56,7 @@ var tests = new (string Name, Action Run)[]
     ("car ride direction quantizer matches v8 directions", CarRideDirectionQuantizerMatchesV8Directions),
     ("apparate target stays visible and relocates", ApparateTargetStaysVisibleAndRelocates),
     ("control panel exposes magic specials tab", ControlPanelExposesMagicSpecialsTab),
+    ("control panel car ride copy matches approved runtime state", ControlPanelCarRideCopyMatchesApprovedRuntimeState),
     ("control panel tab buttons share visual metrics", ControlPanelTabButtonsShareVisualMetrics),
     ("gesture interpreter distinguishes touch stroke drag and rapid tap", GestureInterpreterDistinguishesGestures),
     ("rapid tap has priority over owner touch", RapidTapHasPriorityOverOwnerTouch),
@@ -852,11 +853,14 @@ static void CarRideCandidateAssetsAreIndexedAndGated()
     using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
     var root = manifest.RootElement;
     Assert(root.GetProperty("visual_approved").GetBoolean(), "car ride should retain visual approval");
+    Assert(!root.GetProperty("art_candidate").GetBoolean(), "approved car ride must not remain an art candidate");
     Assert(root.GetProperty("runtime_validation").GetString() == "passed_windows_renderer_qa", "car ride runtime validation state changed");
     Assert(root.GetProperty("runtime_approved").GetBoolean(), "car ride must be runtime approved after Windows renderer QA");
     Assert(root.GetProperty("runtime_use").GetBoolean(), "car ride manual runtime use must be enabled after approval");
     Assert(!root.GetProperty("prototype_use").GetBoolean(), "car ride must no longer depend on prototype preview after approval");
     Assert(root.GetProperty("source_zip_sha256").GetString() == "bf92f38e3cc976236584d8581cbb8f0f1965257c31837c0d1fd69c7670e9f7e1", "source ZIP SHA record changed");
+    Assert(root.GetProperty("display_name").GetString() == "Car ride v8", "manifest display name must not say candidate");
+    Assert(root.GetProperty("category").GetString() == "Owner manual interaction", "manifest category must describe approved manual interaction");
 
     var allSequences = root.GetProperty("all_sequences").EnumerateObject().ToArray();
     var frameRefs = allSequences.SelectMany(x => x.Value.EnumerateArray().Select(y => y.GetString())).Where(x => x is not null).ToArray();
@@ -887,6 +891,7 @@ static void CarRideCandidateAssetsAreIndexedAndGated()
     var catalog = DesktopMotionCatalog.Load(output);
     var motions = catalog.Motions.Where(x => string.Equals(x.BehaviorId, CarRideBehaviorIds.CarRide, StringComparison.OrdinalIgnoreCase)).ToArray();
     Assert(motions.Length == 1, "car ride candidate was not indexed exactly once");
+    Assert(motions[0].DisplayName == "Car ride v8", "car ride display name must not say candidate");
     Assert(motions[0].RuntimeEnabled, "car ride must be available to the approved manual runtime path");
     Assert(!motions[0].PrototypeUse, "car ride must not depend on prototype preview after approval");
     Assert(motions[0].Effect == DesktopMotionEffect.CarRide, "car ride effect mapping missing");
@@ -1362,6 +1367,19 @@ static void ControlPanelTabButtonsShareVisualMetrics()
         throw failure;
 }
 
+static void ControlPanelCarRideCopyMatchesApprovedRuntimeState()
+{
+    var xamlPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Wukong.Desktop", "ControlPanelWindow.xaml"));
+    var xaml = File.ReadAllText(xamlPath);
+    Assert(xaml.Contains("Text=\"兜风\"", StringComparison.Ordinal), "owner-facing car ride section title missing");
+    Assert(xaml.Contains("<TextBlock Text=\"正式\" />", StringComparison.Ordinal), "car ride badge must say approved/formal");
+    Assert(xaml.Contains("Text=\"兜风运行调试\"", StringComparison.Ordinal), "developer car ride debug title was not updated");
+    Assert(xaml.Contains("已通过 Windows 验收", StringComparison.Ordinal), "approved car ride runtime explanation missing");
+    Assert(xaml.Contains("不进入自主行为、对话、模型或口令路由", StringComparison.Ordinal), "car ride route restriction copy missing");
+    Assert(!xaml.Contains("Car ride candidate", StringComparison.Ordinal), "control panel still says car ride candidate");
+    Assert(!xaml.Contains("not runtime approved", StringComparison.OrdinalIgnoreCase), "control panel still claims car ride is not runtime approved");
+    Assert(!xaml.Contains("Owner-only PrototypePreview candidate", StringComparison.Ordinal), "control panel still claims PrototypePreview candidate state");
+}
 static void GestureInterpreterDistinguishesGestures()
 {
     Assert(GestureInterpreter.Interpret(new GestureSample(new Point(1, 1), new Point(2, 2), TimeSpan.FromMilliseconds(120), 1, true)) == PetGestureKind.None, "single click should not trigger touch");

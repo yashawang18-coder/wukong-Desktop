@@ -30,7 +30,10 @@ class CarRideCandidateV8Tests(unittest.TestCase):
         self.assertEqual(self.manifest["asset_id"], "WK-INTERACTION-CAR-RIDE-CANDIDATE-v8")
         self.assertEqual(self.manifest["behavior_id"], "wk.interaction.car_ride")
         self.assertEqual(self.manifest["source_zip_sha256"], EXPECTED_ZIP_SHA)
+        self.assertEqual(self.manifest["display_name"], "Car ride v8")
+        self.assertEqual(self.manifest["category"], "Owner manual interaction")
         self.assertTrue(self.manifest["visual_approved"])
+        self.assertFalse(self.manifest["art_candidate"])
         self.assertEqual(self.manifest["runtime_validation"], "passed_windows_renderer_qa")
         self.assertTrue(self.manifest["runtime_approved"])
         self.assertTrue(self.manifest["runtime_use"])
@@ -89,6 +92,20 @@ class CarRideCandidateV8Tests(unittest.TestCase):
                 ]
                 self.assertEqual(corners, [0, 0, 0, 0], f"opaque canvas corner: {relative}")
 
+
+    def test_readme_is_utf8_and_matches_runtime_approval(self):
+        data = (BATCH / "README.md").read_bytes()
+        self.assertFalse(data.startswith(b"\xef\xbb\xbf"), "README must be UTF-8 without BOM")
+        text = data.decode("utf-8", errors="strict")
+        forbidden = ["鍦", "鐨", "鈥", "�", "`r`n"]
+        for token in forbidden:
+            self.assertNotIn(token, text)
+        self.assertIn("Windows owner QA passed: 2026-08-16", text)
+        self.assertIn("runtime_approved=true", text)
+        self.assertIn("runtime_use=true", text)
+        self.assertIn("prototype_use=false", text)
+        self.assertIn("玩一下 > 兜风", text)
+        self.assertIn("222 runtime frame references", text)
     def test_freeze_manifest_covers_source_package(self):
         freeze = BATCH / "SOURCE-FREEZE-SHA256SUMS.txt"
         self.assertTrue(freeze.exists(), "source freeze SHA manifest missing")

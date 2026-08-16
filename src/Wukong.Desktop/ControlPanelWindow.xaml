@@ -593,7 +593,7 @@
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
-              <TextBlock Text="Car ride candidate" FontWeight="SemiBold" Margin="0,8,0,8" />
+              <TextBlock Text="兜风" FontWeight="SemiBold" Margin="0,8,0,8" />
               <ItemsControl x:Name="CarRideSpecialList">
                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
@@ -603,7 +603,7 @@
                         <Border Height="150" CornerRadius="12" Background="#EEECE5" ClipToBounds="True"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Stretch="Uniform" /></Border>
                         <DockPanel LastChildFill="False" Margin="0,10,0,0">
                           <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
-                          <Border DockPanel.Dock="Right" Style="{StaticResource Badge}"><TextBlock Text="Candidate" /></Border>
+                          <Border DockPanel.Dock="Right" Style="{StaticResource Badge}"><TextBlock Text="正式" /></Border>
                         </DockPanel>
                         <TextBlock Text="{Binding BehaviorId}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,6,0,0" />
@@ -710,8 +710,8 @@
           </Border>
           <Border Style="{StaticResource Card}" Visibility="{Binding ElementName=DeveloperDiagnosticsPanel, Path=Visibility}">
             <StackPanel>
-              <TextBlock Text="Car ride candidate debug" FontWeight="SemiBold" />
-              <TextBlock Text="Owner-only PrototypePreview candidate. It is not runtime approved and is not in autonomous scheduling." Style="{StaticResource SubText}" Margin="0,4,0,12" />
+              <TextBlock Text="兜风运行调试" FontWeight="SemiBold" />
+              <TextBlock Text="已通过 Windows 验收，仅允许主人从右键菜单或控制面板手动触发；不进入自主行为、对话、模型或口令路由。" Style="{StaticResource SubText}" Margin="0,4,0,12" />
               <ItemsControl x:Name="CarRideCandidateList">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
