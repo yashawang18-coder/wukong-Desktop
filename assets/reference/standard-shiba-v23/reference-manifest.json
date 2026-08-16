@@ -1,0 +1,16 @@
+{
+  "id": "wukong-standard-shiba-reference-v23",
+  "version": "2.3",
+  "asset_role": "reference_only",
+  "identity_status": "generic_standard_shiba_not_final_wukong",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "may_register_in_runtime_manifest": false,
+  "purpose": [
+    "pose_reference",
+    "body_proportion_reference",
+    "color_reference",
+    "expression_reference"
+  ],
+  "notes": "标准柴犬参考素材，不是悟空最终真实身份母版，不得直接作为正式运行素材。"
+}

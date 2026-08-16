@@ -58,3 +58,132 @@ Pupu assets, behavior IDs, hard-coded mappings, secrets, photographs, personal s
 ## 2026-08-09 - keep normal UX and developer diagnostics in one product
 
 The control panel uses six primary tabs: Owner, Profile, Album, Model, Assets, and Developer. The Owner and Model areas have independent conversation sessions. Normal mode presents user-facing state and feedback; developer mode adds trace, state-machine, behavior, agent, memory, scene simulation, log/test, and technical-description views. Simulation must be visibly isolated and restorable and must not write real memory.
+
+## 2026-08-12 - integrate command action candidates behind runtime gates
+
+Import `WK-COMMAND-ACTION-CANDIDATES-v3` from the remote candidate asset branch as runtime-candidate evidence only. The four command behaviors use explicit stable IDs instead of folder-name discovery in production routing:
+
+- `wk.command.paw_rise`
+- `wk.command.jump`
+- `wk.command.spin_approach_stop_sit`
+- `wk.command.paw_eat`
+
+These sequences may appear in the asset library and may be force-played in developer mode to collect Windows renderer evidence. They must remain excluded from the autonomous pool and production runtime registry until renderer QA promotes the assets to `runtime-approved` with `runtime_use=true`.
+
+Manual transparent-window validation on 2026-08-12 failed all four command candidates for `color_inconsistency`, `geometry_scale_jitter`, and `uneven_timing`. Keep the integration and developer preview path, but do not approve these assets, do not open production command execution, and do not add them to autonomous behavior selection until a corrected batch passes renderer QA.
+
+## 2026-08-13 - allow owner-only magic mock prototype previews without production approval
+
+Add a Wukong-only magic mock batch for explicit owner-triggered prototype playback while preserving the production runtime gate.
+
+Allowed scope:
+
+- Right-click `宠物魔法` menu and control-panel `魔法特辑` may submit `BehaviorRequest`-equivalent desktop requests with `source=OwnerContextMenu` or `source=ControlPanel` and `executionMode=PrototypePreview`.
+- Only the explicit magic whitelist may use this path: `wk.magic.accio_broom`, `wk.magic.apparate`, `wk.magic.petrificus_totalus`, `wk.magic.petrificus_release`, and `wk.magic.scourgify`.
+- The manifest must keep `prototype_use=true`, `runtime_approved=false`, `runtime_use=false`, and `production_asset=false`.
+
+Forbidden scope:
+
+- Do not add mock magic assets to the production runtime registry or autonomous behavior pool.
+- Do not let Dialogue, model output, memory, personality, or autonomous tick set `PrototypePreview`.
+- Do not treat mock playback as renderer QA or formal asset approval.
+- Do not copy Pupu code, assets, behavior IDs, or mappings.
+
+## 2026-08-15 - integrate reviewed magic candidates and interactive petrification coin behind the prototype gate
+
+Replace the active magic playback source with `WK-MAGIC-SPECIALS-CANDIDATE-v1` while retaining the former mock batch as non-active historical evidence. The new batch packages reviewed V8 broom, invisibility, petrification, and restore frames; Scourgify remains explicitly identified as mock artwork until a reviewed replacement exists.
+
+The broom motion may select any of eight directional frame loops from the velocity vector and must retain the loop phase across direction changes. The existing ordered-PNG player remains the frame consumer; this change does not introduce a sprite-atlas runtime dependency.
+
+After the petrification transition, the runtime enters an owner-interactive coin state machine:
+
+- `vivid/front` is the initial state; it settles to `flat` after 800 ms.
+- Inactivity changes the current face to `faded` after 10 minutes and `exhausted` after 20 minutes by default. These thresholds are configurable without changing asset identity.
+- A single click resolves to `vivid/front` and resets inactivity.
+- A front double-click flips to the same-state back and preserves inactivity.
+- A back double-click flips to `vivid/front` and resets inactivity.
+- Single-click dispatch is deferred until the double-click window expires.
+
+Coin interaction is valid only while petrification was entered through an owner `PrototypePreview`. Dialogue, autonomous, model, and memory sources remain forbidden. All candidate and coin manifests retain `runtime_validation=pending`, `runtime_approved=false`, `runtime_use=false`, and `production_asset=false`; the runtime registry remains empty until a Windows transparent-renderer run is reviewed.
+
+## 2026-08-15 - promote P2 lifecycle microloops to autonomous runtime after Windows QA
+
+The forward 14-state lively daily sequence, P0/P1 reverse transitions, and stand/sit/prone microloops passed owner Windows transparent-renderer QA on 2026-08-15 and may be used by the formal autonomous lifecycle profile.
+
+Allowed scope:
+
+- Index `WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2` through the existing Wukong asset catalog.
+- Set `visual_approved=true`, `art_candidate=false`, `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, and `runtime_use=true`.
+- Activate only these autonomous mappings: full lifecycle as low-frequency self-directed daily behavior, stand-idle for stable stand, sit-idle for stable sit, and prone-idle for stable prone.
+- Keep developer diagnostics for phase/frame/duration/profile inspection and 128/192/256 sizing.
+
+Forbidden scope:
+
+- Do not use `wk.command.*` IDs.
+- Do not expose these candidates in the normal right-click menu or production command routing.
+- Do not add them to `contracts/runtime/asset-registry.json`, `pet_assets.json`, magic, coins, training data, or command behavior mappings.
+- Do not edit the 32 manually accepted PNGs to hide the strict y=932 non-zero-alpha audit finding; document that Windows QA found no visible artifact instead.
+
+## 2026-08-16 - accept car ride v8 as visually approved runtime candidate for prototype preview only (superseded)
+
+Decision: accept `WK-INTERACTION-CAR-RIDE-CANDIDATE-v8` as a visually approved, runtime-pending candidate asset package and allow it to be exercised only through `PrototypePreview` in a candidate EXE for Windows human QA.
+
+Superseded on 2026-08-16 by the runtime promotion decision below after owner Windows transparent WPF visual QA passed.
+
+Reason: the source material and extracted QA previews have completed owner visual confirmation. Code build, contract validation, automated tests, controlled launch, and bounded-cache smoke have passed. Windows transparent WPF renderer human QA has not yet been completed.
+
+Runtime restrictions:
+
+- `Normal` continues to reject this candidate action.
+- Dialogue and AutonomousTick must not use `PrototypePreview`.
+- Do not add it to the autonomous behavior pool.
+- Do not add it to model routing.
+- Do not add it to command routing.
+- Do not add it to the formal runtime registry.
+- Keep `runtime_approved=false`.
+- Keep `runtime_use=false`.
+- Only after owner-completed Windows human visual QA and explicit runtime approval may these runtime states change.
+
+Verification facts preserved with this decision:
+
+- UX closure baseline: `d5136a0810592b1eb23c6eaf7da0f0c5ea26f2ac`.
+- Car ride branch baseline: `d5136a0810592b1eb23c6eaf7da0f0c5ea26f2ac`.
+- Original ZIP SHA-256: `bf92f38e3cc976236584d8581cbb8f0f1965257c31837c0d1fd69c7670e9f7e1`.
+- Published directory PNG count: 253.
+- Manifest runtime frame references: 222.
+- Five-minute cache smoke: 299 samples; Private MB 93.5 -> peak 238.3 -> end 228.9; Working Set MB 154.8 -> peak 303.5 -> end 295.9; decoded cache peak 36 frames / 144 MB; evictions 1215.
+- The cache smoke proves the runtime did not keep all 222 frames resident at once; it is not a substitute for real renderer QA or long-duration acceptance.
+- Release build passed with 4 existing warnings.
+- Contract validation passed with 0 errors and the existing 9 known gaps.
+- Python tests passed 35/35.
+- All C# console self-tests passed.
+- Controlled launch and exact-PID termination passed.
+- `MainWindowHandle=0` is not used as a transparent WPF visibility failure criterion.
+
+## Decision: Promote WK-INTERACTION-CAR-RIDE-CANDIDATE-v8 to approved manual owner runtime
+
+Date: 2026-08-16
+
+Decision:
+The owner completed Windows transparent WPF runtime visual QA for the v8 candidate EXE and approved `wk.interaction.car_ride` for the normal manual owner interaction path: `玩一下 > 兜风`.
+
+Runtime state:
+
+- `visual_approved=true`
+- `runtime_validation=passed_windows_renderer_qa`
+- `runtime_approved=true`
+- `runtime_use=true`
+- `prototype_use=false`
+
+Reason:
+The source package and automated validation had already passed, and the owner has now confirmed real desktop renderer behavior for the candidate EXE, including the locked menu labels and Apparate regression fixes.
+
+Scope restrictions:
+
+- Only explicit owner UI selection of `玩一下 > 兜风` may trigger the action through the normal approved runtime gate.
+- Do not add v8 to `AutonomousTick`.
+- Do not add v8 to dialogue/model routing.
+- Do not add v8 to command/口令 routing.
+- Do not use v8 for `吃一下`, `散步`, startup auto-play, or any locked feature.
+- Keep PrototypePreview infrastructure for other candidate assets; v8 no longer depends on it.
+- No installer or public release is approved by this decision.

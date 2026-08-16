@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "behavior_id": "wk.command.paw_eat",
+  "phase": "P0-command-candidate",
+  "availability": "blocked_pending_command_runtime_validation",
+  "eligibility": {
+    "allowed_poses": ["prone.awake.left_front"],
+    "equipment": ["none"]
+  },
+  "lifecycle": {
+    "intro": {"strategy": "asset", "clip_role": "command_sequence"},
+    "loop": {"strategy": "hold", "pose": "prone.awake.left_front"},
+    "exit": {"strategy": "hold", "pose": "prone.awake.left_front"},
+    "interrupt_exit": {"strategy": "hold", "pose": "prone.awake.left_front"}
+  },
+  "from_pose": "prone.awake.left_front",
+  "to_pose": "prone.awake.left_front",
+  "fallback": "wk.core.prone_idle",
+  "state_effects": {"interaction": "command_paw_eat"},
+  "interrupt_policy": {"stop": "interrupt_exit", "drag": "interrupt_exit"},
+  "runtime_registry": "not_registered_until_renderer_qa"
+}

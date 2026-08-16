@@ -1,0 +1,23 @@
+{
+    "all_file_count":  298,
+    "all_total_bytes":  209067699,
+    "runtime_png_count":  222,
+    "metrics_count":  222,
+    "direction_loop_frames":  48,
+    "expression_frames":  30,
+    "start_frames":  48,
+    "brake_frames":  48,
+    "turn_frames":  48,
+    "turn_sequence_count":  16,
+    "visible_height_min":  599,
+    "visible_height_max":  607,
+    "visible_width_min":  517,
+    "visible_width_max":  918,
+    "baseline_values":  [
+                            900
+                        ],
+    "freeze_manifest":  "SOURCE-FREEZE-SHA256SUMS.txt",
+    "errors":  [
+
+               ]
+}

@@ -76,3 +76,35 @@ Flag changes that:
 - Preview, simulation, and developer-forced runs use isolated contexts and must not write production state or memory.
 - `reference/pupu/`, if supplied, is read-only engineering reference. Pupu behavior IDs, cat assets, hard-coded animation mappings, user data, and secrets must not enter Wukong runtime or release output.
 - The six-tab UX is a product contract, not the behavior engine. Normal mode hides raw state and internal traces; developer mode exposes diagnostics without bypassing production rules.
+
+
+
+
+
+## Phase 1 working boundaries
+
+- `reference/pupu-source/` is a read-only engineering reference.
+- Never modify files under `reference/pupu-source/`.
+- Never copy Pupu cat assets, behavior IDs, animation mappings, user data,
+  API credentials, memories, albums, build artifacts, or generated binaries
+  into the Wukong implementation.
+- Pupu may only inform Windows desktop hosting, input capture, configuration,
+  diagnostics, testing, installer, and other infrastructure decisions.
+- Pupu behavior selection, animation orchestration, state mutation, memory
+  feedback, and model-triggered actions must be redesigned for Wukong.
+- `docs/ux/wukong-ux.html` defines page layout and user interaction intent.
+- `docs/DECISIONS.md`, behavior contracts, and state-machine documents define
+  behavioral and architectural constraints.
+- If UX and architecture documents conflict, record the conflict and ask;
+  do not silently choose one.
+- Only Wukong assets may enter the runtime asset registry.
+- Approved keyframes are not automatically runtime-approved animations.
+- UI and model responses must submit BehaviorRequest; they must not directly
+  play animations or write runtime state.
+- Do not modify `main`.
+- Work on the current feature branch.
+- Do not commit, push, merge, or create a pull request without explicit approval.
+- Before editing, inspect the repository and existing user changes.
+- After editing, run relevant validation, tests, and review the Git diff.
+- Never claim Windows real-machine verification unless it was actually run
+  on Windows 10 or 11.

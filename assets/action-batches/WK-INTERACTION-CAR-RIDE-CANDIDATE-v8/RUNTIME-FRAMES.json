@@ -1,0 +1,314 @@
+{
+  "directions/right": [
+    "sequences/directions/right/frame-001.png",
+    "sequences/directions/right/frame-002.png",
+    "sequences/directions/right/frame-003.png",
+    "sequences/directions/right/frame-004.png",
+    "sequences/directions/right/frame-005.png",
+    "sequences/directions/right/frame-006.png"
+  ],
+  "directions/front-right": [
+    "sequences/directions/front-right/frame-001.png",
+    "sequences/directions/front-right/frame-002.png",
+    "sequences/directions/front-right/frame-003.png",
+    "sequences/directions/front-right/frame-004.png",
+    "sequences/directions/front-right/frame-005.png",
+    "sequences/directions/front-right/frame-006.png"
+  ],
+  "directions/front": [
+    "sequences/directions/front/frame-001.png",
+    "sequences/directions/front/frame-002.png",
+    "sequences/directions/front/frame-003.png",
+    "sequences/directions/front/frame-004.png",
+    "sequences/directions/front/frame-005.png",
+    "sequences/directions/front/frame-006.png"
+  ],
+  "directions/front-left": [
+    "sequences/directions/front-left/frame-001.png",
+    "sequences/directions/front-left/frame-002.png",
+    "sequences/directions/front-left/frame-003.png",
+    "sequences/directions/front-left/frame-004.png",
+    "sequences/directions/front-left/frame-005.png",
+    "sequences/directions/front-left/frame-006.png"
+  ],
+  "directions/left": [
+    "sequences/directions/left/frame-001.png",
+    "sequences/directions/left/frame-002.png",
+    "sequences/directions/left/frame-003.png",
+    "sequences/directions/left/frame-004.png",
+    "sequences/directions/left/frame-005.png",
+    "sequences/directions/left/frame-006.png"
+  ],
+  "directions/rear-left": [
+    "sequences/directions/rear-left/frame-001.png",
+    "sequences/directions/rear-left/frame-002.png",
+    "sequences/directions/rear-left/frame-003.png",
+    "sequences/directions/rear-left/frame-004.png",
+    "sequences/directions/rear-left/frame-005.png",
+    "sequences/directions/rear-left/frame-006.png"
+  ],
+  "directions/rear": [
+    "sequences/directions/rear/frame-001.png",
+    "sequences/directions/rear/frame-002.png",
+    "sequences/directions/rear/frame-003.png",
+    "sequences/directions/rear/frame-004.png",
+    "sequences/directions/rear/frame-005.png",
+    "sequences/directions/rear/frame-006.png"
+  ],
+  "directions/rear-right": [
+    "sequences/directions/rear-right/frame-001.png",
+    "sequences/directions/rear-right/frame-002.png",
+    "sequences/directions/rear-right/frame-003.png",
+    "sequences/directions/rear-right/frame-004.png",
+    "sequences/directions/rear-right/frame-005.png",
+    "sequences/directions/rear-right/frame-006.png"
+  ],
+  "expressions/head-tilt": [
+    "sequences/expressions/head-tilt/frame-00.png",
+    "sequences/expressions/head-tilt/frame-01.png",
+    "sequences/expressions/head-tilt/frame-02.png",
+    "sequences/expressions/head-tilt/frame-03.png",
+    "sequences/expressions/head-tilt/frame-04.png",
+    "sequences/expressions/head-tilt/frame-05.png"
+  ],
+  "expressions/happy-squint": [
+    "sequences/expressions/happy-squint/frame-00.png",
+    "sequences/expressions/happy-squint/frame-01.png",
+    "sequences/expressions/happy-squint/frame-02.png",
+    "sequences/expressions/happy-squint/frame-03.png",
+    "sequences/expressions/happy-squint/frame-04.png",
+    "sequences/expressions/happy-squint/frame-05.png"
+  ],
+  "expressions/side-glance": [
+    "sequences/expressions/side-glance/frame-00.png",
+    "sequences/expressions/side-glance/frame-01.png",
+    "sequences/expressions/side-glance/frame-02.png",
+    "sequences/expressions/side-glance/frame-03.png",
+    "sequences/expressions/side-glance/frame-04.png",
+    "sequences/expressions/side-glance/frame-05.png"
+  ],
+  "expressions/curious-gaze": [
+    "sequences/expressions/curious-gaze/frame-00.png",
+    "sequences/expressions/curious-gaze/frame-01.png",
+    "sequences/expressions/curious-gaze/frame-02.png",
+    "sequences/expressions/curious-gaze/frame-03.png",
+    "sequences/expressions/curious-gaze/frame-04.png",
+    "sequences/expressions/curious-gaze/frame-05.png"
+  ],
+  "expressions/knowing-look": [
+    "sequences/expressions/knowing-look/frame-00.png",
+    "sequences/expressions/knowing-look/frame-01.png",
+    "sequences/expressions/knowing-look/frame-02.png",
+    "sequences/expressions/knowing-look/frame-03.png",
+    "sequences/expressions/knowing-look/frame-04.png",
+    "sequences/expressions/knowing-look/frame-05.png"
+  ],
+  "start/right": [
+    "sequences/transitions/start/right/frame-00.png",
+    "sequences/transitions/start/right/frame-01.png",
+    "sequences/transitions/start/right/frame-02.png",
+    "sequences/transitions/start/right/frame-03.png",
+    "sequences/transitions/start/right/frame-04.png",
+    "sequences/transitions/start/right/frame-05.png"
+  ],
+  "start/front-right": [
+    "sequences/transitions/start/front-right/frame-00.png",
+    "sequences/transitions/start/front-right/frame-01.png",
+    "sequences/transitions/start/front-right/frame-02.png",
+    "sequences/transitions/start/front-right/frame-03.png",
+    "sequences/transitions/start/front-right/frame-04.png",
+    "sequences/transitions/start/front-right/frame-05.png"
+  ],
+  "start/front": [
+    "sequences/transitions/start/front/frame-00.png",
+    "sequences/transitions/start/front/frame-01.png",
+    "sequences/transitions/start/front/frame-02.png",
+    "sequences/transitions/start/front/frame-03.png",
+    "sequences/transitions/start/front/frame-04.png",
+    "sequences/transitions/start/front/frame-05.png"
+  ],
+  "start/front-left": [
+    "sequences/transitions/start/front-left/frame-00.png",
+    "sequences/transitions/start/front-left/frame-01.png",
+    "sequences/transitions/start/front-left/frame-02.png",
+    "sequences/transitions/start/front-left/frame-03.png",
+    "sequences/transitions/start/front-left/frame-04.png",
+    "sequences/transitions/start/front-left/frame-05.png"
+  ],
+  "start/left": [
+    "sequences/transitions/start/left/frame-00.png",
+    "sequences/transitions/start/left/frame-01.png",
+    "sequences/transitions/start/left/frame-02.png",
+    "sequences/transitions/start/left/frame-03.png",
+    "sequences/transitions/start/left/frame-04.png",
+    "sequences/transitions/start/left/frame-05.png"
+  ],
+  "start/rear-left": [
+    "sequences/transitions/start/rear-left/frame-00.png",
+    "sequences/transitions/start/rear-left/frame-01.png",
+    "sequences/transitions/start/rear-left/frame-02.png",
+    "sequences/transitions/start/rear-left/frame-03.png",
+    "sequences/transitions/start/rear-left/frame-04.png",
+    "sequences/transitions/start/rear-left/frame-05.png"
+  ],
+  "start/rear": [
+    "sequences/transitions/start/rear/frame-00.png",
+    "sequences/transitions/start/rear/frame-01.png",
+    "sequences/transitions/start/rear/frame-02.png",
+    "sequences/transitions/start/rear/frame-03.png",
+    "sequences/transitions/start/rear/frame-04.png",
+    "sequences/transitions/start/rear/frame-05.png"
+  ],
+  "start/rear-right": [
+    "sequences/transitions/start/rear-right/frame-00.png",
+    "sequences/transitions/start/rear-right/frame-01.png",
+    "sequences/transitions/start/rear-right/frame-02.png",
+    "sequences/transitions/start/rear-right/frame-03.png",
+    "sequences/transitions/start/rear-right/frame-04.png",
+    "sequences/transitions/start/rear-right/frame-05.png"
+  ],
+  "brake/right": [
+    "sequences/transitions/brake/right/frame-00.png",
+    "sequences/transitions/brake/right/frame-01.png",
+    "sequences/transitions/brake/right/frame-02.png",
+    "sequences/transitions/brake/right/frame-03.png",
+    "sequences/transitions/brake/right/frame-04.png",
+    "sequences/transitions/brake/right/frame-05.png"
+  ],
+  "brake/front-right": [
+    "sequences/transitions/brake/front-right/frame-00.png",
+    "sequences/transitions/brake/front-right/frame-01.png",
+    "sequences/transitions/brake/front-right/frame-02.png",
+    "sequences/transitions/brake/front-right/frame-03.png",
+    "sequences/transitions/brake/front-right/frame-04.png",
+    "sequences/transitions/brake/front-right/frame-05.png"
+  ],
+  "brake/front": [
+    "sequences/transitions/brake/front/frame-00.png",
+    "sequences/transitions/brake/front/frame-01.png",
+    "sequences/transitions/brake/front/frame-02.png",
+    "sequences/transitions/brake/front/frame-03.png",
+    "sequences/transitions/brake/front/frame-04.png",
+    "sequences/transitions/brake/front/frame-05.png"
+  ],
+  "brake/front-left": [
+    "sequences/transitions/brake/front-left/frame-00.png",
+    "sequences/transitions/brake/front-left/frame-01.png",
+    "sequences/transitions/brake/front-left/frame-02.png",
+    "sequences/transitions/brake/front-left/frame-03.png",
+    "sequences/transitions/brake/front-left/frame-04.png",
+    "sequences/transitions/brake/front-left/frame-05.png"
+  ],
+  "brake/left": [
+    "sequences/transitions/brake/left/frame-00.png",
+    "sequences/transitions/brake/left/frame-01.png",
+    "sequences/transitions/brake/left/frame-02.png",
+    "sequences/transitions/brake/left/frame-03.png",
+    "sequences/transitions/brake/left/frame-04.png",
+    "sequences/transitions/brake/left/frame-05.png"
+  ],
+  "brake/rear-left": [
+    "sequences/transitions/brake/rear-left/frame-00.png",
+    "sequences/transitions/brake/rear-left/frame-01.png",
+    "sequences/transitions/brake/rear-left/frame-02.png",
+    "sequences/transitions/brake/rear-left/frame-03.png",
+    "sequences/transitions/brake/rear-left/frame-04.png",
+    "sequences/transitions/brake/rear-left/frame-05.png"
+  ],
+  "brake/rear": [
+    "sequences/transitions/brake/rear/frame-00.png",
+    "sequences/transitions/brake/rear/frame-01.png",
+    "sequences/transitions/brake/rear/frame-02.png",
+    "sequences/transitions/brake/rear/frame-03.png",
+    "sequences/transitions/brake/rear/frame-04.png",
+    "sequences/transitions/brake/rear/frame-05.png"
+  ],
+  "brake/rear-right": [
+    "sequences/transitions/brake/rear-right/frame-00.png",
+    "sequences/transitions/brake/rear-right/frame-01.png",
+    "sequences/transitions/brake/rear-right/frame-02.png",
+    "sequences/transitions/brake/rear-right/frame-03.png",
+    "sequences/transitions/brake/rear-right/frame-04.png",
+    "sequences/transitions/brake/rear-right/frame-05.png"
+  ],
+  "turn/front-left-to-front": [
+    "sequences/transitions/turn/front-left-to-front/frame-00.png",
+    "sequences/transitions/turn/front-left-to-front/frame-01.png",
+    "sequences/transitions/turn/front-left-to-front/frame-02.png"
+  ],
+  "turn/front-left-to-left": [
+    "sequences/transitions/turn/front-left-to-left/frame-00.png",
+    "sequences/transitions/turn/front-left-to-left/frame-01.png",
+    "sequences/transitions/turn/front-left-to-left/frame-02.png"
+  ],
+  "turn/front-right-to-front": [
+    "sequences/transitions/turn/front-right-to-front/frame-00.png",
+    "sequences/transitions/turn/front-right-to-front/frame-01.png",
+    "sequences/transitions/turn/front-right-to-front/frame-02.png"
+  ],
+  "turn/front-right-to-right": [
+    "sequences/transitions/turn/front-right-to-right/frame-00.png",
+    "sequences/transitions/turn/front-right-to-right/frame-01.png",
+    "sequences/transitions/turn/front-right-to-right/frame-02.png"
+  ],
+  "turn/front-to-front-left": [
+    "sequences/transitions/turn/front-to-front-left/frame-00.png",
+    "sequences/transitions/turn/front-to-front-left/frame-01.png",
+    "sequences/transitions/turn/front-to-front-left/frame-02.png"
+  ],
+  "turn/front-to-front-right": [
+    "sequences/transitions/turn/front-to-front-right/frame-00.png",
+    "sequences/transitions/turn/front-to-front-right/frame-01.png",
+    "sequences/transitions/turn/front-to-front-right/frame-02.png"
+  ],
+  "turn/left-to-front-left": [
+    "sequences/transitions/turn/left-to-front-left/frame-00.png",
+    "sequences/transitions/turn/left-to-front-left/frame-01.png",
+    "sequences/transitions/turn/left-to-front-left/frame-02.png"
+  ],
+  "turn/left-to-rear-left": [
+    "sequences/transitions/turn/left-to-rear-left/frame-00.png",
+    "sequences/transitions/turn/left-to-rear-left/frame-01.png",
+    "sequences/transitions/turn/left-to-rear-left/frame-02.png"
+  ],
+  "turn/rear-left-to-left": [
+    "sequences/transitions/turn/rear-left-to-left/frame-00.png",
+    "sequences/transitions/turn/rear-left-to-left/frame-01.png",
+    "sequences/transitions/turn/rear-left-to-left/frame-02.png"
+  ],
+  "turn/rear-left-to-rear": [
+    "sequences/transitions/turn/rear-left-to-rear/frame-00.png",
+    "sequences/transitions/turn/rear-left-to-rear/frame-01.png",
+    "sequences/transitions/turn/rear-left-to-rear/frame-02.png"
+  ],
+  "turn/rear-right-to-rear": [
+    "sequences/transitions/turn/rear-right-to-rear/frame-00.png",
+    "sequences/transitions/turn/rear-right-to-rear/frame-01.png",
+    "sequences/transitions/turn/rear-right-to-rear/frame-02.png"
+  ],
+  "turn/rear-right-to-right": [
+    "sequences/transitions/turn/rear-right-to-right/frame-00.png",
+    "sequences/transitions/turn/rear-right-to-right/frame-01.png",
+    "sequences/transitions/turn/rear-right-to-right/frame-02.png"
+  ],
+  "turn/rear-to-rear-left": [
+    "sequences/transitions/turn/rear-to-rear-left/frame-00.png",
+    "sequences/transitions/turn/rear-to-rear-left/frame-01.png",
+    "sequences/transitions/turn/rear-to-rear-left/frame-02.png"
+  ],
+  "turn/rear-to-rear-right": [
+    "sequences/transitions/turn/rear-to-rear-right/frame-00.png",
+    "sequences/transitions/turn/rear-to-rear-right/frame-01.png",
+    "sequences/transitions/turn/rear-to-rear-right/frame-02.png"
+  ],
+  "turn/right-to-front-right": [
+    "sequences/transitions/turn/right-to-front-right/frame-00.png",
+    "sequences/transitions/turn/right-to-front-right/frame-01.png",
+    "sequences/transitions/turn/right-to-front-right/frame-02.png"
+  ],
+  "turn/right-to-rear-right": [
+    "sequences/transitions/turn/right-to-rear-right/frame-00.png",
+    "sequences/transitions/turn/right-to-rear-right/frame-01.png",
+    "sequences/transitions/turn/right-to-rear-right/frame-02.png"
+  ]
+}

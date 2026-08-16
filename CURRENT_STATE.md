@@ -1,6 +1,54 @@
+## WK-INTERACTION-CAR-RIDE-CANDIDATE-v8 runtime promotion - 2026-08-16
+
+Windows owner visual QA passed on 2026-08-16 using the local transparent WPF candidate EXE generated from this branch.
+
+Current runtime state:
+
+- `source_material_visual_approval`: `approved`
+- `visual_approved`: `true`
+- `windows_owner_visual_qa`: `passed`
+- `windows_owner_visual_qa_date`: `2026-08-16`
+- `runtime_validation`: `passed_windows_renderer_qa`
+- `runtime_approved`: `true`
+- `runtime_use`: `true`
+- `prototype_use`: `false`
+- `production_asset`: `true`
+- `normal_runtime_available`: `true`, only for the manual owner `玩一下 > 兜风` path
+- `release_status`: `not_released`
+- `git_status`: `runtime_approved_branch_published_draft_pr`
+- `branch`: `agent/interaction-car-ride-v8`
+- `initial_published_commit`: `65d7e8b09404b5dfefef1b41d5260b4cf5d0ce15`
+- `draft_pr`: `#9`
+- `base`: `agent/windows-runtime-assets-integration`
+- `merged`: `false`
+- `installer_generated`: `false`
+
+`visual_approved=true` records source visual approval. It is separate from runtime approval. Runtime approval for v8 is granted only because the owner separately completed Windows transparent WPF renderer QA on 2026-08-16.
+
+Approval scope is intentionally narrow: only explicit owner UI selection of `玩一下 > 兜风` may trigger `wk.interaction.car_ride` through the normal approved runtime gate.
+
+Still forbidden for v8:
+
+- `AutonomousTick`
+- Dialogue and model routing
+- command/口令 routing
+- startup auto-play
+- `吃一下`, `散步`, or any locked command path
+- concurrent second car-ride playback
+
+Traceability retained:
+
+- Asset/batch: `WK-INTERACTION-CAR-RIDE-CANDIDATE-v8`
+- Original ZIP SHA-256: `bf92f38e3cc976236584d8581cbb8f0f1965257c31837c0d1fd69c7670e9f7e1`
+- Published directory PNG count: 253
+- Manifest runtime frame references: 222
+- `SOURCE-FREEZE-SHA256SUMS.txt`
+- `IMPORT-VALIDATION-REPORT.json`
+
+The formal installer has not been generated in this branch.
 # Current state
 
-Last verified: 2026-08-09 (Asia/Singapore), `main` at `2f7e949c21bd88d2a4cc49977778f4c517dd962a`.
+Last verified: 2026-08-15 (Asia/Singapore), integration branch `agent/windows-runtime-assets-integration`.
 
 ## Repository summary
 
@@ -52,6 +100,58 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
 - PR #4 is merged into `main` as a 70-frame additive runtime candidate with `intro`, `loop`, `exit`, and `interrupt_exit` sequences.
 - Owner preview approval is recorded, but `runtime_validation=pending`, `runtime_approved=false`, and `runtime_use=false` remain unchanged.
 - It is evidence for the future animation lifecycle implementation; it is not yet a production behavior binding.
+
+## WK-COMMAND-ACTION-CANDIDATES-v3
+
+- Fetched from `origin/agent/assets-command-actions-v3-candidate` commit `fc9f0fd`.
+- Imported four command-action candidate sequences under `assets/action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/`:
+  - `01_sit_prone_paw_rise`: 8 PNG frames.
+  - `02_jump`: 8 PNG frames.
+  - `03_spin_approach_stop_sit`: 10 PNG frames.
+  - `04_sit_prone_paw_eat`: 9 PNG frames.
+- Added a batch manifest with frame order, timing, pose, interruption policy, dimensions, byte sizes, and SHA-256 hashes.
+- Added candidate behavior contracts for `wk.command.paw_rise`, `wk.command.jump`, `wk.command.spin_approach_stop_sit`, and `wk.command.paw_eat`.
+- These assets are visible in the desktop asset library and may be force-played from developer mode for Windows renderer validation.
+- Manual transparent-window validation failed for all four sequences with `color_inconsistency`, `geometry_scale_jitter`, and `uneven_timing`.
+- They are not added to `contracts/runtime/asset-registry.json`, not included in the autonomous behavior pool, and remain `runtime_validation=failed`, `runtime_approved=false`, `runtime_use=false`.
+- Production command routing may resolve to these stable behavior IDs, but the runtime gate must return `Deferred` until corrected assets pass explicit renderer QA and runtime approval is recorded.
+- The extra seven PNG files in the batch are preview/reference images only: four contact sheets, `all-groups-overview.png`, `shared-prone-proof.png`, and `shared-sit-proof.png`. They are outside every action `frames[]` list and are not registered as playable frames.
+
+## WK-MAGIC-SPECIALS-CANDIDATE-v1
+
+- Added the integrated Wukong-only candidate action batch under `assets/action-batches/WK-MAGIC-SPECIALS-CANDIDATE-v1/` while retaining `WK-MAGIC-SPECIALS-MOCK-v1` as historical prototype evidence.
+- The active owner-preview batch contains 207 transparent RGBA PNG files: 195 reviewed 1024×1024 broom/invisibility/petrification/coin frames plus 12 existing 256×256 Scourgify mock frames pending replacement.
+- The playable manifest records:
+  - `wk.magic.accio_broom`
+  - `wk.magic.apparate`
+  - `wk.magic.petrificus_totalus`
+  - `wk.magic.petrificus_release`
+  - `wk.magic.scourgify`
+- Accio Broom packages all eight directional loops and preserves animation phase while the desktop path changes direction; the current showcase uses reviewed takeoff and seated landing sequences.
+- Apparate plays disappear, invisible relocation cut, and appear phases.
+- Petrificus Totalus plays the stone transition and enters an interactive coin hold. The coin starts vivid/front, settles to flat after 800 ms, fades after 10 minutes of inactivity, and reaches exhausted after 20 minutes. Timing is configurable through `PetrifiedCoinOptions`.
+- A single coin click restores vivid/front and restarts the inactivity clock. A front double-click flips to the matching-color back without resetting time; a back double-click flips to vivid/front and resets time. Pointer single-click is deferred for double-click disambiguation.
+- Coin faces and all four nine-frame flip sequences are normalized to the same 1024×1024 transparent canvas. `coin-checksums.sha256` covers all 44 coin PNG files.
+- On 2026-08-15, `state-01-vivid` and `state-02-flat` coin backs were updated to use the same clear double pressed rim language as the later back states while preserving the frosted face and paw mark; the vivid/flat flip frames, review preview GIF, and checksums were regenerated.
+- On 2026-08-15, `state-01-vivid` and `state-02-flat` coin fronts were replaced from the local V2.3 coin master JPGs in the external `images_wk/coins` source folder; source JPGs were not committed. Matching gold-luster backs, vivid/flat flip frames, review preview GIF, and checksums were regenerated. All coin faces remain on the shared 1024x1024 transparent canvas and the batch gates remain pending/prototype-only.
+- On 2026-08-15, `state-01-vivid` and `state-02-flat` coin backs were replaced from the local shared back master with the large paw embossing and crisp coin rim style; vivid/flat flip frames, review preview GIF, and checksums were regenerated. The shared 1024x1024 canvas and visible bounds remain unchanged, and gates remain pending/prototype-only.
+- Batch state remains `runtime_validation=pending`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, with `prototype_use=true`.
+- Initial magic playback is allowed only through explicit owner entry points (`OwnerContextMenu` and `ControlPanel`) using `BehaviorExecutionMode.PrototypePreview` and the magic behavior whitelist. Pointer interaction is accepted only while the owner-started petrification preview is active.
+- Dialogue, model output, autonomous tick, memory, personality, and normal production behavior requests must not use `PrototypePreview`; they continue to resolve through the normal runtime gate and defer until assets are formally approved.
+- The batch is not added to `contracts/runtime/asset-registry.json`, not included in the autonomous pool, and not eligible for production command or model-triggered execution.
+- Asset/hash/gate tests pass in the Linux checkout. The checkout does not contain a .NET SDK or Windows transparent renderer, so WPF build execution and real-renderer QA remain pending and no runtime approval is claimed.
+
+## WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2
+
+- Added a P2 developer-profile lifecycle candidate batch under `assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2/`.
+- Source inputs were the 14-state lively daily candidate package and the recovered lifecycle microloops v2.1 package; the broken v2 ZIP was not used.
+- This is a self-directed daily behavior candidate only: it does not use `wk.command.*`, is not training data, is not exposed in the normal right-click menu, and is not added to the default autonomous pool.
+- Lifecycle mapping is `intro` = 14-state stand/walk/lookback/sit/prone, `loop` = prone-idle microloop, `exit` = prone-to-sit plus sit-to-stand, `interrupt_exit` = nearest stable anchor back to stand, and `fallback` = stable stand frame 01.
+- Stable duplicate SHA anchors are referenced through canonical runtime frame paths where used by lifecycle phases: forward 01/stable stand, forward 10/stable sit, and forward 11/12/14 for the reverse path.
+- Stand, sit, and prone idle microloops remain low-frequency developer candidates with recovered manifest timings of 7240 ms, 7680 ms, and 8900 ms per cycle.
+- P2 Windows manual transparent-renderer QA passed on 2026-08-15. Batch state is now `visual_approved=true`, `art_candidate=false`, `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, and `runtime_use=true` for the autonomous lifecycle profile.
+- Strict non-zero-alpha audit still records 17 frame references extending to y=932. The owner observed no visible foot jitter, transparent edge issue, or y=930/y=932 artifact in Windows renderer QA; PNGs were not cropped, recolored, resized, or baseline-shifted after acceptance.
+- It is not added to `contracts/runtime/asset-registry.json`, `pet_assets.json`, production command routing, right-click menus, training data, magic, or coin flows. It is activated only in the formal autonomous lifecycle mapping: full lifecycle as a low-frequency self-directed daily behavior, stand-idle for stable stand, sit-idle for stable sit, and prone-idle for stable prone.
 
 ## Next implementation target
 

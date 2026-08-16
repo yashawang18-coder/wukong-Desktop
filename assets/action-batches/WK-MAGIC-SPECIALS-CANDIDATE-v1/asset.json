@@ -1,0 +1,38 @@
+{
+  "asset_id": "WK-MAGIC-SPECIALS-CANDIDATE-v1",
+  "asset_type": "action-batch",
+  "status": "runtime-candidate",
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "prototype_use": true,
+  "production_asset": false,
+  "owner_preview_entry_points": [
+    "OwnerContextMenu",
+    "ControlPanel"
+  ],
+  "notes": "Integrated V8 magic and interactive coin candidate; production registry remains closed.",
+  "revision_notes": [
+    {
+      "date": "2026-08-15",
+      "change": "Sharpened state-01-vivid and state-02-flat coin back edges to match the clear double pressed rim on later back states; preserved frosted coin face and paw mark; rebuilt vivid/flat flip frames, preview GIF, and coin checksums.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    },
+    {
+      "date": "2026-08-15",
+      "change": "Replaced state-01-vivid and state-02-flat coin fronts from the local V2.3 coin masters; generated matching gold-luster backs with clear double pressed rims and paw embossing; rebuilt vivid/flat flip frames, review preview GIF, and coin checksums while keeping runtime gates unchanged.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    },
+    {
+      "date": "2026-08-15",
+      "change": "Replaced state-01-vivid and state-02-flat coin backs from the local shared back master with large paw embossing and crisp coin rim; rebuilt vivid/flat flip frames, review preview GIF, and coin checksums while preserving the shared visible bounds and runtime gates.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    }
+  ]
+}

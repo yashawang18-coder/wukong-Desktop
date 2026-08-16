@@ -1,0 +1,12 @@
+{
+    "asset_id":  "WK-MAGIC-SPECIALS-MOCK-v1",
+    "asset_type":  "action-batch",
+    "status":  "mock-runtime-candidate",
+    "runtime_validation":  "pending",
+    "runtime_approved":  false,
+    "runtime_use":  false,
+    "prototype_use":  true,
+    "production_asset":  false,
+    "owner":  "Wukong Phase 1.5 local mock",
+    "notes":  "PrototypePreview only; not eligible for production registry or autonomous behavior pool."
+}
