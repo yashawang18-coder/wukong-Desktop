@@ -1,4 +1,5 @@
 using System.Windows;
+using Wukong.Application;
 
 namespace Wukong.Desktop;
 
@@ -67,12 +68,16 @@ public static class InitiativeSpeechSchedule
     public static TimeSpan NextInterval(Random random) =>
         TimeSpan.FromSeconds(random.Next(180, 421));
 
-    public static string SelectMessage(Random random, Wukong.Application.StablePosture posture)
+    public static string SelectMessage(Random random, InitiativeSpeechTopic topic, StablePosture posture)
     {
-        var messages = posture switch
+        var messages = topic switch
         {
-            Wukong.Application.StablePosture.Prone => new[] { "我在这里趴一会儿。", "主人，我安静陪着你。", "今天也想待在你旁边。" },
-            Wukong.Application.StablePosture.Sit => new[] { "主人，我在听。", "要不要和我说句话？", "我正看着你呢。" },
+            InitiativeSpeechTopic.Hunger => new[] { "主人，我好像有一点饿了。", "肚子在轻轻提醒我啦。", "等你方便时，可以给我一点吃的吗？" },
+            InitiativeSpeechTopic.Play => new[] { "休息一下，要不要陪我玩一会儿？", "我现在有一点想活动啦。", "忙完以后，陪我动一动吧。" },
+            InitiativeSpeechTopic.Curiosity => new[] { "刚才好像有点新动静。", "我在看看周围发生了什么。", "主人，你在忙什么呀？" },
+            InitiativeSpeechTopic.Rest => new[] { "我先安静歇一会儿。", "今天想靠着你慢慢休息。", "我有一点困，但还在陪你。" },
+            InitiativeSpeechTopic.Companionship when posture == StablePosture.Prone => new[] { "主人，我安静陪着你。", "今天也想待在你旁边。", "我在这里趴一会儿。" },
+            InitiativeSpeechTopic.Companionship when posture == StablePosture.Sit => new[] { "主人，我在听。", "要不要和我说句话？", "我正看着你呢。" },
             _ => new[] { "主人，我在这里。", "刚刚想到你了。", "忙完记得看看我。" }
         };
         return messages[random.Next(messages.Length)];
@@ -80,6 +85,9 @@ public static class InitiativeSpeechSchedule
 
     public static bool CanSpeakDuring(string behaviorId, bool isPetrified) =>
         !isPetrified &&
-        !behaviorId.StartsWith("wk.magic.", StringComparison.OrdinalIgnoreCase) &&
-        !string.Equals(behaviorId, "wk.interaction.car_ride", StringComparison.OrdinalIgnoreCase);
+        (string.Equals(behaviorId, Phase15BehaviorIds.ProneIdle, StringComparison.OrdinalIgnoreCase) ||
+         string.Equals(behaviorId, LifecycleCandidateBehaviorIds.StandIdleMicroloop, StringComparison.OrdinalIgnoreCase) ||
+         string.Equals(behaviorId, LifecycleCandidateBehaviorIds.SitIdleMicroloop, StringComparison.OrdinalIgnoreCase) ||
+         string.Equals(behaviorId, LifecycleCandidateBehaviorIds.ProneIdleMicroloop, StringComparison.OrdinalIgnoreCase) ||
+         behaviorId.StartsWith("wk.runtime.posture_hold.", StringComparison.OrdinalIgnoreCase));
 }

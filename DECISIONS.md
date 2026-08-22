@@ -1,5 +1,21 @@
 # Decisions
 
+## 2026-08-23 - derive daily candidates without widening source approvals
+
+Approved light-malt-gold pixels may be copied into a new versioned batch for a proposed daily semantic, but approval does not transfer automatically from owner-command use to autonomous use. `WK-AUTONOMOUS-DAILY-BEHAVIORS-v1` therefore preserves source bytes and hashes while keeping all autonomous and runtime gates closed until owner semantic review and real Windows renderer QA pass.
+
+No expired red/standard-Shiba pixel may be copied into the batch. Those assets remain motion/timing references only. The active autonomous pool remains the already approved P2 lifecycle set.
+
+## 2026-08-23 - make manifest runtime gates authoritative for prone touch
+
+`WK-INTERACTION-PRONE-TOUCH-v4-1` declares `runtime_validation=pending`, `runtime_approved=false`, `runtime_use=false`, and runtime registration forbidden. The desktop catalog must mirror those flags. A normal owner touch may update bounded social/comfort state, but it must return `Deferred` without requesting the candidate animation. Only developer-forced preview may play it before Windows validation and explicit approval.
+
+## 2026-08-23 - separate interaction intent, state response, asset response, and dialogue
+
+Touch, stroke, rapid tap, drag, and double-click first pass through a single interaction decision service. The service may record immediate bounded input effects, reject unsafe or unwanted contact, or choose a behavior only when pose and runtime gates permit it. Drag remains window movement, and double-click remains the explicit chat entry; neither invents a pet animation.
+
+Initiative speech is a separate state-driven decision, not a timer that always speaks. It must be suppressed during non-idle behavior, petrification, expanded chat, quiet hours, high stress, low relationship acceptance, and cooldown. A displayed initiative line is transient pet expression: it must not be inserted into owner/assistant conversation history and must not invoke a background model.
+
 ## 2026-08-23 - use one runtime state and one autonomous scheduler
 
 Desktop behavior state has one authority: `PetRuntimeState`. UI metrics are projections, not an independently mutated copy. A requested action may mark the state busy, but posture, relationship, and completed-action effects are committed only from the renderer completion callback. Interrupted or failed playback must not commit the planned end posture.

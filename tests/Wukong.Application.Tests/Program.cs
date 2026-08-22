@@ -32,7 +32,8 @@ var tests = new (string Name, Func<Task> Run)[]
     ("behavior agent owner commands branch by posture", BehaviorAgentOwnerCommandsBranchByPosture),
     ("behavior agent plans posture transitions and keeps end posture", BehaviorAgentPlansTransitionsAndKeepsPosture),
     ("behavior agent busy state blocks autonomous interruption", BehaviorAgentBusyBlocksAutonomous),
-    ("behavior agent dialogue context matches decision", BehaviorAgentDialogueContextMatchesState)
+    ("behavior agent dialogue context matches decision", BehaviorAgentDialogueContextMatchesState),
+    ("initiative speech uses state and respects suppressions", InitiativeSpeechUsesStateAndSuppressions)
 };
 
 var failures = new List<string>();
@@ -509,6 +510,37 @@ static Task BehaviorAgentDialogueContextMatchesState()
     Assert(dialogue.StressLevel == "high" && dialogue.EnergyLevel == "low", "dialogue mood bands wrong");
     Assert(dialogue.DialogueTone == "careful_short", "sensitive high-stress tone missing");
     Assert(dialogue.ForbiddenClaims.Any(x => x.Contains("asset paths", StringComparison.Ordinal)), "dialogue forbidden claims missing asset boundary");
+    return Task.CompletedTask;
+}
+
+static Task InitiativeSpeechUsesStateAndSuppressions()
+{
+    var service = new InitiativeSpeechDecisionService();
+    var now = new DateTimeOffset(2026, 8, 17, 14, 0, 0, TimeSpan.Zero);
+    var hungry = new InitiativeSpeechContext(
+        PetRuntimeState.Default with { Hunger = 0.96, Stress = 0.05, IsBusy = false },
+        TemperamentProfile.Default,
+        RelationshipState.Default,
+        now,
+        null,
+        IsStableIdle: true,
+        IsPetrified: false,
+        IsChatExpanded: false,
+        IsQuietHours: false,
+        RandomSeed: 4);
+
+    var first = service.Decide(hungry);
+    var second = service.Decide(hungry);
+    Assert(first.ShouldSpeak == second.ShouldSpeak && first.Topic == second.Topic && first.ReasonCode == second.ReasonCode, "initiative speech decision changed for the same state and seed");
+    Assert(first.Candidates.Select(x => (x.Topic, x.Score)).SequenceEqual(second.Candidates.Select(x => (x.Topic, x.Score))), "initiative candidate scores changed for the same state and seed");
+    Assert(first.ShouldSpeak && first.Topic == InitiativeSpeechTopic.Hunger, "high hunger did not select restrained hunger initiative");
+
+    Assert(!service.Decide(hungry with { IsChatExpanded = true }).ShouldSpeak, "expanded chat did not suppress initiative speech");
+    Assert(service.Decide(hungry with { IsChatExpanded = true }).ReasonCode == "chat_expanded", "chat suppression reason changed");
+    Assert(service.Decide(hungry with { IsQuietHours = true }).ReasonCode == "quiet_hours", "quiet hours did not suppress initiative speech");
+    Assert(service.Decide(hungry with { State = hungry.State with { Stress = 0.90 } }).ReasonCode == "stress_safety_limit", "stress did not suppress initiative speech");
+    Assert(service.Decide(hungry with { Relationship = RelationshipState.Default with { InitiativeAcceptance = 0.10 } }).ReasonCode == "initiative_acceptance_low", "relationship acceptance did not suppress initiative speech");
+    Assert(service.Decide(hungry with { LastSpokenAt = now - TimeSpan.FromMinutes(1) }).ReasonCode == "initiative_cooldown", "cooldown did not suppress repeated initiative speech");
     return Task.CompletedTask;
 }
 

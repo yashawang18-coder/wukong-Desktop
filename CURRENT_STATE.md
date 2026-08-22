@@ -1,3 +1,12 @@
+## Autonomous daily candidate and interaction decisions - 2026-08-23
+
+- Added `WK-AUTONOMOUS-DAILY-BEHAVIORS-v1` with six proposed `wk.daily.*` actions and 59 frame references: stand-to-sit 10, sit-to-prone 12, prone-to-sit 4, sit-to-stand 5, playful hop 12, and playful spin 16. Every PNG is copied byte-for-byte from the approved light-malt-gold v4 command or P2 lifecycle batches with per-frame provenance and SHA-256.
+- The derived daily batch is not runtime-enabled. Reusing an owner-command motion as spontaneous behavior changes its meaning, so `autonomous_semantics_owner_approved=false`, `runtime_validation=pending_owner_semantic_and_windows_renderer_qa`, `runtime_approved=false`, and `runtime_use=false` remain closed.
+- Corrected the prone-touch catalog mismatch. `WK-INTERACTION-PRONE-TOUCH-v4-1` remains a 70-frame owner-preview candidate with `runtime_use=false`; normal touch now records bounded interaction state but returns `Deferred` and never requests its animation. Developer-forced preview remains available for renderer QA.
+- Added one interaction decision service for touch, stroke, repeated tap, drag, and UI-owned double-click. It evaluates stable pose, interruptibility, petrification, stress, temperament sensitivity, relationship touch acceptance, and runtime asset availability before returning an animation ID. Rapid taps increase stress/arousal even when their response asset is locked.
+- Replaced unconditional periodic speech with a state-driven initiative decision. Hunger, social need, boredom/play, curiosity, energy/rest, temperament, relationship initiative acceptance, cooldown, quiet hours, stress, current behavior, petrification, and expanded chat all participate. Initiative text is local and appears only in the transient speech bubble; it does not enter conversation history and does not call a model.
+- The Linux checkout has no .NET SDK, so C# build execution is deferred to the branch's Windows CI. Python asset/provenance tests pass locally; no Windows renderer approval is inferred from those tests.
+
 ## Unified runtime state and autonomous arbitration - 2026-08-23
 
 - `PetRuntimeState` is now the single desktop source for energy, hunger, social need, boredom, stress, mood, arousal, curiosity, comfort, focus, posture, busy state, and active action. Desktop metric properties are read-only projections of this state.

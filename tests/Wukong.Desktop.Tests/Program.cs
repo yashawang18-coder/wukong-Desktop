@@ -74,8 +74,9 @@ var tests = new (string Name, Action Run)[]
     ("control panel tab buttons share visual metrics", ControlPanelTabButtonsShareVisualMetrics),
     ("gesture interpreter distinguishes touch stroke drag and rapid tap", GestureInterpreterDistinguishesGestures),
     ("rapid tap has priority over owner touch", RapidTapHasPriorityOverOwnerTouch),
-    ("runtime requests touch motion and returns decisions", RuntimeRequestsTouchMotion),
+    ("runtime keeps prone touch candidate behind manifest gate", RuntimeRequestsTouchMotion),
     ("runtime rapid tap does not request touch motion", RuntimeRapidTapDoesNotRequestTouchMotion),
+    ("interaction decision uses state relationship and asset gates", InteractionDecisionUsesStateRelationshipAndAssetGates),
     ("album folder item reads local markdown album", AlbumFolderItemReadsLocalMarkdownAlbum),
     ("album folder item reads xhs markdown album", AlbumFolderItemReadsXhsMarkdownAlbum),
     ("album markdown update preserves unknown fields", AlbumMarkdownUpdatePreservesUnknownFields),
@@ -691,7 +692,10 @@ static void DesktopChatAndInitiativeContract()
     Assert(first >= TimeSpan.FromMinutes(3) && first <= TimeSpan.FromMinutes(7), "initiative speech is not low frequency");
     Assert(!InitiativeSpeechSchedule.CanSpeakDuring("wk.magic.apparate", false), "magic should suppress initiative speech");
     Assert(!InitiativeSpeechSchedule.CanSpeakDuring("wk.interaction.car_ride", false), "car ride should suppress initiative speech");
-    Assert(InitiativeSpeechSchedule.CanSpeakDuring("wk.lifecycle.stand_idle_microloop", false), "stable idle should allow initiative speech");
+    Assert(!InitiativeSpeechSchedule.CanSpeakDuring("wk.command.jump", false), "command motion should suppress initiative speech");
+    Assert(InitiativeSpeechSchedule.CanSpeakDuring(LifecycleCandidateBehaviorIds.StandIdleMicroloop, false), "stable idle should allow initiative speech");
+    var hungerText = InitiativeSpeechSchedule.SelectMessage(new Random(4), InitiativeSpeechTopic.Hunger, StablePosture.Sit);
+    Assert(hungerText.Contains("饿", StringComparison.Ordinal) || hungerText.Contains("肚子", StringComparison.Ordinal) || hungerText.Contains("吃", StringComparison.Ordinal), "hunger initiative used unrelated copy");
 }
 
 static void MainWindowPetScaleChangesImageSize()
@@ -1827,11 +1831,13 @@ static void RuntimeRequestsTouchMotion()
     var runtime = new DesktopRuntimeHost();
     PetMotionRequest? request = null;
     runtime.MotionRequested += (_, item) => request = item;
+    var touch = runtime.Motions.Single(motion => motion.BehaviorId == Phase15BehaviorIds.ProneTouch);
+    Assert(!touch.RuntimeEnabled, "touch catalog ignored asset.json runtime_use=false");
+    Assert(touch.AssetBatch == "WK-INTERACTION-PRONE-TOUCH-v4-1", "touch catalog lost source batch identity");
     var result = runtime.SubmitGestureAsync(PetGestureKind.OwnerTouch, BehaviorRequestSource.OwnerUi).GetAwaiter().GetResult();
-    Assert(result == PetActionResult.Accepted, "touch was not accepted");
-    Assert(request is not null, "touch did not request a motion");
-    Assert(request!.Motion.BehaviorId == Phase15BehaviorIds.ProneTouch, "touch chose wrong behavior");
-    Assert(request.Motion.Phases.Any(x => x.Name == "loop" && x.Frames.Count > 0), "touch motion missing loop frames");
+    Assert(result == PetActionResult.Deferred, "runtime-locked touch candidate was accepted");
+    Assert(request is null, "runtime-locked touch candidate requested production playback");
+    Assert(runtime.CurrentReason.Contains("prone_touch_runtime_qa_pending", StringComparison.Ordinal), "touch gate reason did not explain pending runtime QA");
 }
 
 static void RuntimeRapidTapDoesNotRequestTouchMotion()
@@ -1842,6 +1848,47 @@ static void RuntimeRapidTapDoesNotRequestTouchMotion()
     var result = runtime.SubmitGestureAsync(PetGestureKind.RapidTap, BehaviorRequestSource.OwnerUi).GetAwaiter().GetResult();
     Assert(result != PetActionResult.Accepted, "rapid tap should not accept a locked transition");
     Assert(request is null || request.Motion.BehaviorId != Phase15BehaviorIds.ProneTouch, "rapid tap must not request owner touch motion");
+}
+
+static void InteractionDecisionUsesStateRelationshipAndAssetGates()
+{
+    var service = new InteractionDecisionService();
+    var now = new DateTimeOffset(2026, 8, 20, 14, 0, 0, TimeSpan.Zero);
+    var baseContext = new InteractionDecisionContext(
+        PetGestureKind.OwnerTouch,
+        1,
+        PetRuntimeState.Default with { CurrentPosture = StablePosture.Prone },
+        TemperamentProfile.Default,
+        RelationshipState.Default,
+        now,
+        IsStableIdle: true,
+        IsCurrentInterruptible: true,
+        IsPetrified: false,
+        RuntimeEnabledBehaviorIds: new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+
+    var locked = service.Decide(baseContext);
+    Assert(locked.Disposition == PetActionResult.Deferred && locked.BehaviorId is null, "locked touch asset entered playback");
+    Assert(locked.UpdatedState.SocialNeed < baseContext.State.SocialNeed, "accepted touch input did not update social state");
+
+    var enabled = service.Decide(baseContext with
+    {
+        RuntimeEnabledBehaviorIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { Phase15BehaviorIds.ProneTouch }
+    });
+    Assert(enabled.Disposition == PetActionResult.Accepted && enabled.BehaviorId == Phase15BehaviorIds.ProneTouch, "approved touch asset was not selectable");
+
+    var rejected = service.Decide(baseContext with
+    {
+        State = baseContext.State with { Stress = 0.82 },
+        Relationship = RelationshipState.Default with { TouchAcceptance = 0.12 }
+    });
+    Assert(rejected.Disposition == PetActionResult.Rejected && rejected.ReasonCode == "touch_acceptance_low", "state/relationship did not reject unwanted touch");
+
+    var rapid = service.Decide(baseContext with { Gesture = PetGestureKind.RapidTap, TapBurst = 4 });
+    Assert(rapid.UpdatedState.Stress > baseContext.State.Stress, "rapid tap did not increase stress");
+    Assert(rapid.Disposition != PetActionResult.Accepted, "rapid tap used a locked response asset");
+
+    var drag = service.Decide(baseContext with { Gesture = PetGestureKind.Drag });
+    Assert(drag.ReasonCode == "drag_repositions_pet" && drag.UpdatedState == baseContext.State.Clamp(), "drag was mixed with emotional animation state");
 }
 
 static void AlbumFolderItemReadsLocalMarkdownAlbum()

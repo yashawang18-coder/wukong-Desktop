@@ -91,8 +91,12 @@ public sealed record RelationshipState(
     int RecentNegativeInteractions)
 {
     public static RelationshipState Default { get; } = new(0.70, 0.56, 0, 0);
+    public double TouchAcceptance { get; init; } = 0.72;
+    public double InitiativeAcceptance { get; init; } = 0.64;
     public double Trust01 => Math.Clamp(Trust, 0, 1);
     public double Familiarity01 => Math.Clamp(Familiarity, 0, 1);
+    public double TouchAcceptance01 => Math.Clamp(TouchAcceptance, 0, 1);
+    public double InitiativeAcceptance01 => Math.Clamp(InitiativeAcceptance, 0, 1);
 }
 
 public sealed record BehaviorDecisionContext(

@@ -529,7 +529,17 @@ public sealed class DesktopMotionCatalog
                 new MotionPhase("exit", ReadFrames(Path.Combine(touchRoot, "exit")), Loop: false),
                 new MotionPhase("interrupt_exit", ReadFrames(Path.Combine(touchRoot, "interrupt_exit")), Loop: false)
             },
-            touchRoot);
+            touchRoot,
+            RuntimeEnabled: false,
+            Status: "Owner sequence approved; Windows runtime validation pending",
+            MissingContent: "Runtime validation and registration approval",
+            StartPose: "prone.awake.left_front",
+            EndPose: "prone.awake.left_front",
+            StyleGroup: "wukong-light-malt-gold-v4",
+            Disposition: "Production candidate / runtime locked",
+            PrototypeUse: false,
+            AssetBatch: "WK-INTERACTION-PRONE-TOUCH-v4-1",
+            Description: "asset.json declares runtime_validation=pending, runtime_approved=false, runtime_use=false; developer-forced preview only");
     }
 
     private static IReadOnlyList<string> ReadFrames(string directory) =>
@@ -1121,7 +1131,7 @@ public static class Phase15BehaviorIds
     public const string EnterSleep = "wk.phase15.enter_sleep";
     public const string SafeStand = "wk.phase15.safe_stand";
     public const string StrokeEnjoy = "wk.phase15.stroke_enjoy";
-    public const string ProneTouch = "wk.phase15.prone_touch";
+    public const string ProneTouch = "wk.interaction.prone_touch";
 }
 
 public static class LifecycleCandidateBehaviorIds
@@ -1489,6 +1499,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private readonly Random _random = new(1508);
     private PlayableMotion? _currentMotion;
     private readonly BehaviorAgentMockEngine _behaviorAgent = new();
+    private readonly InteractionDecisionService _interactionDecisions = new();
+    private readonly InitiativeSpeechDecisionService _initiativeSpeechDecisions = new();
     private readonly Dictionary<string, DateTimeOffset> _lastAccepted = new(StringComparer.OrdinalIgnoreCase);
     private readonly RollingFileLogStore _logs = RollingFileLogStore.CreateDefault();
     private PetRuntimeState _agentState = PetRuntimeState.Default;
@@ -1505,6 +1517,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private bool _currentInterruptible = true;
     private DateTimeOffset _nextAutonomousDecisionAt = DateTimeOffset.MinValue;
     private DateTimeOffset? _coinActivityAt;
+    private DateTimeOffset? _lastInitiativeSpeechAt;
     private BehaviorRequestSource _coinPreviewSource = BehaviorRequestSource.OwnerContextMenu;
 
     public DesktopRuntimeHost(PetrifiedCoinOptions? coinOptions = null, Func<DateTimeOffset>? now = null)
@@ -1629,24 +1642,72 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     {
         var now = _now();
         Trace("gesture", gesture.ToString());
-        var behaviorId = gesture switch
-        {
-            PetGestureKind.OwnerTouch => Phase15BehaviorIds.ProneTouch,
-            PetGestureKind.Stroke => Phase15BehaviorIds.StrokeEnjoy,
-            PetGestureKind.RapidTap => Phase15BehaviorIds.LookAround,
-            _ => _catalog.RequiredIdle.BehaviorId
-        };
-
         if (gesture == PetGestureKind.OwnerTouch)
         {
             var previousTapAt = _lastTapAt;
             _tapBurst = now - previousTapAt <= TimeSpan.FromMilliseconds(900) ? _tapBurst + 1 : 1;
             _lastTapAt = now;
-            if (GestureInterpreter.IsRapidTap(now, previousTapAt, _tapBurst))
-                behaviorId = Phase15BehaviorIds.LookAround;
+        }
+        else if (gesture == PetGestureKind.RapidTap)
+        {
+            _tapBurst = Math.Max(3, _tapBurst);
+            _lastTapAt = now;
         }
 
-        return Task.FromResult(SubmitBehavior(source, behaviorId, $"gesture:{gesture}", priority: 6));
+        var enabled = _catalog.Motions
+            .Where(motion => motion.RuntimeEnabled)
+            .Select(motion => motion.BehaviorId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var decision = _interactionDecisions.Decide(new InteractionDecisionContext(
+            gesture,
+            _tapBurst,
+            _agentState,
+            _temperament,
+            _relationshipState,
+            now,
+            IsStableIdleBehavior(_currentBehaviorId),
+            _currentInterruptible,
+            IsPetrified,
+            enabled));
+        _agentState = decision.UpdatedState;
+        RaiseMetrics();
+        OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+        Trace("interaction_decision", $"gesture={decision.EffectiveGesture} disposition={decision.Disposition} behavior={decision.BehaviorId ?? "none"} reason={decision.ReasonCode}");
+        if (decision.BehaviorId is not null)
+            return Task.FromResult(SubmitBehavior(source, decision.BehaviorId, $"gesture:{decision.EffectiveGesture}", priority: 6));
+
+        UpdateDecision(decision.Disposition, source.ToString(), decision.ReasonCode, decision.UserFacingReason);
+        return Task.FromResult(decision.Disposition);
+    }
+
+    public InitiativeSpeechDecision DecideInitiativeSpeech(bool isChatExpanded)
+    {
+        var now = _now();
+        var decision = _initiativeSpeechDecisions.Decide(new InitiativeSpeechContext(
+            _agentState,
+            _temperament,
+            _relationshipState,
+            now,
+            _lastInitiativeSpeechAt,
+            IsStableIdleBehavior(_currentBehaviorId),
+            IsPetrified,
+            isChatExpanded,
+            now.Hour is >= 23 or < 7,
+            _decisionSeed + _autonomousDecisionCount + (int)(now.Ticks % int.MaxValue)));
+        Trace("initiative_speech_decision", $"speak={decision.ShouldSpeak} topic={decision.Topic} reason={decision.ReasonCode}");
+        return decision;
+    }
+
+    public void RecordInitiativeSpeech(InitiativeSpeechTopic topic)
+    {
+        _lastInitiativeSpeechAt = _now();
+        _agentState = _agentState with
+        {
+            SocialNeed = Clamp01(_agentState.SocialNeed - (topic == InitiativeSpeechTopic.Companionship ? 0.025 : 0.008)),
+            LastInteractionAt = _lastInitiativeSpeechAt
+        };
+        RaiseMetrics();
+        Trace("initiative_speech_shown", $"topic={topic}");
     }
 
     public Task<PetActionResult> SubmitContextMenuIntentAsync(SemanticIntent intent)

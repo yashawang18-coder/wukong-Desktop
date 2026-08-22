@@ -28,6 +28,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _animationTimer;
     private readonly DispatcherTimer _coinStateTimer;
     private readonly DispatcherTimer _coinSingleClickTimer;
+    private readonly DispatcherTimer _ownerSingleClickTimer;
     private readonly DispatcherTimer _initiativeSpeechTimer = new();
     private readonly Dictionary<string, BitmapImage> _imageCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly Queue<string> _imageCacheOrder = new();
@@ -80,6 +81,7 @@ public partial class MainWindow : Window
             _effectCancellation?.Cancel();
             _coinStateTimer.Stop();
             _coinSingleClickTimer.Stop();
+            _ownerSingleClickTimer.Stop();
             _initiativeSpeechTimer.Stop();
             var chatWindow = _chatWindow;
             _chatWindow = null;
@@ -107,6 +109,14 @@ public partial class MainWindow : Window
             _coinSingleClickTimer.Stop();
             if (_runtime.IsPetrified)
                 await _runtime.SubmitPetrifiedCoinClickAsync();
+        };
+
+        _ownerSingleClickTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(520) };
+        _ownerSingleClickTimer.Tick += async (_, _) =>
+        {
+            _ownerSingleClickTimer.Stop();
+            if (!_runtime.IsPetrified)
+                await _runtime.SubmitGestureAsync(PetGestureKind.OwnerTouch, BehaviorRequestSource.OwnerUi);
         };
 
         _initiativeSpeechTimer.Tick += InitiativeSpeechTimer_Tick;
@@ -242,17 +252,28 @@ public partial class MainWindow : Window
 
         if (gesture == PetGestureKind.RapidTap)
         {
+            _ownerSingleClickTimer.Stop();
             ResetTapCandidates();
             await _runtime.SubmitGestureAsync(gesture, BehaviorRequestSource.OwnerUi);
         }
         else if (OpensChatOnGesture(gesture))
         {
+            _ownerSingleClickTimer.Stop();
             ResetTapCandidates();
-            await _runtime.SubmitGestureAsync(PetGestureKind.OwnerTouch, BehaviorRequestSource.OwnerUi);
+            await _runtime.SubmitGestureAsync(PetGestureKind.DoubleClick, BehaviorRequestSource.OwnerUi);
             OpenChatForInput();
         }
         else
         {
+            if (tapCandidateCount == 1)
+            {
+                _ownerSingleClickTimer.Stop();
+                _ownerSingleClickTimer.Start();
+            }
+            else if (gesture is PetGestureKind.Stroke or PetGestureKind.Drag)
+            {
+                _ownerSingleClickTimer.Stop();
+            }
             if (gesture is PetGestureKind.Stroke or PetGestureKind.Drag)
                 await _runtime.SubmitGestureAsync(gesture, BehaviorRequestSource.OwnerUi);
         }
@@ -329,6 +350,7 @@ public partial class MainWindow : Window
         _animationTimer.Stop();
         _coinStateTimer.Stop();
         _coinSingleClickTimer.Stop();
+        _ownerSingleClickTimer.Stop();
         _autonomousTimer.Stop();
         _controlPanel?.Close();
         Close();
@@ -455,6 +477,7 @@ public partial class MainWindow : Window
         var phase = _runtime.CurrentPhase;
         _animationTimer.Stop();
         _coinSingleClickTimer.Stop();
+        _ownerSingleClickTimer.Stop();
         var returnToIdle = _activeRequest.ReturnToIdle;
         _activeRequest = null;
         if (returnToIdle)
@@ -467,6 +490,7 @@ public partial class MainWindow : Window
         RestoreWindowAfterEffect();
         _animationTimer.Stop();
         _coinSingleClickTimer.Stop();
+        _ownerSingleClickTimer.Stop();
         _suspendAnimationFrames = false;
         _activeRequest = null;
         _autonomousTimer.Start();
@@ -1127,17 +1151,19 @@ public partial class MainWindow : Window
         _speechBubbleWindow.ShowMessage(text, SystemParameters.WorkArea, CurrentVisiblePetBounds());
     }
 
-    private async void InitiativeSpeechTimer_Tick(object? sender, EventArgs e)
+    private void InitiativeSpeechTimer_Tick(object? sender, EventArgs e)
     {
         _initiativeSpeechTimer.Stop();
+        var nextCheck = InitiativeSpeechSchedule.NextInterval(_initiativeSpeechRandom);
         try
         {
-            if (_chatWindow?.IsExpanded == true ||
-                !InitiativeSpeechSchedule.CanSpeakDuring(_runtime.CurrentBehaviorId, _runtime.IsPetrified))
+            var decision = _runtime.DecideInitiativeSpeech(_chatWindow?.IsExpanded == true);
+            nextCheck = decision.NextCheck;
+            if (!decision.ShouldSpeak)
                 return;
 
-            var text = InitiativeSpeechSchedule.SelectMessage(_initiativeSpeechRandom, _runtime.CurrentStablePosture);
-            await _agentRuntime.AppendLocalAssistantMessageAsync(text);
+            var text = InitiativeSpeechSchedule.SelectMessage(_initiativeSpeechRandom, decision.Topic, _runtime.CurrentStablePosture);
+            _runtime.RecordInitiativeSpeech(decision.Topic);
             ShowSpeechBubble(text);
         }
         catch (Exception ex)
@@ -1147,14 +1173,14 @@ public partial class MainWindow : Window
         finally
         {
             if (IsLoaded)
-                ScheduleNextInitiativeSpeech();
+                ScheduleNextInitiativeSpeech(nextCheck);
         }
     }
 
-    private void ScheduleNextInitiativeSpeech()
+    private void ScheduleNextInitiativeSpeech(TimeSpan? interval = null)
     {
         _initiativeSpeechTimer.Stop();
-        _initiativeSpeechTimer.Interval = InitiativeSpeechSchedule.NextInterval(_initiativeSpeechRandom);
+        _initiativeSpeechTimer.Interval = interval ?? InitiativeSpeechSchedule.NextInterval(_initiativeSpeechRandom);
         _initiativeSpeechTimer.Start();
     }
 

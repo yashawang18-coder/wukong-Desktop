@@ -1,0 +1,1011 @@
+{
+  "batch_id": "WK-AUTONOMOUS-DAILY-BEHAVIORS-v1",
+  "category": "autonomous_daily_behavior_candidate",
+  "asset_stage": "production_candidate_owner_qa_pending",
+  "source_status": "byte_identical_derivative_of_runtime_approved_light_malt_gold_assets",
+  "source_batches": [
+    "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+    "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2"
+  ],
+  "identity_style": "wukong_light_malt_gold_lively",
+  "motion_design_approved_at_source": true,
+  "autonomous_semantics_owner_approved": false,
+  "production_asset": false,
+  "visual_approved": false,
+  "runtime_validation": "pending_owner_semantic_and_windows_renderer_qa",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "may_enter_autonomous_pool_by_default": false,
+  "may_enter_command_pool": false,
+  "may_enter_context_menu": false,
+  "pixel_policy": "copied_byte_for_byte; no recolor, redraw, blur, sharpen, rescale, or alpha edit",
+  "actions": [
+    {
+      "action": "stand-to-sit",
+      "behavior_id": "wk.daily.stand_to_sit",
+      "display_name": "日常站立转坐下",
+      "daily_role": "posture_transition",
+      "from_posture": "Stand",
+      "to_posture": "Sit",
+      "frame_count": 10,
+      "loop": false,
+      "source_motion_design_approved": true,
+      "autonomous_semantics_owner_approved": false,
+      "runtime_approved": false,
+      "runtime_use": false,
+      "frames": [
+        {
+          "path": "frames/stand-to-sit/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "eeed89145e8b567898e6d85296b80a58de802561fe08855fb7bf7106f0eac5c5",
+          "bytes": 509821,
+          "duration_ms": 110,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.sit",
+            "path": "frames/sit/frame-001.png",
+            "sha256": "eeed89145e8b567898e6d85296b80a58de802561fe08855fb7bf7106f0eac5c5"
+          }
+        },
+        {
+          "path": "frames/stand-to-sit/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "dbdd9ea222843815a3cfc0982e1d44f1956431e98044e7f9c85bbde214be5828",
+          "bytes": 617840,
+          "duration_ms": 110,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.sit",
+            "path": "frames/sit/frame-002.png",
+            "sha256": "dbdd9ea222843815a3cfc0982e1d44f1956431e98044e7f9c85bbde214be5828"
+          }
+        },
+        {
+          "path": "frames/stand-to-sit/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "f367e4102a7fd0f32e72c7d78f6e59c14d977e8aaf4cb1842e3c21cb96ddd58b",
+          "bytes": 598468,
+          "duration_ms": 110,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.sit",
+            "path": "frames/sit/frame-003.png",
+            "sha256": "f367e4102a7fd0f32e72c7d78f6e59c14d977e8aaf4cb1842e3c21cb96ddd58b"
+          }
+        },
+        {
+          "path": "frames/stand-to-sit/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "59f25ac9b86e93c9e49af33ba8ec5e71524f890afe6a80187e9831d0a901d0bd",
+          "bytes": 535948,
+          "duration_ms": 110,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.sit",
+            "path": "frames/sit/frame-004.png",
+            "sha256": "59f25ac9b86e93c9e49af33ba8ec5e71524f890afe6a80187e9831d0a901d0bd"
+          }
+        },
+        {
+          "path": "frames/stand-to-sit/frame-005.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "014bb292e75f6681f276a16231b05a5b115685bd463854093c72bf377ce42e3f",
+          "bytes": 500617,
+          "duration_ms": 110,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.sit",
+            "path": "frames/sit/frame-005.png",
+            "sha256": "014bb292e75f6681f276a16231b05a5b115685bd463854093c72bf377ce42e3f"
+          }
+        },
+        {
+          "path": "frames/stand-to-sit/frame-006.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "71eeb389bce029ce77b90071ca5c3ca6089828df641080bbbb9c3ecae53a70cf",
+          "bytes": 422934,
+          "duration_ms": 110,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.sit",
+            "path": "frames/sit/frame-006.png",
+            "sha256": "71eeb389bce029ce77b90071ca5c3ca6089828df641080bbbb9c3ecae53a70cf"
+          }
+        },
+        {
+          "path": "frames/stand-to-sit/frame-007.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "40881eb1af11130024447d73b654e9465ae3ed75218e5e179a057a78791b00ea",
+          "bytes": 459670,
+          "duration_ms": 110,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.sit",
+            "path": "frames/sit/frame-007.png",
+            "sha256": "40881eb1af11130024447d73b654e9465ae3ed75218e5e179a057a78791b00ea"
+          }
+        },
+        {
+          "path": "frames/stand-to-sit/frame-008.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "bcbe703996255a8d59c8672c3eca73f16fe7ede6bba91c51b1e0a6672b63a1cb",
+          "bytes": 426538,
+          "duration_ms": 110,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.sit",
+            "path": "frames/sit/frame-008.png",
+            "sha256": "bcbe703996255a8d59c8672c3eca73f16fe7ede6bba91c51b1e0a6672b63a1cb"
+          }
+        },
+        {
+          "path": "frames/stand-to-sit/frame-009.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2bf7f67b8fb43261c6dd0c11ac2760d5d43692fd26d7e1b0944af49752dbff2b",
+          "bytes": 482506,
+          "duration_ms": 110,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.sit",
+            "path": "frames/sit/frame-009.png",
+            "sha256": "2bf7f67b8fb43261c6dd0c11ac2760d5d43692fd26d7e1b0944af49752dbff2b"
+          }
+        },
+        {
+          "path": "frames/stand-to-sit/frame-010.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2bf7f67b8fb43261c6dd0c11ac2760d5d43692fd26d7e1b0944af49752dbff2b",
+          "bytes": 482506,
+          "duration_ms": 110,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.sit",
+            "path": "frames/sit/frame-010.png",
+            "sha256": "2bf7f67b8fb43261c6dd0c11ac2760d5d43692fd26d7e1b0944af49752dbff2b"
+          }
+        }
+      ]
+    },
+    {
+      "action": "sit-to-prone",
+      "behavior_id": "wk.daily.sit_to_prone",
+      "display_name": "日常坐姿转趴卧",
+      "daily_role": "posture_transition",
+      "from_posture": "Sit",
+      "to_posture": "Prone",
+      "frame_count": 12,
+      "loop": false,
+      "source_motion_design_approved": true,
+      "autonomous_semantics_owner_approved": false,
+      "runtime_approved": false,
+      "runtime_use": false,
+      "frames": [
+        {
+          "path": "frames/sit-to-prone/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "04f10e309fc73a6c2959091359b64f2d94ddc196ae62bed929bc7012859f8f52",
+          "bytes": 516084,
+          "duration_ms": 115,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.lie_down",
+            "path": "frames/down-v2/frame-001.png",
+            "sha256": "04f10e309fc73a6c2959091359b64f2d94ddc196ae62bed929bc7012859f8f52"
+          }
+        },
+        {
+          "path": "frames/sit-to-prone/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2ef58c9ae14e061d6893d1914b86509970ea750fdf06521c6891b92658e4bd34",
+          "bytes": 493928,
+          "duration_ms": 115,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.lie_down",
+            "path": "frames/down-v2/frame-002.png",
+            "sha256": "2ef58c9ae14e061d6893d1914b86509970ea750fdf06521c6891b92658e4bd34"
+          }
+        },
+        {
+          "path": "frames/sit-to-prone/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "875700d59c821cc84d7ffa617454fbf249e2083f6e3ba5cdf76c5783155cc57c",
+          "bytes": 524830,
+          "duration_ms": 115,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.lie_down",
+            "path": "frames/down-v2/frame-003.png",
+            "sha256": "875700d59c821cc84d7ffa617454fbf249e2083f6e3ba5cdf76c5783155cc57c"
+          }
+        },
+        {
+          "path": "frames/sit-to-prone/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "792e93331ea00711265631fb7f843e690ada4b39c441127f24abfc1945729f09",
+          "bytes": 433895,
+          "duration_ms": 115,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.lie_down",
+            "path": "frames/down-v2/frame-004.png",
+            "sha256": "792e93331ea00711265631fb7f843e690ada4b39c441127f24abfc1945729f09"
+          }
+        },
+        {
+          "path": "frames/sit-to-prone/frame-005.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "5f9826ab9ff8ae04af48f66b31b42c7b01c813e77f48e9fdf15ca50013e7ef37",
+          "bytes": 440684,
+          "duration_ms": 115,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.lie_down",
+            "path": "frames/down-v2/frame-005.png",
+            "sha256": "5f9826ab9ff8ae04af48f66b31b42c7b01c813e77f48e9fdf15ca50013e7ef37"
+          }
+        },
+        {
+          "path": "frames/sit-to-prone/frame-006.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "3e3990bc799ab34e6695d5a017f3e60fb81671b1224b2c521701245ba722bc40",
+          "bytes": 401250,
+          "duration_ms": 115,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.lie_down",
+            "path": "frames/down-v2/frame-006.png",
+            "sha256": "3e3990bc799ab34e6695d5a017f3e60fb81671b1224b2c521701245ba722bc40"
+          }
+        },
+        {
+          "path": "frames/sit-to-prone/frame-007.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2e83c17a85b225cb03a8b03a409a916bb2e950db7781e8178361ae00accf6e6f",
+          "bytes": 425688,
+          "duration_ms": 115,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.lie_down",
+            "path": "frames/down-v2/frame-007.png",
+            "sha256": "2e83c17a85b225cb03a8b03a409a916bb2e950db7781e8178361ae00accf6e6f"
+          }
+        },
+        {
+          "path": "frames/sit-to-prone/frame-008.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "531eddde60fab86706ff31ab62be785d6f3c4d57dfacf305467be42da88e1245",
+          "bytes": 459238,
+          "duration_ms": 115,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.lie_down",
+            "path": "frames/down-v2/frame-008.png",
+            "sha256": "531eddde60fab86706ff31ab62be785d6f3c4d57dfacf305467be42da88e1245"
+          }
+        },
+        {
+          "path": "frames/sit-to-prone/frame-009.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "a06a5cd9cf5983ff24c88a2e42e2133a8aa9f5aabfad6f7d7232f8832bec06db",
+          "bytes": 413479,
+          "duration_ms": 115,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.lie_down",
+            "path": "frames/down-v2/frame-009.png",
+            "sha256": "a06a5cd9cf5983ff24c88a2e42e2133a8aa9f5aabfad6f7d7232f8832bec06db"
+          }
+        },
+        {
+          "path": "frames/sit-to-prone/frame-010.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "4076ffdb452ff06b6623ae99a5f3e2ade38e3bed394a501214192f6bc91f6708",
+          "bytes": 351551,
+          "duration_ms": 115,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.lie_down",
+            "path": "frames/down-v2/frame-010.png",
+            "sha256": "4076ffdb452ff06b6623ae99a5f3e2ade38e3bed394a501214192f6bc91f6708"
+          }
+        },
+        {
+          "path": "frames/sit-to-prone/frame-011.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "c1bb7ee34ae76a41bd3212badfbc24e306e4dd98b2412b0a09c29b571874b1a1",
+          "bytes": 471610,
+          "duration_ms": 115,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.lie_down",
+            "path": "frames/down-v2/frame-011.png",
+            "sha256": "c1bb7ee34ae76a41bd3212badfbc24e306e4dd98b2412b0a09c29b571874b1a1"
+          }
+        },
+        {
+          "path": "frames/sit-to-prone/frame-012.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "c2a6f39a5d3f4db3d14fd80b9f4e8695add95c5e4a5d3e827de83e64b4a5f44d",
+          "bytes": 489102,
+          "duration_ms": 115,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.lie_down",
+            "path": "frames/down-v2/frame-012.png",
+            "sha256": "c2a6f39a5d3f4db3d14fd80b9f4e8695add95c5e4a5d3e827de83e64b4a5f44d"
+          }
+        }
+      ]
+    },
+    {
+      "action": "prone-to-sit",
+      "behavior_id": "wk.daily.prone_to_sit",
+      "display_name": "日常趴卧转坐起",
+      "daily_role": "posture_transition",
+      "from_posture": "Prone",
+      "to_posture": "Sit",
+      "frame_count": 4,
+      "loop": false,
+      "source_motion_design_approved": true,
+      "autonomous_semantics_owner_approved": false,
+      "runtime_approved": false,
+      "runtime_use": false,
+      "frames": [
+        {
+          "path": "frames/prone-to-sit/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "106483d70c6513a821a186a6f70e2d217acfb4ada8377656e226e4b361668d88",
+          "bytes": 316952,
+          "duration_ms": 420,
+          "derived_from": {
+            "batch_id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
+            "behavior_id": "wk.candidate.lifecycle.lively_daily_p2",
+            "path": "frames/intro/14-stable-prone.png",
+            "sha256": "106483d70c6513a821a186a6f70e2d217acfb4ada8377656e226e4b361668d88"
+          }
+        },
+        {
+          "path": "frames/prone-to-sit/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "214f933a988a428ad833f2049c88bd9b5cf0e1d23bb2ccb9ab8d04de15d0b3f0",
+          "bytes": 480602,
+          "duration_ms": 260,
+          "derived_from": {
+            "batch_id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
+            "behavior_id": "wk.candidate.lifecycle.lively_daily_p2",
+            "path": "frames/intro/12-sit-to-prone-late.png",
+            "sha256": "214f933a988a428ad833f2049c88bd9b5cf0e1d23bb2ccb9ab8d04de15d0b3f0"
+          }
+        },
+        {
+          "path": "frames/prone-to-sit/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "347ef2a556ea4c8533e5ebab76f631388540c0e398d7fa0b1d5483033d47afd2",
+          "bytes": 492065,
+          "duration_ms": 260,
+          "derived_from": {
+            "batch_id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
+            "behavior_id": "wk.candidate.lifecycle.lively_daily_p2",
+            "path": "frames/intro/11-sit-to-prone-early.png",
+            "sha256": "347ef2a556ea4c8533e5ebab76f631388540c0e398d7fa0b1d5483033d47afd2"
+          }
+        },
+        {
+          "path": "frames/prone-to-sit/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "add27f3b4836c99860c54742846e316c96e8b14e046fed0783fa8668b8dfb6ce",
+          "bytes": 330280,
+          "duration_ms": 460,
+          "derived_from": {
+            "batch_id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
+            "behavior_id": "wk.candidate.lifecycle.lively_daily_p2",
+            "path": "frames/intro/10-stable-sit.png",
+            "sha256": "add27f3b4836c99860c54742846e316c96e8b14e046fed0783fa8668b8dfb6ce"
+          }
+        }
+      ]
+    },
+    {
+      "action": "sit-to-stand",
+      "behavior_id": "wk.daily.sit_to_stand",
+      "display_name": "日常坐姿转站立",
+      "daily_role": "posture_transition",
+      "from_posture": "Sit",
+      "to_posture": "Stand",
+      "frame_count": 5,
+      "loop": false,
+      "source_motion_design_approved": true,
+      "autonomous_semantics_owner_approved": false,
+      "runtime_approved": false,
+      "runtime_use": false,
+      "frames": [
+        {
+          "path": "frames/sit-to-stand/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "add27f3b4836c99860c54742846e316c96e8b14e046fed0783fa8668b8dfb6ce",
+          "bytes": 330280,
+          "duration_ms": 460,
+          "derived_from": {
+            "batch_id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
+            "behavior_id": "wk.candidate.lifecycle.lively_daily_p2",
+            "path": "frames/intro/10-stable-sit.png",
+            "sha256": "add27f3b4836c99860c54742846e316c96e8b14e046fed0783fa8668b8dfb6ce"
+          }
+        },
+        {
+          "path": "frames/sit-to-stand/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "3d77b2e8c16196093cb25db872089cc62f3dd2ade6cdb332d60c13075ce6bf3d",
+          "bytes": 516350,
+          "duration_ms": 240,
+          "derived_from": {
+            "batch_id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
+            "behavior_id": "wk.candidate.lifecycle.lively_daily_p2",
+            "path": "frames/exit/05-weight-forward.png",
+            "sha256": "3d77b2e8c16196093cb25db872089cc62f3dd2ade6cdb332d60c13075ce6bf3d"
+          }
+        },
+        {
+          "path": "frames/sit-to-stand/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "8edfea5a8b06a8440715713809ce419a6a31fee153de22d968d1b59c10363934",
+          "bytes": 533938,
+          "duration_ms": 260,
+          "derived_from": {
+            "batch_id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
+            "behavior_id": "wk.candidate.lifecycle.lively_daily_p2",
+            "path": "frames/exit/06-hindquarters-half-rise.png",
+            "sha256": "8edfea5a8b06a8440715713809ce419a6a31fee153de22d968d1b59c10363934"
+          }
+        },
+        {
+          "path": "frames/sit-to-stand/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "7090841fff1b38f6924829fda6a9a9c6232f8f3ed76c082e2d4b3180b47fccdc",
+          "bytes": 506531,
+          "duration_ms": 260,
+          "derived_from": {
+            "batch_id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
+            "behavior_id": "wk.candidate.lifecycle.lively_daily_p2",
+            "path": "frames/exit/07-near-standing.png",
+            "sha256": "7090841fff1b38f6924829fda6a9a9c6232f8f3ed76c082e2d4b3180b47fccdc"
+          }
+        },
+        {
+          "path": "frames/sit-to-stand/frame-005.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "14d2373ecefcd9938999f953bac2dcc6af05e91443c514608e7e6ccb88bcd1c3",
+          "bytes": 355825,
+          "duration_ms": 520,
+          "derived_from": {
+            "batch_id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
+            "behavior_id": "wk.candidate.lifecycle.lively_daily_p2",
+            "path": "frames/intro/01-stable-stand.png",
+            "sha256": "14d2373ecefcd9938999f953bac2dcc6af05e91443c514608e7e6ccb88bcd1c3"
+          }
+        }
+      ]
+    },
+    {
+      "action": "playful-hop",
+      "behavior_id": "wk.daily.playful_hop",
+      "display_name": "日常开心轻跳",
+      "daily_role": "playful_release",
+      "from_posture": "Stand",
+      "to_posture": "Stand",
+      "frame_count": 12,
+      "loop": false,
+      "source_motion_design_approved": true,
+      "autonomous_semantics_owner_approved": false,
+      "runtime_approved": false,
+      "runtime_use": false,
+      "frames": [
+        {
+          "path": "frames/playful-hop/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "ee8d4cf9d57bb4d4425e37846db7beb41f4423e20d44bcf4873ba30beb9772d5",
+          "bytes": 508242,
+          "duration_ms": 95,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.jump",
+            "path": "frames/jump/frame-001.png",
+            "sha256": "ee8d4cf9d57bb4d4425e37846db7beb41f4423e20d44bcf4873ba30beb9772d5"
+          }
+        },
+        {
+          "path": "frames/playful-hop/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "873ee6db5b65bf156910ed050fea2fba096465acd947a2893ca1437f8de8ccee",
+          "bytes": 509797,
+          "duration_ms": 95,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.jump",
+            "path": "frames/jump/frame-002.png",
+            "sha256": "873ee6db5b65bf156910ed050fea2fba096465acd947a2893ca1437f8de8ccee"
+          }
+        },
+        {
+          "path": "frames/playful-hop/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "67b7c48bafdabb2cbd9570ed1e2cb35cac7a2942fdde74fd3493a8206965c625",
+          "bytes": 547418,
+          "duration_ms": 95,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.jump",
+            "path": "frames/jump/frame-003.png",
+            "sha256": "67b7c48bafdabb2cbd9570ed1e2cb35cac7a2942fdde74fd3493a8206965c625"
+          }
+        },
+        {
+          "path": "frames/playful-hop/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "3d1c843aff1defb9ba2036433499aa353c88fc57f761d5e2a2e59fea58b3a6df",
+          "bytes": 380451,
+          "duration_ms": 95,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.jump",
+            "path": "frames/jump/frame-004.png",
+            "sha256": "3d1c843aff1defb9ba2036433499aa353c88fc57f761d5e2a2e59fea58b3a6df"
+          }
+        },
+        {
+          "path": "frames/playful-hop/frame-005.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "6f1ffe986f076585688cd483f27dc06514874e0941f2efc43929c6d73bea94dc",
+          "bytes": 394586,
+          "duration_ms": 95,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.jump",
+            "path": "frames/jump/frame-005.png",
+            "sha256": "6f1ffe986f076585688cd483f27dc06514874e0941f2efc43929c6d73bea94dc"
+          }
+        },
+        {
+          "path": "frames/playful-hop/frame-006.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "e9ed7b1a40e3ef00065c101c1e5cccddada76438b595734dc4bdd890e4e91a90",
+          "bytes": 444513,
+          "duration_ms": 95,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.jump",
+            "path": "frames/jump/frame-006.png",
+            "sha256": "e9ed7b1a40e3ef00065c101c1e5cccddada76438b595734dc4bdd890e4e91a90"
+          }
+        },
+        {
+          "path": "frames/playful-hop/frame-007.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "b7f45bee8e50c175f3c4b9ef39d41d3ce2bc11268ce21ceff19b07063b2442d4",
+          "bytes": 553293,
+          "duration_ms": 95,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.jump",
+            "path": "frames/jump/frame-007.png",
+            "sha256": "b7f45bee8e50c175f3c4b9ef39d41d3ce2bc11268ce21ceff19b07063b2442d4"
+          }
+        },
+        {
+          "path": "frames/playful-hop/frame-008.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "f731842cb10c2211e2ba5960208540ea7cebf38419ced047525346581e0a39b9",
+          "bytes": 437224,
+          "duration_ms": 95,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.jump",
+            "path": "frames/jump/frame-008.png",
+            "sha256": "f731842cb10c2211e2ba5960208540ea7cebf38419ced047525346581e0a39b9"
+          }
+        },
+        {
+          "path": "frames/playful-hop/frame-009.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "cb2b8e6882415c7be89335d3d3c60d50493eef835b53977250783062d661514a",
+          "bytes": 626473,
+          "duration_ms": 95,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.jump",
+            "path": "frames/jump/frame-009.png",
+            "sha256": "cb2b8e6882415c7be89335d3d3c60d50493eef835b53977250783062d661514a"
+          }
+        },
+        {
+          "path": "frames/playful-hop/frame-010.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "cc4e79e840b883baf27172e0157cba478d8938e7a7cbf18e6152b4b5a11bc479",
+          "bytes": 575499,
+          "duration_ms": 95,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.jump",
+            "path": "frames/jump/frame-010.png",
+            "sha256": "cc4e79e840b883baf27172e0157cba478d8938e7a7cbf18e6152b4b5a11bc479"
+          }
+        },
+        {
+          "path": "frames/playful-hop/frame-011.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "43e53a48f47d8cedb959d14ac01f6acda30a24770479925f9e50325aff8df1ce",
+          "bytes": 586112,
+          "duration_ms": 95,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.jump",
+            "path": "frames/jump/frame-011.png",
+            "sha256": "43e53a48f47d8cedb959d14ac01f6acda30a24770479925f9e50325aff8df1ce"
+          }
+        },
+        {
+          "path": "frames/playful-hop/frame-012.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "ee8d4cf9d57bb4d4425e37846db7beb41f4423e20d44bcf4873ba30beb9772d5",
+          "bytes": 508242,
+          "duration_ms": 95,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.jump",
+            "path": "frames/jump/frame-012.png",
+            "sha256": "ee8d4cf9d57bb4d4425e37846db7beb41f4423e20d44bcf4873ba30beb9772d5"
+          }
+        }
+      ]
+    },
+    {
+      "action": "playful-spin",
+      "behavior_id": "wk.daily.playful_spin",
+      "display_name": "日常开心转圈",
+      "daily_role": "playful_release",
+      "from_posture": "Stand",
+      "to_posture": "Stand",
+      "frame_count": 16,
+      "loop": false,
+      "source_motion_design_approved": true,
+      "autonomous_semantics_owner_approved": false,
+      "runtime_approved": false,
+      "runtime_use": false,
+      "frames": [
+        {
+          "path": "frames/playful-spin/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "ee8d4cf9d57bb4d4425e37846db7beb41f4423e20d44bcf4873ba30beb9772d5",
+          "bytes": 508242,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-001.png",
+            "sha256": "ee8d4cf9d57bb4d4425e37846db7beb41f4423e20d44bcf4873ba30beb9772d5"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "d24f487da1661315f345f71c43472e01112f317d7d83bbf7debc1d8f0a902e72",
+          "bytes": 572583,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-002.png",
+            "sha256": "d24f487da1661315f345f71c43472e01112f317d7d83bbf7debc1d8f0a902e72"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "56952689609013402d883fe70861b2ead99f08de1d6af08933eaa976c84d4c65",
+          "bytes": 538588,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-003.png",
+            "sha256": "56952689609013402d883fe70861b2ead99f08de1d6af08933eaa976c84d4c65"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "afbb6ce9803ea01f72eca82d2c23e14364ede3df31184bed7595bbfdd855645e",
+          "bytes": 547976,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-004.png",
+            "sha256": "afbb6ce9803ea01f72eca82d2c23e14364ede3df31184bed7595bbfdd855645e"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-005.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "82a4a26c66288d402f6be60be5d5bfe3d996aaac03815b3477a15bd563a7b7ef",
+          "bytes": 614225,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-005.png",
+            "sha256": "82a4a26c66288d402f6be60be5d5bfe3d996aaac03815b3477a15bd563a7b7ef"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-006.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "c0797467b51290443c9817f4cc9b9cfd4edc1bb7fc2dc6abd8062e7198b2a011",
+          "bytes": 583766,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-006.png",
+            "sha256": "c0797467b51290443c9817f4cc9b9cfd4edc1bb7fc2dc6abd8062e7198b2a011"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-007.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "7985e02c5e6d2e3c0fec535ea5062dd9ce962479954dfeb3c4b7f4ed8c0f9771",
+          "bytes": 551267,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-007.png",
+            "sha256": "7985e02c5e6d2e3c0fec535ea5062dd9ce962479954dfeb3c4b7f4ed8c0f9771"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-008.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "641db0493f40d24e565c7b6f37c622b824578e0e1100bd3f8ec9743e36218aa2",
+          "bytes": 369463,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-008.png",
+            "sha256": "641db0493f40d24e565c7b6f37c622b824578e0e1100bd3f8ec9743e36218aa2"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-009.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "0d10a619c5337e283c2ca7dd67fb2efa281876a67902bedadcb5d2ebdb99c5b4",
+          "bytes": 400150,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-009.png",
+            "sha256": "0d10a619c5337e283c2ca7dd67fb2efa281876a67902bedadcb5d2ebdb99c5b4"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-010.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "9716dccaff20928f8febc7975d2fe5d4c935d23cb029f5db7e9340bdf5ec4e4e",
+          "bytes": 504608,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-010.png",
+            "sha256": "9716dccaff20928f8febc7975d2fe5d4c935d23cb029f5db7e9340bdf5ec4e4e"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-011.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "7ca41facd89e5840f7e47849b8287e3dbc9b4413eab35252e084a0d5da8bc776",
+          "bytes": 700262,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-011.png",
+            "sha256": "7ca41facd89e5840f7e47849b8287e3dbc9b4413eab35252e084a0d5da8bc776"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-012.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "4bc07c762d4bc2be05d55cf6cb14951a9930caef06ea7d6e5a33cd47387cfcc9",
+          "bytes": 466353,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-012.png",
+            "sha256": "4bc07c762d4bc2be05d55cf6cb14951a9930caef06ea7d6e5a33cd47387cfcc9"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-013.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "d70582b6ca5c25157a2ae571ab40864c23e602b1d8cf1b7984ad02304fe1ea6d",
+          "bytes": 375072,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-013.png",
+            "sha256": "d70582b6ca5c25157a2ae571ab40864c23e602b1d8cf1b7984ad02304fe1ea6d"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-014.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "07d02265fa6d322cd4939b5137f13c2bd9cda905a5c88f84d6eac4685316cabd",
+          "bytes": 367064,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-014.png",
+            "sha256": "07d02265fa6d322cd4939b5137f13c2bd9cda905a5c88f84d6eac4685316cabd"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-015.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "734b87db37cb5653ecc3984a70ef0e874a9e027bf25426063daf3ea7e433a712",
+          "bytes": 544906,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-015.png",
+            "sha256": "734b87db37cb5653ecc3984a70ef0e874a9e027bf25426063daf3ea7e433a712"
+          }
+        },
+        {
+          "path": "frames/playful-spin/frame-016.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "ee8d4cf9d57bb4d4425e37846db7beb41f4423e20d44bcf4873ba30beb9772d5",
+          "bytes": 508242,
+          "duration_ms": 90,
+          "derived_from": {
+            "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+            "behavior_id": "wk.command.spin",
+            "path": "frames/spin/frame-016.png",
+            "sha256": "ee8d4cf9d57bb4d4425e37846db7beb41f4423e20d44bcf4873ba30beb9772d5"
+          }
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "This batch changes action semantics and storage paths only; every PNG is byte-identical to an approved source frame.",
+    "Command-derived motion is not automatically approved for spontaneous daily use.",
+    "The batch must remain outside production runtime until owner semantic review and real Windows renderer QA pass.",
+    "No expired red/standard-Shiba asset contributes pixels, color, identity, or fur style."
+  ]
+}
