@@ -295,7 +295,15 @@ public sealed class FileConversationHistoryStore : IConversationHistoryStore
         {
             var sessions = await ReadAllAsync(cancellationToken);
             sessions.Remove(sessionId);
-            await AgentJson.WriteAsync(_path, sessions, cancellationToken);
+            if (sessions.Count == 0)
+            {
+                if (File.Exists(_path))
+                    File.Delete(_path);
+            }
+            else
+            {
+                await AgentJson.WriteAsync(_path, sessions, cancellationToken);
+            }
         }
         finally { _gate.Release(); }
     }

@@ -1,5 +1,19 @@
 # Decisions
 
+## Portable user data and shareable defaults - 2026-08-22
+
+Decision:
+
+- Store editable desktop user data in `WukongData/` beside a writable portable executable, with a safe `%LOCALAPPDATA%/Wukong` fallback only when the executable directory cannot be used.
+- Ship non-secret initial files from `config/defaults/` as `WukongDefaults/` and seed only missing user files.
+- Keep albums, conversation history, memory candidates, logs, and credentials out of Git. A locally assembled package may include albums under `WukongData/albums/`, and conversation history can be removed before sharing.
+- Keep API keys in Windows Credential Manager; neither migration nor package preparation may export them.
+- Double-clicking the pet opens the focused desktop chat instead of the control panel. Occasional initiative speech is local-template based and does not call a model without an explicit conversation request.
+
+Reason:
+
+The owner needs locally packaged Windows copies whose prompt and initial settings travel with the executable, while private albums and conversations remain controllable local files and never become repository content. A single portable data layout also removes the previous split between executable behavior and `%LOCALAPPDATA%` configuration.
+
 ## 2026-08-05 — approve basic-action keyframes only
 
 The owner approved A1–A2, B1–B2, C1–C4, D1–D4, E1–E3, and F1–F2 as visual keyframe anchors. This approval is recorded only as `owner_preview_approved=true` at the `approved-keyframes` stage.
@@ -187,3 +201,56 @@ Scope restrictions:
 - Do not use v8 for `吃一下`, `散步`, startup auto-play, or any locked feature.
 - Keep PrototypePreview infrastructure for other candidate assets; v8 no longer depends on it.
 - No installer or public release is approved by this decision.
+
+## Decision: Approve WK-COMMAND-PRODUCTION-CANDIDATES-v4 for manual owner commands
+
+Date: 2026-08-19
+
+Decision:
+Promote `WK-COMMAND-PRODUCTION-CANDIDATES-v4` from command mock/prototype preview to approved manual owner command runtime material.
+
+Runtime state:
+
+- `motion_design_approved=true`
+- `production_asset=true`
+- `visual_approved=true`
+- `runtime_approved=true`
+- `runtime_use=true`
+- `prototype_use=false`
+- `asset_stage=runtime_approved_owner_command`
+
+Reason:
+The owner provided the corrected real Wukong command assets and requested that they replace the rough command mock path, appear in the control panel command material section, and run from the right-click command menu.
+
+Scope restrictions:
+
+- Only explicit owner command paths may trigger the batch: desktop context menu and control panel command asset page.
+- Paw and Eat must branch by current stable posture instead of using a single generic action.
+- Do not add the batch to `AutonomousTick`.
+- Do not add the batch to dialogue/model routing.
+- Do not use the batch for startup autoplay or unrelated interactions.
+- Keep `WK-COMMAND-ACTION-CANDIDATES-v3` as expired motion reference material; do not delete it, runtime-enable it, or route owner commands to it.
+
+## 2026-08-21 - preserve terminal posture and use only posture-compatible low-frequency autonomous loops
+
+Owner-command completion must briefly settle on the exact terminal frame from the executed motion, with the same visual scale and asset provenance, then enter the approved microloop matching the declared end posture. It must not substitute an unrelated idle frame, freeze indefinitely, or normalize every command back to stand.
+
+The hold must preserve the computed render scale of the complete motion that actually ran. Recomputing alpha-bound normalization from the terminal frame alone is forbidden because it changes visible size at the lifecycle boundary.
+
+Autonomous basic playback may select only a sequence compatible with the current stable posture. Startup posture is derived from energy, stress, and arousal; it is not hard-coded to prone. The approved P2 stand, sit, and prone microloops and the full lifecycle sequence remain the active source set. Minimum dwell, state gates, cooldown, repetition suppression, and randomized scheduling are required to prevent permanent holds and rapid state switching. A normally completed full lifecycle exits to stable stand before the stand microloop begins.
+
+Legacy red/standard basic visuals and the old prone silent-breathing presentation are hidden from active runtime selection and labeled `已过期`, but are not deleted or rewritten. They remain motion references. In particular, `WK-CORE-PRONE-IDLE-LF-v1` remains pending replacement comparison because its breathing and blink design may still be useful.
+
+## 2026-08-21 - correct approved-source defects through versioned derivatives
+
+An approved source frame must not be edited in place to repair a localized defect. Preserve the original, create a versioned runtime derivative, record the correction and hashes, and keep unaffected frames byte-identical. The v4 Down blue-background correction follows this rule through `frames/down-v2`.
+
+Candidate coin-edge cleanup may preserve the existing alpha mask, dimensions, and visible bounds while correcting contaminated boundary RGB. Such a correction does not promote the magic batch or change its runtime gate.
+
+## 2026-08-21 - separate effect-specific scale, pacing, and movement policy
+
+Coin scale and stone-dog scale are independent visual policies. The accepted coin remains at two-thirds of normal visible pet height; petrify and release use the same 0.92 presentation scale as the approved P2 basic and v4 command pet motions, while retaining slower transition timing.
+
+When one behavior contains visually distinct phases, phase-level scale is part of the animation lifecycle. Petrification applies scale 0.92 to the stone-dog `intro` and scale 2/3 to the initial coin `loop` before each phase's first frame is displayed; a later coin state request must not cause a second size correction.
+
+Accio Broom and Car Ride owner showcases run for a randomized 10-20 seconds. Car Ride movement must use work-area-safe acceleration, sustained straight travel, adjacent direction-ring turn assets, and braking. Runtime interpolation, frame rewriting, or parallel effect players are not permitted.

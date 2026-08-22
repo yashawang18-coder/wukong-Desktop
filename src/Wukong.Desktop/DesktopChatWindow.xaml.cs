@@ -42,13 +42,21 @@ public partial class DesktopChatWindow : Window
             return;
         }
 
-        var position = DesktopChatPlacement.Place(workArea, petBounds, new Size(Width, Height));
-        Left = position.X;
-        Top = position.Y;
-        Show();
+        ShowForInput(workArea, petBounds);
+    }
+
+    public void ShowForInput(Rect workArea, Rect petBounds)
+    {
+        ShowAt(workArea, petBounds);
         Activate();
         ChatInput.Focus();
-        ResetAutoCollapse();
+        _ = ReloadHistoryAsync();
+    }
+
+    public async Task ShowInitiativeAsync(Rect workArea, Rect petBounds)
+    {
+        await ReloadHistoryAsync();
+        ShowAt(workArea, petBounds);
     }
 
     public void Reposition(Rect workArea, Rect petBounds)
@@ -64,6 +72,16 @@ public partial class DesktopChatWindow : Window
     {
         _autoCollapseTimer.Stop();
         Hide();
+    }
+
+    private void ShowAt(Rect workArea, Rect petBounds)
+    {
+        var position = DesktopChatPlacement.Place(workArea, petBounds, new Size(Width, Height));
+        Left = position.X;
+        Top = position.Y;
+        if (!IsVisible)
+            Show();
+        ResetAutoCollapse();
     }
 
     private async Task ReloadHistoryAsync()
@@ -122,6 +140,14 @@ public partial class DesktopChatWindow : Window
     }
 
     private async void Send_Click(object sender, RoutedEventArgs e) => await SendAsync();
+    private async void ClearHistory_Click(object sender, RoutedEventArgs e)
+    {
+        await _agent.Conversation.ClearHistoryAsync(DesktopAgentRuntime.DailySessionId);
+        _items.Clear();
+        ChatStatus.Text = "对话历史已清空。";
+        ChatInput.Focus();
+        ResetAutoCollapse();
+    }
     private void Cancel_Click(object sender, RoutedEventArgs e) => _requestCancellation?.Cancel();
     private void Collapse_Click(object sender, RoutedEventArgs e) => Collapse();
     private void ChatInput_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) => ResetAutoCollapse();

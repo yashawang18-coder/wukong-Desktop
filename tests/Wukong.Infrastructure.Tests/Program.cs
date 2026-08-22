@@ -20,8 +20,74 @@ var tests = new (string Name, Func<Task> Run)[]
     ("album markdown retrieval is relevant and bounded", AlbumMarkdownRetrievalWorks),
     ("missing and damaged album markdown degrades safely", AlbumMarkdownFailuresAreSafe),
     ("memory configuration store persists switches", MemoryConfigurationStorePersistsSwitches),
+    ("portable data layout seeds defaults and migrates user files", PortableDataLayoutSeedsAndMigrates),
+    ("conversation history file is removed after final clear", ConversationHistoryFileIsRemovedAfterFinalClear),
     ("mock context editing requires developer session", MockContextRequiresDeveloperSession)
 };
+
+static Task PortableDataLayoutSeedsAndMigrates()
+{
+    var root = Path.Combine(Path.GetTempPath(), "wukong-portable-layout-" + Guid.NewGuid().ToString("N"));
+    var previous = Environment.GetEnvironmentVariable(PortableDataLayout.DataRootEnvironmentVariable);
+    try
+    {
+        var executable = Path.Combine(root, "app");
+        var defaultsProfile = Path.Combine(executable, "WukongDefaults", "profile");
+        var defaultsAgent = Path.Combine(executable, "WukongDefaults", "agent");
+        var legacyProfile = Path.Combine(root, "legacy", "profile");
+        var legacyAgent = Path.Combine(root, "legacy", "agent");
+        Directory.CreateDirectory(defaultsProfile);
+        Directory.CreateDirectory(defaultsAgent);
+        Directory.CreateDirectory(legacyProfile);
+        Directory.CreateDirectory(legacyAgent);
+        File.WriteAllText(Path.Combine(defaultsProfile, "pet-prompt.txt"), "default prompt", Encoding.UTF8);
+        File.WriteAllText(Path.Combine(defaultsAgent, "memory-configuration.json"), "{}", Encoding.UTF8);
+        File.WriteAllText(Path.Combine(legacyProfile, "owner-profile.json"), "{\"CallName\":\"owner\"}", Encoding.UTF8);
+        File.WriteAllText(Path.Combine(legacyAgent, "conversation-history.json"), "{\"daily-companion\":[]}", Encoding.UTF8);
+
+        var portableRoot = Path.Combine(executable, "WukongData");
+        Environment.SetEnvironmentVariable(PortableDataLayout.DataRootEnvironmentVariable, portableRoot);
+        var layout = PortableDataLayout.Initialize(executable, Path.Combine(root, "legacy"));
+
+        Assert(layout.UsesExecutableDirectory, "portable root should stay beside the executable");
+        Assert(File.ReadAllText(Path.Combine(layout.ProfileDirectory, "pet-prompt.txt"), Encoding.UTF8) == "default prompt", "default prompt was not seeded");
+        Assert(File.Exists(Path.Combine(layout.ProfileDirectory, "owner-profile.json")), "legacy owner profile was not migrated");
+        Assert(File.Exists(Path.Combine(layout.AgentDirectory, "conversation-history.json")), "conversation history was not migrated");
+        Assert(Directory.Exists(layout.AlbumsDirectory), "portable albums directory was not created");
+        Assert(!Directory.GetFiles(layout.RootDirectory, "*key*", SearchOption.AllDirectories).Any(), "credential-like files must not be created");
+
+        File.Delete(Path.Combine(layout.AgentDirectory, "conversation-history.json"));
+        _ = PortableDataLayout.Initialize(executable, Path.Combine(root, "legacy"));
+        Assert(!File.Exists(Path.Combine(layout.AgentDirectory, "conversation-history.json")), "cleared history was re-migrated on a later launch");
+    }
+    finally
+    {
+        Environment.SetEnvironmentVariable(PortableDataLayout.DataRootEnvironmentVariable, previous);
+        TryDeleteDirectory(root);
+    }
+    return Task.CompletedTask;
+}
+
+static async Task ConversationHistoryFileIsRemovedAfterFinalClear()
+{
+    var root = Path.Combine(Path.GetTempPath(), "wukong-history-clear-" + Guid.NewGuid().ToString("N"));
+    try
+    {
+        var store = new FileConversationHistoryStore(root);
+        await store.ReplaceAsync("daily-companion", new[]
+        {
+            new AgentChatMessage(AgentChatRole.User, "hello", DateTimeOffset.UtcNow)
+        });
+        var path = Path.Combine(root, "conversation-history.json");
+        Assert(File.Exists(path), "history file was not created");
+        await store.ClearAsync("daily-companion");
+        Assert(!File.Exists(path), "empty history file should be deleted for a clean portable package");
+    }
+    finally
+    {
+        TryDeleteDirectory(root);
+    }
+}
 
 var failures = new List<string>();
 foreach (var test in tests)

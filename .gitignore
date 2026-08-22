@@ -11,5 +11,6 @@ __pycache__/
 .wukong-log-tests/
 .wukong-bootstrap-tests/
 .publish-check/
+WukongData/
 bin/
 obj/

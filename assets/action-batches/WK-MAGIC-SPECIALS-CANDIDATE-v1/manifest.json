@@ -965,6 +965,7 @@
         {
           "name": "intro",
           "loop": false,
+          "visual_scale": 0.92,
           "frame_count": 17,
           "frames": [
             {
@@ -1091,14 +1092,15 @@
         {
           "name": "loop",
           "loop": true,
+          "visual_scale": 0.6666666667,
           "frame_count": 1,
           "frames": [
             {
               "path": "petrificus_coin/front/state-01-vivid.png",
               "width": 1024,
               "height": 1024,
-              "sha256": "fb21bf88304e1e847aa413f9c9e9df2a27239923be0c5df614b8ebe18418abc3",
-              "bytes": 1713871
+              "sha256": "ea5c8464c46034c0070776afc79928e41cdecb03ec93a7d0ae0ebe37640101c2",
+              "bytes": 1746396
             }
           ]
         }

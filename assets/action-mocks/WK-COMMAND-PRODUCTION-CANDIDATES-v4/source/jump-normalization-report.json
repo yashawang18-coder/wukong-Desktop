@@ -1,0 +1,589 @@
+{
+  "status": "production_candidate_owner_qa_pending",
+  "canvas": [
+    1024,
+    1024
+  ],
+  "format": "RGBA PNG",
+  "target_head_width_px": 224.0,
+  "anchor_subject_height_px": 700,
+  "generated_transition_global_scale": 0.83932854,
+  "target_ground_baseline_y": 900,
+  "planned_subject_bottom_y_by_frame": {
+    "1": 900,
+    "2": 900,
+    "3": 900,
+    "4": 900,
+    "5": 882,
+    "6": 780,
+    "7": 835,
+    "8": 880,
+    "9": 900,
+    "10": 900,
+    "11": 900,
+    "12": 900
+  },
+  "color_target_orange_mean_rgb": [
+    201.622,
+    151.631,
+    101.831
+  ],
+  "color_calibration_scope": "orange coat pixels only; cream white, eyes, nose, mouth, tongue, paws and paw pads excluded",
+  "background_pipeline": "generated on blue; deterministic chroma-key extraction and blue-spill removal; no subject regeneration during transparency conversion",
+  "motion": {
+    "frame_count": 12,
+    "durations_ms": [
+      500,
+      190,
+      170,
+      130,
+      110,
+      200,
+      110,
+      130,
+      170,
+      200,
+      240,
+      750
+    ],
+    "total_duration_ms": 2900,
+    "loop": 0,
+    "source_authority": "approved-jump-motion-preview-v2.gif"
+  },
+  "checks": {
+    "frame_count_12": true,
+    "all_1024_rgba": true,
+    "frame_1_equals_frame_12": true,
+    "one_global_scale_for_generated_frames_2_to_11": true,
+    "generated_standing_height_matches_anchor": true,
+    "ground_contact_frames_baseline_y_900": true,
+    "airborne_bottom_trajectory_y": {
+      "5": 882,
+      "6": 780,
+      "7": 835,
+      "8": 880
+    },
+    "apex_is_frame_6": true,
+    "no_subject_edge_contact": true,
+    "owner_visual_approval": false,
+    "runtime_approved": false
+  },
+  "frames": [
+    {
+      "frame": 1,
+      "source": "sit_production_candidate_v2/frames/frame-001.png",
+      "role": "approved stable-standing anchor",
+      "global_scale": 1.0,
+      "resized_subject_size": [
+        670,
+        700
+      ],
+      "placed_xy": [
+        177,
+        201
+      ],
+      "bbox": [
+        177,
+        201,
+        847,
+        901
+      ],
+      "subject_bottom_y": 900,
+      "vertical_offset_from_ground_px": 0,
+      "source_bbox": [
+        177,
+        200,
+        847,
+        900
+      ],
+      "orange_mean_before": [
+        201.622,
+        151.631,
+        101.831
+      ],
+      "applied_rgb_delta": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "orange_mean_after": [
+        201.622,
+        151.631,
+        101.831
+      ]
+    },
+    {
+      "frame": 2,
+      "source": "work/jump_production_v3/raw/frame-002.png",
+      "source_bbox": [
+        307,
+        222,
+        974,
+        1056
+      ],
+      "role": "attention; four paws grounded",
+      "global_scale": 0.83932854,
+      "resized_subject_size": [
+        560,
+        700
+      ],
+      "placed_xy": [
+        232,
+        201
+      ],
+      "bbox": [
+        232,
+        201,
+        792,
+        901
+      ],
+      "subject_bottom_y": 900,
+      "vertical_offset_from_ground_px": 0,
+      "orange_mean_before": [
+        211.778,
+        164.486,
+        113.976
+      ],
+      "applied_rgb_delta": [
+        -10.156,
+        -12.855,
+        -8.0
+      ],
+      "orange_mean_after": [
+        200.652,
+        149.65,
+        102.415
+      ]
+    },
+    {
+      "frame": 3,
+      "source": "work/jump_production_v3/raw/frame-003.png",
+      "source_bbox": [
+        168,
+        385,
+        1079,
+        1080
+      ],
+      "role": "pre-jump compression; four paws grounded",
+      "global_scale": 0.83932854,
+      "resized_subject_size": [
+        765,
+        583
+      ],
+      "placed_xy": [
+        130,
+        318
+      ],
+      "bbox": [
+        130,
+        318,
+        895,
+        901
+      ],
+      "subject_bottom_y": 900,
+      "vertical_offset_from_ground_px": 0,
+      "orange_mean_before": [
+        213.529,
+        154.722,
+        92.679
+      ],
+      "applied_rgb_delta": [
+        -11.907,
+        -3.091,
+        9.152
+      ],
+      "orange_mean_after": [
+        200.974,
+        146.231,
+        93.128
+      ]
+    },
+    {
+      "frame": 4,
+      "source": "work/jump_production_v3/raw/frame-004.png",
+      "source_bbox": [
+        322,
+        189,
+        936,
+        1113
+      ],
+      "role": "hind-leg push; forepaws lifting",
+      "global_scale": 0.83932854,
+      "resized_subject_size": [
+        515,
+        776
+      ],
+      "placed_xy": [
+        254,
+        125
+      ],
+      "bbox": [
+        254,
+        125,
+        769,
+        901
+      ],
+      "subject_bottom_y": 900,
+      "vertical_offset_from_ground_px": 0,
+      "orange_mean_before": [
+        213.858,
+        173.193,
+        123.629
+      ],
+      "applied_rgb_delta": [
+        -12.236,
+        -14.0,
+        -8.0
+      ],
+      "orange_mean_after": [
+        200.828,
+        158.421,
+        113.951
+      ]
+    },
+    {
+      "frame": 5,
+      "source": "work/jump_production_v3/raw/frame-005.png",
+      "source_bbox": [
+        340,
+        87,
+        911,
+        1129
+      ],
+      "role": "early airborne ascent",
+      "global_scale": 0.83932854,
+      "resized_subject_size": [
+        479,
+        875
+      ],
+      "placed_xy": [
+        272,
+        8
+      ],
+      "bbox": [
+        272,
+        8,
+        751,
+        883
+      ],
+      "subject_bottom_y": 882,
+      "vertical_offset_from_ground_px": 18,
+      "orange_mean_before": [
+        221.211,
+        174.762,
+        126.564
+      ],
+      "applied_rgb_delta": [
+        -18.0,
+        -14.0,
+        -8.0
+      ],
+      "orange_mean_after": [
+        203.974,
+        159.583,
+        115.282
+      ]
+    },
+    {
+      "frame": 6,
+      "source": "work/jump_production_v3/raw/frame-006.png",
+      "source_bbox": [
+        335,
+        157,
+        929,
+        1011
+      ],
+      "role": "airborne apex with tucked hind legs",
+      "global_scale": 0.83932854,
+      "resized_subject_size": [
+        499,
+        717
+      ],
+      "placed_xy": [
+        262,
+        64
+      ],
+      "bbox": [
+        262,
+        64,
+        761,
+        781
+      ],
+      "subject_bottom_y": 780,
+      "vertical_offset_from_ground_px": 120,
+      "orange_mean_before": [
+        211.238,
+        161.505,
+        110.712
+      ],
+      "applied_rgb_delta": [
+        -9.616,
+        -9.874,
+        -8.0
+      ],
+      "orange_mean_after": [
+        201.695,
+        151.789,
+        102.77
+      ]
+    },
+    {
+      "frame": 7,
+      "source": "work/jump_production_v3/raw/frame-007.png",
+      "source_bbox": [
+        230,
+        141,
+        1007,
+        996
+      ],
+      "role": "early descent",
+      "global_scale": 0.83932854,
+      "resized_subject_size": [
+        652,
+        718
+      ],
+      "placed_xy": [
+        186,
+        118
+      ],
+      "bbox": [
+        186,
+        118,
+        838,
+        836
+      ],
+      "subject_bottom_y": 835,
+      "vertical_offset_from_ground_px": 65,
+      "orange_mean_before": [
+        211.235,
+        160.466,
+        106.337
+      ],
+      "applied_rgb_delta": [
+        -9.613,
+        -8.835,
+        -4.506
+      ],
+      "orange_mean_after": [
+        201.308,
+        150.95,
+        100.157
+      ]
+    },
+    {
+      "frame": 8,
+      "source": "work/jump_production_v3/raw/frame-008.png",
+      "source_bbox": [
+        265,
+        274,
+        987,
+        1080
+      ],
+      "role": "late descent and landing preparation",
+      "global_scale": 0.83932854,
+      "resized_subject_size": [
+        606,
+        676
+      ],
+      "placed_xy": [
+        209,
+        205
+      ],
+      "bbox": [
+        209,
+        205,
+        815,
+        881
+      ],
+      "subject_bottom_y": 880,
+      "vertical_offset_from_ground_px": 20,
+      "orange_mean_before": [
+        213.174,
+        156.991,
+        101.445
+      ],
+      "applied_rgb_delta": [
+        -11.552,
+        -5.36,
+        0.386
+      ],
+      "orange_mean_after": [
+        201.207,
+        149.682,
+        98.814
+      ]
+    },
+    {
+      "frame": 9,
+      "source": "work/jump_production_v3/raw/frame-009.png",
+      "source_bbox": [
+        181,
+        341,
+        1073,
+        1097
+      ],
+      "role": "forepaw landing and impact absorption",
+      "global_scale": 0.83932854,
+      "resized_subject_size": [
+        749,
+        635
+      ],
+      "placed_xy": [
+        138,
+        266
+      ],
+      "bbox": [
+        138,
+        266,
+        887,
+        901
+      ],
+      "subject_bottom_y": 900,
+      "vertical_offset_from_ground_px": 0,
+      "orange_mean_before": [
+        212.544,
+        154.302,
+        98.48
+      ],
+      "applied_rgb_delta": [
+        -10.922,
+        -2.671,
+        3.351
+      ],
+      "orange_mean_after": [
+        201.779,
+        150.186,
+        99.096
+      ]
+    },
+    {
+      "frame": 10,
+      "source": "work/jump_production_v3/raw/frame-010.png",
+      "source_bbox": [
+        237,
+        449,
+        1049,
+        1107
+      ],
+      "role": "maximum landing compression",
+      "global_scale": 0.83932854,
+      "resized_subject_size": [
+        682,
+        552
+      ],
+      "placed_xy": [
+        171,
+        349
+      ],
+      "bbox": [
+        171,
+        349,
+        853,
+        901
+      ],
+      "subject_bottom_y": 900,
+      "vertical_offset_from_ground_px": 0,
+      "orange_mean_before": [
+        207.232,
+        150.165,
+        95.222
+      ],
+      "applied_rgb_delta": [
+        -5.61,
+        1.466,
+        6.609
+      ],
+      "orange_mean_after": [
+        201.106,
+        149.931,
+        98.953
+      ]
+    },
+    {
+      "frame": 11,
+      "source": "work/jump_production_v3/raw/frame-011.png",
+      "source_bbox": [
+        237,
+        222,
+        1010,
+        1060
+      ],
+      "role": "rebound toward stable stand",
+      "global_scale": 0.83932854,
+      "resized_subject_size": [
+        649,
+        703
+      ],
+      "placed_xy": [
+        188,
+        198
+      ],
+      "bbox": [
+        188,
+        198,
+        837,
+        901
+      ],
+      "subject_bottom_y": 900,
+      "vertical_offset_from_ground_px": 0,
+      "orange_mean_before": [
+        206.853,
+        151.737,
+        98.26
+      ],
+      "applied_rgb_delta": [
+        -5.231,
+        -0.106,
+        3.571
+      ],
+      "orange_mean_after": [
+        200.638,
+        149.174,
+        98.366
+      ]
+    },
+    {
+      "frame": 12,
+      "source": "sit_production_candidate_v2/frames/frame-001.png",
+      "role": "same approved stable-standing anchor as frame 1",
+      "global_scale": 1.0,
+      "resized_subject_size": [
+        670,
+        700
+      ],
+      "placed_xy": [
+        177,
+        201
+      ],
+      "bbox": [
+        177,
+        201,
+        847,
+        901
+      ],
+      "subject_bottom_y": 900,
+      "vertical_offset_from_ground_px": 0,
+      "source_bbox": [
+        177,
+        200,
+        847,
+        900
+      ],
+      "orange_mean_before": [
+        201.622,
+        151.631,
+        101.831
+      ],
+      "applied_rgb_delta": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "orange_mean_after": [
+        201.622,
+        151.631,
+        101.831
+      ]
+    }
+  ]
+}

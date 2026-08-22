@@ -4,7 +4,7 @@ import struct
 import unittest
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageFilter
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -105,6 +105,28 @@ class MagicSpecialsCandidateTests(unittest.TestCase):
                 corners = [alpha.getpixel((0, 0)), alpha.getpixel((image.width - 1, 0)), alpha.getpixel((0, image.height - 1)), alpha.getpixel((image.width - 1, image.height - 1))]
                 self.assertEqual(corners, [0, 0, 0, 0], f"opaque canvas corner: {path}")
         self.assertEqual(actual_empty, allowed_empty, "only the declared Apparate relocation cut may be fully transparent")
+
+    def test_first_two_coin_states_and_flips_have_no_pale_cutout_fringe(self):
+        relatives = [
+            "petrificus_coin/front/state-01-vivid.png",
+            "petrificus_coin/front/state-02-flat.png",
+            "petrificus_coin/back/state-01-vivid.png",
+        ]
+        relatives.extend(
+            f"petrificus_coin/flip/{state}/front-to-back/frame-{index:03d}.png"
+            for state in ("vivid", "flat")
+            for index in range(1, 10)
+        )
+        for relative in relatives:
+            with self.subTest(path=relative), Image.open(BATCH / relative) as image:
+                rgba = image.convert("RGBA")
+                alpha = rgba.getchannel("A")
+                eroded = alpha.point(lambda value: 255 if value else 0).filter(ImageFilter.MinFilter(11))
+                pale_boundary = 0
+                for (red, green, blue, visible), interior in zip(rgba.getdata(), eroded.getdata()):
+                    if visible and not interior and red >= 225 and green >= 215 and blue >= 158 and red - blue <= 96:
+                        pale_boundary += 1
+                self.assertEqual(pale_boundary, 0, f"pale cutout fringe remains: {relative}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1035 @@
+{
+  "batch_id": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+  "source_bundle": "wukong-eight-command-production-candidates-v4",
+  "source_status": "runtime_approved_owner_command",
+  "motion_design_approved": true,
+  "production_asset": true,
+  "visual_approved": true,
+  "runtime_approved": true,
+  "runtime_use": true,
+  "prototype_use": false,
+  "asset_stage": "runtime_approved_owner_command",
+  "source_index_status": "source index.json preserved but not parsed because source text contains invalid quoted mojibake fields",
+  "notes": [
+    "Real Wukong command production candidates are approved for explicit owner command execution from the context menu and control panel command assets page.",
+    "Not added to autonomous behavior, dialogue/model routing, startup autoplay, or unrelated interaction paths.",
+    "Paw and Eat branch by current StablePosture: sit/prone.",
+    "Down v2 preserves all approved source frames and removes only the connected blue-background defect under the front leg in frame-001; the original frames/down remains unchanged."
+  ],
+  "actions": [
+    {
+      "action": "sit",
+      "behavior_id": "wk.command.sit",
+      "display_name": "坐",
+      "source_folder": "frames/sit",
+      "frame_count": 10,
+      "frame_duration_ms": 110,
+      "from_posture": "Stand",
+      "to_posture": "Sit",
+      "motion_design_approved": true,
+      "production_asset": true,
+      "visual_approved": true,
+      "runtime_approved": true,
+      "runtime_use": true,
+      "prototype_use": false,
+      "asset_stage": "runtime_approved_owner_command",
+      "source_package": "packages/wukong-sit-production-candidate-v2.zip",
+      "source_package_sha256": "880323529e58705afc62ff5d46fdd9a19e772233e9a55c202601b65ba21b50a1",
+      "frames": [
+        {
+          "path": "frames/sit/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "eeed89145e8b567898e6d85296b80a58de802561fe08855fb7bf7106f0eac5c5",
+          "bytes": 509821,
+          "duration_ms": 110
+        },
+        {
+          "path": "frames/sit/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "dbdd9ea222843815a3cfc0982e1d44f1956431e98044e7f9c85bbde214be5828",
+          "bytes": 617840,
+          "duration_ms": 110
+        },
+        {
+          "path": "frames/sit/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "f367e4102a7fd0f32e72c7d78f6e59c14d977e8aaf4cb1842e3c21cb96ddd58b",
+          "bytes": 598468,
+          "duration_ms": 110
+        },
+        {
+          "path": "frames/sit/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "59f25ac9b86e93c9e49af33ba8ec5e71524f890afe6a80187e9831d0a901d0bd",
+          "bytes": 535948,
+          "duration_ms": 110
+        },
+        {
+          "path": "frames/sit/frame-005.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "014bb292e75f6681f276a16231b05a5b115685bd463854093c72bf377ce42e3f",
+          "bytes": 500617,
+          "duration_ms": 110
+        },
+        {
+          "path": "frames/sit/frame-006.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "71eeb389bce029ce77b90071ca5c3ca6089828df641080bbbb9c3ecae53a70cf",
+          "bytes": 422934,
+          "duration_ms": 110
+        },
+        {
+          "path": "frames/sit/frame-007.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "40881eb1af11130024447d73b654e9465ae3ed75218e5e179a057a78791b00ea",
+          "bytes": 459670,
+          "duration_ms": 110
+        },
+        {
+          "path": "frames/sit/frame-008.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "bcbe703996255a8d59c8672c3eca73f16fe7ede6bba91c51b1e0a6672b63a1cb",
+          "bytes": 426538,
+          "duration_ms": 110
+        },
+        {
+          "path": "frames/sit/frame-009.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2bf7f67b8fb43261c6dd0c11ac2760d5d43692fd26d7e1b0944af49752dbff2b",
+          "bytes": 482506,
+          "duration_ms": 110
+        },
+        {
+          "path": "frames/sit/frame-010.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2bf7f67b8fb43261c6dd0c11ac2760d5d43692fd26d7e1b0944af49752dbff2b",
+          "bytes": 482506,
+          "duration_ms": 110
+        }
+      ]
+    },
+    {
+      "action": "down",
+      "behavior_id": "wk.command.lie_down",
+      "display_name": "卧",
+      "source_folder": "frames/down-v2",
+      "frame_count": 12,
+      "frame_duration_ms": 115,
+      "from_posture": "Sit",
+      "to_posture": "Prone",
+      "motion_design_approved": true,
+      "production_asset": true,
+      "visual_approved": true,
+      "runtime_approved": true,
+      "runtime_use": true,
+      "prototype_use": false,
+      "asset_stage": "runtime_approved_owner_command",
+      "source_package": "packages/wukong-down-production-candidate-v3.zip",
+      "source_package_sha256": "9e5a760db4a54fea8bd6e329a9c128e5c29d0e1a8f37ec4240c065d597343d29",
+      "frames": [
+        {
+          "path": "frames/down-v2/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "04f10e309fc73a6c2959091359b64f2d94ddc196ae62bed929bc7012859f8f52",
+          "bytes": 516084,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/down-v2/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2ef58c9ae14e061d6893d1914b86509970ea750fdf06521c6891b92658e4bd34",
+          "bytes": 493928,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/down-v2/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "875700d59c821cc84d7ffa617454fbf249e2083f6e3ba5cdf76c5783155cc57c",
+          "bytes": 524830,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/down-v2/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "792e93331ea00711265631fb7f843e690ada4b39c441127f24abfc1945729f09",
+          "bytes": 433895,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/down-v2/frame-005.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "5f9826ab9ff8ae04af48f66b31b42c7b01c813e77f48e9fdf15ca50013e7ef37",
+          "bytes": 440684,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/down-v2/frame-006.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "3e3990bc799ab34e6695d5a017f3e60fb81671b1224b2c521701245ba722bc40",
+          "bytes": 401250,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/down-v2/frame-007.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2e83c17a85b225cb03a8b03a409a916bb2e950db7781e8178361ae00accf6e6f",
+          "bytes": 425688,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/down-v2/frame-008.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "531eddde60fab86706ff31ab62be785d6f3c4d57dfacf305467be42da88e1245",
+          "bytes": 459238,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/down-v2/frame-009.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "a06a5cd9cf5983ff24c88a2e42e2133a8aa9f5aabfad6f7d7232f8832bec06db",
+          "bytes": 413479,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/down-v2/frame-010.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "4076ffdb452ff06b6623ae99a5f3e2ade38e3bed394a501214192f6bc91f6708",
+          "bytes": 351551,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/down-v2/frame-011.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "c1bb7ee34ae76a41bd3212badfbc24e306e4dd98b2412b0a09c29b571874b1a1",
+          "bytes": 471610,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/down-v2/frame-012.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "c2a6f39a5d3f4db3d14fd80b9f4e8695add95c5e4a5d3e827de83e64b4a5f44d",
+          "bytes": 489102,
+          "duration_ms": 115
+        }
+      ]
+    },
+    {
+      "action": "paw-sit",
+      "behavior_id": "wk.command.paw_sit",
+      "display_name": "手（坐姿）",
+      "source_folder": "frames/paw-sit",
+      "frame_count": 10,
+      "frame_duration_ms": 105,
+      "from_posture": "Sit",
+      "to_posture": "Sit",
+      "motion_design_approved": true,
+      "production_asset": true,
+      "visual_approved": true,
+      "runtime_approved": true,
+      "runtime_use": true,
+      "prototype_use": false,
+      "asset_stage": "runtime_approved_owner_command",
+      "source_package": "packages/wukong-paw-sit-production-candidate-v3.zip",
+      "source_package_sha256": "92c0e9b4fb48eaeb6e69fb256dea5460c44782458c506b8c937e2935ceb3b378",
+      "frames": [
+        {
+          "path": "frames/paw-sit/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "c429ed7028182f73d0a98b19d66bd9602c812c63e2517e821eae6e82a626ecf5",
+          "bytes": 429438,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-sit/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "846cba4d60597792e0bb0a69f0246dd0a692171b1fbfcf48fbe3b3c2bf115286",
+          "bytes": 479128,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-sit/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "3fb7e712f2d1694b57692e2d4bd9da862f2ad2a306452f3ab343479ac7ff35db",
+          "bytes": 463794,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-sit/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "3570e798c6f0310c7dc3f8dddbfdd347ac671f761c1d7a72ca6cca65f3cfeb59",
+          "bytes": 403519,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-sit/frame-005.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "07ae82b940e9350e7975d5de0e66d35ac578e491605fc3110c621ce0724589e1",
+          "bytes": 500649,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-sit/frame-006.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "c936890290b29f392f9c0af6944d930aa5d9993ae66258e99c24e5bb87750045",
+          "bytes": 468002,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-sit/frame-007.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "c373846f041bd12fff8cf3831eb623030da8cbbdb4bbc83ed477a869019a2239",
+          "bytes": 431732,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-sit/frame-008.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "b347dd0311152ada911744d0a11c1fa0e34d74ca79a154171a7241f1c69dbdcc",
+          "bytes": 427995,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-sit/frame-009.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "bc4359b0ac2e48d055a2791b74ebdaab8b46819782bc0143d0e5a5a90688d6b9",
+          "bytes": 411351,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-sit/frame-010.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "c429ed7028182f73d0a98b19d66bd9602c812c63e2517e821eae6e82a626ecf5",
+          "bytes": 429438,
+          "duration_ms": 105
+        }
+      ]
+    },
+    {
+      "action": "paw-prone",
+      "behavior_id": "wk.command.paw_prone",
+      "display_name": "手（趴姿）",
+      "source_folder": "frames/paw-prone",
+      "frame_count": 10,
+      "frame_duration_ms": 105,
+      "from_posture": "Prone",
+      "to_posture": "Prone",
+      "motion_design_approved": true,
+      "production_asset": true,
+      "visual_approved": true,
+      "runtime_approved": true,
+      "runtime_use": true,
+      "prototype_use": false,
+      "asset_stage": "runtime_approved_owner_command",
+      "source_package": "packages/wukong-paw-prone-production-candidate-v3.zip",
+      "source_package_sha256": "e7d110b8950d8d9aec5833f36ebc2b85dd201c0dc0ef22434963710e12f38cdc",
+      "frames": [
+        {
+          "path": "frames/paw-prone/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2aafccbc532ef40e2e82408ae0cef684be52627b9d932a5741b8f82b931462a6",
+          "bytes": 453560,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-prone/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "97359da1d56f9870c1b848010131df92051ab5919f8d302e2fc1e75e2796e3da",
+          "bytes": 480299,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-prone/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "6eb1c4f6f62965fe666d61c85fa9d278fc8809cb964010aa6c6ec1ddaad3377a",
+          "bytes": 474285,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-prone/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "e8a36ae8aca38673db781e32b5ee2c2d67307f5661c779ace551c3d5bf2bd554",
+          "bytes": 466724,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-prone/frame-005.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "db8348e1b41f8cdfd79e0af0cc5ea29c6e4dc4e9520257b69cf4ece77b4c52c5",
+          "bytes": 436229,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-prone/frame-006.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "d6b1436d078076b0cc1bd77e1120d9139ce9725c3e66c35412708814c7339e3f",
+          "bytes": 423763,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-prone/frame-007.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "f35fa42f3d6b19d4a63b3ca0b79ed52469971cc2e83d55a9e4e4f4ea4d2a5f2d",
+          "bytes": 496185,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-prone/frame-008.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "50b576e3a702cda64560f4111965642cdf97a43d0dbc5e36a8a13dc7e1b09a5b",
+          "bytes": 443701,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-prone/frame-009.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "f8fb4053aec1fc6fa854c6433ffd0e99597009cab577bd7abcdeadfaaa4fff9a",
+          "bytes": 436169,
+          "duration_ms": 105
+        },
+        {
+          "path": "frames/paw-prone/frame-010.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2aafccbc532ef40e2e82408ae0cef684be52627b9d932a5741b8f82b931462a6",
+          "bytes": 453560,
+          "duration_ms": 105
+        }
+      ]
+    },
+    {
+      "action": "jump",
+      "behavior_id": "wk.command.jump",
+      "display_name": "跳",
+      "source_folder": "frames/jump",
+      "frame_count": 12,
+      "frame_duration_ms": 95,
+      "from_posture": "Stand",
+      "to_posture": "Stand",
+      "motion_design_approved": true,
+      "production_asset": true,
+      "visual_approved": true,
+      "runtime_approved": true,
+      "runtime_use": true,
+      "prototype_use": false,
+      "asset_stage": "runtime_approved_owner_command",
+      "source_package": "packages/wukong-jump-production-candidate-v3.zip",
+      "source_package_sha256": "124e8be147637fe74d2ff7f8d0de006d39394ffe7998b4ede544382600dca1db",
+      "frames": [
+        {
+          "path": "frames/jump/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "ee8d4cf9d57bb4d4425e37846db7beb41f4423e20d44bcf4873ba30beb9772d5",
+          "bytes": 508242,
+          "duration_ms": 95
+        },
+        {
+          "path": "frames/jump/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "873ee6db5b65bf156910ed050fea2fba096465acd947a2893ca1437f8de8ccee",
+          "bytes": 509797,
+          "duration_ms": 95
+        },
+        {
+          "path": "frames/jump/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "67b7c48bafdabb2cbd9570ed1e2cb35cac7a2942fdde74fd3493a8206965c625",
+          "bytes": 547418,
+          "duration_ms": 95
+        },
+        {
+          "path": "frames/jump/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "3d1c843aff1defb9ba2036433499aa353c88fc57f761d5e2a2e59fea58b3a6df",
+          "bytes": 380451,
+          "duration_ms": 95
+        },
+        {
+          "path": "frames/jump/frame-005.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "6f1ffe986f076585688cd483f27dc06514874e0941f2efc43929c6d73bea94dc",
+          "bytes": 394586,
+          "duration_ms": 95
+        },
+        {
+          "path": "frames/jump/frame-006.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "e9ed7b1a40e3ef00065c101c1e5cccddada76438b595734dc4bdd890e4e91a90",
+          "bytes": 444513,
+          "duration_ms": 95
+        },
+        {
+          "path": "frames/jump/frame-007.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "b7f45bee8e50c175f3c4b9ef39d41d3ce2bc11268ce21ceff19b07063b2442d4",
+          "bytes": 553293,
+          "duration_ms": 95
+        },
+        {
+          "path": "frames/jump/frame-008.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "f731842cb10c2211e2ba5960208540ea7cebf38419ced047525346581e0a39b9",
+          "bytes": 437224,
+          "duration_ms": 95
+        },
+        {
+          "path": "frames/jump/frame-009.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "cb2b8e6882415c7be89335d3d3c60d50493eef835b53977250783062d661514a",
+          "bytes": 626473,
+          "duration_ms": 95
+        },
+        {
+          "path": "frames/jump/frame-010.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "cc4e79e840b883baf27172e0157cba478d8938e7a7cbf18e6152b4b5a11bc479",
+          "bytes": 575499,
+          "duration_ms": 95
+        },
+        {
+          "path": "frames/jump/frame-011.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "43e53a48f47d8cedb959d14ac01f6acda30a24770479925f9e50325aff8df1ce",
+          "bytes": 586112,
+          "duration_ms": 95
+        },
+        {
+          "path": "frames/jump/frame-012.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "ee8d4cf9d57bb4d4425e37846db7beb41f4423e20d44bcf4873ba30beb9772d5",
+          "bytes": 508242,
+          "duration_ms": 95
+        }
+      ]
+    },
+    {
+      "action": "spin",
+      "behavior_id": "wk.command.spin",
+      "display_name": "转圈",
+      "source_folder": "frames/spin",
+      "frame_count": 16,
+      "frame_duration_ms": 90,
+      "from_posture": "Stand",
+      "to_posture": "Stand",
+      "motion_design_approved": true,
+      "production_asset": true,
+      "visual_approved": true,
+      "runtime_approved": true,
+      "runtime_use": true,
+      "prototype_use": false,
+      "asset_stage": "runtime_approved_owner_command",
+      "source_package": "packages/wukong-spin-production-candidate-v3.zip",
+      "source_package_sha256": "78917b0ed4097c68554ceee56a08b91751394dddd8b0e21d10db2d90b579183d",
+      "frames": [
+        {
+          "path": "frames/spin/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "ee8d4cf9d57bb4d4425e37846db7beb41f4423e20d44bcf4873ba30beb9772d5",
+          "bytes": 508242,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "d24f487da1661315f345f71c43472e01112f317d7d83bbf7debc1d8f0a902e72",
+          "bytes": 572583,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "56952689609013402d883fe70861b2ead99f08de1d6af08933eaa976c84d4c65",
+          "bytes": 538588,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "afbb6ce9803ea01f72eca82d2c23e14364ede3df31184bed7595bbfdd855645e",
+          "bytes": 547976,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-005.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "82a4a26c66288d402f6be60be5d5bfe3d996aaac03815b3477a15bd563a7b7ef",
+          "bytes": 614225,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-006.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "c0797467b51290443c9817f4cc9b9cfd4edc1bb7fc2dc6abd8062e7198b2a011",
+          "bytes": 583766,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-007.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "7985e02c5e6d2e3c0fec535ea5062dd9ce962479954dfeb3c4b7f4ed8c0f9771",
+          "bytes": 551267,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-008.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "641db0493f40d24e565c7b6f37c622b824578e0e1100bd3f8ec9743e36218aa2",
+          "bytes": 369463,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-009.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "0d10a619c5337e283c2ca7dd67fb2efa281876a67902bedadcb5d2ebdb99c5b4",
+          "bytes": 400150,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-010.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "9716dccaff20928f8febc7975d2fe5d4c935d23cb029f5db7e9340bdf5ec4e4e",
+          "bytes": 504608,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-011.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "7ca41facd89e5840f7e47849b8287e3dbc9b4413eab35252e084a0d5da8bc776",
+          "bytes": 700262,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-012.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "4bc07c762d4bc2be05d55cf6cb14951a9930caef06ea7d6e5a33cd47387cfcc9",
+          "bytes": 466353,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-013.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "d70582b6ca5c25157a2ae571ab40864c23e602b1d8cf1b7984ad02304fe1ea6d",
+          "bytes": 375072,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-014.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "07d02265fa6d322cd4939b5137f13c2bd9cda905a5c88f84d6eac4685316cabd",
+          "bytes": 367064,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-015.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "734b87db37cb5653ecc3984a70ef0e874a9e027bf25426063daf3ea7e433a712",
+          "bytes": 544906,
+          "duration_ms": 90
+        },
+        {
+          "path": "frames/spin/frame-016.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "ee8d4cf9d57bb4d4425e37846db7beb41f4423e20d44bcf4873ba30beb9772d5",
+          "bytes": 508242,
+          "duration_ms": 90
+        }
+      ]
+    },
+    {
+      "action": "eat-sit",
+      "behavior_id": "wk.command.eat_sit",
+      "display_name": "吃（坐姿）",
+      "source_folder": "frames/eat-sit",
+      "frame_count": 12,
+      "frame_duration_ms": 115,
+      "from_posture": "Sit",
+      "to_posture": "Sit",
+      "motion_design_approved": true,
+      "production_asset": true,
+      "visual_approved": true,
+      "runtime_approved": true,
+      "runtime_use": true,
+      "prototype_use": false,
+      "asset_stage": "runtime_approved_owner_command",
+      "source_package": "packages/wukong-eat-sit-production-candidate-v3.zip",
+      "source_package_sha256": "7c17c86918f0c4b12ecd8a9744bf7306ecab076599ea5c8d855dab45fd077164",
+      "frames": [
+        {
+          "path": "frames/eat-sit/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2929c8608a6ea96ca64530d9f310bb8b43d680822ebda9173e93e2c9d1a7e608",
+          "bytes": 429485,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-sit/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "8300a5ba645b3c14bbe5e5f64184cd0ab60ee7abf03f9f16da46f84a837d270f",
+          "bytes": 385586,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-sit/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "91e8e26107bb29d66dafa5e14886ec1874ffac7372af4424188e26fa267d000b",
+          "bytes": 403279,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-sit/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2811feadbc540f59b96d29860ba0252044edc5ce87248bf227ae6791f255221d",
+          "bytes": 370261,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-sit/frame-005.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "7479a5b00c7af458c87945862b55b2dc190b6068ba7bb8c2997636c1f1099794",
+          "bytes": 439466,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-sit/frame-006.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2994d76a98ab534cbc4cdfbb09dcca27fc5e7d145b68d4eef901fe78ff340482",
+          "bytes": 398518,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-sit/frame-007.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "d29239ef414eaabe124ab229391f3b6965cc3203968fe85288e4911aba63af35",
+          "bytes": 425532,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-sit/frame-008.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "b0f6ea17bc58f59df8dae524b38a51c0c8ce6ae477d90061ebf1650f486fd6db",
+          "bytes": 446096,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-sit/frame-009.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "e931488da7419b030d5c904947ae98f6613b206da4195635717f06f177a303d4",
+          "bytes": 442238,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-sit/frame-010.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "08d3bded4d996502c9aa9ddbee7fc8027a2c8527e3c2bf4f03407ab98f95989d",
+          "bytes": 455543,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-sit/frame-011.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "02a7bdb1370b20b04cc5985a86169e5f29b7a2e4f9273e64394840998b020561",
+          "bytes": 423764,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-sit/frame-012.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "2929c8608a6ea96ca64530d9f310bb8b43d680822ebda9173e93e2c9d1a7e608",
+          "bytes": 429485,
+          "duration_ms": 115
+        }
+      ]
+    },
+    {
+      "action": "eat-prone",
+      "behavior_id": "wk.command.eat_prone",
+      "display_name": "吃（趴姿）",
+      "source_folder": "frames/eat-prone",
+      "frame_count": 12,
+      "frame_duration_ms": 115,
+      "from_posture": "Prone",
+      "to_posture": "Prone",
+      "motion_design_approved": true,
+      "production_asset": true,
+      "visual_approved": true,
+      "runtime_approved": true,
+      "runtime_use": true,
+      "prototype_use": false,
+      "asset_stage": "runtime_approved_owner_command",
+      "source_package": "packages/wukong-eat-prone-production-candidate-v4.zip",
+      "source_package_sha256": "3bf84b9223e9709c4f045610008eb710f304052a65b448ca837615d837084129",
+      "frames": [
+        {
+          "path": "frames/eat-prone/frame-001.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "c8724db520002053cd62d335315373bd862319b96097e9ba1767cd9e14488f7a",
+          "bytes": 235391,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-prone/frame-002.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "8c24c73a13db348bef8b59514924689397d054fdc150210712e2203f43d56242",
+          "bytes": 211802,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-prone/frame-003.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "403c9ea82dc22f501738634ab6fee967b2192028793b0b1539cd7be38ce9b76c",
+          "bytes": 222687,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-prone/frame-004.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "e21ddd5d2846f1b2efae636cd5eaa6150b6b71d23089c98bc7d64822e132a573",
+          "bytes": 204271,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-prone/frame-005.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "f30c5836b69ffabacece9789296307c0aa0bb1e13257270a09bdd8ee5ef25028",
+          "bytes": 205628,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-prone/frame-006.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "22d4008e140c28b2cab68e734e90c4b73575d857e0173db7b41db8358c061d80",
+          "bytes": 215018,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-prone/frame-007.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "98f50cd9bd0e1696487b74c7ec7ee0931afaf88625ee65af0fdfd1b5be534748",
+          "bytes": 222320,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-prone/frame-008.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "b9a93fa5aedddcd8bbfcf660a3763f7ec06d548481eb9b78aa0f53e708dbfb93",
+          "bytes": 221832,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-prone/frame-009.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "d0dada8aa4fa52402ca9975fcb3cfdff60060aacae2f50d1da1e7c1c7641e0b0",
+          "bytes": 211238,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-prone/frame-010.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "15ef9778e447424a75c5da956446d9423c7153e564ee215058d72e6387440ecc",
+          "bytes": 216313,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-prone/frame-011.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "1bca45ebc11a6612099fe270ebc082a96975ba10d8c33d18836acc631e854477",
+          "bytes": 217223,
+          "duration_ms": 115
+        },
+        {
+          "path": "frames/eat-prone/frame-012.png",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+          "bytes": 214970,
+          "duration_ms": 115
+        }
+      ]
+    }
+  ]
+}

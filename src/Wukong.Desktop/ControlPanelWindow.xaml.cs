@@ -28,7 +28,7 @@ public partial class ControlPanelWindow : Window
     private MotionPhase? _previewPhase;
     private IReadOnlyList<string> _previewFrames = Array.Empty<string>();
     private AlbumFolderItem? _selectedAlbum;
-    private string _albumRoot = AlbumFolderItem.GetDefaultAlbumRoot();
+    private string _albumRoot = string.Empty;
     private bool _albumUnbindInProgress;
     private int _previewIndex;
     private bool _previewPaused;
@@ -56,6 +56,9 @@ public partial class ControlPanelWindow : Window
         _runtime = runtime;
         _agent = agent;
         _ownsAgent = ownsAgent;
+        _albumRoot = AlbumFolderItem.GetDefaultAlbumRoot(
+            _agent.DataPaths.AlbumsDirectory,
+            _agent.DataPaths.ProfileDirectory);
         InitializeComponent();
         DataContext = _runtime;
         TraceList.ItemsSource = _runtime.TraceLines;
@@ -63,15 +66,16 @@ public partial class ControlPanelWindow : Window
             .Where(IsBaseMotion)
             .OrderBy(x => x.BehaviorId)
             .ToList();
+        PlayAssetList.ItemsSource = _runtime.CarRideCandidateMotions.ToList();
         CommandAssetList.ItemsSource = _runtime.Motions
             .Where(IsCommandMotion)
-            .OrderBy(x => x.BehaviorId)
+            .OrderByDescending(x => string.Equals(x.AssetBatch, CommandMockBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+            .ThenBy(x => x.BehaviorId)
             .ToList();
         MagicSpecialList.ItemsSource = _runtime.MagicMotions
             .Where(x => !string.Equals(x.BehaviorId, MagicBehaviorIds.PetrificusRelease, StringComparison.OrdinalIgnoreCase))
             .OrderBy(x => x.DisplayName)
             .ToList();
-        CarRideSpecialList.ItemsSource = _runtime.CarRideCandidateMotions.ToList();
         CommandMotionList.ItemsSource = _runtime.Motions
             .Where(x => string.Equals(x.Category, "口令动作", StringComparison.Ordinal))
             .OrderBy(x => x.BehaviorId)
@@ -91,6 +95,8 @@ public partial class ControlPanelWindow : Window
         _previewTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(125) };
         _previewTimer.Tick += (_, _) => AdvancePreview();
         RefreshAlbumView();
+        BehaviorAgentMockMotionList.ItemsSource = _runtime.CommandMotionMockMotions;
+        BehaviorAgentSnapshotText.Text = _runtime.BehaviorAgentSnapshot;
         Loaded += async (_, _) => await LoadAgentUiAsync();
         Closed += (_, _) =>
         {
@@ -173,7 +179,7 @@ public partial class ControlPanelWindow : Window
         if (dialog.ShowDialog(this) == true)
         {
             _albumRoot = dialog.FolderName;
-            AlbumFolderItem.SaveAlbumRootPreference(_albumRoot);
+            AlbumFolderItem.SaveAlbumRootPreference(_albumRoot, _agent.DataPaths.ProfileDirectory);
             RefreshAlbumView();
         }
     }
@@ -262,12 +268,15 @@ public partial class ControlPanelWindow : Window
                 _albumMediaBindings,
                 mediaFiles =>
                 {
-                    SaveSelectedAlbumMarkdown(mediaFiles);
+                    SaveSelectedAlbumMarkdown(mediaFiles, refreshView: false);
                     return true;
                 });
             AlbumStatusText.Text = result.UserMessage;
             if (result.Status == AlbumMediaUnbindStatus.Success)
-                SelectAlbumMediaAfterMutation(selectedIndex);
+            {
+                AlbumMediaList.SelectedIndex = Math.Clamp(selectedIndex, 0, _albumMediaBindings.Count - 1);
+                UpdateSelectedAlbumMediaPreview();
+            }
             else
                 UpdateSelectedAlbumMediaPreview();
         }
@@ -303,7 +312,7 @@ public partial class ControlPanelWindow : Window
                 _albumMediaBindings,
                 mediaFiles =>
                 {
-                    SaveSelectedAlbumMarkdown(mediaFiles);
+                    SaveSelectedAlbumMarkdown(mediaFiles, refreshView: false);
                     return true;
                 });
             AlbumStatusText.Text = result.UserMessage;
@@ -328,10 +337,7 @@ public partial class ControlPanelWindow : Window
         if (dialog.ShowDialog(this) != true)
             return;
 
-        var profileDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Wukong",
-            "profile");
+        var profileDir = _agent.DataPaths.ProfileDirectory;
         Directory.CreateDirectory(profileDir);
         var target = Path.Combine(profileDir, "pet-avatar" + Path.GetExtension(dialog.FileName));
         File.Copy(dialog.FileName, target, overwrite: true);
@@ -679,6 +685,24 @@ public partial class ControlPanelWindow : Window
         SetChatStatus("当前对话已清空。");
     }
 
+    private async void ClearAllConversationHistory_Click(object sender, RoutedEventArgs e)
+    {
+        var confirm = MessageBox.Show(
+            this,
+            "清空全部主人对话与三个调试会话？清空后便携数据目录中的历史文件会在无其他会话时删除。",
+            "清空全部对话",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes)
+            return;
+
+        await _agent.ClearAllConversationHistoryAsync();
+        _chatItems.Clear();
+        foreach (var items in _modelDebugItems.Values)
+            items.Clear();
+        SetChatStatus("全部对话历史已清空，可以打包为空白会话版本。");
+    }
+
     private async void SaveMemoryCandidate_Click(object sender, RoutedEventArgs e)
     {
         var sessionId = sender is Button button && IsInModelDebug(button)
@@ -806,6 +830,71 @@ public partial class ControlPanelWindow : Window
         }
     }
 
+    private void BehaviorAgentMockToggle_Changed(object sender, RoutedEventArgs e)
+    {
+        _runtime.SetBehaviorAgentMockEnabled(BehaviorAgentMockToggle.IsChecked == true);
+        BehaviorAgentSnapshotText.Text = _runtime.BehaviorAgentSnapshot;
+    }
+
+    private void ApplyBehaviorAgentMock_Click(object sender, RoutedEventArgs e)
+    {
+        _runtime.UpdateBehaviorAgentMock(
+            new TemperamentProfile(
+                (int)AgentActivitySlider.Value,
+                (int)AgentAttachmentSlider.Value,
+                (int)AgentSensitivitySlider.Value,
+                (int)AgentIndependenceSlider.Value,
+                (int)AgentMischiefSlider.Value),
+            PetRuntimeState.Default with
+            {
+                CurrentPosture = SelectedAgentPosture(),
+                Energy = 1.0 - MockFatigueSlider.Value,
+                Hunger = 0.35,
+                SocialNeed = MockSocialSlider.Value,
+                Boredom = MockPlaySlider.Value,
+                Stress = MockStressSlider.Value,
+                MoodValence = Math.Clamp(1.0 - MockStressSlider.Value, 0, 1),
+                Arousal = MockLivelinessSlider.Value
+            },
+            RelationshipState.Default with { Trust = MockTrustSlider.Value },
+            ReadAgentSeed());
+        BehaviorAgentSnapshotText.Text = _runtime.BehaviorAgentSnapshot;
+        MockStateStatus.Text = "Behavior Agent Mock state applied.";
+    }
+
+    private async void BehaviorAgentCommand_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string tag })
+            return;
+
+        ApplyBehaviorAgentMock_Click(sender, e);
+        var command = Enum.TryParse<OwnerCommandKind>(tag, ignoreCase: true, out var parsed)
+            ? parsed
+            : OwnerCommandKind.None;
+        if (command == OwnerCommandKind.None)
+        {
+            var decision = _runtime.PreviewBehaviorAgentDecision(OwnerCommandKind.None, ReadAgentSeed());
+            MockStateStatus.Text = $"Autonomous mock selected {decision.SelectedActionId}";
+        }
+        else
+        {
+            var result = await _runtime.SubmitBehaviorAgentCommandAsync(command, BehaviorRequestSource.ControlPanel);
+            MockStateStatus.Text = $"Behavior Agent Mock {command}: {result}";
+        }
+        BehaviorAgentSnapshotText.Text = _runtime.BehaviorAgentSnapshot;
+    }
+
+    private StablePosture SelectedAgentPosture()
+    {
+        var value = (BehaviorAgentPostureCombo.SelectedItem as ComboBoxItem)?.Content?.ToString();
+        return Enum.TryParse<StablePosture>(value, ignoreCase: true, out var posture)
+            ? posture
+            : StablePosture.Prone;
+    }
+
+    private int ReadAgentSeed() =>
+        int.TryParse(BehaviorAgentSeedText.Text, out var seed) ? seed : 2408;
+
 
     private async void ForceLifecycleCandidate_Click(object sender, RoutedEventArgs e)
     {
@@ -852,6 +941,7 @@ public partial class ControlPanelWindow : Window
             return;
 
         NormalAssetsPanel.Visibility = tab == "Normal" ? Visibility.Visible : Visibility.Collapsed;
+        PlayAssetsPanel.Visibility = Visibility.Collapsed;
         CommandAssetsPanel.Visibility = Visibility.Collapsed;
         MagicAssetsPanel.Visibility = tab == "Magic" ? Visibility.Visible : Visibility.Collapsed;
         NormalAssetSubTabs.Visibility = tab == "Normal" ? Visibility.Visible : Visibility.Collapsed;
@@ -871,8 +961,10 @@ public partial class ControlPanelWindow : Window
     {
         AssetList.Visibility = Visibility.Visible;
         NormalAssetsPanel.Visibility = tab == "Base" ? Visibility.Visible : Visibility.Collapsed;
+        PlayAssetsPanel.Visibility = tab == "Play" ? Visibility.Visible : Visibility.Collapsed;
         CommandAssetsPanel.Visibility = tab == "Command" ? Visibility.Visible : Visibility.Collapsed;
         BaseAssetsTabButton.Style = PanelTabStyle(tab == "Base");
+        PlayAssetsTabButton.Style = PanelTabStyle(tab == "Play");
         CommandAssetsTabButton.Style = PanelTabStyle(tab == "Command");
     }
 
@@ -911,6 +1003,75 @@ public partial class ControlPanelWindow : Window
             _ => result.ToString()
         };
     }
+
+    private async void ShowPlayAsset_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: PlayableMotion motion })
+            return;
+
+        if (string.Equals(motion.BehaviorId, CarRideBehaviorIds.CarRide, StringComparison.OrdinalIgnoreCase))
+        {
+            await ShowCarRideFromPanelAsync();
+            return;
+        }
+
+        MagicShowStatus.Text = $"{motion.DisplayName}: 暂未接入右键互动";
+    }
+
+    private async void ShowCommandAsset_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: PlayableMotion motion })
+            return;
+
+        if (!string.Equals(motion.AssetBatch, CommandMockBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) || !motion.RuntimeEnabled)
+        {
+            MagicShowStatus.Text = $"{motion.DisplayName}: 旧素材已过期，仅保留预览和动作参考";
+            return;
+        }
+
+        var command = CommandLabelForMotion(motion.BehaviorId);
+        if (string.IsNullOrWhiteSpace(command))
+        {
+            MagicShowStatus.Text = $"{motion.DisplayName}: 未找到对应口令入口";
+            return;
+        }
+
+        MagicShowStatus.Text = $"正在展示口令动作：{motion.DisplayName}...";
+        var result = await _runtime.SubmitOwnerCommandAsync(command);
+        MagicShowStatus.Text = result switch
+        {
+            PetActionResult.Accepted => $"{motion.DisplayName}: 正在展示",
+            PetActionResult.Deferred => $"{motion.DisplayName}: {_runtime.CurrentReason}",
+            PetActionResult.MissingAsset => $"{motion.DisplayName}: 素材缺失",
+            PetActionResult.Interrupted => $"{motion.DisplayName}: 已停止",
+            PetActionResult.Failed => $"{motion.DisplayName}: 展示失败并已恢复",
+            _ => $"{motion.DisplayName}: {result}"
+        };
+    }
+
+    private async Task ShowCarRideFromPanelAsync()
+    {
+        MagicShowStatus.Text = "正在展示兜风...";
+        var result = await _runtime.SubmitCarRideAsync(BehaviorRequestSource.ControlPanel);
+        MagicShowStatus.Text = result switch
+        {
+            PetActionResult.Accepted => "兜风正在运行。",
+            PetActionResult.Deferred => $"兜风暂时不能运行：{_runtime.CurrentReason}",
+            PetActionResult.Rejected => "兜风请求被拒绝。",
+            _ => result.ToString()
+        };
+    }
+
+    private static string CommandLabelForMotion(string behaviorId) => behaviorId switch
+    {
+        MockCommandActionIds.Sit => "坐",
+        MockCommandActionIds.Down => "卧",
+        MockCommandActionIds.PawSit or MockCommandActionIds.PawProne or CommandBehaviorIds.PawRise => "手",
+        MockCommandActionIds.Jump => "跳",
+        MockCommandActionIds.Spin or CommandBehaviorIds.SpinApproachStopSit => "转圈",
+        MockCommandActionIds.EatSit or MockCommandActionIds.EatProne or CommandBehaviorIds.PawEat => "吃",
+        _ => string.Empty
+    };
     private static bool IsCommandMotion(PlayableMotion motion) =>
         string.Equals(motion.Category, "口令动作", StringComparison.Ordinal);
 
@@ -925,7 +1086,7 @@ public partial class ControlPanelWindow : Window
 
     private void LoadAvatarIfAvailable()
     {
-        var profileDirectory = ProfileDirectory();
+        var profileDirectory = _agent.DataPaths.ProfileDirectory;
         var avatar = Directory.Exists(profileDirectory)
             ? Directory.GetFiles(profileDirectory, "pet-avatar.*").OrderByDescending(File.GetLastWriteTimeUtc).FirstOrDefault()
             : null;
@@ -1115,11 +1276,12 @@ public partial class ControlPanelWindow : Window
     {
         var selected = AlbumMediaList.SelectedItem as AlbumMediaItem;
         AlbumPreviewImage.Source = LoadBitmap(selected?.FullPath);
+        AlbumPreviewImage.Opacity = selected is { IsBound: false } ? 0.48 : 1.0;
         AlbumMediaStatusText.Text = selected is null
             ? (_albumMediaBindings.Count == 0 ? "暂无图片素材" : "请选择图片")
-            : $"{AlbumMediaList.SelectedIndex + 1}/{_albumMediaBindings.Count} - {selected.FileName}";
+            : $"{AlbumMediaList.SelectedIndex + 1}/{_albumMediaBindings.Count} - {selected.FileName} - {selected.Status}";
         AlbumMediaEmptyState.Visibility = _albumMediaBindings.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        UnbindAlbumMediaButton.IsEnabled = selected is not null;
+        UnbindAlbumMediaButton.IsEnabled = selected is { IsBound: true };
         DeleteAlbumMediaButton.IsEnabled = selected is not null;
     }
 
@@ -1137,12 +1299,9 @@ public partial class ControlPanelWindow : Window
         UpdateSelectedAlbumMediaPreview();
     }
 
-    private static string ProfileDirectory() =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Wukong", "profile");
-
     private void SaveSelectedAlbumMarkdown() => SaveSelectedAlbumMarkdown(_albumMediaBindings);
 
-    private void SaveSelectedAlbumMarkdown(IReadOnlyList<AlbumMediaItem> mediaFiles)
+    private void SaveSelectedAlbumMarkdown(IReadOnlyList<AlbumMediaItem> mediaFiles, bool refreshView = true)
     {
         if (_selectedAlbum is null)
             return;
@@ -1152,7 +1311,10 @@ public partial class ControlPanelWindow : Window
         var markdownPath = string.IsNullOrWhiteSpace(_selectedAlbum.MarkdownPath)
             ? Path.Combine(_selectedAlbum.DirectoryPath, "album.md")
             : _selectedAlbum.MarkdownPath;
-        File.WriteAllText(markdownPath, _selectedAlbum.CreateMarkdown(CurrentAlbumDateText(), AlbumDescriptionText.Text, mediaFiles.Select(x => x.FileName).ToArray()));
+        var boundFiles = mediaFiles.Where(x => x.IsBound).Select(x => x.FileName).ToArray();
+        File.WriteAllText(markdownPath, _selectedAlbum.CreateMarkdown(CurrentAlbumDateText(), AlbumDescriptionText.Text, boundFiles));
+        if (!refreshView)
+            return;
         RefreshAlbumView();
         var updated = _albumFolders.FirstOrDefault(x => string.Equals(x.DirectoryPath, selectedPath, StringComparison.OrdinalIgnoreCase));
         if (updated is not null)
@@ -1218,7 +1380,7 @@ public partial class ControlPanelWindow : Window
     }
 }
 
-public sealed record AlbumMediaItem(string FileName, string FullPath, string Status);
+public sealed record AlbumMediaItem(string FileName, string FullPath, string Status, bool IsBound = true);
 
 public enum AlbumMediaUnbindStatus
 {
@@ -1244,6 +1406,38 @@ public static class AlbumMediaBindingEditor
         if (index < 0)
             return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.NotFound, "未找到要解绑的素材。");
 
+        var original = mediaBindings[index];
+        if (!original.IsBound)
+            return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.NotFound, "该素材已经解绑，可以直接删除记录。");
+        var unbound = original with { IsBound = false, Status = "已解绑，可删除记录" };
+        mediaBindings[index] = unbound;
+        try
+        {
+            if (!persist(mediaBindings.ToArray()))
+                throw new IOException("album media persistence returned false");
+        }
+        catch (Exception ex)
+        {
+            mediaBindings[index] = original;
+            return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.PersistenceFailed, $"解绑失败：{ex.GetType().Name}");
+        }
+
+        return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.Success, $"已解绑 {original.FileName}，本地原图未删除。");
+    }
+
+
+    public static AlbumMediaUnbindResult Delete(
+        string? selectedFileName,
+        IList<AlbumMediaItem> mediaBindings,
+        Func<IReadOnlyList<AlbumMediaItem>, bool> persist)
+    {
+        if (string.IsNullOrWhiteSpace(selectedFileName))
+            return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.NoSelection, "请先选择要删除的素材记录。");
+
+        var index = IndexOf(mediaBindings, selectedFileName);
+        if (index < 0)
+            return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.NotFound, "未找到要删除的素材记录。");
+
         var removed = mediaBindings[index];
         mediaBindings.RemoveAt(index);
         try
@@ -1254,22 +1448,10 @@ public static class AlbumMediaBindingEditor
         catch (Exception ex)
         {
             mediaBindings.Insert(Math.Min(index, mediaBindings.Count), removed);
-            return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.PersistenceFailed, $"解绑失败：{ex.GetType().Name}");
+            return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.PersistenceFailed, $"删除失败：{ex.GetType().Name}");
         }
 
-        return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.Success, $"已解绑 {removed}");
-    }
-
-
-    public static AlbumMediaUnbindResult Delete(
-        string? selectedFileName,
-        IList<AlbumMediaItem> mediaBindings,
-        Func<IReadOnlyList<AlbumMediaItem>, bool> persist)
-    {
-        var result = Unbind(selectedFileName, mediaBindings, persist);
-        return result.Status == AlbumMediaUnbindStatus.Success && !string.IsNullOrWhiteSpace(selectedFileName)
-            ? result with { UserMessage = $"已删除素材记录 {selectedFileName}" }
-            : result;
+        return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.Success, $"已删除素材记录 {removed.FileName}，本地原图未删除。");
     }
 
     private static int IndexOf(IList<AlbumMediaItem> mediaBindings, string selectedFileName)
@@ -1298,13 +1480,13 @@ public sealed record AlbumFolderItem(
     private static readonly string[] ImageExtensions = { ".png", ".jpg", ".jpeg", ".webp", ".bmp" };
     private static readonly string[] MarkdownNames = { "album.md", "README.md", "readme.md", "description.md", "\u63cf\u8ff0.md" };
 
-    public static string GetDefaultAlbumRoot()
+    public static string GetDefaultAlbumRoot(string? portableAlbumRoot = null, string? profileDirectory = null)
     {
         var configured = Environment.GetEnvironmentVariable("WUKONG_ALBUM_ROOT");
         if (!string.IsNullOrWhiteSpace(configured) && Directory.Exists(configured))
             return configured;
 
-        var preference = AlbumRootPreferencePath();
+        var preference = AlbumRootPreferencePath(profileDirectory);
         if (File.Exists(preference))
         {
             var path = File.ReadAllText(preference).Trim();
@@ -1312,16 +1494,16 @@ public sealed record AlbumFolderItem(
                 return path;
         }
 
-        const string xhsRoot = "D:\\\u3010ZS\u3011\\\u3010\u684c\u9762\u5ba0\u7269\u3011\\images_wk\\images_xhs";
-        return Directory.Exists(xhsRoot)
-            ? xhsRoot
+        return !string.IsNullOrWhiteSpace(portableAlbumRoot)
+            ? portableAlbumRoot
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Wukong");
     }
 
-    public static void SaveAlbumRootPreference(string path)
+    public static void SaveAlbumRootPreference(string path, string? profileDirectory = null)
     {
-        Directory.CreateDirectory(AlbumProfileDirectory());
-        File.WriteAllText(AlbumRootPreferencePath(), path);
+        var directory = AlbumProfileDirectory(profileDirectory);
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(AlbumRootPreferencePath(directory), path);
     }
 
     public static AlbumFolderItem FromDirectory(string directory)
@@ -1370,10 +1552,13 @@ public sealed record AlbumFolderItem(
             : MarkdownAlbumMetadata.CreateNew(title, timeText, description, mediaFiles);
     }
 
-    private static string AlbumProfileDirectory() =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Wukong", "profile");
+    private static string AlbumProfileDirectory(string? profileDirectory = null) =>
+        string.IsNullOrWhiteSpace(profileDirectory)
+            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Wukong", "profile")
+            : profileDirectory;
 
-    private static string AlbumRootPreferencePath() => Path.Combine(AlbumProfileDirectory(), "album-root.txt");
+    private static string AlbumRootPreferencePath(string? profileDirectory = null) =>
+        Path.Combine(AlbumProfileDirectory(profileDirectory), "album-root.txt");
 
     internal static string BuildMarkdown(string title, string timeText, string description, IReadOnlyList<string> mediaFiles, IReadOnlyList<string>? preservedFrontMatter = null, IReadOnlyList<string>? preservedBodySections = null)
     {

@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using Wukong.Application;
 using Wukong.Domain;
 using Wukong.Infrastructure;
 
@@ -82,7 +83,8 @@ public sealed record MotionPhase(
     string Name,
     IReadOnlyList<string> Frames,
     bool Loop,
-    IReadOnlyList<int>? FrameDurationsMs = null)
+    IReadOnlyList<int>? FrameDurationsMs = null,
+    double? VisualScale = null)
 {
     public int DurationForFrame(int frameIndex, int fallbackMs)
     {
@@ -118,8 +120,11 @@ public sealed record PlayableMotion(
     DesktopMotionEffect Effect = DesktopMotionEffect.None,
     string Description = "",
     IReadOnlyDictionary<string, IReadOnlyList<string>>? DirectionalFrames = null,
+    IReadOnlyDictionary<string, IReadOnlyList<string>>? NamedSequences = null,
     string CandidateProfile = "",
-    double VisualScale = 1.0)
+    double VisualScale = 1.0,
+    double? RenderScaleOverride = null,
+    IReadOnlyList<string>? ScaleReferenceFrames = null)
 {
     public bool IsUsable => Phases.Any(x => x.Frames.Count > 0);
     public string FirstFrame => Phases.SelectMany(x => x.Frames).FirstOrDefault() ?? string.Empty;
@@ -128,12 +133,15 @@ public sealed record PlayableMotion(
     public double Fps => FrameDurationMs <= 0 ? 0 : 1000.0 / FrameDurationMs;
     public string PreviewStatus => IsUsable ? "Preview ready" : "Missing frames";
     public string RuntimeStatus => RuntimeEnabled ? "Runtime enabled" : "Preview only / locked";
+    public bool IsExpired => string.Equals(Disposition, "已过期", StringComparison.OrdinalIgnoreCase);
     public string PhaseSummary => string.Join(" / ", Phases.Select(x => $"{x.Name}:{x.Frames.Count}"));
     public bool HasVariableFrameDurations => Phases.Any(x => x.HasVariableDurations);
     public MotionVisibleMetrics VisibleMetrics => MotionVisualSizer.Measure(FirstFrame);
     public int VisibleSubjectWidth => VisibleMetrics.VisibleWidth;
     public int VisibleSubjectHeight => VisibleMetrics.VisibleHeight;
-    public double PreviewRenderSize => MotionVisualSizer.PreviewRenderSize(FirstFrame, DesktopMotionCatalog.ReferenceFramePath, VisualScale, 150);
+    public double PreviewRenderSize => ScaleReferenceFrames is { Count: > 0 }
+        ? Math.Clamp(150 * MotionVisualSizer.RenderScaleForMotion(this, DesktopMotionCatalog.ReferenceFramePath), 150 * 0.45, 150 * 2.6)
+        : MotionVisualSizer.PreviewRenderSize(FirstFrame, DesktopMotionCatalog.ReferenceFramePath, VisualScale, 150);
 }
 
 public sealed record MotionVisibleMetrics(int CanvasWidth, int CanvasHeight, Int32Rect Bounds)
@@ -200,21 +208,69 @@ public static class MotionVisualSizer
         return Math.Clamp(referenceRatio * targetVisibleRatio / currentRatio, 0.35, 3.0);
     }
 
+    public static double RenderScaleForFrames(IEnumerable<string> framePaths, string? referenceFramePath, double targetVisibleRatio)
+    {
+        var frames = framePaths.Where(x => !string.IsNullOrWhiteSpace(x) && File.Exists(x)).ToArray();
+        if (frames.Length == 0)
+            return RenderScaleFor(null, referenceFramePath, targetVisibleRatio);
+
+        var reference = Measure(referenceFramePath);
+        var referenceRatio = reference.VisibleHeightRatio > 0 ? reference.VisibleHeightRatio : DefaultVisibleRatio;
+        var maxVisibleRatio = frames
+            .Select(Measure)
+            .Select(x => x.VisibleHeightRatio > 0 ? x.VisibleHeightRatio : DefaultVisibleRatio)
+            .DefaultIfEmpty(DefaultVisibleRatio)
+            .Max();
+        return Math.Clamp(referenceRatio * targetVisibleRatio / maxVisibleRatio, 0.35, 3.0);
+    }
+
+    public static double RenderScaleForMotion(PlayableMotion motion, string? referenceFramePath)
+    {
+        if (motion.RenderScaleOverride is > 0)
+            return motion.RenderScaleOverride.Value;
+
+        var frames = motion.ScaleReferenceFrames is { Count: > 0 }
+            ? motion.ScaleReferenceFrames
+            : motion.Phases
+                .SelectMany(x => x.Frames)
+                .Concat(motion.DirectionalFrames?.Values.SelectMany(x => x) ?? Array.Empty<string>())
+                .Concat(motion.NamedSequences?.Values.SelectMany(x => x) ?? Array.Empty<string>())
+                .Distinct(StringComparer.OrdinalIgnoreCase);
+        return RenderScaleForFrames(frames, referenceFramePath, motion.VisualScale);
+    }
+
+    public static double RenderScaleForPhase(PlayableMotion motion, MotionPhase phase, string? referenceFramePath)
+    {
+        if (motion.RenderScaleOverride is > 0)
+            return motion.RenderScaleOverride.Value;
+        return phase.VisualScale is > 0
+            ? RenderScaleForFrames(phase.Frames, referenceFramePath, phase.VisualScale.Value)
+            : RenderScaleForMotion(motion, referenceFramePath);
+    }
+
     public static double PreviewRenderSize(string? framePath, string? referenceFramePath, double targetVisibleRatio, double stageSize)
         => Math.Clamp(stageSize * RenderScaleFor(framePath, referenceFramePath, targetVisibleRatio), stageSize * 0.45, stageSize * 2.6);
 }
 
 public sealed class DesktopMotionCatalog
 {
+    private const double ApprovedPetVisualScale = 0.92;
+    private readonly IReadOnlyList<PlayableMotion> _allMotions;
     private readonly Dictionary<string, PlayableMotion> _motions;
 
     private DesktopMotionCatalog(IEnumerable<PlayableMotion> motions, string loadSummary)
     {
-        _motions = motions.Where(x => x.IsUsable).ToDictionary(x => x.BehaviorId, StringComparer.OrdinalIgnoreCase);
+        _allMotions = motions.Where(x => x.IsUsable).ToArray();
+        _motions = new Dictionary<string, PlayableMotion>(StringComparer.OrdinalIgnoreCase);
+        foreach (var motion in _allMotions)
+        {
+            if (!_motions.ContainsKey(motion.BehaviorId))
+                _motions.Add(motion.BehaviorId, motion);
+        }
         LoadSummary = loadSummary;
     }
 
-    public IReadOnlyList<PlayableMotion> Motions => _motions.Values.OrderBy(x => x.BehaviorId).ToList();
+    public IReadOnlyList<PlayableMotion> Motions => _allMotions.OrderBy(x => x.BehaviorId).ToList();
     public string LoadSummary { get; }
     public static string ReferenceFramePath { get; private set; } = string.Empty;
 
@@ -222,7 +278,9 @@ public sealed class DesktopMotionCatalog
         _motions.TryGetValue(behaviorId, out var motion) ? motion : null;
 
     public PlayableMotion RequiredIdle =>
-        Find(Phase15BehaviorIds.ProneIdle) ??
+        Find(LifecycleCandidateBehaviorIds.ProneIdleMicroloop) is { RuntimeEnabled: true } lifecycleProne
+            ? lifecycleProne
+            : Find(Phase15BehaviorIds.ProneIdle) ??
         _motions.Values.FirstOrDefault() ??
         throw new InvalidOperationException("No playable Wukong motion assets were found.");
 
@@ -242,8 +300,10 @@ public sealed class DesktopMotionCatalog
                 "actions/WK-CORE-PRONE-IDLE-LF-v1/approved-keyframes/v1",
                 loop: true,
                 pingPong: true,
-                status: "Runtime: visible approved breathing keyframes",
-                disposition: "Enabled"),
+                runtimeEnabled: false,
+                status: "已过期：旧标准柴犬趴卧呼吸，仅保留动作参考",
+                missing: "superseded runtime presentation",
+                disposition: "已过期"),
             Motion(
                 Phase15BehaviorIds.ProneIdleV3Candidate,
                 "V3 idle candidate",
@@ -255,9 +315,9 @@ public sealed class DesktopMotionCatalog
                 "actions/WK-CORE-PRONE-IDLE-LF-v1/runtime-frames/v3",
                 loop: true,
                 runtimeEnabled: false,
-                status: "Preview only: 24 frames are too subtle for visible idle",
-                missing: "visible breathing amplitude review",
-                disposition: "Preview only"),
+                status: "已过期：旧标准柴犬趴卧候选，仅保留动作参考",
+                missing: "superseded visual identity and runtime presentation",
+                disposition: "已过期"),
             Motion(
                 Phase15BehaviorIds.ProneBreath,
                 "Prone breathing",
@@ -269,8 +329,10 @@ public sealed class DesktopMotionCatalog
                 "actions/WK-CORE-PRONE-IDLE-LF-v1/approved-keyframes/v1",
                 loop: true,
                 pingPong: true,
-                status: "Runtime: pose and style compatible",
-                disposition: "Enabled"),
+                runtimeEnabled: false,
+                status: "已过期：旧标准柴犬静默趴卧呼吸，仅保留动作参考",
+                missing: "superseded runtime presentation",
+                disposition: "已过期"),
             Motion(
                 Phase15BehaviorIds.LookAround,
                 "Look around",
@@ -282,11 +344,11 @@ public sealed class DesktopMotionCatalog
                 "actions/WK-CORE-TURN-LF-TO-RF-v2/approved-keyframes/v1",
                 loop: false,
                 runtimeEnabled: false,
-                status: "Preview only: pose and facing transition missing",
-                missing: "transition_in / transition_out / interrupt_exit",
+                status: "已过期：旧标准柴犬基础素材，仅保留动作参考",
+                missing: "superseded visual identity / transition_in / transition_out / interrupt_exit",
                 startPose: "stand.neutral.left_front",
                 endPose: "stand.neutral.right_front",
-                disposition: "Transition locked"),
+                disposition: "已过期"),
             Motion(
                 Phase15BehaviorIds.SideSleepBreath,
                 "Side sleep breathing",
@@ -298,11 +360,11 @@ public sealed class DesktopMotionCatalog
                 "actions/WK-CORE-SLEEP-BREATH-v2/approved-keyframes/v1",
                 loop: true,
                 runtimeEnabled: false,
-                status: "Preview only: sleep pose lacks safe enter/exit",
-                missing: "fall_asleep / wake_up / interrupt_exit",
+                status: "已过期：旧标准柴犬基础素材，仅保留动作参考",
+                missing: "superseded visual identity / fall_asleep / wake_up / interrupt_exit",
                 startPose: "sleep.side.right",
                 endPose: "sleep.side.right",
-                disposition: "Runtime disabled"),
+                disposition: "已过期"),
             Motion(
                 Phase15BehaviorIds.EnterSleep,
                 "Enter sleep",
@@ -314,11 +376,11 @@ public sealed class DesktopMotionCatalog
                 "actions/WK-CORE-SLEEP-BREATH-v2/approved-keyframes/v1",
                 loop: false,
                 runtimeEnabled: false,
-                status: "Runtime disabled: missing prone-to-sleep intro/exit",
-                missing: "fall_asleep / wake_up / interrupt_exit",
+                status: "已过期：旧标准柴犬基础素材，仅保留动作参考",
+                missing: "superseded visual identity / fall_asleep / wake_up / interrupt_exit",
                 startPose: "sleep.side.right",
                 endPose: "sleep.side.right",
-                disposition: "Runtime disabled"),
+                disposition: "已过期"),
             Motion(
                 Phase15BehaviorIds.SafeStand,
                 "Prone to stand",
@@ -330,11 +392,11 @@ public sealed class DesktopMotionCatalog
                 "actions/WK-CORE-PRONE-TO-STAND-LF-v2/approved-keyframes/v1",
                 loop: false,
                 runtimeEnabled: false,
-                status: "Preview only: return transition and renderer QA needed",
-                missing: "stand_to_prone interrupt_exit / renderer QA",
+                status: "已过期：旧标准柴犬基础素材，仅保留动作参考",
+                missing: "superseded visual identity / stand_to_prone interrupt_exit / renderer QA",
                 startPose: "prone.awake.left_front",
                 endPose: "stand.neutral.left_front",
-                disposition: "Transition locked"),
+                disposition: "已过期"),
             Motion(
                 Phase15BehaviorIds.StrokeEnjoy,
                 "Happy touch keyframes",
@@ -346,9 +408,9 @@ public sealed class DesktopMotionCatalog
                 "actions/WK-INTERACT-HAPPY-TOUCH-v2/approved-keyframes/v1",
                 loop: false,
                 runtimeEnabled: false,
-                status: "Preview only: 3 approved keyframes need full runtime sequence",
-                missing: "intro / loop / exit / interrupt_exit",
-                disposition: "Preview only"),
+                status: "已过期：旧标准柴犬基础素材，仅保留动作参考",
+                missing: "superseded visual identity / intro / loop / exit / interrupt_exit",
+                disposition: "已过期"),
             TouchMotion(root),
             Motion(
                 "wk.preview.prone_touch_nose_lick",
@@ -375,11 +437,11 @@ public sealed class DesktopMotionCatalog
                 "actions/WK-CORE-STAND-TO-PRONE-LF-v2/approved-keyframes/v1",
                 loop: false,
                 runtimeEnabled: false,
-                status: "Preview only: interrupt exit missing",
-                missing: "interrupt_exit",
+                status: "已过期：旧标准柴犬基础素材，仅保留动作参考",
+                missing: "superseded visual identity / interrupt_exit",
                 startPose: "stand.neutral.left_front",
                 endPose: "prone.awake.left_front",
-                disposition: "Transition locked"),
+                disposition: "已过期"),
             Motion(
                 "wk.preview.walk_left",
                 "Walk left",
@@ -391,21 +453,25 @@ public sealed class DesktopMotionCatalog
                 "actions/WK-CORE-WALK-LEFT-v2/approved-keyframes/v1",
                 loop: true,
                 runtimeEnabled: false,
-                status: "Preview only: missing walk_start / walk_stop / safe_interrupt_exit",
-                missing: "intro / exit / interrupt_exit",
+                status: "已过期：旧标准柴犬基础素材，仅保留动作参考",
+                missing: "superseded visual identity / intro / exit / interrupt_exit",
                 startPose: "stand.neutral.left_front",
                 endPose: "stand.neutral.left_front",
-                disposition: "Transition locked")
+                disposition: "已过期")
         };
 
-        ReferenceFramePath = motions.FirstOrDefault(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle)?.FirstFrame ?? string.Empty;
         var commandCandidates = LoadCommandCandidates(root).ToArray();
         var magicCandidates = LoadMagicCandidates(root).ToArray();
         var lifecycleCandidates = LoadLifecycleCandidates(root).ToArray();
         var carRideCandidates = LoadCarRideCandidates(root).ToArray();
-        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json";
+        var commandMocks = LoadCommandMotionMocks(root).ToArray();
+        ReferenceFramePath = lifecycleCandidates
+            .FirstOrDefault(x => x.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop && x.RuntimeEnabled)?.FirstFrame
+            ?? motions.FirstOrDefault(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle)?.FirstFrame
+            ?? string.Empty;
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
         BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
-        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(carRideCandidates), summary);
+        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(carRideCandidates).Concat(commandMocks), summary);
     }
 
     private static PlayableMotion Motion(
@@ -537,8 +603,8 @@ public sealed class DesktopMotionCatalog
             }
 
             var validationStatus = string.Equals(action.RuntimeValidation, "failed", StringComparison.OrdinalIgnoreCase)
-                ? "候选素材：验收失败，待返工"
-                : "候选素材：待运行验收";
+                ? "已过期：旧口令素材验收失败，仅保留为动作参考"
+                : "已过期：旧口令素材，仅保留为动作参考";
 
             yield return new PlayableMotion(
                 action.BehaviorId,
@@ -555,7 +621,117 @@ public sealed class DesktopMotionCatalog
                 StartPose: action.FromPose,
                 EndPose: action.ToPose,
                 StyleGroup: "wukong-current-adult-v1",
-                Disposition: "Developer preview only");
+                Disposition: "已过期",
+                AssetBatch: "WK-COMMAND-ACTION-CANDIDATES-v3");
+        }
+    }
+
+    private static IEnumerable<PlayableMotion> LoadCommandMotionMocks(string root)
+    {
+        var manifestPath = Path.Combine(root, "action-mocks", CommandMockBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("command_production_candidate_owner_qa_pending_manifest_missing");
+            yield break;
+        }
+
+        CommandMotionMockBatchManifest? manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<CommandMotionMockBatchManifest>(
+                File.ReadAllText(manifestPath),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Command motion mock manifest parse failed", ex);
+            yield break;
+        }
+
+        if (manifest?.Actions is null)
+            yield break;
+
+        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        var sharedScaleFrame = manifest.Actions
+            .Where(x => string.Equals(x.BehaviorId, MockCommandActionIds.Spin, StringComparison.OrdinalIgnoreCase))
+            .SelectMany(x => x.Frames ?? Array.Empty<CommandActionFrameManifest>())
+            .Select(x => Path.Combine(batchRoot, x.Path.Replace('/', Path.DirectorySeparatorChar)))
+            .FirstOrDefault(File.Exists)
+            ?? manifest.Actions
+                .SelectMany(x => x.Frames ?? Array.Empty<CommandActionFrameManifest>())
+                .Select(x => Path.Combine(batchRoot, x.Path.Replace('/', Path.DirectorySeparatorChar)))
+                .FirstOrDefault(File.Exists);
+        var sharedScaleReference = string.IsNullOrWhiteSpace(sharedScaleFrame)
+            ? Array.Empty<string>()
+            : new[] { sharedScaleFrame };
+        foreach (var action in manifest.Actions)
+        {
+            var frames = new List<string>();
+            var durations = new List<int>();
+            var errors = new List<string>();
+            foreach (var frame in action.Frames ?? Array.Empty<CommandActionFrameManifest>())
+            {
+                var path = Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(path))
+                {
+                    errors.Add($"missing:{frame.Path}");
+                    continue;
+                }
+                if (new FileInfo(path).Length != frame.Bytes)
+                    errors.Add($"bytes:{frame.Path}");
+                if (!string.Equals(Sha256(path), frame.Sha256, StringComparison.OrdinalIgnoreCase))
+                    errors.Add($"sha256:{frame.Path}");
+                frames.Add(path);
+                durations.Add(frame.DurationMs.GetValueOrDefault(action.FrameDurationMs));
+            }
+
+            if (frames.Count != action.FrameCount)
+                errors.Add($"frame_count:{frames.Count}/{action.FrameCount}");
+            var approvedOwnerCommand = action.RuntimeApproved &&
+                action.RuntimeUse &&
+                action.ProductionAsset &&
+                !action.PrototypeUse &&
+                string.Equals(action.AssetStage, "runtime_approved_owner_command", StringComparison.OrdinalIgnoreCase);
+            var prototypeOwnerCommand = !action.RuntimeApproved &&
+                !action.RuntimeUse &&
+                !action.ProductionAsset &&
+                action.PrototypeUse &&
+                string.Equals(action.AssetStage, "production_candidate_owner_qa_pending", StringComparison.OrdinalIgnoreCase);
+            if (!approvedOwnerCommand && !prototypeOwnerCommand)
+                errors.Add("command_owner_gate_not_declared");
+
+            if (errors.Count > 0)
+            {
+                BootstrapLog.WriteRaw($"command_production_candidate_owner_qa_pending_invalid behavior={action.BehaviorId} errors={string.Join(",", errors)}");
+                continue;
+            }
+
+            yield return new PlayableMotion(
+                action.BehaviorId,
+                action.DisplayName,
+                "口令动作",
+                action.ToPosture,
+                action.FrameDurationMs,
+                Interruptible: false,
+                new[] { new MotionPhase("mock", frames, Loop: false, durations) },
+                Path.Combine(batchRoot, action.SourceFolder.Replace('/', Path.DirectorySeparatorChar)),
+                RuntimeEnabled: approvedOwnerCommand,
+                Status: approvedOwnerCommand
+                    ? "已批准：主人手动口令可用"
+                    : "候选：主人预览待验收",
+                MissingContent: approvedOwnerCommand ? "None" : "owner QA / runtime approval",
+                StartPose: action.FromPosture,
+                EndPose: action.ToPosture,
+                StyleGroup: "wukong-command-production-candidates-v4",
+                Disposition: approvedOwnerCommand ? "已启用" : "候选预览",
+                PrototypeUse: action.PrototypeUse,
+                AssetBatch: manifest.BatchId,
+                Description: approvedOwnerCommand
+                    ? "Approved owner command motion. Manual context-menu and control-panel command paths only."
+                    : "Real command production candidate for deterministic personality/state/command behavior wiring.",
+                CandidateProfile: manifest.AssetStage,
+                VisualScale: approvedOwnerCommand ? 0.92 : 1.0,
+                ScaleReferenceFrames: sharedScaleReference);
         }
     }
 
@@ -635,7 +811,7 @@ public sealed class DesktopMotionCatalog
             yield return new PlayableMotion(
                 action.BehaviorId,
                 action.DisplayName,
-                "候选动作",
+                "基础动作",
                 action.Direction,
                 action.FrameDurationMs,
                 action.Interruptible,
@@ -649,11 +825,12 @@ public sealed class DesktopMotionCatalog
                 StartPose: action.FromPose,
                 EndPose: action.ToPose,
                 StyleGroup: "wukong-standard-shiba-reference-v23-candidate",
-                Disposition: "Developer candidate profile only",
+                Disposition: action.RuntimeApproved && action.RuntimeUse ? "已启用" : "候选预览",
                 PrototypeUse: false,
                 AssetBatch: manifest.BatchId,
                 Description: action.Description,
-                CandidateProfile: action.CandidateProfile ?? manifest.CandidateProfile);
+                CandidateProfile: action.CandidateProfile ?? manifest.CandidateProfile,
+                VisualScale: ApprovedPetVisualScale);
         }
     }
 
@@ -739,7 +916,7 @@ public sealed class DesktopMotionCatalog
 
                 if (frames.Count != phase.FrameCount)
                     errors.Add($"phase_frame_count:{phase.Name}:{frames.Count}/{phase.FrameCount}");
-                phases.Add(new MotionPhase(phase.Name, frames, phase.Loop));
+                phases.Add(new MotionPhase(phase.Name, frames, phase.Loop, VisualScale: phase.VisualScale));
             }
 
             if (errors.Count > 0)
@@ -753,7 +930,7 @@ public sealed class DesktopMotionCatalog
                 action.DisplayName,
                 "宠物魔法",
                 action.Direction,
-                action.FrameDurationMs,
+                MagicFrameDurationFor(action.BehaviorId, action.FrameDurationMs),
                 action.Interruptible,
                 phases,
                 Path.Combine(batchRoot, action.SourceFolder.Replace('/', Path.DirectorySeparatorChar)),
@@ -773,9 +950,19 @@ public sealed class DesktopMotionCatalog
                 DirectionalFrames: string.Equals(action.BehaviorId, MagicBehaviorIds.AccioBroom, StringComparison.OrdinalIgnoreCase)
                     ? directionalFrames
                     : null,
-                VisualScale: 1.35);
+                VisualScale: MagicVisualScaleFor(action.BehaviorId));
         }
     }
+
+    private static double MagicVisualScaleFor(string behaviorId) =>
+        behaviorId is MagicBehaviorIds.PetrificusTotalus or MagicBehaviorIds.PetrificusRelease
+            ? ApprovedPetVisualScale
+            : 1.35;
+
+    private static int MagicFrameDurationFor(string behaviorId, int declaredDurationMs) =>
+        string.Equals(behaviorId, MagicBehaviorIds.PetrificusTotalus, StringComparison.OrdinalIgnoreCase)
+            ? Math.Max(170, declaredDurationMs)
+            : declaredDurationMs;
 
     private static DesktopMotionEffect ParseMagicEffect(string? value) =>
         Enum.TryParse<DesktopMotionEffect>(value, ignoreCase: true, out var effect)
@@ -873,6 +1060,7 @@ public sealed class DesktopMotionCatalog
             AssetBatch: manifest.AssetId,
             Effect: DesktopMotionEffect.CarRide,
             DirectionalFrames: BuildCarRideDirectionalFrames(manifest, batchRoot),
+            NamedSequences: BuildCarRideNamedSequences(manifest, batchRoot),
             Description: "Owner-only car ride v8 runtime approved interaction",
             CandidateProfile: manifest.AssetId,
             VisualScale: 1.18);
@@ -901,6 +1089,21 @@ public sealed class DesktopMotionCatalog
 
         return result;
     }
+
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> BuildCarRideNamedSequences(CarRideCandidateManifest manifest, string batchRoot)
+    {
+        if (manifest.AllSequences is null)
+            return new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+
+        return manifest.AllSequences.ToDictionary(
+            entry => entry.Key,
+            entry => (IReadOnlyList<string>)entry.Value
+                .Select(relative => Path.Combine(batchRoot, relative.Replace('/', Path.DirectorySeparatorChar)))
+                .Where(File.Exists)
+                .ToArray(),
+            StringComparer.OrdinalIgnoreCase);
+    }
+
     private static string Sha256(string path)
     {
         using var stream = File.OpenRead(path);
@@ -938,6 +1141,11 @@ public static class CommandBehaviorIds
     public const string Jump = "wk.command.jump";
     public const string SpinApproachStopSit = "wk.command.spin_approach_stop_sit";
     public const string PawEat = "wk.command.paw_eat";
+}
+
+public static class CommandMockBehaviorIds
+{
+    public const string AssetBatch = "WK-COMMAND-PRODUCTION-CANDIDATES-v4";
 }
 
 public static class InteractionBehaviorIds
@@ -998,6 +1206,27 @@ public sealed record CommandActionFrameManifest(
     [property: JsonPropertyName("sha256")] string Sha256,
     [property: JsonPropertyName("bytes")] long Bytes,
     [property: JsonPropertyName("duration_ms")] int? DurationMs = null);
+
+public sealed record CommandMotionMockBatchManifest(
+    [property: JsonPropertyName("batch_id")] string BatchId,
+    [property: JsonPropertyName("asset_stage")] string AssetStage,
+    [property: JsonPropertyName("actions")] IReadOnlyList<CommandMotionMockActionManifest> Actions);
+
+public sealed record CommandMotionMockActionManifest(
+    [property: JsonPropertyName("behavior_id")] string BehaviorId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("source_folder")] string SourceFolder,
+    [property: JsonPropertyName("frame_count")] int FrameCount,
+    [property: JsonPropertyName("frame_duration_ms")] int FrameDurationMs,
+    [property: JsonPropertyName("from_posture")] string FromPosture,
+    [property: JsonPropertyName("to_posture")] string ToPosture,
+    [property: JsonPropertyName("interruptible")] bool Interruptible,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("asset_stage")] string AssetStage,
+    [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames);
 
 
 public sealed record LifecycleCandidateBatchManifest(
@@ -1064,7 +1293,8 @@ public sealed record MagicMockPhaseManifest(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("loop")] bool Loop,
     [property: JsonPropertyName("frame_count")] int FrameCount,
-    [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames);
+    [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames,
+    [property: JsonPropertyName("visual_scale")] double? VisualScale = null);
 
 public enum PetrifiedCoinState
 {
@@ -1251,18 +1481,26 @@ public sealed record PetMotionRequest(
 
 public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 {
+    private const string StableHoldPrefix = "wk.runtime.posture_hold.";
     private readonly DesktopMotionCatalog _catalog;
     private readonly PetrifiedCoinAssets? _coinAssets;
     private readonly PetrifiedCoinOptions _coinOptions;
     private readonly Func<DateTimeOffset> _now;
     private readonly Random _random = new(1508);
+    private PlayableMotion? _currentMotion;
+    private readonly BehaviorAgentMockEngine _behaviorAgent = new();
     private readonly Dictionary<string, DateTimeOffset> _lastAccepted = new(StringComparer.OrdinalIgnoreCase);
     private readonly RollingFileLogStore _logs = RollingFileLogStore.CreateDefault();
+    private PetRuntimeState _agentState = PetRuntimeState.Default;
+    private RelationshipState _relationshipState = RelationshipState.Default;
+    private TemperamentProfile _temperament = TemperamentProfile.Default;
+    private PetDecision? _lastAgentDecision;
     private DateTimeOffset _lastTapAt = DateTimeOffset.MinValue;
     private int _tapBurst;
     private DateTimeOffset _currentStartedAt = DateTimeOffset.MinValue;
     private string _currentBehaviorId = Phase15BehaviorIds.ProneIdle;
     private bool _currentInterruptible = true;
+    private DateTimeOffset _nextAutonomousDecisionAt = DateTimeOffset.MinValue;
     private DateTimeOffset? _coinActivityAt;
     private BehaviorRequestSource _coinPreviewSource = BehaviorRequestSource.OwnerContextMenu;
 
@@ -1282,6 +1520,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         CurrentAsset = _catalog.RequiredIdle.FirstFrame;
         CurrentAction = _catalog.RequiredIdle.DisplayName;
         CurrentBehaviorId = _catalog.RequiredIdle.BehaviorId;
+        _currentBehaviorId = _catalog.RequiredIdle.BehaviorId;
+        _currentStartedAt = _now();
+        _nextAutonomousDecisionAt = _currentStartedAt + TimeSpan.FromSeconds(_random.Next(24, 41));
         Trace("asset_catalog_loaded", $"{_catalog.LoadSummary}; motions={_catalog.Motions.Count}");
     }
 
@@ -1297,17 +1538,24 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         .OrderBy(x => x.DisplayName)
         .ToArray();
     public IReadOnlyList<PlayableMotion> LifecycleCandidateMotions => _catalog.Motions
-        .Where(x => string.Equals(x.Category, "候选动作", StringComparison.OrdinalIgnoreCase))
+        .Where(x => string.Equals(x.AssetBatch, LifecycleCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
         .OrderBy(x => x.BehaviorId)
         .ToArray();
     public IReadOnlyList<PlayableMotion> CarRideCandidateMotions => _catalog.Motions
         .Where(x => string.Equals(x.BehaviorId, CarRideBehaviorIds.CarRide, StringComparison.OrdinalIgnoreCase))
         .OrderBy(x => x.BehaviorId)
         .ToArray();
+    public IReadOnlyList<PlayableMotion> CommandMotionMockMotions => _catalog.Motions
+        .Where(x => string.Equals(x.AssetBatch, CommandMockBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        .OrderBy(x => x.BehaviorId)
+        .ToArray();
     public bool IsPetrified { get; private set; }
     public bool IsCoinAssetsReady => _coinAssets is not null;
     public PetrifiedCoinState? CurrentCoinState { get; private set; }
     public PetrifiedCoinSide? CurrentCoinSide { get; private set; }
+    public bool EnableBehaviorAgentMock { get; private set; }
+    public StablePosture CurrentStablePosture => _agentState.CurrentPosture;
+    public string BehaviorAgentSnapshot => BuildBehaviorAgentSnapshot();
 
     public string CurrentAction { get; private set; } = "安静趴卧";
     public string CurrentBehaviorId { get; private set; } = Phase15BehaviorIds.ProneIdle;
@@ -1330,11 +1578,40 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public double Focus { get; private set; } = 0.58;
     public double Comfort { get; private set; } = 0.78;
 
+    public void SetBehaviorAgentMockEnabled(bool enabled)
+    {
+        EnableBehaviorAgentMock = enabled;
+        Trace("behavior_agent_mock", enabled ? "enabled" : "disabled");
+        OnPropertyChanged(nameof(EnableBehaviorAgentMock));
+        OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+    }
+
+    public void UpdateBehaviorAgentMock(TemperamentProfile temperament, PetRuntimeState state, RelationshipState relationship, int seed)
+    {
+        _temperament = temperament;
+        _agentState = state.Clamp();
+        _relationshipState = relationship;
+        Trace("behavior_agent_state", $"seed={seed} posture={_agentState.CurrentPosture} energy={_agentState.Energy:0.00} hunger={_agentState.Hunger:0.00} social={_agentState.SocialNeed:0.00} boredom={_agentState.Boredom:0.00} stress={_agentState.Stress:0.00}");
+        OnPropertyChanged(nameof(CurrentStablePosture));
+        OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+    }
+
     public PetActionResult StartIdle(string source = "Startup")
     {
-        var idle = _catalog.RequiredIdle;
-        Accept(idle, BehaviorRequestSource.OwnerUi, BehaviorExecutionMode.Normal, source, returnToIdle: false, loopCycles: int.MaxValue);
+        var posture = string.Equals(source, "Startup", StringComparison.OrdinalIgnoreCase)
+            ? PreferredStartupPosture()
+            : _agentState.CurrentPosture;
+        StartStablePostureIdle(posture, source);
         return PetActionResult.Accepted;
+    }
+
+    private StablePosture PreferredStartupPosture()
+    {
+        if (_agentState.Stress >= 0.68 || _agentState.Energy < 0.34)
+            return StablePosture.Prone;
+        if (_agentState.Energy < 0.52 || _agentState.Arousal < 0.34)
+            return StablePosture.Sit;
+        return StablePosture.Stand;
     }
 
     public Task RecordInputAsync(InputEvent inputEvent)
@@ -1352,7 +1629,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             PetGestureKind.OwnerTouch => Phase15BehaviorIds.ProneTouch,
             PetGestureKind.Stroke => Phase15BehaviorIds.StrokeEnjoy,
             PetGestureKind.RapidTap => Phase15BehaviorIds.LookAround,
-            _ => Phase15BehaviorIds.ProneIdle
+            _ => _catalog.RequiredIdle.BehaviorId
         };
 
         if (gesture == PetGestureKind.OwnerTouch)
@@ -1372,7 +1649,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         var behaviorId = intent.Kind switch
         {
             SemanticIntentKind.Touch => Phase15BehaviorIds.ProneTouch,
-            SemanticIntentKind.Quiet or SemanticIntentKind.Stop => Phase15BehaviorIds.ProneIdle,
+            SemanticIntentKind.Quiet or SemanticIntentKind.Stop => _catalog.RequiredIdle.BehaviorId,
             _ => Phase15BehaviorIds.LookAround
         };
         return Task.FromResult(SubmitBehavior(BehaviorRequestSource.OwnerContextMenu, behaviorId, $"menu:{intent.Kind}", priority: 5));
@@ -1380,6 +1657,15 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public Task<PetActionResult> SubmitOwnerCommandAsync(string command)
     {
+        var ownerCommand = ParseOwnerCommand(command);
+        if (ownerCommand != OwnerCommandKind.None && CommandMotionMockMotions.Count > 0)
+            return Task.FromResult(SubmitBehaviorAgentCommand(ownerCommand, BehaviorRequestSource.OwnerContextMenu, $"owner_command:{command}"));
+        if (ownerCommand != OwnerCommandKind.None)
+        {
+            UpdateDecision(PetActionResult.Deferred, BehaviorRequestSource.OwnerContextMenu.ToString(), "command_candidate_assets_missing", "Command candidate assets are unavailable; formal command assets are not runtime-approved.");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
+
         var behaviorId = ResolveOwnerCommandBehavior(command);
         if (command is "停下" or "停")
             return StopAsync("owner_command:stop");
@@ -1388,6 +1674,18 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public Task<PetActionResult> SubmitDeveloperMotionAsync(string behaviorId) =>
         Task.FromResult(SubmitBehavior(BehaviorRequestSource.DeveloperForced, behaviorId, $"developer_force:{behaviorId}", priority: 100, executionMode: BehaviorExecutionMode.DeveloperPreview, bypassRuntimeGate: true));
+
+    public Task<PetActionResult> SubmitBehaviorAgentCommandAsync(OwnerCommandKind command, BehaviorRequestSource source = BehaviorRequestSource.ControlPanel) =>
+        Task.FromResult(SubmitBehaviorAgentCommand(command, source, $"agent_mock:{command}"));
+
+    public PetDecision PreviewBehaviorAgentDecision(OwnerCommandKind command, int seed)
+    {
+        var decision = _behaviorAgent.Decide(CreateDecisionContext(command, seed, allowInitiative: command == OwnerCommandKind.None));
+        _lastAgentDecision = decision;
+        TraceDecision(decision, "preview");
+        OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+        return decision;
+    }
 
     public Task<PetActionResult> SubmitDeveloperCandidateMotionAsync(string behaviorId) =>
         Task.FromResult(SubmitBehavior(BehaviorRequestSource.DeveloperForced, behaviorId, $"developer_candidate:{behaviorId}", priority: 100, executionMode: BehaviorExecutionMode.DeveloperPreview, bypassRuntimeGate: true));
@@ -1408,6 +1706,152 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public Task<PetActionResult> SubmitCarRideAsync(BehaviorRequestSource source) =>
         Task.FromResult(SubmitBehavior(source, CarRideBehaviorIds.CarRide, "owner:car_ride_v8", priority: 18, executionMode: BehaviorExecutionMode.Normal));
+
+    private PetActionResult SubmitBehaviorAgentCommand(OwnerCommandKind command, BehaviorRequestSource source, string trigger)
+    {
+        if (command == OwnerCommandKind.None)
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "command_unresolved", "Unknown owner command.");
+            return PetActionResult.Deferred;
+        }
+
+        var decision = _behaviorAgent.Decide(CreateDecisionContext(command, seed: 2408, allowInitiative: false));
+        _lastAgentDecision = decision;
+        TraceDecision(decision, trigger);
+        return SubmitMockDecision(decision, source, trigger, allowAutonomous: false);
+    }
+
+    private PetActionResult SubmitMockDecision(PetDecision decision, BehaviorRequestSource source, string trigger, bool allowAutonomous)
+    {
+        if (source == BehaviorRequestSource.AutonomousTick && !allowAutonomous)
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "mock_autonomous_forbidden", "Mock owner command cannot be started by autonomous tick.");
+            return PetActionResult.Deferred;
+        }
+
+        var motion = BuildMotionForDecision(decision);
+        if (motion is null)
+        {
+            UpdateDecision(PetActionResult.MissingAsset, source.ToString(), "mock_asset_missing", $"Missing mock asset: {decision.SelectedActionId}");
+            return PetActionResult.MissingAsset;
+        }
+
+        _agentState = _agentState.Clamp() with
+        {
+            IsBusy = true,
+            ActiveActionId = decision.SelectedActionId,
+            LastInteractionAt = _now()
+        };
+        var executionMode = motion.RuntimeEnabled ? BehaviorExecutionMode.Normal : BehaviorExecutionMode.PrototypePreview;
+        var gate = EvaluateGate(source, executionMode, motion);
+        if (!gate.Allowed)
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), gate.ReasonCode, gate.UserFacingReason);
+            return PetActionResult.Deferred;
+        }
+
+        var now = _now();
+        if (source != BehaviorRequestSource.OwnerContextMenu &&
+            source != BehaviorRequestSource.ControlPanel &&
+            now - _currentStartedAt < TimeSpan.FromSeconds(3) &&
+            _currentBehaviorId != Phase15BehaviorIds.ProneIdle)
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "minimum_dwell", "Current behavior is in minimum dwell.");
+            return PetActionResult.Deferred;
+        }
+
+        Accept(motion, source, executionMode, trigger, returnToIdle: true, loopCycles: 1);
+        var result = PetActionResult.Accepted;
+        if (result == PetActionResult.Accepted)
+        {
+            var update = _behaviorAgent.ApplyOutcome(_agentState, _relationshipState, decision, completed: true, _now());
+            _agentState = update.State;
+            _relationshipState = update.Relationship;
+            CurrentBehaviorId = motion.BehaviorId;
+            CurrentAction = motion.DisplayName;
+            Trace("behavior_agent_outcome", string.Join(",", update.Events));
+            OnPropertyChanged(nameof(CurrentStablePosture));
+            OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+        }
+        return result;
+    }
+
+    private PlayableMotion? BuildMotionForDecision(PetDecision decision)
+    {
+        var steps = decision.TransitionPlan.Count > 0
+            ? decision.TransitionPlan
+            : new[] { new TransitionStep(decision.SelectedActionId, decision.StartPosture, decision.EndPosture, true, "single_step") };
+        var phases = new List<MotionPhase>();
+        foreach (var step in steps)
+        {
+            var motion = CommandMotionMockMotions.FirstOrDefault(x => string.Equals(x.BehaviorId, step.ActionId, StringComparison.OrdinalIgnoreCase)) ?? _catalog.Find(step.ActionId);
+            if (motion is null)
+            {
+                Trace("behavior_agent_transition_gap", $"missing={step.ActionId} reason={step.Reason}");
+                continue;
+            }
+            foreach (var phase in motion.Phases)
+                phases.Add(phase with { Name = $"{step.ActionId}:{phase.Name}" });
+        }
+
+        var selectedMotion = CommandMotionMockMotions.FirstOrDefault(x => string.Equals(x.BehaviorId, decision.SelectedActionId, StringComparison.OrdinalIgnoreCase)) ?? _catalog.Find(decision.SelectedActionId) ?? CommandMotionMockMotions.FirstOrDefault(x => string.Equals(x.BehaviorId, steps.Last().ActionId, StringComparison.OrdinalIgnoreCase)) ?? _catalog.Find(steps.Last().ActionId);
+        if (selectedMotion is null)
+            return null;
+        if (phases.Count == 0)
+            foreach (var phase in selectedMotion.Phases)
+                phases.Add(phase with { Name = $"{selectedMotion.BehaviorId}:{phase.Name}" });
+
+        return selectedMotion with
+        {
+            DisplayName = selectedMotion.RuntimeEnabled
+                ? $"口令 - {selectedMotion.DisplayName}"
+                : $"Agent Mock - {selectedMotion.DisplayName}",
+            Phases = phases,
+            StartPose = decision.StartPosture.ToString(),
+            EndPose = decision.EndPosture.ToString(),
+            Interruptible = false,
+            RuntimeEnabled = selectedMotion.RuntimeEnabled,
+            PrototypeUse = selectedMotion.PrototypeUse,
+            AssetBatch = CommandMockBehaviorIds.AssetBatch,
+            Status = selectedMotion.RuntimeEnabled
+                ? "Approved owner command running through Normal"
+                : "Behavior Agent Mock running through PrototypePreview",
+            Description = string.Join("; ", decision.ReasonCodes)
+        };
+    }
+
+    private BehaviorDecisionContext CreateDecisionContext(OwnerCommandKind command, int seed, bool allowInitiative) =>
+        new(
+            _temperament,
+            _agentState.Clamp() with
+            {
+                IsBusy = !IsStableIdleBehavior(_currentBehaviorId) && _currentBehaviorId != _agentState.ActiveActionId,
+                ActiveActionId = _currentBehaviorId
+            },
+            _relationshipState,
+            command,
+            _lastAccepted.Keys.TakeLast(8).ToArray(),
+            _now(),
+            _lastAccepted,
+            seed,
+            allowInitiative,
+            IsNonInterruptible: !_currentInterruptible && !IsStableIdleBehavior(_currentBehaviorId));
+
+    private static bool IsStableIdleBehavior(string behaviorId) =>
+        string.Equals(behaviorId, Phase15BehaviorIds.ProneIdle, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(behaviorId, LifecycleCandidateBehaviorIds.StandIdleMicroloop, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(behaviorId, LifecycleCandidateBehaviorIds.SitIdleMicroloop, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(behaviorId, LifecycleCandidateBehaviorIds.ProneIdleMicroloop, StringComparison.OrdinalIgnoreCase) ||
+        behaviorId.StartsWith(StableHoldPrefix, StringComparison.OrdinalIgnoreCase);
+
+    private void TraceDecision(PetDecision decision, string trigger)
+    {
+        var scores = string.Join(", ", decision.CandidateScores
+            .OrderByDescending(x => x.FinalScore)
+            .Take(4)
+            .Select(x => $"{x.ActionId}={x.FinalScore:0.00}{(x.Eliminated ? ":blocked" : string.Empty)}"));
+        Trace("behavior_agent_decision", $"trigger={trigger} selected={decision.SelectedActionId} start={decision.StartPosture} end={decision.EndPosture} mood={decision.MoodExpression} style={decision.DialogueStyle} reasons={string.Join('|', decision.ReasonCodes)} scores=[{scores}]");
+    }
 
     public Task<PetActionResult> SubmitPetrifiedCoinClickAsync(BehaviorRequestSource source = BehaviorRequestSource.OwnerUi)
     {
@@ -1476,17 +1920,32 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public Task SubmitAutonomousTickAsync()
     {
+        if (EnableBehaviorAgentMock && !_agentState.IsBusy)
+        {
+            var decision = _behaviorAgent.Decide(CreateDecisionContext(OwnerCommandKind.None, seed: 1508, allowInitiative: true));
+            _lastAgentDecision = decision;
+            TraceDecision(decision, "autonomous_mock");
+            if (decision.SelectedActionId is MockCommandActionIds.PlayfulJump or MockCommandActionIds.PlayfulSpin or MockCommandActionIds.OrientToOwner or MockCommandActionIds.QuietSit or MockCommandActionIds.QuietProne or MockCommandActionIds.Rest)
+                SubmitMockDecision(decision, BehaviorRequestSource.AutonomousTick, "autonomous:behavior_agent_mock", allowAutonomous: true);
+            OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+            return Task.CompletedTask;
+        }
+
         Energy = Clamp01(Energy - 0.015);
         Hunger = Clamp01(Hunger + 0.006);
         Curiosity = Clamp01(Curiosity + 0.018);
         Comfort = Clamp01(Comfort + 0.004);
         RaiseMetrics();
 
-        if (_now() - _currentStartedAt < TimeSpan.FromSeconds(14))
+        var now = _now();
+        if (now < _nextAutonomousDecisionAt || !IsStableIdleBehavior(_currentBehaviorId))
             return Task.CompletedTask;
 
         var choice = ChooseAutonomousBehavior();
-        SubmitBehavior(BehaviorRequestSource.AutonomousTick, choice.BehaviorId, choice.Reason, priority: -5);
+        var result = SubmitBehavior(BehaviorRequestSource.AutonomousTick, choice.BehaviorId, choice.Reason, priority: -5);
+        _nextAutonomousDecisionAt = now + TimeSpan.FromSeconds(result == PetActionResult.Accepted
+            ? _random.Next(28, 51)
+            : _random.Next(14, 25));
         return Task.CompletedTask;
     }
 
@@ -1522,6 +1981,44 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         if (behaviorId == Phase15BehaviorIds.ProneIdle)
             return;
 
+        if (behaviorId.StartsWith(StableHoldPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            Trace("command_terminal_settled", $"{behaviorId} phase={phase} posture={_agentState.CurrentPosture}");
+            StartStablePostureIdle(
+                _agentState.CurrentPosture,
+                $"command_terminal_settled:{behaviorId}",
+                _currentMotion?.RenderScaleOverride);
+            return;
+        }
+
+        if (MockCommandActionIds.PrototypeWhitelist.Contains(behaviorId))
+        {
+            var completedRequestMotion = _currentMotion;
+            _currentInterruptible = true;
+            _agentState = _agentState with { IsBusy = false, ActiveActionId = null };
+            Trace("mock_motion_completed", $"{behaviorId} phase={phase} posture={_agentState.CurrentPosture}");
+            OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+            StartCommandEndPoseHold(behaviorId, _agentState.CurrentPosture, $"command_complete:{behaviorId}", completedRequestMotion);
+            return;
+        }
+
+        var completedMotion = _catalog.Find(behaviorId);
+        if (completedMotion is not null &&
+            string.Equals(completedMotion.AssetBatch, LifecycleCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        {
+            var completedFullLifecycle = string.Equals(
+                completedMotion.BehaviorId,
+                LifecycleCandidateBehaviorIds.LivelyDailyP2,
+                StringComparison.OrdinalIgnoreCase);
+            var posture = completedFullLifecycle && string.Equals(phase, "exit", StringComparison.OrdinalIgnoreCase)
+                ? StablePosture.Stand
+                : StablePostureFromPose(completedMotion.EndPose, _agentState.CurrentPosture);
+            _agentState = _agentState with { CurrentPosture = posture, IsBusy = false, ActiveActionId = null };
+            Trace("lifecycle_motion_completed", $"{behaviorId} phase={phase} posture={posture}");
+            StartStablePostureIdle(posture, $"lifecycle_complete:{behaviorId}");
+            return;
+        }
+
         Mood = Clamp01(Mood + 0.01);
         Comfort = Clamp01(Comfort + 0.01);
         if (behaviorId == Phase15BehaviorIds.ProneTouch || behaviorId == Phase15BehaviorIds.StrokeEnjoy)
@@ -1529,6 +2026,88 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         Trace("motion_completed", $"{behaviorId} phase={phase}");
         StartIdle("safe_return");
         RaiseMetrics();
+    }
+
+    private void StartStablePostureIdle(StablePosture posture, string source, double? renderScaleOverride = null)
+    {
+        var preferred = posture switch
+        {
+            StablePosture.Stand => LifecycleCandidateBehaviorIds.StandIdleMicroloop,
+            StablePosture.Sit => LifecycleCandidateBehaviorIds.SitIdleMicroloop,
+            StablePosture.Prone => LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
+            _ => Phase15BehaviorIds.ProneIdle
+        };
+        var motion = _catalog.Find(preferred);
+        if (motion is { RuntimeEnabled: true })
+        {
+            var playbackMotion = renderScaleOverride is > 0
+                ? motion with { RenderScaleOverride = renderScaleOverride }
+                : motion;
+            _agentState = _agentState with { CurrentPosture = posture, IsBusy = false, ActiveActionId = null };
+            _nextAutonomousDecisionAt = _now() + TimeSpan.FromSeconds(_random.Next(24, 41));
+            Accept(playbackMotion, BehaviorRequestSource.OwnerUi, BehaviorExecutionMode.Normal, source, returnToIdle: false, loopCycles: int.MaxValue);
+            return;
+        }
+
+        var fallback = _catalog.RequiredIdle;
+        var fallbackPosture = StablePostureFromPose(fallback.EndPose, StablePosture.Prone);
+        _agentState = _agentState with { CurrentPosture = fallbackPosture, IsBusy = false, ActiveActionId = null };
+        _nextAutonomousDecisionAt = _now() + TimeSpan.FromSeconds(_random.Next(24, 41));
+        Accept(fallback, BehaviorRequestSource.OwnerUi, BehaviorExecutionMode.Normal, source, returnToIdle: false, loopCycles: int.MaxValue);
+    }
+
+    private void StartCommandEndPoseHold(string behaviorId, StablePosture posture, string source, PlayableMotion? completedRequestMotion)
+    {
+        var completedMotion = completedRequestMotion is not null &&
+                              string.Equals(completedRequestMotion.BehaviorId, behaviorId, StringComparison.OrdinalIgnoreCase)
+            ? completedRequestMotion
+            : CommandMotionMockMotions.FirstOrDefault(x =>
+                string.Equals(x.BehaviorId, behaviorId, StringComparison.OrdinalIgnoreCase));
+        var terminalFrame = completedMotion?.Phases.SelectMany(x => x.Frames).LastOrDefault();
+        if (completedMotion is null || string.IsNullOrWhiteSpace(terminalFrame))
+        {
+            StartStablePostureIdle(posture, source);
+            return;
+        }
+
+        var postureName = posture.ToString().ToLowerInvariant();
+        var hold = new PlayableMotion(
+            $"{StableHoldPrefix}{postureName}",
+            $"Command end hold ({postureName})",
+            "基础动作",
+            completedMotion.Direction,
+            450,
+            Interruptible: true,
+            new[] { new MotionPhase("hold", new[] { terminalFrame }, Loop: true, new[] { 450 }) },
+            completedMotion.SourceRoot,
+            RuntimeEnabled: true,
+            Status: "Stable command end posture",
+            MissingContent: "None",
+            StartPose: posture.ToString(),
+            EndPose: posture.ToString(),
+            StyleGroup: completedMotion.StyleGroup,
+            Disposition: "Runtime hold",
+            PrototypeUse: false,
+            AssetBatch: completedMotion.AssetBatch,
+            Description: "Briefly settles on the approved command terminal frame, then enters the matching posture microloop.",
+            CandidateProfile: completedMotion.CandidateProfile,
+            VisualScale: completedMotion.VisualScale,
+            RenderScaleOverride: MotionVisualSizer.RenderScaleForMotion(completedMotion, DesktopMotionCatalog.ReferenceFramePath));
+
+        Accept(hold, BehaviorRequestSource.OwnerUi, BehaviorExecutionMode.Normal, source, returnToIdle: true, loopCycles: 2);
+    }
+
+    private static StablePosture StablePostureFromPose(string? pose, StablePosture fallback)
+    {
+        if (string.IsNullOrWhiteSpace(pose))
+            return fallback;
+        if (pose.Contains("prone", StringComparison.OrdinalIgnoreCase))
+            return StablePosture.Prone;
+        if (pose.Contains("sit", StringComparison.OrdinalIgnoreCase))
+            return StablePosture.Sit;
+        if (pose.Contains("stand", StringComparison.OrdinalIgnoreCase))
+            return StablePosture.Stand;
+        return fallback;
     }
 
     private PetActionResult SubmitBehavior(
@@ -1553,7 +2132,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         }
 
         var now = _now();
-        var ownerExplicit = source is BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel;
+        var ownerExplicit = source is BehaviorRequestSource.OwnerUi or BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel;
         if (behaviorId == CarRideBehaviorIds.CarRide && _currentBehaviorId == behaviorId)
         {
             UpdateDecision(PetActionResult.Deferred, source.ToString(), "car_ride_already_running", "兜风已经在进行中");
@@ -1582,10 +2161,12 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         }
 
         var keepPetrified = motion.Effect == DesktopMotionEffect.Petrify;
-        var loopCycles = behaviorId == Phase15BehaviorIds.ProneIdle || keepPetrified
+        var longRunningEffect = motion.Effect is DesktopMotionEffect.BroomFlight or DesktopMotionEffect.CarRide;
+        var stableIdle = IsStableIdleBehavior(behaviorId);
+        var loopCycles = stableIdle || keepPetrified || longRunningEffect
             ? int.MaxValue
-            : behaviorId == CarRideBehaviorIds.CarRide ? 2 : 2;
-        Accept(motion, source, executionMode, trigger, returnToIdle: behaviorId != Phase15BehaviorIds.ProneIdle && !keepPetrified, loopCycles: loopCycles);
+            : 2;
+        Accept(motion, source, executionMode, trigger, returnToIdle: !stableIdle && !keepPetrified, loopCycles: loopCycles);
         return PetActionResult.Accepted;
     }
 
@@ -1603,7 +2184,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             if (!sourceAllowed)
                 return (false, "prototype_source_forbidden", "该入口不允许原型展示");
             if (!MagicBehaviorIds.PrototypeWhitelist.Contains(motion.BehaviorId) &&
-                !CarRideBehaviorIds.PrototypeWhitelist.Contains(motion.BehaviorId))
+                !CarRideBehaviorIds.PrototypeWhitelist.Contains(motion.BehaviorId) &&
+                !MockCommandActionIds.PrototypeWhitelist.Contains(motion.BehaviorId))
                 return (false, "prototype_not_whitelisted", "该行为不在原型白名单中");
             if (!motion.PrototypeUse)
                 return (false, "prototype_use_disabled", "该素材未开启原型展示");
@@ -1614,6 +2196,11 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             executionMode == BehaviorExecutionMode.Normal &&
             source is not (BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel))
             return (false, "car_ride_source_forbidden", "兜风只允许主人从玩一下菜单或面板手动触发");
+
+        if (MockCommandActionIds.PrototypeWhitelist.Contains(motion.BehaviorId) &&
+            executionMode == BehaviorExecutionMode.Normal &&
+            source is not (BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel))
+            return (false, "command_source_forbidden", "口令动作只允许主人从右键菜单或面板手动触发");
 
         if (!motion.RuntimeEnabled)
             return (false, "runtime_locked", $"{motion.DisplayName} 素材正在返工，暂时不能正式播放。");
@@ -1639,6 +2226,24 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         _ => Phase15BehaviorIds.ProneIdle
     };
 
+    private static OwnerCommandKind ParseOwnerCommand(string command)
+    {
+        var value = command.Trim();
+        if (value is "Sit" or "\u5750")
+            return OwnerCommandKind.Sit;
+        if (value is "Down" or "\u5367" or "\u81e5")
+            return OwnerCommandKind.Down;
+        if (value is "Paw" or "\u624b" or "\u4f38\u722a" or "\u62ac\u722a" or "\u63e1\u624b")
+            return OwnerCommandKind.Paw;
+        if (value is "Jump" or "\u8df3" or "\u8df3\u8dc3")
+            return OwnerCommandKind.Jump;
+        if (value is "Spin" or "\u8f6c\u5708" or "\u8f49\u5708")
+            return OwnerCommandKind.Spin;
+        if (value is "Eat" or "\u5403" or "\u5582\u98df" or "\u5403\u4e1c\u897f")
+            return OwnerCommandKind.Eat;
+        return OwnerCommandKind.None;
+    }
+
     private void Accept(
         PlayableMotion motion,
         BehaviorRequestSource source,
@@ -1648,6 +2253,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         int loopCycles)
     {
         _currentBehaviorId = motion.BehaviorId;
+        _currentMotion = motion;
         _currentStartedAt = _now();
         _currentInterruptible = motion.Interruptible;
         _lastAccepted[motion.BehaviorId] = _currentStartedAt;
@@ -1730,27 +2336,56 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     private (string BehaviorId, string Reason) ChooseAutonomousBehavior()
     {
-        var hour = DateTimeOffset.Now.Hour;
+        var hour = _now().Hour;
         var workQuiet = hour is >= 9 and <= 18;
         var elapsed = _now() - _currentStartedAt;
-        var candidates = new List<(string BehaviorId, double Score, string Reason)>
+        var candidates = new List<(string BehaviorId, double Score, string Reason)>();
+        switch (_agentState.CurrentPosture)
         {
-            (Phase15BehaviorIds.ProneBreath, Comfort + (workQuiet ? 0.35 : 0.10), "autonomous:comfort_breath"),
-            (Phase15BehaviorIds.ProneIdle, 0.55 + Comfort * 0.25, "autonomous:quiet_idle")
-        };
+            case StablePosture.Stand:
+                AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.StandIdleMicroloop,
+                    0.52 + Comfort * 0.18 + (workQuiet ? 0.14 : 0.04), "autonomous:stable_stand_microloop");
+                if (elapsed >= TimeSpan.FromSeconds(24) && Energy >= 0.28 && Stress < 0.68)
+                    AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.LivelyDailyP2,
+                        0.42 + Curiosity * 0.58 + Mood * 0.18 + Energy * 0.22 - Stress * 0.55 + (workQuiet ? 0 : 0.12),
+                        Energy < 0.38 ? "autonomous:state_driven_rest_lifecycle" : "autonomous:state_driven_lively_daily");
+                break;
+            case StablePosture.Sit:
+                AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.SitIdleMicroloop,
+                    0.82 + Comfort * 0.12 + (workQuiet ? 0.14 : 0.03), "autonomous:stable_sit_microloop");
+                break;
+            default:
+                AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
+                    0.86 + Comfort * 0.14 + (workQuiet ? 0.16 : 0.04), "autonomous:stable_prone_microloop");
+                break;
+        }
 
-        if (_catalog.Find(LifecycleCandidateBehaviorIds.ProneIdleMicroloop)?.RuntimeEnabled == true)
-            candidates.Add((LifecycleCandidateBehaviorIds.ProneIdleMicroloop, 0.62 + Comfort * 0.16, "autonomous:stable_prone_microloop"));
+        if (candidates.Count == 0)
+            return (_catalog.RequiredIdle.BehaviorId, "autonomous:fallback_runtime_idle");
 
-        if (elapsed >= TimeSpan.FromSeconds(45) && _catalog.Find(LifecycleCandidateBehaviorIds.LivelyDailyP2)?.RuntimeEnabled == true)
-            candidates.Add((LifecycleCandidateBehaviorIds.LivelyDailyP2, 0.34 + Curiosity * 0.32 + Mood * 0.10 - Stress * 0.20, "autonomous:low_frequency_lively_daily"));
+        var adjusted = candidates.Select(candidate =>
+        {
+            var repeated = string.Equals(candidate.BehaviorId, _currentBehaviorId, StringComparison.OrdinalIgnoreCase);
+            var recent = _lastAccepted.TryGetValue(candidate.BehaviorId, out var last) && _now() - last < TimeSpan.FromSeconds(70);
+            var penalty = repeated ? 0.62 : recent ? 0.78 : 1.0;
+            return candidate with { Score = Math.Max(0.05, candidate.Score * penalty) };
+        }).ToArray();
+        var total = adjusted.Sum(x => x.Score);
+        var draw = _random.NextDouble() * total;
+        foreach (var candidate in adjusted)
+        {
+            draw -= candidate.Score;
+            if (draw <= 0)
+                return (candidate.BehaviorId, candidate.Reason);
+        }
+        var fallback = adjusted[^1];
+        return (fallback.BehaviorId, fallback.Reason);
+    }
 
-        return candidates
-            .Select(x => x with { Score = x.Score + _random.NextDouble() * 0.08 })
-            .OrderByDescending(x => x.Score)
-            .First() is var selected
-            ? (selected.BehaviorId, selected.Reason)
-            : (Phase15BehaviorIds.ProneBreath, "autonomous:fallback_breath");
+    private void AddIfEnabled(List<(string BehaviorId, double Score, string Reason)> candidates, string behaviorId, double score, string reason)
+    {
+        if (_catalog.Find(behaviorId) is { RuntimeEnabled: true })
+            candidates.Add((behaviorId, Math.Max(0.05, score), reason));
     }
 
     private void UpdateDecision(PetActionResult result, string source, string reasonCode, string userFacing)
@@ -1794,6 +2429,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     }
 
     private static double Clamp01(double value) => Math.Clamp(value, 0, 1);
+
+    private string BuildBehaviorAgentSnapshot()
+    {
+        var decision = _lastAgentDecision is null
+            ? "none"
+            : $"{_lastAgentDecision.SelectedActionId} {_lastAgentDecision.StartPosture}->{_lastAgentDecision.EndPosture} mood={_lastAgentDecision.MoodExpression} style={_lastAgentDecision.DialogueStyle}";
+        return $"enabled={EnableBehaviorAgentMock}; posture={_agentState.CurrentPosture}; energy={_agentState.Energy:0.00}; hunger={_agentState.Hunger:0.00}; social={_agentState.SocialNeed:0.00}; boredom={_agentState.Boredom:0.00}; stress={_agentState.Stress:0.00}; mood={_agentState.MoodValence:0.00}; arousal={_agentState.Arousal:0.00}; temperament=({_temperament.Activity},{_temperament.Attachment},{_temperament.Sensitivity},{_temperament.Independence},{_temperament.Mischief}); last_decision={decision}";
+    }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

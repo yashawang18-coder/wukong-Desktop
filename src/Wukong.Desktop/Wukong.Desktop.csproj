@@ -31,5 +31,9 @@
              LinkBase="WukongAssets"
              CopyToOutputDirectory="PreserveNewest"
              CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\config\defaults\**\*"
+             LinkBase="WukongDefaults"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

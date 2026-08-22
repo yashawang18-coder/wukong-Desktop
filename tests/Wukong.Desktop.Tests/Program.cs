@@ -4,8 +4,10 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Wukong.Application;
 using Wukong.Desktop;
 using Wukong.Domain;
 
@@ -30,13 +32,21 @@ var tests = new (string Name, Action Run)[]
     ("desktop chat keyboard semantics distinguish send and newline", DesktopChatKeyboardSemantics),
     ("desktop chat sensor is limited to lower blank region", DesktopChatSensorIsLimited),
     ("desktop chat placement stays visible at all corners", DesktopChatPlacementStaysVisible),
+    ("double click targets compact chat and initiative speech stays low frequency", DesktopChatAndInitiativeContract),
     ("main window pet scale changes image size", MainWindowPetScaleChangesImageSize),
     ("initial placement stays in work area", InitialPlacementStaysInWorkArea),
     ("phase15 motion assets are copied and decodable", Phase15MotionAssetsAreCopiedAndDecodable),
     ("lifecycle microloop candidates are indexed and gated", LifecycleMicroloopCandidatesAreIndexedAndGated),
     ("developer lifecycle candidate can request playback", DeveloperLifecycleCandidateCanRequestPlayback),
     ("command action candidates are indexed and validated", CommandActionCandidatesAreIndexed),
+    ("behavior agent command mock assets are indexed and gated", BehaviorAgentCommandMockAssetsAreIndexedAndGated),
     ("command candidates stay out of autonomous and production commands", CommandCandidatesStayGated),
+    ("behavior agent mock owner command uses posture branch", BehaviorAgentMockOwnerCommandUsesPostureBranch),
+    ("approved owner commands tolerate missing posture bridge assets", ApprovedOwnerCommandsTolerateMissingPostureBridgeAssets),
+    ("command completion holds the exact terminal frame", CommandCompletionHoldsExactTerminalFrame),
+    ("reported commands keep rendered size at terminal hold", ReportedCommandTerminalHoldsKeepRenderScale),
+    ("command groups share one batch visual scale", CommandGroupsShareOneBatchVisualScale),
+    ("behavior agent mock closed keeps formal runtime unchanged", BehaviorAgentMockClosedKeepsFormalRuntime),
     ("developer forced command candidate can request playback", DeveloperForcedCommandCandidateCanRequestPlayback),
     ("magic candidate assets are indexed and validated", MagicCandidateAssetsAreIndexed),
     ("car ride candidate assets are indexed and gated", CarRideCandidateAssetsAreIndexedAndGated),
@@ -54,8 +64,10 @@ var tests = new (string Name, Action Run)[]
     ("main window context menu matches owner action contract", MainWindowContextMenuMatchesContract),
     ("broom direction quantizer covers eight directions", BroomDirectionQuantizerCoversEightDirections),
     ("car ride direction quantizer matches v8 directions", CarRideDirectionQuantizerMatchesV8Directions),
+    ("showcase durations and physical routes stay bounded", ShowcaseDurationsAndPhysicalRoutesStayBounded),
     ("apparate target stays visible and relocates", ApparateTargetStaysVisibleAndRelocates),
     ("control panel exposes magic specials tab", ControlPanelExposesMagicSpecialsTab),
+    ("expired asset cards are gray but remain previewable", ExpiredAssetCardsAreGrayButRemainPreviewable),
     ("control panel car ride copy matches approved runtime state", ControlPanelCarRideCopyMatchesApprovedRuntimeState),
     ("control panel tab buttons share visual metrics", ControlPanelTabButtonsShareVisualMetrics),
     ("gesture interpreter distinguishes touch stroke drag and rapid tap", GestureInterpreterDistinguishesGestures),
@@ -238,8 +250,8 @@ static int CapturePanelScreens(string outputRoot)
             Environment.SetEnvironmentVariable("WUKONG_ALBUM_ROOT", screenshotAlbumRoot);
             var panel = new ControlPanelWindow(new DesktopRuntimeHost())
             {
-                Width = 1180,
-                Height = 760
+                Width = 1360,
+                Height = 880
             };
             app.MainWindow = panel;
             panel.Show();
@@ -266,6 +278,12 @@ static int CapturePanelScreens(string outputRoot)
             CapturePanel(panel, outputRoot, "assets-normal-base.png");
             ClickNamedButton(panel, "CommandAssetsTabButton");
             CapturePanel(panel, outputRoot, "assets-normal-command.png");
+            if (panel.FindName("CommandAssetsPanel") is ScrollViewer commandAssetsPanel)
+            {
+                commandAssetsPanel.ScrollToEnd();
+                panel.UpdateLayout();
+                CapturePanel(panel, outputRoot, "assets-normal-command-expired.png");
+            }
             ClickNamedButton(panel, "MagicAssetsTabButton");
             CapturePanel(panel, outputRoot, "assets-magic-specials.png");
             CaptureVisualSizeComparison(outputRoot);
@@ -316,16 +334,16 @@ static void CaptureVisualSizeComparison(string outputRoot)
 {
     var runtime = new DesktopRuntimeHost();
     var reference = runtime.ReferenceVisualFramePath;
-    var normal = runtime.Motions.First(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle);
+    var normal = runtime.Motions.First(x => x.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop);
     var magic = runtime.MagicMotions.First(x => x.BehaviorId == MagicBehaviorIds.AccioBroom);
-    var coin = runtime.MagicMotions.First(x => x.BehaviorId == MagicBehaviorIds.PetrificusTotalus);
+    var petrified = runtime.MagicMotions.First(x => x.BehaviorId == MagicBehaviorIds.PetrificusTotalus);
     var carRide = runtime.CarRideCandidateMotions.Single();
     var carRoot = Path.Combine(Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!, "WukongAssets", "action-batches", CarRideBehaviorIds.AssetBatch);
     var samples = new[]
     {
         (Label: "normal", Frame: normal.FirstFrame, Scale: normal.VisualScale),
         (Label: "magic", Frame: magic.FirstFrame, Scale: magic.VisualScale),
-        (Label: "coin", Frame: coin.FirstFrame, Scale: coin.VisualScale),
+        (Label: "petrified", Frame: petrified.FirstFrame, Scale: petrified.VisualScale),
         (Label: "car right", Frame: Path.Combine(carRoot, "sequences", "directions", "right", "frame-001.png"), Scale: carRide.VisualScale),
         (Label: "car front", Frame: Path.Combine(carRoot, "sequences", "directions", "front", "frame-001.png"), Scale: carRide.VisualScale),
         (Label: "car rear", Frame: Path.Combine(carRoot, "sequences", "directions", "rear", "frame-001.png"), Scale: carRide.VisualScale),
@@ -492,6 +510,13 @@ static void ControlPanelXamlConstructs()
             Assert(panel.FindName("UseShortTermMemoryCheck") is ToggleButton, "short term memory switch missing");
             Assert(panel.FindName("OwnerBirthdayPicker") is DatePicker, "owner birthday field missing");
             Assert(panel.FindName("OwnerPetCallNameText") is TextBox, "owner pet call name field missing");
+            var prompt = panel.FindName("PetPromptText") as TextBox;
+            Assert(prompt?.ContextMenu is not null, "pet prompt context menu missing");
+            var promptCommands = prompt!.ContextMenu!.Items.OfType<MenuItem>().Select(x => x.Command).ToArray();
+            Assert(promptCommands.Contains(ApplicationCommands.Cut) &&
+                   promptCommands.Contains(ApplicationCommands.Copy) &&
+                   promptCommands.Contains(ApplicationCommands.Paste) &&
+                   promptCommands.Contains(ApplicationCommands.Delete), "pet prompt basic editing commands missing");
             Assert(panel.FindName("PetHarnessCombo") is null, "removed pet harness field is still registered");
             Assert(panel.FindName("OwnerToneCombo") is null, "removed owner tone field is still registered");
             panel.Close();
@@ -556,7 +581,7 @@ static void DesktopChatSensorIsLimited()
 static void DesktopChatPlacementStaysVisible()
 {
     var workArea = new Rect(0, 0, 1280, 720);
-    var overlay = new Size(420, 286);
+    var overlay = new Size(400, 210);
     var pets = new[]
     {
         new Rect(0, 0, 320, 320),
@@ -572,6 +597,20 @@ static void DesktopChatPlacementStaysVisible()
     }
     var bottomPosition = DesktopChatPlacement.Place(workArea, pets[2], overlay);
     Assert(bottomPosition.Y < pets[2].Top, "chat should open upward near the bottom edge");
+    Assert(Math.Abs(pets[2].Top - (bottomPosition.Y + overlay.Height) - DesktopChatPlacement.PetGap) < 0.001, "chat should stay close above the pet");
+}
+
+static void DesktopChatAndInitiativeContract()
+{
+    Assert(MainWindow.OpensChatOnGesture(PetGestureKind.DoubleClick), "double click should open chat");
+    Assert(!MainWindow.OpensChatOnGesture(PetGestureKind.OwnerTouch), "single touch must not open chat");
+    var first = InitiativeSpeechSchedule.NextInterval(new Random(42));
+    var second = InitiativeSpeechSchedule.NextInterval(new Random(42));
+    Assert(first == second, "initiative interval should be deterministic for a fixed random seed");
+    Assert(first >= TimeSpan.FromMinutes(3) && first <= TimeSpan.FromMinutes(7), "initiative speech is not low frequency");
+    Assert(!InitiativeSpeechSchedule.CanSpeakDuring("wk.magic.apparate", false), "magic should suppress initiative speech");
+    Assert(!InitiativeSpeechSchedule.CanSpeakDuring("wk.interaction.car_ride", false), "car ride should suppress initiative speech");
+    Assert(InitiativeSpeechSchedule.CanSpeakDuring("wk.lifecycle.stand_idle_microloop", false), "stable idle should allow initiative speech");
 }
 
 static void MainWindowPetScaleChangesImageSize()
@@ -696,13 +735,19 @@ static void LifecycleMicroloopCandidatesAreIndexedAndGated()
     Assert(microCycles.SequenceEqual(new[] { 7240, 7680, 8900 }), "microloop cycle durations changed");
 
     var catalog = DesktopMotionCatalog.Load(output);
-    var lifecycle = catalog.Motions.Where(x => x.Category == "候选动作").ToArray();
+    var lifecycle = catalog.Motions.Where(x => x.AssetBatch == LifecycleCandidateBehaviorIds.AssetBatch).ToArray();
     Assert(lifecycle.Length == 4, "lifecycle candidates were not indexed");
+    Assert(lifecycle.All(x => x.Category == "基础动作"), "approved lifecycle motions must appear under basic assets");
     Assert(lifecycle.All(x => x.RuntimeEnabled), "P3 lifecycle candidates must be enabled for autonomous runtime");
+    Assert(lifecycle.All(x => x.VisualScale is > 0.91 and < 0.93), "approved basic motions must use the shared 0.92 pet scale");
     Assert(lifecycle.All(x => x.CandidateProfile == "developer_lifecycle_microloops_v2"), "candidate profile was not preserved");
     Assert(lifecycle.Single(x => x.BehaviorId == LifecycleCandidateBehaviorIds.LivelyDailyP2).Phases.Select(x => x.Name).SequenceEqual(new[] { "intro", "loop", "exit", "interrupt_exit", "fallback" }), "full lifecycle phases are wrong");
     Assert(lifecycle.Single(x => x.BehaviorId == LifecycleCandidateBehaviorIds.StandIdleMicroloop).Phases.Single().DurationTotalMs(180) == 7240, "stand microloop timing changed");
     Assert(lifecycle.Single(x => x.BehaviorId == LifecycleCandidateBehaviorIds.LivelyDailyP2).MissingContent == "None", "approved lifecycle motion still reports missing runtime content");
+
+    var legacyProne = catalog.Motions.Where(x => x.BehaviorId is Phase15BehaviorIds.ProneIdle or Phase15BehaviorIds.ProneBreath or Phase15BehaviorIds.ProneIdleV3Candidate).ToArray();
+    Assert(legacyProne.All(x => !x.RuntimeEnabled && x.Disposition == "已过期"), "legacy prone idle assets must remain archived and runtime disabled");
+    Assert(catalog.RequiredIdle.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop, "runtime idle must use the approved P2 prone microloop");
 }
 
 static void DeveloperLifecycleCandidateCanRequestPlayback()
@@ -712,10 +757,6 @@ static void DeveloperLifecycleCandidateCanRequestPlayback()
     int? requestedSize = null;
     runtime.MotionRequested += (_, item) => request = item;
     runtime.PetPixelSizeRequested += (_, pixels) => requestedSize = pixels;
-
-    var ownerResult = runtime.SubmitContextMenuIntentAsync(new SemanticIntent(SemanticIntentKind.Quiet, NaturalLanguage: "test")).GetAwaiter().GetResult();
-    Assert(ownerResult == PetActionResult.Accepted, "test setup idle request failed");
-    request = null;
 
     var normal = runtime.SubmitOwnerCommandAsync("\u505c").GetAwaiter().GetResult();
     Assert(normal == PetActionResult.Interrupted, "stop path changed");
@@ -728,6 +769,9 @@ static void DeveloperLifecycleCandidateCanRequestPlayback()
     Assert(request.Motion.HasVariableFrameDurations, "lifecycle candidate did not preserve per-frame durations");
     runtime.RequestPetPixelSize(192);
     Assert(requestedSize == 192, "developer size switch did not emit 192px request");
+    runtime.CompleteMotion(LifecycleCandidateBehaviorIds.LivelyDailyP2, "exit");
+    Assert(runtime.CurrentStablePosture == StablePosture.Stand, "full lifecycle exit must finish in stable stand");
+    Assert(request.Motion.BehaviorId == LifecycleCandidateBehaviorIds.StandIdleMicroloop, "full lifecycle exit did not enter stand microloop");
 }
 
 static void CommandActionCandidatesAreIndexed()
@@ -760,9 +804,10 @@ static void CommandActionCandidatesAreIndexed()
     }
 
     var catalog = DesktopMotionCatalog.Load(output);
-    var commandMotions = catalog.Motions.Where(x => x.Category == "口令动作").ToArray();
+    var commandMotions = catalog.Motions.Where(x => x.AssetBatch == "WK-COMMAND-ACTION-CANDIDATES-v3").ToArray();
     Assert(commandMotions.Length == 4, "command candidates were not indexed");
     Assert(commandMotions.All(x => !x.RuntimeEnabled), "command candidates must remain runtime locked");
+    Assert(commandMotions.All(x => x.Disposition == "已过期"), "legacy command candidates must be marked expired in the panel");
     Assert(commandMotions.All(x => x.FrameCount is 8 or 9 or 10), "command candidate frame counts wrong");
 }
 
@@ -773,12 +818,17 @@ static void CommandCandidatesStayGated()
     runtime.MotionRequested += (_, item) => request = item;
 
     var command = runtime.SubmitOwnerCommandAsync("手").GetAwaiter().GetResult();
-    Assert(command == PetActionResult.Deferred, "unapproved command candidate should defer for production command");
-    Assert(request is null, "production command bypassed runtime candidate gate");
+    Assert(command == PetActionResult.Accepted, "owner command candidate should be accepted for approved manual runtime");
+    Assert(request is not null, "owner command candidate did not request playback");
+    Assert(request!.Motion.AssetBatch == CommandMockBehaviorIds.AssetBatch, "owner command did not use isolated command candidate assets");
+    Assert(!request.Motion.PrototypeUse, "approved owner command must not use prototype preview");
+    Assert(request.Motion.RuntimeEnabled, "approved owner command must be runtime enabled");
+    Assert(request.ExecutionMode == BehaviorExecutionMode.Normal, "approved owner command must use Normal execution mode");
 
     typeof(DesktopRuntimeHost)
         .GetField("_currentStartedAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
         .SetValue(runtime, DateTimeOffset.Now - TimeSpan.FromSeconds(30));
+    request = null;
     runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
     Assert(request is null || !request.Motion.BehaviorId.StartsWith("wk.command.", StringComparison.Ordinal), "autonomous pool selected command candidate");
     Assert(request is null || !request.Motion.BehaviorId.StartsWith("wk.magic.", StringComparison.Ordinal), "autonomous pool selected magic candidate");
@@ -797,6 +847,199 @@ static void DeveloperForcedCommandCandidateCanRequestPlayback()
     Assert(request.Motion.FrameCount == 8, "jump candidate frame count wrong");
 }
 
+static void BehaviorAgentCommandMockAssetsAreIndexedAndGated()
+{
+    var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
+    var manifestPath = Path.Combine(output, "WukongAssets", "action-mocks", CommandMockBehaviorIds.AssetBatch, "manifest.json");
+    Assert(File.Exists(manifestPath), "behavior agent command mock manifest was not copied to output");
+
+    using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+    var root = manifest.RootElement;
+    Assert(root.GetProperty("motion_design_approved").GetBoolean(), "mock motion design must be approved");
+    Assert(root.GetProperty("production_asset").GetBoolean(), "approved command assets must be production assets");
+    Assert(root.GetProperty("visual_approved").GetBoolean(), "approved command visuals must be marked approved");
+    Assert(root.GetProperty("runtime_approved").GetBoolean(), "approved command assets must be runtime approved");
+    Assert(root.GetProperty("runtime_use").GetBoolean(), "approved command assets must enable runtime use");
+    Assert(!root.GetProperty("prototype_use").GetBoolean(), "approved command assets must not use prototype preview");
+    Assert(root.GetProperty("asset_stage").GetString() == "runtime_approved_owner_command", "command candidate stage mismatch");
+
+    var actions = root.GetProperty("actions").EnumerateArray().ToArray();
+    Assert(actions.Length == 8, "command candidate manifest must include eight posture-aware command branches");
+    foreach (var action in actions)
+    {
+        Assert(action.GetProperty("runtime_approved").GetBoolean(), "approved command action was not runtime approved");
+        Assert(action.GetProperty("runtime_use").GetBoolean(), "approved command action did not enable runtime use");
+        Assert(!action.GetProperty("prototype_use").GetBoolean(), "approved command action still uses prototype preview");
+        var frames = action.GetProperty("frames").EnumerateArray().ToArray();
+        Assert(frames.Length == action.GetProperty("frame_count").GetInt32(), "mock action frame count mismatch");
+        foreach (var frame in frames)
+        {
+            var framePath = Path.Combine(Path.GetDirectoryName(manifestPath)!, frame.GetProperty("path").GetString()!.Replace('/', Path.DirectorySeparatorChar));
+            Assert(File.Exists(framePath), $"mock frame missing: {framePath}");
+            Assert(new FileInfo(framePath).Length == frame.GetProperty("bytes").GetInt64(), "mock frame byte length mismatch");
+            Assert(Sha256(framePath) == frame.GetProperty("sha256").GetString(), "mock frame sha256 mismatch");
+            using var stream = File.OpenRead(framePath);
+            var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+            var bitmap = decoder.Frames.Single();
+            Assert(bitmap.PixelWidth == frame.GetProperty("width").GetInt32() && bitmap.PixelHeight == frame.GetProperty("height").GetInt32(), "command candidate frame dimensions changed");
+            Assert(HasAlpha(bitmap.Format), "mock frame is not alpha-capable");
+        }
+    }
+
+    var runtime = new DesktopRuntimeHost();
+    Assert(runtime.CommandMotionMockMotions.Count == 8, "runtime did not index behavior agent command candidates");
+    Assert(runtime.CommandMotionMockMotions.All(x => x.Category == "口令动作"), "approved command candidates must appear in command asset category");
+    Assert(runtime.CommandMotionMockMotions.All(x => x.RuntimeEnabled && !x.PrototypeUse), "command candidates must be approved for manual owner runtime");
+}
+
+static void BehaviorAgentMockOwnerCommandUsesPostureBranch()
+{
+    var runtime = new DesktopRuntimeHost();
+    runtime.SetBehaviorAgentMockEnabled(true);
+    runtime.UpdateBehaviorAgentMock(TemperamentProfile.Default, PetRuntimeState.Default with { CurrentPosture = StablePosture.Prone }, RelationshipState.Default, 31);
+    PetMotionRequest? request = null;
+    runtime.MotionRequested += (_, item) => request = item;
+
+    var result = runtime.SubmitOwnerCommandAsync("手").GetAwaiter().GetResult();
+
+    Assert(result == PetActionResult.Accepted, "enabled behavior agent mock should accept owner paw command");
+    Assert(request is not null, "enabled behavior agent mock did not request playback");
+    Assert(request!.Motion.BehaviorId == MockCommandActionIds.PawProne, "prone paw command did not choose PawProne branch");
+    Assert(runtime.CurrentStablePosture == StablePosture.Prone, "paw prone should keep prone posture");
+    Assert(runtime.BehaviorAgentSnapshot.Contains(MockCommandActionIds.PawProne, StringComparison.Ordinal), "developer snapshot missing selected mock action");
+}
+
+static void ApprovedOwnerCommandsTolerateMissingPostureBridgeAssets()
+{
+    var runtime = new DesktopRuntimeHost();
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, item) => requests.Add(item);
+
+    var sit = runtime.SubmitOwnerCommandAsync("坐").GetAwaiter().GetResult();
+    Assert(sit == PetActionResult.Accepted, "sit command was not accepted");
+    Assert(runtime.CurrentStablePosture == StablePosture.Sit, "sit command did not update stable posture");
+    runtime.CompleteMotion(MockCommandActionIds.Sit, "test_complete");
+
+    var spin = runtime.SubmitOwnerCommandAsync("转圈").GetAwaiter().GetResult();
+    Assert(spin == PetActionResult.Accepted, "spin from sit should play available spin while recording missing bridge");
+    Assert(requests.Last().Motion.BehaviorId == MockCommandActionIds.Spin, "spin from sit did not select spin action");
+    Assert(requests.Last().Motion.Phases.Any(x => x.Name.Contains(MockCommandActionIds.Spin, StringComparison.Ordinal)), "spin action frames were not included after missing bridge");
+    Assert(requests.Last().Motion.RuntimeEnabled && requests.Last().ExecutionMode == BehaviorExecutionMode.Normal, "spin command did not stay on approved Normal path");
+}
+
+static void CommandCompletionHoldsExactTerminalFrame()
+{
+    var runtime = new DesktopRuntimeHost();
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, item) => requests.Add(item);
+
+    Assert(runtime.SubmitOwnerCommandAsync("坐").GetAwaiter().GetResult() == PetActionResult.Accepted, "sit command was not accepted");
+    var command = requests.Last().Motion;
+    var terminal = command.Phases.SelectMany(x => x.Frames).Last();
+    var commandRenderScale = MotionVisualSizer.RenderScaleForMotion(command, runtime.ReferenceVisualFramePath);
+    runtime.CompleteMotion(command.BehaviorId, "completed");
+
+    var hold = requests.Last().Motion;
+    var holdRenderScale = MotionVisualSizer.RenderScaleForMotion(hold, runtime.ReferenceVisualFramePath);
+    Assert(hold.BehaviorId == "wk.runtime.posture_hold.sit", "command did not enter stable sit hold");
+    Assert(hold.Phases.Count == 1 && hold.Phases[0].Loop, "terminal hold must be a single looping phase");
+    Assert(hold.FirstFrame == terminal && hold.FrameCount == 1, "terminal hold flashed to an unrelated frame");
+    Assert(Math.Abs(holdRenderScale - commandRenderScale) < 0.000001, $"terminal hold changed rendered size from {commandRenderScale:0.000000} to {holdRenderScale:0.000000}");
+    Assert(hold.AssetBatch == command.AssetBatch, "terminal hold lost command asset provenance");
+    Assert(requests.Last().ReturnToIdle && requests.Last().LoopCycles == 2, "terminal hold must settle briefly instead of freezing indefinitely");
+
+    runtime.CompleteMotion(hold.BehaviorId, "settled");
+    Assert(requests.Last().Motion.BehaviorId == LifecycleCandidateBehaviorIds.SitIdleMicroloop, "settled sit command did not enter the approved sit microloop");
+    Assert(Math.Abs(MotionVisualSizer.RenderScaleForMotion(requests.Last().Motion, runtime.ReferenceVisualFramePath) - holdRenderScale) < 0.000001, "sit microloop did not inherit the command batch scale");
+}
+
+static void ReportedCommandTerminalHoldsKeepRenderScale()
+{
+    var cases = new[]
+    {
+        (Command: "Down", Posture: StablePosture.Sit),
+        (Command: "Paw", Posture: StablePosture.Prone),
+        (Command: "Jump", Posture: StablePosture.Stand),
+        (Command: "Eat", Posture: StablePosture.Prone)
+    };
+
+    foreach (var item in cases)
+    {
+        var runtime = new DesktopRuntimeHost();
+        runtime.UpdateBehaviorAgentMock(
+            TemperamentProfile.Default,
+            PetRuntimeState.Default with { CurrentPosture = item.Posture },
+            RelationshipState.Default,
+            seed: 83);
+        var requests = new List<PetMotionRequest>();
+        runtime.MotionRequested += (_, request) => requests.Add(request);
+
+        Assert(runtime.SubmitOwnerCommandAsync(item.Command).GetAwaiter().GetResult() == PetActionResult.Accepted, $"{item.Command} command was not accepted");
+        var command = requests.Last().Motion;
+        var terminal = command.Phases.SelectMany(x => x.Frames).Last();
+        var commandRenderScale = MotionVisualSizer.RenderScaleForMotion(command, runtime.ReferenceVisualFramePath);
+        runtime.CompleteMotion(command.BehaviorId, "completed");
+
+        var hold = requests.Last().Motion;
+        var holdRenderScale = MotionVisualSizer.RenderScaleForMotion(hold, runtime.ReferenceVisualFramePath);
+        Assert(hold.BehaviorId.StartsWith("wk.runtime.posture_hold.", StringComparison.Ordinal), $"{item.Command} did not enter a stable posture hold");
+        Assert(hold.Phases.Count == 1 && hold.Phases[0].Loop, $"{item.Command} terminal hold must be a single looping phase");
+        Assert(hold.FirstFrame == terminal && hold.FrameCount == 1, $"{item.Command} terminal hold flashed to an unrelated frame");
+        Assert(Math.Abs(holdRenderScale - commandRenderScale) < 0.000001, $"{item.Command} terminal hold changed rendered size from {commandRenderScale:0.000000} to {holdRenderScale:0.000000}");
+        Assert(hold.AssetBatch == command.AssetBatch, $"{item.Command} terminal hold lost command asset provenance");
+        Assert(requests.Last().ReturnToIdle && requests.Last().LoopCycles == 2, $"{item.Command} terminal hold must be finite");
+
+        runtime.CompleteMotion(hold.BehaviorId, "settled");
+        var expectedIdle = runtime.CurrentStablePosture switch
+        {
+            StablePosture.Stand => LifecycleCandidateBehaviorIds.StandIdleMicroloop,
+            StablePosture.Sit => LifecycleCandidateBehaviorIds.SitIdleMicroloop,
+            StablePosture.Prone => LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
+            _ => throw new InvalidOperationException("unexpected posture")
+        };
+        Assert(requests.Last().Motion.BehaviorId == expectedIdle, $"{item.Command} did not enter its posture-compatible microloop after settling");
+        Assert(Math.Abs(MotionVisualSizer.RenderScaleForMotion(requests.Last().Motion, runtime.ReferenceVisualFramePath) - holdRenderScale) < 0.000001, $"{item.Command} posture microloop changed scale after settling");
+    }
+}
+
+static void CommandGroupsShareOneBatchVisualScale()
+{
+    var runtime = new DesktopRuntimeHost();
+    var motions = runtime.CommandMotionMockMotions
+        .Where(x => x.RuntimeEnabled && !x.PrototypeUse)
+        .ToArray();
+    Assert(motions.Length == 8, "expected all eight approved command branches");
+    Assert(motions.All(x => x.ScaleReferenceFrames is { Count: 1 }), "command groups must declare one shared scale reference");
+    Assert(motions.Select(x => x.ScaleReferenceFrames![0]).Distinct(StringComparer.OrdinalIgnoreCase).Count() == 1, "command groups do not share the same scale reference frame");
+
+    var scales = motions
+        .Select(x => MotionVisualSizer.RenderScaleForMotion(x, runtime.ReferenceVisualFramePath))
+        .ToArray();
+    Assert(scales.Max() - scales.Min() < 0.000001, $"command group scales diverged: {string.Join(", ", scales.Select(x => x.ToString("0.000000")))}");
+    var previewSizes = motions.Select(x => x.PreviewRenderSize).ToArray();
+    Assert(previewSizes.Max() - previewSizes.Min() < 0.000001, "command asset previews do not use the shared batch scale");
+}
+
+static void BehaviorAgentMockClosedKeepsFormalRuntime()
+{
+    var runtime = new DesktopRuntimeHost();
+    PetMotionRequest? request = null;
+    runtime.MotionRequested += (_, item) => request = item;
+
+    var command = runtime.SubmitOwnerCommandAsync("手").GetAwaiter().GetResult();
+    Assert(command == PetActionResult.Accepted, "explicit owner command should not require developer mock toggle");
+    Assert(request is not null, "explicit owner command did not request playback");
+    Assert(request!.Motion.AssetBatch == CommandMockBehaviorIds.AssetBatch, "explicit owner command did not use approved command candidates");
+    Assert(!request.Motion.PrototypeUse && request.Motion.RuntimeEnabled, "owner command must use approved Normal runtime");
+
+    runtime.SetBehaviorAgentMockEnabled(true);
+    typeof(DesktopRuntimeHost)
+        .GetField("_currentStartedAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+        .SetValue(runtime, DateTimeOffset.Now - TimeSpan.FromSeconds(60));
+    request = null;
+    runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
+    Assert(request is null || !request.Motion.BehaviorId.StartsWith("wk.command.", StringComparison.Ordinal), "autonomous tick must not trigger command mock assets");
+}
 static void MagicCandidateAssetsAreIndexed()
 {
     var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
@@ -1064,7 +1307,9 @@ static void PetrifiedCoinClicksResetAndDoubleClicksFlip()
     runtime.MotionRequested += (_, item) => requests.Add(item);
     runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
 
-    now += TimeSpan.FromMinutes(10) + TimeSpan.FromSeconds(2);
+    var transition = requests.Last().Motion;
+    var visibleAt = now + TimeSpan.FromMilliseconds(transition.Phases.TakeWhile(x => !x.Loop).Sum(x => x.Frames.Count) * transition.FrameDurationMs);
+    now = visibleAt + TimeSpan.FromMinutes(10) + TimeSpan.FromSeconds(2);
     runtime.RefreshPetrifiedCoinState();
     Assert(runtime.CurrentCoinState == PetrifiedCoinState.Faded, "test setup did not reach faded state");
 
@@ -1097,15 +1342,19 @@ static void PetrifiedCoinTimingIsConfigurable()
         TimeSpan.FromSeconds(2),
         TimeSpan.FromSeconds(4));
     var runtime = new DesktopRuntimeHost(options, () => now);
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, item) => requests.Add(item);
     runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.ControlPanel).GetAwaiter().GetResult();
 
-    now = started + TimeSpan.FromSeconds(1.8);
+    var transition = requests.Last().Motion;
+    var visibleAt = started + TimeSpan.FromMilliseconds(transition.Phases.TakeWhile(x => !x.Loop).Sum(x => x.Frames.Count) * transition.FrameDurationMs);
+    now = visibleAt + TimeSpan.FromMilliseconds(150);
     Assert(runtime.RefreshPetrifiedCoinState(), "custom settle threshold was not used");
     Assert(runtime.CurrentCoinState == PetrifiedCoinState.Flat, "custom settle threshold selected wrong state");
-    now = started + TimeSpan.FromSeconds(3.7);
+    now = visibleAt + TimeSpan.FromSeconds(2.1);
     Assert(runtime.RefreshPetrifiedCoinState(), "custom fade threshold was not used");
     Assert(runtime.CurrentCoinState == PetrifiedCoinState.Faded, "custom fade threshold selected wrong state");
-    now = started + TimeSpan.FromSeconds(5.7);
+    now = visibleAt + TimeSpan.FromSeconds(4.1);
     Assert(runtime.RefreshPetrifiedCoinState(), "custom exhausted threshold was not used");
     Assert(runtime.CurrentCoinState == PetrifiedCoinState.Exhausted, "custom exhausted threshold selected wrong state");
 }
@@ -1119,12 +1368,23 @@ static void PetrifiedCoinDefaultTimingAndVisualScaleAreStable()
     runtime.MotionRequested += (_, item) => requests.Add(item);
 
     runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
-    Assert(requests.Last().Motion.VisualScale > 1.34 && requests.Last().Motion.VisualScale < 1.36, "petrification intro must render at enlarged magic pet scale");
+    var petrify = requests.Last().Motion;
+    var petrifyIntro = petrify.Phases.Single(x => x.Name == "intro");
+    var initialCoin = petrify.Phases.Single(x => x.Loop);
+    Assert(petrifyIntro.VisualScale is > 0.91 and < 0.93, "petrification intro must match the approved pet visual scale");
+    Assert(petrify.VisualScale is > 0.91 and < 0.93, "petrification motion scale is larger than the approved pet visual scale");
+    Assert(initialCoin.VisualScale is > 0.66 and < 0.67, "initial coin frame must use the coin phase scale immediately");
+    Assert(petrify.FrameDurationMs >= 170, "petrification transition is still too fast");
     Assert(runtime.SubmitPetrifiedCoinClickAsync().GetAwaiter().GetResult() == PetActionResult.Accepted, "coin activity reset was not accepted");
+    var explicitCoin = requests.Last().Motion;
+    var initialCoinRenderScale = MotionVisualSizer.RenderScaleForPhase(petrify, initialCoin, runtime.ReferenceVisualFramePath);
+    var explicitCoinRenderScale = MotionVisualSizer.RenderScaleForMotion(explicitCoin, runtime.ReferenceVisualFramePath);
+    Assert(Math.Abs(initialCoinRenderScale - explicitCoinRenderScale) < 0.000001, $"initial coin changed rendered size from {initialCoinRenderScale:0.000000} to {explicitCoinRenderScale:0.000000}");
 
     now = started + TimeSpan.FromSeconds(4.99);
     Assert(!runtime.RefreshPetrifiedCoinState(), "default coin hold changed before five seconds");
     runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusRelease, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
+    Assert(requests.Last().Motion.VisualScale is > 0.91 and < 0.93, "petrification release must match the approved pet visual scale");
     now = started + TimeSpan.FromSeconds(20);
     runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
     Assert(runtime.SubmitPetrifiedCoinClickAsync().GetAwaiter().GetResult() == PetActionResult.Accepted, "retriggered coin activity reset was not accepted");
@@ -1146,23 +1406,26 @@ static void MotionVisualSizingNormalizesAlphaBounds()
 
     var runtime = new DesktopRuntimeHost();
     var reference = runtime.ReferenceVisualFramePath;
-    var normal = runtime.Motions.First(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle);
+    var normal = runtime.Motions.First(x => x.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop);
     var broom = runtime.MagicMotions.First(x => x.BehaviorId == MagicBehaviorIds.AccioBroom);
     var petrify = runtime.MagicMotions.First(x => x.BehaviorId == MagicBehaviorIds.PetrificusTotalus);
+    var command = runtime.CommandMotionMockMotions.First(x => x.BehaviorId == MockCommandActionIds.Sit);
     var requests = new List<PetMotionRequest>();
     runtime.MotionRequested += (_, item) => requests.Add(item);
 
     var normalHeight = VisibleHeightRatio(normal, reference);
     var broomRatio = VisibleHeightRatio(broom, reference) / normalHeight;
     var petrifyRatio = VisibleHeightRatio(petrify, reference) / normalHeight;
+    var commandRatio = VisibleHeightRatio(command, reference) / normalHeight;
 
     runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
     runtime.SubmitPetrifiedCoinClickAsync().GetAwaiter().GetResult();
     var coinRatio = VisibleHeightRatio(requests.Last().Motion, reference) / normalHeight;
 
-    Assert(broomRatio is > 1.20 and < 1.45, $"magic pet visual height ratio was {broomRatio:0.000}");
-    Assert(petrifyRatio is > 1.20 and < 1.45, $"petrification intro visual height ratio was {petrifyRatio:0.000}");
-    Assert(coinRatio is > 0.62 and < 0.72, $"petrified coin visual height ratio was {coinRatio:0.000}");
+    Assert(broomRatio is > 1.42 and < 1.52, $"magic pet visual height ratio was {broomRatio:0.000}");
+    Assert(petrifyRatio is > 0.98 and < 1.02, $"petrification intro visual height ratio was {petrifyRatio:0.000}");
+    Assert(coinRatio is > 0.70 and < 0.75, $"petrified coin visual height ratio was {coinRatio:0.000}");
+    Assert(commandRatio is > 0.98 and < 1.02, $"approved command visual height ratio was {commandRatio:0.000}");
     Assert(broom.VisibleSubjectHeight > 0 && petrify.VisibleSubjectHeight > 0, "visible alpha bounds were not measured");
 }
 
@@ -1181,7 +1444,7 @@ static void StopClearsPetrificationAndRequestsIdle()
     var stop = runtime.StopAsync("test:stop").GetAwaiter().GetResult();
     Assert(stop == PetActionResult.Interrupted, "stop did not return interrupted");
     Assert(!runtime.IsPetrified, "stop did not clear petrified state");
-    Assert(requests.Last().Motion.BehaviorId == Phase15BehaviorIds.ProneIdle, "stop did not request idle recovery");
+    Assert(requests.Last().Motion.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop, "stop did not request approved idle recovery");
 }
 
 static void MainWindowContextMenuMatchesContract()
@@ -1206,8 +1469,11 @@ static void MainWindowContextMenuMatchesContract()
             Assert(playChildren[0].Tag?.ToString() == CarRideBehaviorIds.CarRide, "car ride must be the first play submenu item");
             Assert(playChildren[1].IsEnabled == false, "walk should be shown as locked");
 
-            var commands = topLevelItems.Single(x => x.Items.OfType<MenuItem>().Count() == 6 && x.Items.OfType<MenuItem>().All(child => child.IsEnabled == false));
-            Assert(commands.Items.OfType<MenuItem>().Count() == 6, "command submenu order changed");
+            var commands = topLevelItems.Single(x => Equals(x.Header, "口令"));
+            var commandChildren = commands.Items.OfType<MenuItem>().ToArray();
+            Assert(commandChildren.Select(x => x.Header?.ToString()).SequenceEqual(new[] { "坐", "卧", "手", "跳", "转圈", "吃" }), "command submenu order changed");
+            Assert(commandChildren.All(x => x.IsEnabled), "command mock menu items should be available through BehaviorRequest when mock is enabled");
+            Assert(!commandChildren.Any(x => Equals(x.Header, "停")), "command submenu must not include stop");
 
             var magic = topLevelItems.Single(x => x.Items.OfType<MenuItem>().Any(child => Equals(child.Header, "Accio Broom")));
             Assert(magic.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).SequenceEqual(new[] { "Accio Broom", "Apparate", "Petrificus Totalus", "Scourgify" }), "magic submenu order changed");
@@ -1289,6 +1555,9 @@ static void ControlPanelExposesMagicSpecialsTab()
             _ = EnsureTestApplication();
             var panel = new ControlPanelWindow(new DesktopRuntimeHost());
             Assert(panel.FindName("NormalAssetsPanel") is ScrollViewer, "normal assets panel missing");
+            Assert(panel.FindName("PlayAssetsPanel") is ScrollViewer, "play assets panel missing");
+            var playList = panel.FindName("PlayAssetList") as ItemsControl;
+            Assert(playList is not null, "play asset list missing");
             Assert(panel.FindName("CommandAssetsPanel") is ScrollViewer, "command assets panel missing");
             var commandList = panel.FindName("CommandAssetList") as ItemsControl;
             Assert(commandList is not null, "command asset list missing");
@@ -1296,16 +1565,56 @@ static void ControlPanelExposesMagicSpecialsTab()
             Assert(panel.FindName("LifecycleCandidateList") is ItemsControl, "lifecycle candidate developer list missing");
             var list = panel.FindName("MagicSpecialList") as ItemsControl;
             Assert(list is not null, "magic specials list missing");
-            Assert(commandList!.Items.Count == 4, "command assets tab must display four command candidates");
+            Assert(commandList!.Items.Count == 12, "command assets tab must display eight approved v4 commands plus four expired v3 references");
+            Assert(commandList.Items.OfType<PlayableMotion>().Count(x => x.AssetBatch == CommandMockBehaviorIds.AssetBatch && x.RuntimeEnabled) == 8, "command assets tab must include eight approved v4 commands");
+            Assert(commandList.Items.OfType<PlayableMotion>().Count(x => x.Disposition == "已过期") == 4, "command assets tab must mark four legacy v3 commands expired");
             Assert(list!.Items.Count == 4, "magic specials must display four owner-facing cards");
-            var carRideList = panel.FindName("CarRideSpecialList") as ItemsControl;
-            Assert(carRideList is not null, "car ride specials list missing");
-            Assert(carRideList!.Items.Count == 1, "car ride candidate must display one owner-facing card");
+            Assert(playList!.Items.Count == 1, "play assets tab must display one car ride card");
             var carRideDeveloper = panel.FindName("CarRideCandidateList") as ItemsControl;
             Assert(carRideDeveloper is not null, "developer car ride candidate list missing");
             Assert(carRideDeveloper!.Items.Count == 1, "developer car ride list must display one candidate motion");
             var lifecycle = (ItemsControl)panel.FindName("LifecycleCandidateList")!;
             Assert(lifecycle.Items.Count == 4, "developer lifecycle profile must display four candidate motions");
+            panel.Close();
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+    });
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+    thread.Join();
+    if (failure is not null)
+        throw failure;
+}
+
+static void ExpiredAssetCardsAreGrayButRemainPreviewable()
+{
+    Exception? failure = null;
+    var thread = new Thread(() =>
+    {
+        try
+        {
+            _ = EnsureTestApplication();
+            var runtime = new DesktopRuntimeHost();
+            var panel = new ControlPanelWindow(runtime);
+            var expired = runtime.Motions.First(x => x.Disposition == "已过期");
+            Assert(expired.IsExpired, "expired motion did not expose its visual state");
+            Assert(expired.IsUsable, "expired motion lost its preview frames");
+
+            var cardStyle = (Style)panel.FindResource("AssetCard");
+            var cardTrigger = cardStyle.Triggers.OfType<DataTrigger>().Single();
+            Assert(Convert.ToBoolean(cardTrigger.Value), "expired card trigger value changed");
+            Assert(cardTrigger.Setters.OfType<Setter>().Any(x => x.Property == Border.BackgroundProperty), "expired card does not switch to a gray background");
+            Assert(!cardTrigger.Setters.OfType<Setter>().Any(x => x.Property == UIElement.IsEnabledProperty), "expired card style disables preview interaction");
+
+            var imageStyle = (Style)panel.FindResource("AssetPreviewImage");
+            var imageTrigger = imageStyle.Triggers.OfType<DataTrigger>().Single();
+            Assert(Convert.ToBoolean(imageTrigger.Value), "expired preview trigger value changed");
+            var opacity = imageTrigger.Setters.OfType<Setter>().Single(x => x.Property == UIElement.OpacityProperty);
+            Assert(Convert.ToDouble(opacity.Value) > 0, "expired preview was made invisible");
+            Assert(panel.FindResource("AssetDispositionBadge") is Style, "asset disposition badge style cannot be resolved");
             panel.Close();
         }
         catch (Exception ex)
@@ -1343,6 +1652,7 @@ static void ControlPanelTabButtonsShareVisualMetrics()
                 "NormalAssetsTabButton",
                 "MagicAssetsTabButton",
                 "BaseAssetsTabButton",
+                "PlayAssetsTabButton",
                 "CommandAssetsTabButton"
             };
             foreach (var name in tabNames)
@@ -1371,14 +1681,39 @@ static void ControlPanelCarRideCopyMatchesApprovedRuntimeState()
 {
     var xamlPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Wukong.Desktop", "ControlPanelWindow.xaml"));
     var xaml = File.ReadAllText(xamlPath);
-    Assert(xaml.Contains("Text=\"兜风\"", StringComparison.Ordinal), "owner-facing car ride section title missing");
-    Assert(xaml.Contains("<TextBlock Text=\"正式\" />", StringComparison.Ordinal), "car ride badge must say approved/formal");
-    Assert(xaml.Contains("Text=\"兜风运行调试\"", StringComparison.Ordinal), "developer car ride debug title was not updated");
-    Assert(xaml.Contains("已通过 Windows 验收", StringComparison.Ordinal), "approved car ride runtime explanation missing");
-    Assert(xaml.Contains("不进入自主行为、对话、模型或口令路由", StringComparison.Ordinal), "car ride route restriction copy missing");
+    Assert(xaml.Contains("x:Name=\"PlayAssetsTabButton\"", StringComparison.Ordinal), "play asset tab missing");
+    Assert(xaml.Contains("x:Name=\"PlayAssetList\"", StringComparison.Ordinal), "play asset list missing");
+    Assert(xaml.Contains("Click=\"ShowPlayAsset_Click\"", StringComparison.Ordinal), "play asset execution button missing");
+    Assert(!xaml.Contains("x:Name=\"CarRideSpecialList\"", StringComparison.Ordinal), "car ride still appears inside magic specials");
+    Assert(xaml.Contains("x:Name=\"CarRideCandidateList\"", StringComparison.Ordinal), "developer car ride list missing");
     Assert(!xaml.Contains("Car ride candidate", StringComparison.Ordinal), "control panel still says car ride candidate");
     Assert(!xaml.Contains("not runtime approved", StringComparison.OrdinalIgnoreCase), "control panel still claims car ride is not runtime approved");
     Assert(!xaml.Contains("Owner-only PrototypePreview candidate", StringComparison.Ordinal), "control panel still claims PrototypePreview candidate state");
+}
+
+static void ShowcaseDurationsAndPhysicalRoutesStayBounded()
+{
+    var sampled = Enumerable.Range(1, 64).Select(seed => MainWindow.ChooseShowcaseDuration(new Random(seed))).ToArray();
+    Assert(sampled.All(x => x >= TimeSpan.FromSeconds(10) && x <= TimeSpan.FromSeconds(20)), "broom/car showcase duration left the 10-20 second contract");
+    Assert(sampled.Distinct().Count() > 8, "showcase duration is not meaningfully randomized");
+
+    var workArea = new Rect(0, 0, 1920, 1080);
+    var start = new Point(320, 280);
+    var expectedDuration = TimeSpan.FromSeconds(16);
+    var route = MainWindow.BuildCarRidePhysicalRoute(start, workArea, 320, 320, expectedDuration, new Random(240821));
+    Assert(route.Count >= 5, "car ride route did not retain enough long physical segments");
+    Assert(Math.Abs(route.Sum(x => x.Duration.TotalMilliseconds) - expectedDuration.TotalMilliseconds) < 1, "car ride route duration drifted");
+    Assert(route[0].Easing == MotionEasing.Accelerate && route[^1].Easing == MotionEasing.Decelerate, "car ride did not accelerate and brake at route boundaries");
+
+    var current = start;
+    foreach (var segment in route)
+    {
+        Assert(segment.Duration >= TimeSpan.FromMilliseconds(850), "car ride introduced a short jitter segment");
+        Assert(segment.Target.X >= workArea.Left && segment.Target.X <= workArea.Right - 320, "car ride route left horizontal work area");
+        Assert(segment.Target.Y >= workArea.Top && segment.Target.Y <= workArea.Bottom - 320, "car ride route left vertical work area");
+        Assert(MainWindow.ResolveCarRideDirection(current, segment.Target) == segment.Direction, "car body direction no longer matches window movement");
+        current = segment.Target;
+    }
 }
 static void GestureInterpreterDistinguishesGestures()
 {
@@ -1590,16 +1925,26 @@ static void AlbumMediaUnlinkHandlesPersistenceAndKeepsFiles()
         bindings = item.MediaFiles.Select(x => new AlbumMediaItem(x, Path.Combine(album, x), "found")).ToList();
         var success = AlbumMediaBindingEditor.Unbind("remove.webp", bindings, mediaFiles =>
         {
-            File.WriteAllText(item.MarkdownPath, item.CreateMarkdown("2026-08-15", item.Description, mediaFiles.Select(x => x.FileName).ToArray()), System.Text.Encoding.UTF8);
+            File.WriteAllText(item.MarkdownPath, item.CreateMarkdown("2026-08-15", item.Description, mediaFiles.Where(x => x.IsBound).Select(x => x.FileName).ToArray()), System.Text.Encoding.UTF8);
             return true;
         });
         Assert(success.Status == AlbumMediaUnbindStatus.Success, "normal unlink should succeed");
+        Assert(bindings.Count == 2 && !bindings.Single(x => x.FileName == "remove.webp").IsBound, "unbound record should remain selectable for deletion");
         Assert(File.Exists(removeFile), "unlink must not delete local original file");
         var reloaded = AlbumFolderItem.FromDirectory(album);
         Assert(reloaded.MediaFiles.SequenceEqual(new[] { "keep.webp" }), "restart should preserve the unbound media state");
         var markdown = File.ReadAllText(item.MarkdownPath, System.Text.Encoding.UTF8);
         Assert(markdown.Contains("keep.webp", StringComparison.Ordinal), "remaining binding was not persisted");
         Assert(!markdown.Contains("- `remove.webp`", StringComparison.Ordinal) && !markdown.Contains("- \"remove.webp\"", StringComparison.Ordinal), "removed binding was still persisted");
+
+        var deleteUnbound = AlbumMediaBindingEditor.Delete("remove.webp", bindings, mediaFiles =>
+        {
+            File.WriteAllText(item.MarkdownPath, item.CreateMarkdown("2026-08-15", item.Description, mediaFiles.Where(x => x.IsBound).Select(x => x.FileName).ToArray()), System.Text.Encoding.UTF8);
+            return true;
+        });
+        Assert(deleteUnbound.Status == AlbumMediaUnbindStatus.Success, "unbound record should remain deletable");
+        Assert(bindings.All(x => x.FileName != "remove.webp"), "deleted unbound record remained in the UI model");
+        Assert(File.Exists(removeFile), "deleting an unbound record must not delete the local original");
 
         var deleteItem = AlbumFolderItem.FromDirectory(album);
         bindings = deleteItem.MediaFiles.Select(x => new AlbumMediaItem(x, Path.Combine(album, x), "found")).ToList();
@@ -1621,14 +1966,25 @@ static void AlbumMediaUnlinkHandlesPersistenceAndKeepsFiles()
 static void AutonomousTickCanRequestMotion()
 {
     var runtime = new DesktopRuntimeHost();
-    PetMotionRequest? request = null;
-    runtime.MotionRequested += (_, item) => request = item;
-    typeof(DesktopRuntimeHost)
-        .GetField("_currentStartedAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
-        .SetValue(runtime, DateTimeOffset.Now - TimeSpan.FromSeconds(60));
-    runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
-    Assert(request is not null, "autonomous tick did not leave a playable motion request trail");
-    Assert(request.Motion.BehaviorId is LifecycleCandidateBehaviorIds.ProneIdleMicroloop or LifecycleCandidateBehaviorIds.LivelyDailyP2 or Phase15BehaviorIds.ProneBreath or Phase15BehaviorIds.ProneIdle, "autonomous tick selected an out-of-scope behavior");
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, item) => requests.Add(item);
+    runtime.StartIdle("Startup");
+    Assert(runtime.CurrentStablePosture == StablePosture.Stand, "default healthy runtime state should start in stable stand");
+    Assert(requests.Last().Motion.BehaviorId == LifecycleCandidateBehaviorIds.StandIdleMicroloop, "startup is still hard-coded to prone idle");
+
+    for (var attempt = 0; attempt < 8 && requests.All(x => x.Motion.BehaviorId != LifecycleCandidateBehaviorIds.LivelyDailyP2); attempt++)
+    {
+        typeof(DesktopRuntimeHost)
+            .GetField("_currentStartedAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .SetValue(runtime, DateTimeOffset.Now - TimeSpan.FromSeconds(60));
+        typeof(DesktopRuntimeHost)
+            .GetField("_nextAutonomousDecisionAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .SetValue(runtime, DateTimeOffset.Now - TimeSpan.FromSeconds(1));
+        runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
+    }
+
+    Assert(requests.Any(x => x.Motion.BehaviorId == LifecycleCandidateBehaviorIds.LivelyDailyP2), "state-driven autonomous scheduling never selected the complete lively lifecycle");
+    Assert(requests.All(x => x.Motion.BehaviorId is LifecycleCandidateBehaviorIds.ProneIdleMicroloop or LifecycleCandidateBehaviorIds.SitIdleMicroloop or LifecycleCandidateBehaviorIds.StandIdleMicroloop or LifecycleCandidateBehaviorIds.LivelyDailyP2), "autonomous tick selected an expired or out-of-scope behavior");
 }
 
 static void BootstrapLogRedactsAndDoesNotThrow()

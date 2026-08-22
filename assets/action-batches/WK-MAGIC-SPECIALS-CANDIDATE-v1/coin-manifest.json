@@ -151,6 +151,20 @@
       "runtime_validation": "pending",
       "runtime_approved": false,
       "runtime_use": false
+    },
+    {
+      "date": "2026-08-21",
+      "change": "Repaired the pale cutout fringe on the first two colored coin fronts and vivid/flat flip sequences by recoloring only boundary RGB from inward gold-rim samples; original alpha masks, visible bounds, scale, source backups, and runtime gates remain unchanged.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    },
+    {
+      "date": "2026-08-21",
+      "change": "Removed the opaque white cutout edge from state-01-vivid coin back by applying the established transparent coin silhouette and inward gold-rim colors; preserved canvas size, visible bounds, internal coin artwork, and runtime gates.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
     }
   ],
   "previews": [

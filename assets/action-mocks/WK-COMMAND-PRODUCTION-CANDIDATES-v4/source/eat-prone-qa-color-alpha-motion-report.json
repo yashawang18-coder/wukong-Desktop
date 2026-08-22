@@ -1,0 +1,231 @@
+{
+  "action": "eat-prone",
+  "source_case": "approved cute realistic prone-eating case v2",
+  "status": "production_candidate_owner_qa_pending",
+  "frame_count": 12,
+  "canvas": [
+    1024,
+    1024
+  ],
+  "format": "RGBA PNG",
+  "baseline_contract_y": 900,
+  "durations_ms": [
+    550,
+    240,
+    230,
+    230,
+    230,
+    280,
+    240,
+    250,
+    250,
+    260,
+    320,
+    850
+  ],
+  "total_duration_ms": 3930,
+  "motion_and_expression_preserved": true,
+  "generative_redraw_used": false,
+  "deterministic_improvements": [
+    "orange-region-only drift calibration capped at 4 RGB levels per channel",
+    "fully transparent RGB cleanup",
+    "partial-alpha blue edge clamp",
+    "modern transparent/light/dark GIF outputs and separate review boards",
+    "timing, QA and checksum records"
+  ],
+  "endpoint_policy": "Original approved case endpoints preserved; F01 and F12 are intentionally not forced identical.",
+  "frames": [
+    {
+      "frame": "F01",
+      "bbox": [
+        320,
+        425,
+        706,
+        897
+      ],
+      "visible_bottom_y": 896,
+      "orange_rgb_mean": [
+        212.97,
+        169.39,
+        123.43
+      ],
+      "blue_dominant_nontransparent_pixels": 0
+    },
+    {
+      "frame": "F02",
+      "bbox": [
+        323,
+        507,
+        703,
+        897
+      ],
+      "visible_bottom_y": 896,
+      "orange_rgb_mean": [
+        212.62,
+        167.35,
+        119.35
+      ],
+      "blue_dominant_nontransparent_pixels": 0
+    },
+    {
+      "frame": "F03",
+      "bbox": [
+        320,
+        480,
+        704,
+        897
+      ],
+      "visible_bottom_y": 896,
+      "orange_rgb_mean": [
+        212.21,
+        163.52,
+        113.17
+      ],
+      "blue_dominant_nontransparent_pixels": 0
+    },
+    {
+      "frame": "F04",
+      "bbox": [
+        322,
+        511,
+        702,
+        897
+      ],
+      "visible_bottom_y": 896,
+      "orange_rgb_mean": [
+        212.35,
+        163.44,
+        112.75
+      ],
+      "blue_dominant_nontransparent_pixels": 0
+    },
+    {
+      "frame": "F05",
+      "bbox": [
+        320,
+        514,
+        704,
+        898
+      ],
+      "visible_bottom_y": 897,
+      "orange_rgb_mean": [
+        212.14,
+        164.55,
+        114.05
+      ],
+      "blue_dominant_nontransparent_pixels": 0
+    },
+    {
+      "frame": "F06",
+      "bbox": [
+        318,
+        520,
+        702,
+        897
+      ],
+      "visible_bottom_y": 896,
+      "orange_rgb_mean": [
+        212.3,
+        168.56,
+        122.45
+      ],
+      "blue_dominant_nontransparent_pixels": 0
+    },
+    {
+      "frame": "F07",
+      "bbox": [
+        316,
+        496,
+        708,
+        897
+      ],
+      "visible_bottom_y": 896,
+      "orange_rgb_mean": [
+        212.65,
+        168.49,
+        122.17
+      ],
+      "blue_dominant_nontransparent_pixels": 0
+    },
+    {
+      "frame": "F08",
+      "bbox": [
+        320,
+        476,
+        704,
+        897
+      ],
+      "visible_bottom_y": 896,
+      "orange_rgb_mean": [
+        212.24,
+        169.21,
+        122.75
+      ],
+      "blue_dominant_nontransparent_pixels": 0
+    },
+    {
+      "frame": "F09",
+      "bbox": [
+        323,
+        493,
+        701,
+        897
+      ],
+      "visible_bottom_y": 896,
+      "orange_rgb_mean": [
+        212.55,
+        169.31,
+        122.99
+      ],
+      "blue_dominant_nontransparent_pixels": 0
+    },
+    {
+      "frame": "F10",
+      "bbox": [
+        327,
+        477,
+        696,
+        897
+      ],
+      "visible_bottom_y": 896,
+      "orange_rgb_mean": [
+        212.68,
+        168.72,
+        123.26
+      ],
+      "blue_dominant_nontransparent_pixels": 0
+    },
+    {
+      "frame": "F11",
+      "bbox": [
+        321,
+        493,
+        702,
+        897
+      ],
+      "visible_bottom_y": 896,
+      "orange_rgb_mean": [
+        212.02,
+        168.21,
+        122.4
+      ],
+      "blue_dominant_nontransparent_pixels": 0
+    },
+    {
+      "frame": "F12",
+      "bbox": [
+        323,
+        480,
+        697,
+        897
+      ],
+      "visible_bottom_y": 896,
+      "orange_rgb_mean": [
+        212.45,
+        168.47,
+        122.96
+      ],
+      "blue_dominant_nontransparent_pixels": 0
+    }
+  ]
+}

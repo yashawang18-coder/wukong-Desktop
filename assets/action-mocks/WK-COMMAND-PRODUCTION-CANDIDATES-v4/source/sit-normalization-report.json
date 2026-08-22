@@ -1,0 +1,93 @@
+{
+  "target_head_width": 223.5,
+  "frames": {
+    "001": {
+      "source": "production_action_master_candidate_v3_preview/wukong-master-native-fur-stand-preview-v3.png",
+      "direct_master": true
+    },
+    "002": {
+      "source": "generated_images/exec-2808ee6e-b740-451e-9633-3a0c75329028.png",
+      "source_head_width": 271.72,
+      "scale": 0.82254,
+      "normalized_size": [
+        639,
+        704
+      ],
+      "baseline": 900
+    },
+    "003": {
+      "source": "generated_images/exec-8af46d1e-dd01-4a77-90f7-fc47ab286282.png",
+      "source_head_width": 267.0,
+      "scale": 0.83708,
+      "normalized_size": [
+        610,
+        733
+      ],
+      "baseline": 900
+    },
+    "004": {
+      "source": "generated_images/exec-235f76cb-9ae5-42f3-8602-9ac48ee7268e.png",
+      "source_head_width": 298.34,
+      "scale": 0.74915,
+      "normalized_size": [
+        614,
+        707
+      ],
+      "baseline": 900
+    },
+    "005": {
+      "source": "generated_images/exec-6160c0c2-9296-4d35-a90b-3b5ffc595b46.png",
+      "source_head_width": 313.36,
+      "scale": 0.71324,
+      "normalized_size": [
+        663,
+        654
+      ],
+      "baseline": 900
+    },
+    "006": {
+      "source": "generated_images/exec-2dc266cc-5d4e-4ab5-9256-f13bd9961d24.png",
+      "source_head_width": 277.3,
+      "scale": 0.80599,
+      "normalized_size": [
+        526,
+        698
+      ],
+      "baseline": 900
+    },
+    "007": {
+      "source": "generated_images/exec-d481c74d-3f0a-4608-a403-5f2295d04067.png",
+      "source_head_width": 295.0,
+      "scale": 0.75763,
+      "normalized_size": [
+        565,
+        640
+      ],
+      "baseline": 900
+    },
+    "008": {
+      "source": "generated_images/exec-dbf4ff1c-8b9b-4ede-8ca7-67ce91a85934.png",
+      "source_head_width": 338.0,
+      "scale": 0.66124,
+      "normalized_size": [
+        408,
+        724
+      ],
+      "baseline": 900
+    },
+    "009": {
+      "source": "generated_images/exec-eceb6199-8316-4174-a2ca-90bd6aa6e2f9.png",
+      "source_head_width": 300.2,
+      "scale": 0.7445,
+      "normalized_size": [
+        518,
+        707
+      ],
+      "baseline": 900
+    },
+    "010": {
+      "source": "frame-009 hold",
+      "hold": true
+    }
+  }
+}

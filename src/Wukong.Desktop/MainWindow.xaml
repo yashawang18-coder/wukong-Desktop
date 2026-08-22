@@ -27,13 +27,13 @@
                     <MenuItem Header="&#x6563;&#x6B65;&#xFF08;&#x5F85;&#x89E3;&#x9501;&#xFF09;" IsEnabled="False" />
                 </MenuItem>
                 <Separator />
-                <MenuItem Header="&#x53E3;&#x4EE4;&#xFF08;&#x5F85;&#x89E3;&#x9501;&#xFF09;">
-                    <MenuItem Header="&#x5750;&#xFF08;&#x5F85;&#x89E3;&#x9501;&#xFF09;" IsEnabled="False" />
-                    <MenuItem Header="&#x5367;&#xFF08;&#x5F85;&#x89E3;&#x9501;&#xFF09;" IsEnabled="False" />
-                    <MenuItem Header="&#x505C;&#xFF08;&#x5F85;&#x89E3;&#x9501;&#xFF09;" IsEnabled="False" />
-                    <MenuItem Header="&#x8F6C;&#x5708;&#xFF08;&#x5F85;&#x89E3;&#x9501;&#xFF09;" IsEnabled="False" />
-                    <MenuItem Header="&#x624B;&#xFF08;&#x5F85;&#x89E3;&#x9501;&#xFF09;" IsEnabled="False" />
-                    <MenuItem Header="&#x5403;&#xFF08;&#x5F85;&#x89E3;&#x9501;&#xFF09;" IsEnabled="False" />
+                <MenuItem Header="&#x53E3;&#x4EE4;">
+                    <MenuItem Header="&#x5750;" Tag="&#x5750;" Click="OwnerCommandMenuItem_Click" />
+                    <MenuItem Header="&#x5367;" Tag="&#x5367;" Click="OwnerCommandMenuItem_Click" />
+                    <MenuItem Header="&#x624B;" Tag="&#x624B;" Click="OwnerCommandMenuItem_Click" />
+                    <MenuItem Header="&#x8DF3;" Tag="&#x8DF3;" Click="OwnerCommandMenuItem_Click" />
+                    <MenuItem Header="&#x8F6C;&#x5708;" Tag="&#x8F6C;&#x5708;" Click="OwnerCommandMenuItem_Click" />
+                    <MenuItem Header="&#x5403;" Tag="&#x5403;" Click="OwnerCommandMenuItem_Click" />
                 </MenuItem>
                 <MenuItem Header="&#x5BA0;&#x7269;&#x9B54;&#x6CD5;">
                     <MenuItem Header="Accio Broom" Tag="wk.magic.accio_broom" Click="MagicMenuItem_Click" />

@@ -1,3 +1,14 @@
+## Portable profile, album, and conversation data - 2026-08-22
+
+- Version-controlled, non-secret initial settings live under `config/defaults/` and are published as `WukongDefaults/` beside the executable.
+- On first run, missing defaults are copied into the writable `WukongData/` directory beside the executable. Existing `%LOCALAPPDATA%/Wukong` profile and conversation files are copied only when the corresponding portable file is absent.
+- Pet prompt, pet/owner profile, model endpoint metadata, memory switches, pet scale, conversation history, and album-root preference now use the resolved portable data layout.
+- API keys remain exclusively in Windows Credential Manager and are never copied into portable files.
+- Portable albums belong under `WukongData/albums/`. User albums, conversation history, memory candidates, and credentials are not committed to Git.
+- Clearing the final conversation session deletes `WukongData/agent/conversation-history.json`; the control panel also exposes an explicit clear-all action for preparing a blank shareable package.
+- Double-clicking the visible pet opens and focuses the compact chat window above the pet. Low-frequency initiative speech uses local templates, never invokes a model in the background, and writes to the same removable conversation history.
+- Album unlink now retains a selected, gray record until the user deletes that record; both operations persist through the same Markdown media list and never delete the local original image.
+
 ## WK-INTERACTION-CAR-RIDE-CANDIDATE-v8 runtime promotion - 2026-08-16
 
 Windows owner visual QA passed on 2026-08-16 using the local transparent WPF candidate EXE generated from this branch.
@@ -116,6 +127,17 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
 - They are not added to `contracts/runtime/asset-registry.json`, not included in the autonomous behavior pool, and remain `runtime_validation=failed`, `runtime_approved=false`, `runtime_use=false`.
 - Production command routing may resolve to these stable behavior IDs, but the runtime gate must return `Deferred` until corrected assets pass explicit renderer QA and runtime approval is recorded.
 - The extra seven PNG files in the batch are preview/reference images only: four contact sheets, `all-groups-overview.png`, `shared-prone-proof.png`, and `shared-sit-proof.png`. They are outside every action `frames[]` list and are not registered as playable frames.
+- After the v4 command batch approval, this v3 batch remains visible only as an expired motion reference in the control panel. It is not selected by owner command execution.
+
+## WK-COMMAND-PRODUCTION-CANDIDATES-v4
+
+- Imported from local `wukong-eight-command-production-candidates-v4`.
+- Contains eight owner command branches: Sit, Down, PawSit, PawProne, Jump, Spin, EatSit, and EatProne.
+- The batch now has `motion_design_approved=true`, `production_asset=true`, `visual_approved=true`, `runtime_approved=true`, `runtime_use=true`, `prototype_use=false`, and `asset_stage=runtime_approved_owner_command`.
+- Approved scope: explicit owner command execution from the desktop context menu and the control panel command asset page.
+- Paw and Eat branch by current stable posture: sitting selects the sitting branch, prone selects the prone branch, and stand plans through sit where required.
+- Forbidden sources remain: `AutonomousTick`, dialogue/model routing, startup autoplay, and unrelated interaction paths.
+- The batch is shown under the control panel `普通素材 > 口令动作` group as enabled command material. The older v3 command batch remains listed there as `已过期`.
 
 ## WK-MAGIC-SPECIALS-CANDIDATE-v1
 
@@ -160,3 +182,20 @@ Phase 1 is the smallest honest end-to-end runtime:
 `InputEvent -> Intent -> BehaviorRequest -> Eligibility -> Arbitration -> BehaviorExecution -> AnimationLifecycle -> Outcome -> RuntimeState -> Event/Memory -> Trace`
 
 Before implementation, add or provide the reviewed UX artifact and a pinned Pupu source snapshot as read-only reference, then audit the actual source layout. Phase 1 must not expand into P1-P4 assets, complex long-term learning, cloud sync, macOS, or automatic frame generation.
+
+## 2026-08-21 local command, lifecycle, magic, and UX candidate fixes
+
+- Branch: `agent/personality-state-behavior-mock-v1`; repository stage: local uncommitted candidate.
+- Approved v4 owner commands now hold their exact terminal frame, source batch, and visual scale for a 900 ms settle after completion, then enter the approved microloop for the declared end posture. Sit, Down, Jump, and Eat no longer fall through to an unrelated idle frame or freeze indefinitely.
+- The terminal hold also carries the exact render-scale override computed for the motion that actually ran. Down, Paw, Jump, and Eat therefore do not get re-normalized from a multi-frame sequence into a larger one-frame hold.
+- Autonomous playback is posture-compatible and low frequency. Startup selects stand, sit, or prone from energy, stress, and arousal instead of hard-coding prone; the default healthy state starts in stand. The approved P2 stand-idle, sit-idle, prone-idle, and full lifecycle sequences are the only basic autonomous candidates used by this change. The full lifecycle becomes eligible after minimum dwell when energy and stress permit, with cooldown, repetition suppression, and randomized scheduling rather than continuous cycling.
+- The legacy red/standard basic visuals and the old prone silent-breathing runtime presentation are disabled and shown as `已过期`. Their PNGs, manifests, key poses, and motion-reference value remain intact. `WK-CORE-PRONE-IDLE-LF-v1` remains a `legacy_runtime_candidate` for comparison, with `runtime_use=false`, `motion_reference_usable=true`, and `replacement_evaluation=pending`; this change does not declare it fully superseded.
+- The approved P2 lifecycle PNGs and timings are unchanged.
+- The v4 Down source frame remains preserved. A versioned `down-v2` runtime copy corrects only the blue background pixels below the front leg; frames 2-12 remain byte-identical to the source sequence.
+- The first two colored coin fronts and their flip transitions retain their original dimensions and alpha masks. Only pale boundary RGB contamination was corrected; coin approval gates remain unchanged.
+- The P2 basic lifecycle motions and the v4 command batch share a 0.92 pet presentation scale. This changes runtime presentation only; approved P2 PNGs, hashes, baselines, and timings remain unchanged.
+- Petrification treats the stone dog independently from the accepted coin size: petrify and release use the same 0.92 pet scale and a minimum 170 ms frame duration, while the coin remains at two-thirds of normal visible pet height.
+- Petrification uses phase-level visual sizing: the 17-frame stone-dog intro uses scale 0.92 and the first vivid coin loop frame uses scale 2/3 before it is rendered. Later coin state and flip requests use the same 2/3 policy, removing the large-first-coin transition.
+- Accio Broom and Car Ride showcase durations are selected deterministically within 10-20 seconds. Car Ride uses acceleration, longer straight segments, adjacent direction-ring turn sequences, braking, and work-area constraints.
+- Control-panel spacing, typography, buttons, tabs, fields, setting rows, and toggles share refined design-token styles. No product navigation or behavior-request boundary was bypassed.
+- Automated validation and a new portable EXE are required before this local candidate can be called build-verified. Windows owner visual QA is not yet claimed for these 2026-08-21 changes.

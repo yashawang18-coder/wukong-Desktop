@@ -1,0 +1,448 @@
+{
+  "status": "production_candidate_owner_qa_pending",
+  "canvas": [
+    1024,
+    1024
+  ],
+  "format": "RGBA PNG",
+  "target_head_width_px": 224.0,
+  "target_head_center_x": 500.0,
+  "target_baseline_y": 900,
+  "color_target_orange_mean_rgb": [
+    204.15,
+    157.936,
+    110.675
+  ],
+  "color_calibration_scope": "orange coat pixels only; cream white, eyes, nose, mouth and paw pads excluded",
+  "background_pipeline": "generated on blue; deterministic chroma-key extraction; no subject regeneration during transparency conversion",
+  "motion": {
+    "frame_count": 10,
+    "durations_ms": [
+      550,
+      220,
+      200,
+      200,
+      230,
+      420,
+      330,
+      220,
+      240,
+      800
+    ],
+    "total_duration_ms": 3410,
+    "loop": 0,
+    "source_authority": "approved-paw-sit-motion-preview-v2.gif"
+  },
+  "checks": {
+    "frame_count_10": true,
+    "all_1024_rgba": true,
+    "frame_1_equals_frame_10": true,
+    "all_baselines_y_900": true,
+    "no_subject_edge_contact": true,
+    "lifted_paw_side": "screen-left / Wukong right front paw",
+    "owner_visual_approval": false,
+    "runtime_approved": false
+  },
+  "frames": [
+    {
+      "frame": 1,
+      "source": "source/down_production_candidate_v3/frames/frame-001.png",
+      "role": "approved seated anchor",
+      "source_bbox": [
+        377,
+        197,
+        921,
+        901
+      ],
+      "scale": 0.916755,
+      "placed_xy": [
+        388,
+        256
+      ],
+      "bbox": [
+        388,
+        256,
+        887,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.5,
+      "orange_mean_before": [
+        204.15,
+        157.936,
+        110.675
+      ],
+      "applied_rgb_delta": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "orange_mean_after": [
+        204.15,
+        157.936,
+        110.675
+      ]
+    },
+    {
+      "frame": 2,
+      "source": "work/paw_sit_production_v3/raw/frame-002.png",
+      "role": "generated transition",
+      "source_bbox": [
+        314,
+        250,
+        1044,
+        1134
+      ],
+      "scale": 0.729642,
+      "placed_xy": [
+        388,
+        256
+      ],
+      "bbox": [
+        388,
+        256,
+        921,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.98,
+      "head_center_x": 500.5,
+      "orange_mean_before": [
+        205.42,
+        155.556,
+        104.564
+      ],
+      "applied_rgb_delta": [
+        -1.27,
+        2.38,
+        6.111
+      ],
+      "orange_mean_after": [
+        203.622,
+        155.717,
+        106.745
+      ]
+    },
+    {
+      "frame": 3,
+      "source": "work/paw_sit_production_v3/raw/frame-003.png",
+      "role": "generated transition",
+      "source_bbox": [
+        279,
+        291,
+        1032,
+        1123
+      ],
+      "scale": 0.751678,
+      "placed_xy": [
+        355,
+        276
+      ],
+      "bbox": [
+        355,
+        276,
+        921,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.0,
+      "orange_mean_before": [
+        212.598,
+        159.583,
+        105.267
+      ],
+      "applied_rgb_delta": [
+        -8.448,
+        -1.647,
+        5.408
+      ],
+      "orange_mean_after": [
+        203.888,
+        155.72,
+        106.148
+      ]
+    },
+    {
+      "frame": 4,
+      "source": "work/paw_sit_production_v3/raw/frame-004.png",
+      "role": "generated transition",
+      "source_bbox": [
+        201,
+        153,
+        1068,
+        1155
+      ],
+      "scale": 0.634561,
+      "placed_xy": [
+        320,
+        265
+      ],
+      "bbox": [
+        320,
+        265,
+        870,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.0,
+      "orange_mean_before": [
+        200.793,
+        155.065,
+        109.138
+      ],
+      "applied_rgb_delta": [
+        3.357,
+        2.871,
+        1.537
+      ],
+      "orange_mean_after": [
+        203.755,
+        157.211,
+        110.455
+      ]
+    },
+    {
+      "frame": 5,
+      "source": "work/paw_sit_production_v3/raw/frame-005.png",
+      "role": "generated transition",
+      "source_bbox": [
+        193,
+        184,
+        1074,
+        1127
+      ],
+      "scale": 0.708861,
+      "placed_xy": [
+        262,
+        233
+      ],
+      "bbox": [
+        262,
+        233,
+        887,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.0,
+      "orange_mean_before": [
+        212.21,
+        164.664,
+        113.186
+      ],
+      "applied_rgb_delta": [
+        -8.06,
+        -6.728,
+        -2.511
+      ],
+      "orange_mean_after": [
+        203.419,
+        156.405,
+        107.363
+      ]
+    },
+    {
+      "frame": 6,
+      "source": "work/paw_sit_production_v3/raw/frame-006.png",
+      "role": "generated transition",
+      "source_bbox": [
+        187,
+        209,
+        1059,
+        1074
+      ],
+      "scale": 0.734426,
+      "placed_xy": [
+        272,
+        266
+      ],
+      "bbox": [
+        272,
+        266,
+        912,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.0,
+      "orange_mean_before": [
+        215.449,
+        169.09,
+        114.47
+      ],
+      "applied_rgb_delta": [
+        -11.299,
+        -11.154,
+        -3.795
+      ],
+      "orange_mean_after": [
+        203.677,
+        155.795,
+        107.044
+      ]
+    },
+    {
+      "frame": 7,
+      "source": "work/paw_sit_production_v3/raw/frame-007.png",
+      "role": "generated transition",
+      "source_bbox": [
+        210,
+        168,
+        1033,
+        1146
+      ],
+      "scale": 0.643678,
+      "placed_xy": [
+        306,
+        271
+      ],
+      "bbox": [
+        306,
+        271,
+        836,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 499.5,
+      "orange_mean_before": [
+        211.659,
+        165.569,
+        112.892
+      ],
+      "applied_rgb_delta": [
+        -7.509,
+        -7.633,
+        -2.217
+      ],
+      "orange_mean_after": [
+        203.558,
+        156.559,
+        107.869
+      ]
+    },
+    {
+      "frame": 8,
+      "source": "work/paw_sit_production_v3/raw/frame-008.png",
+      "role": "generated transition",
+      "source_bbox": [
+        243,
+        194,
+        1084,
+        1107
+      ],
+      "scale": 0.697819,
+      "placed_xy": [
+        290,
+        264
+      ],
+      "bbox": [
+        290,
+        264,
+        877,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.0,
+      "orange_mean_before": [
+        212.477,
+        167.906,
+        119.68
+      ],
+      "applied_rgb_delta": [
+        -8.327,
+        -9.97,
+        -8.0
+      ],
+      "orange_mean_after": [
+        203.92,
+        158.074,
+        111.5
+      ]
+    },
+    {
+      "frame": 9,
+      "source": "work/paw_sit_production_v3/raw/frame-009.png",
+      "role": "generated transition",
+      "source_bbox": [
+        347,
+        186,
+        1017,
+        1108
+      ],
+      "scale": 0.720257,
+      "placed_xy": [
+        370,
+        237
+      ],
+      "bbox": [
+        370,
+        237,
+        853,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.25,
+      "orange_mean_before": [
+        208.39,
+        162.235,
+        114.149
+      ],
+      "applied_rgb_delta": [
+        -4.24,
+        -4.299,
+        -3.474
+      ],
+      "orange_mean_after": [
+        203.785,
+        157.439,
+        110.107
+      ]
+    },
+    {
+      "frame": 10,
+      "source": "source/down_production_candidate_v3/frames/frame-001.png",
+      "role": "same approved seated anchor as frame 1",
+      "source_bbox": [
+        377,
+        197,
+        921,
+        901
+      ],
+      "scale": 0.916755,
+      "placed_xy": [
+        388,
+        256
+      ],
+      "bbox": [
+        388,
+        256,
+        887,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.5,
+      "orange_mean_before": [
+        204.15,
+        157.936,
+        110.675
+      ],
+      "applied_rgb_delta": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "orange_mean_after": [
+        204.15,
+        157.936,
+        110.675
+      ]
+    }
+  ]
+}

@@ -16,36 +16,42 @@ public sealed class DesktopAgentRuntime : IDisposable
         IChatModelRuntime models,
         IAgentProfileStore profiles,
         IAgentMemoryConfigurationStore memoryConfiguration,
+        IConversationHistoryStore history,
         IConversationMemoryStore memory,
         IDeveloperSession developerSession,
         IDeveloperDiagnostics diagnostics,
-        IMockContextController mockContext)
+        IMockContextController mockContext,
+        PortableDataLayout dataPaths)
     {
         _httpClient = httpClient;
         Conversation = conversation;
         Models = models;
         Profiles = profiles;
         MemoryConfiguration = memoryConfiguration;
+        History = history;
         Memory = memory;
         DeveloperSession = developerSession;
         Diagnostics = diagnostics;
         MockContext = mockContext;
+        DataPaths = dataPaths;
     }
 
     public IContextualConversationService Conversation { get; }
     public IChatModelRuntime Models { get; }
     public IAgentProfileStore Profiles { get; }
     public IAgentMemoryConfigurationStore MemoryConfiguration { get; }
+    public IConversationHistoryStore History { get; }
     public IConversationMemoryStore Memory { get; }
     public IDeveloperSession DeveloperSession { get; }
     public IDeveloperDiagnostics Diagnostics { get; }
     public IMockContextController MockContext { get; }
+    public PortableDataLayout DataPaths { get; }
 
     public static DesktopAgentRuntime CreateDefault()
     {
-        var localRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Wukong");
-        var profileRoot = Path.Combine(localRoot, "profile");
-        var agentRoot = Path.Combine(localRoot, "agent");
+        var dataPaths = PortableDataLayout.CreateDefault();
+        var profileRoot = dataPaths.ProfileDirectory;
+        var agentRoot = dataPaths.AgentDirectory;
         var httpClient = new HttpClient();
         var configurations = new FileChatProviderConfigurationRepository(agentRoot);
         var secrets = new WindowsCredentialAgentSecretStore();
@@ -65,7 +71,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         var developer = new DeveloperSession();
         var diagnostics = new DeveloperDiagnostics(developer);
         var mockState = new MockRuntimeContextStateProvider(developer);
-        var album = new AlbumMarkdownMemoryRetriever(ResolveAlbumRoot);
+        var album = new AlbumMarkdownMemoryRetriever(() => ResolveAlbumRoot(dataPaths));
         var context = new LocalPetContextProvider(profiles, mockState, album, memory);
         var conversation = new ContextualConversationService(
             models,
@@ -74,19 +80,32 @@ public sealed class DesktopAgentRuntime : IDisposable
             history,
             memory,
             diagnostics);
-        return new(httpClient, conversation, models, profiles, memoryConfiguration, memory, developer, diagnostics, mockState);
+        return new(httpClient, conversation, models, profiles, memoryConfiguration, history, memory, developer, diagnostics, mockState, dataPaths);
+    }
+
+    public async Task AppendLocalAssistantMessageAsync(string text, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return;
+        var messages = (await History.ReadAsync(DailySessionId, cancellationToken)).ToList();
+        messages.Add(new AgentChatMessage(AgentChatRole.Assistant, text.Trim(), DateTimeOffset.Now));
+        await History.ReplaceAsync(DailySessionId, messages, cancellationToken);
+    }
+
+    public async Task ClearAllConversationHistoryAsync(CancellationToken cancellationToken = default)
+    {
+        foreach (var sessionId in new[] { DailySessionId, "model-debug-model", "model-debug-memory", "model-debug-pet" })
+            await History.ClearAsync(sessionId, cancellationToken);
     }
 
     public void Dispose() => _httpClient.Dispose();
 
-    private static string? ResolveAlbumRoot()
+    private static string? ResolveAlbumRoot(PortableDataLayout dataPaths)
     {
         var environment = Environment.GetEnvironmentVariable("WUKONG_ALBUM_ROOT");
         if (!string.IsNullOrWhiteSpace(environment) && Directory.Exists(environment))
             return environment;
-        var preference = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Wukong", "profile", "album-root.txt");
+        var preference = Path.Combine(dataPaths.ProfileDirectory, "album-root.txt");
         if (File.Exists(preference))
         {
             try
@@ -98,6 +117,6 @@ public sealed class DesktopAgentRuntime : IDisposable
             catch (IOException) { }
             catch (UnauthorizedAccessException) { }
         }
-        return AlbumFolderItem.GetDefaultAlbumRoot();
+        return dataPaths.AlbumsDirectory;
     }
 }

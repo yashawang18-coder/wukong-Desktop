@@ -1,0 +1,24 @@
+{
+  "frame_count": 16,
+  "durations_ms": [
+    550,
+    180,
+    160,
+    160,
+    160,
+    160,
+    160,
+    160,
+    160,
+    160,
+    160,
+    170,
+    190,
+    220,
+    260,
+    800
+  ],
+  "total_duration_ms": 3810,
+  "loop": 0,
+  "source_authority": "approved-spin-motion-preview-v2.gif"
+}

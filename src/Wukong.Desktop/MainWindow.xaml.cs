@@ -9,6 +9,16 @@ using Wukong.Domain;
 
 namespace Wukong.Desktop;
 
+public enum MotionEasing
+{
+    Linear,
+    Accelerate,
+    Decelerate,
+    EaseInOut
+}
+
+public sealed record MotionRouteSegment(Point Target, string Direction, TimeSpan Duration, MotionEasing Easing);
+
 public partial class MainWindow : Window
 {
     private readonly DesktopRuntimeHost _runtime;
@@ -17,8 +27,11 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _animationTimer;
     private readonly DispatcherTimer _coinStateTimer;
     private readonly DispatcherTimer _coinSingleClickTimer;
+    private readonly DispatcherTimer _initiativeSpeechTimer = new();
     private readonly Dictionary<string, BitmapImage> _imageCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly Queue<string> _imageCacheOrder = new();
+    private readonly Random _effectRandom = new(240821);
+    private readonly Random _initiativeSpeechRandom = new();
     private int _imageCacheEvictions;
     private const int MaxDecodedFrameCache = 36;
     private const double BaseWindowSize = 320;
@@ -33,6 +46,7 @@ public partial class MainWindow : Window
     private int _phaseIndex;
     private int _frameIndex;
     private int _loopCount;
+    private int _visualScalePhaseIndex = -1;
     private Point _pointerDown;
     private DateTimeOffset _pointerDownAt;
     private bool _dragStarted;
@@ -46,6 +60,7 @@ public partial class MainWindow : Window
     private string _carRideDirection = "right";
     private bool _suspendAnimationFrames;
     private string _currentFramePath = string.Empty;
+    private double _lockedFrameScale = 1.0;
 
     public MainWindow()
     {
@@ -63,6 +78,7 @@ public partial class MainWindow : Window
             _effectCancellation?.Cancel();
             _coinStateTimer.Stop();
             _coinSingleClickTimer.Stop();
+            _initiativeSpeechTimer.Stop();
             var chatWindow = _chatWindow;
             _chatWindow = null;
             chatWindow?.Close();
@@ -88,6 +104,8 @@ public partial class MainWindow : Window
                 await _runtime.SubmitPetrifiedCoinClickAsync();
         };
 
+        _initiativeSpeechTimer.Tick += InitiativeSpeechTimer_Tick;
+
         ApplyPetScale(LoadPetScale(), persist: false);
         _runtime.StartIdle();
     }
@@ -101,6 +119,7 @@ public partial class MainWindow : Window
             24));
         _autonomousTimer.Start();
         _coinStateTimer.Start();
+        ScheduleNextInitiativeSpeech();
         BootstrapLog.WriteRaw("mainwindow_loaded_handler");
         BootstrapLog.Write("MainWindow Loaded", this.Snapshot());
     }
@@ -119,6 +138,15 @@ public partial class MainWindow : Window
 
     private async void PetImage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
+        if (_runtime.IsPetrified && e.ClickCount >= 2)
+        {
+            _coinSingleClickTimer.Stop();
+            ResetTapCandidates();
+            await _runtime.SubmitPetrifiedCoinDoubleClickAsync();
+            e.Handled = true;
+            return;
+        }
+
         _pointerDown = e.GetPosition(this);
         _pointerDownAt = DateTimeOffset.Now;
         _dragStarted = false;
@@ -166,7 +194,7 @@ public partial class MainWindow : Window
         }
 
         var now = DateTimeOffset.Now;
-        var hitVisibleBody = HitVisibleBody(up);
+        var hitVisibleBody = _runtime.IsPetrified ? HitVisibleBody(up, alphaThreshold: 4) : HitVisibleBody(up);
         var duration = now - _pointerDownAt;
         var distance = Distance(_pointerDown, up);
         var sample = new GestureSample(
@@ -212,11 +240,11 @@ public partial class MainWindow : Window
             ResetTapCandidates();
             await _runtime.SubmitGestureAsync(gesture, BehaviorRequestSource.OwnerUi);
         }
-        else if (gesture == PetGestureKind.DoubleClick)
+        else if (OpensChatOnGesture(gesture))
         {
             ResetTapCandidates();
             await _runtime.SubmitGestureAsync(PetGestureKind.OwnerTouch, BehaviorRequestSource.OwnerUi);
-            OpenControlPanel();
+            OpenChatForInput();
         }
         else
         {
@@ -334,7 +362,13 @@ public partial class MainWindow : Window
             _phaseIndex = 0;
             _frameIndex = 0;
             _loopCount = 0;
+            _visualScalePhaseIndex = -1;
             BeginMotionEffect(request);
+            var firstPhase = request.Motion.Phases.FirstOrDefault(x => x.Frames.Count > 0);
+            if (firstPhase is not null)
+                ApplyMotionVisualScale(request.Motion, firstPhase, 0);
+            else
+                ApplyMotionVisualScale(request.Motion);
             SetAnimationIntervalForCurrentFrame(request.Motion, phaseIndex: 0, frameIndex: 0, useDirectionalFrames: false);
             ShowFirstAvailableFrame(request.Motion);
             _animationTimer.Start();
@@ -360,6 +394,7 @@ public partial class MainWindow : Window
         }
 
         var phase = phases[_phaseIndex];
+        ApplyMotionVisualScale(_activeRequest.Motion, phase, _phaseIndex);
         if (phase.Name is "interrupt_exit" or "fallback")
         {
             FinishCurrentMotion();
@@ -447,36 +482,31 @@ public partial class MainWindow : Window
 
         _ = request.Motion.Effect switch
         {
-            DesktopMotionEffect.BroomFlight => RunBroomFlightAsync(_effectCancellation.Token),
+            DesktopMotionEffect.BroomFlight => RunBroomFlightAsync(request, _effectCancellation.Token),
             DesktopMotionEffect.Apparate => RunApparateAsync(request, _effectCancellation.Token),
             DesktopMotionEffect.Scourgify => RunScourgifyAsync(_effectCancellation.Token),
-            DesktopMotionEffect.CarRide => RunCarRideAsync(_effectCancellation.Token),
+            DesktopMotionEffect.CarRide => RunCarRideAsync(request, _effectCancellation.Token),
             _ => Task.CompletedTask
         };
     }
 
-    private async Task RunBroomFlightAsync(CancellationToken token)
+    private async Task RunBroomFlightAsync(PetMotionRequest request, CancellationToken token)
     {
         try
         {
             var workArea = SystemParameters.WorkArea;
             var width = ActualWidth > 0 ? ActualWidth : Width;
             var height = ActualHeight > 0 ? ActualHeight : Height;
-            var path = new[]
-            {
-                new Point(workArea.Left + workArea.Width * 0.18, workArea.Top + workArea.Height * 0.72),
-                new Point(workArea.Left + workArea.Width * 0.36, workArea.Top + workArea.Height * 0.44),
-                new Point(workArea.Left + workArea.Width * 0.62, workArea.Top + workArea.Height * 0.38),
-                new Point(workArea.Left + workArea.Width * 0.78, workArea.Top + workArea.Height * 0.64),
-                new Point(workArea.Left + workArea.Width * 0.48, workArea.Top + workArea.Height * 0.76)
-            };
-
             var start = new Point(Left, Top);
-            foreach (var target in path.Select(x => ClampToWorkArea(x, workArea, width, height)))
+            var duration = ChooseShowcaseDuration(_effectRandom);
+            var route = BuildRandomFlightRoute(start, workArea, width, height, duration, _effectRandom);
+            var current = start;
+            foreach (var segment in route)
             {
-                await MoveWindowAsync(start, target, TimeSpan.FromMilliseconds(620), token);
-                start = target;
+                await MoveWindowAsync(current, segment.Target, segment.Duration, token, segment.Easing);
+                current = segment.Target;
             }
+            await PlayNamedMotionPhaseAsync(request.Motion, "exit", token);
         }
         catch (OperationCanceledException)
         {
@@ -487,7 +517,10 @@ public partial class MainWindow : Window
         }
         finally
         {
+            _suspendAnimationFrames = false;
             ApplyVisiblePlacement(new Point(Left, Top));
+            if (ReferenceEquals(_activeRequest, request))
+                FinishCurrentMotion();
         }
     }
 
@@ -578,7 +611,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private async Task RunCarRideAsync(CancellationToken token)
+    private async Task RunCarRideAsync(PetMotionRequest request, CancellationToken token)
     {
         try
         {
@@ -586,14 +619,20 @@ public partial class MainWindow : Window
             var width = ActualWidth > 0 ? ActualWidth : Width;
             var height = ActualHeight > 0 ? ActualHeight : Height;
             var start = ClampToWorkArea(new Point(Left, Top), workArea, width, height);
-            var path = BuildCarRidePreviewPath(start, workArea, width, height);
-
+            var duration = ChooseShowcaseDuration(_effectRandom);
+            var route = BuildCarRidePhysicalRoute(start, workArea, width, height, duration, _effectRandom);
             var current = start;
-            foreach (var target in path)
+            var direction = _carRideDirection;
+            foreach (var segment in route)
             {
-                await MoveWindowAsync(current, target, TimeSpan.FromMilliseconds(1350), token);
-                current = target;
+                if (!string.Equals(direction, segment.Direction, StringComparison.OrdinalIgnoreCase))
+                    await PlayCarRideTurnPathAsync(request.Motion, direction, segment.Direction, token);
+                _carRideDirection = segment.Direction;
+                await MoveWindowAsync(current, segment.Target, segment.Duration, token, segment.Easing);
+                current = segment.Target;
+                direction = segment.Direction;
             }
+            await PlayCarRideBrakeAsync(request.Motion, direction, token);
         }
         catch (OperationCanceledException)
         {
@@ -604,10 +643,13 @@ public partial class MainWindow : Window
         }
         finally
         {
+            _suspendAnimationFrames = false;
             ApplyVisiblePlacement(new Point(Left, Top));
+            if (ReferenceEquals(_activeRequest, request))
+                FinishCurrentMotion();
         }
     }
-    private async Task MoveWindowAsync(Point from, Point to, TimeSpan duration, CancellationToken token)
+    private async Task MoveWindowAsync(Point from, Point to, TimeSpan duration, CancellationToken token, MotionEasing easing = MotionEasing.EaseInOut)
     {
         if (_activeRequest?.Motion.Effect == DesktopMotionEffect.BroomFlight)
             _broomDirection = ResolveEightWayDirection(from, to);
@@ -617,10 +659,219 @@ public partial class MainWindow : Window
         for (var i = 1; i <= steps; i++)
         {
             token.ThrowIfCancellationRequested();
-            var t = EaseInOut(i / (double)steps);
+            var progress = i / (double)steps;
+            var t = easing switch
+            {
+                MotionEasing.Accelerate => progress * progress,
+                MotionEasing.Decelerate => 1 - Math.Pow(1 - progress, 2),
+                MotionEasing.Linear => progress,
+                _ => EaseInOut(progress)
+            };
             Left = from.X + (to.X - from.X) * t;
             Top = from.Y + (to.Y - from.Y) * t;
             await Task.Delay(24, token);
+        }
+    }
+
+    public static TimeSpan ChooseShowcaseDuration(Random random) =>
+        TimeSpan.FromMilliseconds(random.Next(10_000, 20_001));
+
+    public static IReadOnlyList<MotionRouteSegment> BuildRandomFlightRoute(
+        Point start,
+        Rect workArea,
+        double width,
+        double height,
+        TimeSpan totalDuration,
+        Random random)
+    {
+        var route = new List<MotionRouteSegment>();
+        var current = ClampToWorkArea(start, workArea, width, height);
+        var elapsed = TimeSpan.Zero;
+        while (elapsed < totalDuration)
+        {
+            var remaining = totalDuration - elapsed;
+            var segmentDuration = TimeSpan.FromMilliseconds(Math.Min(remaining.TotalMilliseconds, random.Next(1450, 2601)));
+            if (segmentDuration < TimeSpan.FromMilliseconds(650))
+                segmentDuration = remaining;
+            var minX = workArea.Left;
+            var maxX = Math.Max(minX, workArea.Right - width);
+            var minY = workArea.Top;
+            var maxY = Math.Max(minY, workArea.Bottom - height);
+            var target = new Point(
+                minX + random.NextDouble() * Math.Max(1, maxX - minX),
+                minY + random.NextDouble() * Math.Max(1, maxY - minY));
+            if (Distance(current, target) < Math.Max(width, height) * 0.75)
+                target = new Point(maxX - (target.X - minX), maxY - (target.Y - minY));
+            target = ClampToWorkArea(target, workArea, width, height);
+            route.Add(new MotionRouteSegment(
+                target,
+                ResolveEightWayDirection(current, target),
+                segmentDuration,
+                route.Count == 0 ? MotionEasing.Accelerate : MotionEasing.EaseInOut));
+            elapsed += segmentDuration;
+            current = target;
+        }
+
+        if (route.Count > 0)
+            route[^1] = route[^1] with { Easing = MotionEasing.Decelerate };
+        return route;
+    }
+
+    public static IReadOnlyList<MotionRouteSegment> BuildCarRidePhysicalRoute(
+        Point start,
+        Rect workArea,
+        double width,
+        double height,
+        TimeSpan totalDuration,
+        Random random)
+    {
+        var directions = new[] { "right", "front-right", "front", "front-left", "left", "rear-left", "rear", "rear-right" };
+        var vectors = new[]
+        {
+            new Vector(1, 0), new Vector(0.707, 0.707), new Vector(0, 1), new Vector(-0.707, 0.707),
+            new Vector(-1, 0), new Vector(-0.707, -0.707), new Vector(0, -1), new Vector(0.707, -0.707)
+        };
+        var minX = workArea.Left;
+        var maxX = Math.Max(minX, workArea.Right - width);
+        var minY = workArea.Top;
+        var maxY = Math.Max(minY, workArea.Bottom - height);
+        var current = ClampToWorkArea(start, workArea, width, height);
+        var directionIndex = ChooseInitialCarDirection(current, minX, maxX, minY, maxY);
+        var elapsed = TimeSpan.Zero;
+        var route = new List<MotionRouteSegment>();
+
+        while (elapsed < totalDuration)
+        {
+            var remaining = totalDuration - elapsed;
+            if (remaining < TimeSpan.FromMilliseconds(850) && route.Count > 0)
+            {
+                route[^1] = route[^1] with { Duration = route[^1].Duration + remaining };
+                elapsed = totalDuration;
+                break;
+            }
+            var segmentDuration = TimeSpan.FromMilliseconds(Math.Min(remaining.TotalMilliseconds, random.Next(1750, 3201)));
+            var speed = route.Count == 0 ? 100.0 : 145.0;
+            var distance = speed * segmentDuration.TotalSeconds;
+
+            var chosenIndex = directionIndex;
+            Point target = default;
+            var found = false;
+            for (var turn = 0; turn < directions.Length; turn++)
+            {
+                var vector = vectors[chosenIndex];
+                var candidate = new Point(current.X + vector.X * distance, current.Y + vector.Y * distance);
+                if (candidate.X >= minX && candidate.X <= maxX && candidate.Y >= minY && candidate.Y <= maxY)
+                {
+                    target = candidate;
+                    found = true;
+                    break;
+                }
+                chosenIndex = (chosenIndex + 1) % directions.Length;
+            }
+
+            if (!found)
+            {
+                var vector = vectors[chosenIndex];
+                target = ClampToWorkArea(new Point(current.X + vector.X * distance, current.Y + vector.Y * distance), workArea, width, height);
+            }
+
+            var easing = route.Count == 0 ? MotionEasing.Accelerate : MotionEasing.Linear;
+            route.Add(new MotionRouteSegment(target, directions[chosenIndex], segmentDuration, easing));
+            directionIndex = random.NextDouble() < 0.72 ? chosenIndex : (chosenIndex + 1) % directions.Length;
+            current = target;
+            elapsed += segmentDuration;
+        }
+
+        if (route.Count > 0)
+            route[^1] = route[^1] with { Easing = MotionEasing.Decelerate };
+        return route;
+    }
+
+    private static int ChooseInitialCarDirection(Point point, double minX, double maxX, double minY, double maxY)
+    {
+        var spaces = new[]
+        {
+            maxX - point.X,
+            Math.Min(maxX - point.X, maxY - point.Y),
+            maxY - point.Y,
+            Math.Min(point.X - minX, maxY - point.Y),
+            point.X - minX,
+            Math.Min(point.X - minX, point.Y - minY),
+            point.Y - minY,
+            Math.Min(maxX - point.X, point.Y - minY)
+        };
+        return Array.IndexOf(spaces, spaces.Max());
+    }
+
+    private async Task PlayCarRideTurnAsync(PlayableMotion motion, string from, string to, CancellationToken token)
+    {
+        if (string.Equals(from, to, StringComparison.OrdinalIgnoreCase))
+            return;
+        var key = $"turn/{from}-to-{to}";
+        if (motion.NamedSequences?.TryGetValue(key, out var frames) != true || frames.Count == 0)
+            return;
+        await PlayFramesAsync(motion, $"turn:{from}-to-{to}", frames, token);
+    }
+
+    private async Task PlayCarRideTurnPathAsync(PlayableMotion motion, string from, string to, CancellationToken token)
+    {
+        var ring = new[] { "right", "front-right", "front", "front-left", "left", "rear-left", "rear", "rear-right" };
+        var fromIndex = Array.IndexOf(ring, from);
+        var toIndex = Array.IndexOf(ring, to);
+        if (fromIndex < 0 || toIndex < 0)
+            return;
+
+        var clockwise = (toIndex - fromIndex + ring.Length) % ring.Length;
+        var counterClockwise = (fromIndex - toIndex + ring.Length) % ring.Length;
+        var step = clockwise <= counterClockwise ? 1 : -1;
+        var currentIndex = fromIndex;
+        while (currentIndex != toIndex)
+        {
+            var nextIndex = (currentIndex + step + ring.Length) % ring.Length;
+            await PlayCarRideTurnAsync(motion, ring[currentIndex], ring[nextIndex], token);
+            currentIndex = nextIndex;
+        }
+    }
+
+    private async Task PlayCarRideBrakeAsync(PlayableMotion motion, string direction, CancellationToken token)
+    {
+        var key = $"brake/{direction}";
+        if (motion.NamedSequences?.TryGetValue(key, out var frames) == true && frames.Count > 0)
+        {
+            await PlayFramesAsync(motion, $"brake:{direction}", frames, token);
+            return;
+        }
+        await PlayNamedMotionPhaseAsync(motion, "exit", token);
+    }
+
+    private async Task PlayNamedMotionPhaseAsync(PlayableMotion motion, string phaseName, CancellationToken token)
+    {
+        var phase = motion.Phases.FirstOrDefault(x => string.Equals(x.Name, phaseName, StringComparison.OrdinalIgnoreCase));
+        if (phase?.Frames.Count > 0)
+            await PlayFramesAsync(motion, phaseName, phase.Frames, token, phase);
+    }
+
+    private async Task PlayFramesAsync(
+        PlayableMotion motion,
+        string phaseName,
+        IReadOnlyList<string> frames,
+        CancellationToken token,
+        MotionPhase? phase = null)
+    {
+        _suspendAnimationFrames = true;
+        try
+        {
+            for (var index = 0; index < frames.Count; index++)
+            {
+                token.ThrowIfCancellationRequested();
+                SetFrame(frames[index], phaseName);
+                var duration = phase?.DurationForFrame(index, motion.FrameDurationMs) ?? motion.FrameDurationMs;
+                await Task.Delay(Math.Max(16, duration), token);
+            }
+        }
+        finally
+        {
+            _suspendAnimationFrames = false;
         }
     }
 
@@ -724,7 +975,6 @@ public partial class MainWindow : Window
         {
             PetImage.Source = LoadImage(path);
             _currentFramePath = path;
-            ApplyFrameVisualScale(path, visualScale ?? _activeRequest?.Motion.VisualScale ?? 1.0);
             FallbackBadge.Visibility = Visibility.Collapsed;
             PhaseBadge.Visibility = Visibility.Collapsed;
             _runtime.MarkPhase(phase, path);
@@ -782,14 +1032,15 @@ public partial class MainWindow : Window
     {
         PetImage.Source = null;
         _currentFramePath = string.Empty;
-        ApplyFrameVisualScale(null, 1.0);
+        _lockedFrameScale = 1.0;
+        ApplyLockedVisualScale();
         FallbackBadge.Visibility = Visibility.Visible;
         PhaseBadge.Visibility = Visibility.Visible;
         PhaseText.Text = $"Fallback: {reason}";
         _runtime.ReportError($"fallback:{reason}");
     }
 
-    private bool HitVisibleBody(Point point)
+    private bool HitVisibleBody(Point point, byte alphaThreshold = 18)
     {
         var source = PetImage.Source as BitmapSource;
         if (source is null || PetImage.ActualWidth <= 0 || PetImage.ActualHeight <= 0)
@@ -803,7 +1054,7 @@ public partial class MainWindow : Window
         var pixelY = (int)Math.Clamp(imagePoint.Y / PetImage.ActualHeight * source.PixelHeight, 0, source.PixelHeight - 1);
         var pixel = new byte[4];
         source.CopyPixels(new Int32Rect(pixelX, pixelY, 1, 1), pixel, 4, 0);
-        return pixel[3] > 18;
+        return pixel[3] > alphaThreshold;
     }
 
     private void OpenControlPanel()
@@ -829,10 +1080,50 @@ public partial class MainWindow : Window
         point.X >= size.Width * 0.28 &&
         point.X <= size.Width * 0.72;
 
+    public static bool OpensChatOnGesture(PetGestureKind gesture) => gesture == PetGestureKind.DoubleClick;
+
     private void ToggleChat()
     {
         _chatWindow ??= new DesktopChatWindow(_agentRuntime) { Owner = this };
         _chatWindow.Toggle(SystemParameters.WorkArea, CurrentBounds());
+    }
+
+    private void OpenChatForInput()
+    {
+        _chatWindow ??= new DesktopChatWindow(_agentRuntime) { Owner = this };
+        _chatWindow.ShowForInput(SystemParameters.WorkArea, CurrentBounds());
+    }
+
+    private async void InitiativeSpeechTimer_Tick(object? sender, EventArgs e)
+    {
+        _initiativeSpeechTimer.Stop();
+        try
+        {
+            if (_chatWindow?.IsExpanded == true ||
+                !InitiativeSpeechSchedule.CanSpeakDuring(_runtime.CurrentBehaviorId, _runtime.IsPetrified))
+                return;
+
+            var text = InitiativeSpeechSchedule.SelectMessage(_initiativeSpeechRandom, _runtime.CurrentStablePosture);
+            await _agentRuntime.AppendLocalAssistantMessageAsync(text);
+            _chatWindow ??= new DesktopChatWindow(_agentRuntime) { Owner = this };
+            await _chatWindow.ShowInitiativeAsync(SystemParameters.WorkArea, CurrentBounds());
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("initiative_speech_failed", ex);
+        }
+        finally
+        {
+            if (IsLoaded)
+                ScheduleNextInitiativeSpeech();
+        }
+    }
+
+    private void ScheduleNextInitiativeSpeech()
+    {
+        _initiativeSpeechTimer.Stop();
+        _initiativeSpeechTimer.Interval = InitiativeSpeechSchedule.NextInterval(_initiativeSpeechRandom);
+        _initiativeSpeechTimer.Start();
     }
 
     private void RepositionChat() =>
@@ -860,16 +1151,31 @@ public partial class MainWindow : Window
         Height = BaseWindowSize * _petScale;
         MinWidth = 240 * _petScale;
         MinHeight = 240 * _petScale;
-        ApplyFrameVisualScale(string.IsNullOrWhiteSpace(_currentFramePath) ? null : _currentFramePath, _activeRequest?.Motion.VisualScale ?? 1.0);
+        ApplyLockedVisualScale();
         if (!double.IsNaN(Left) && !double.IsNaN(Top))
             ApplyVisiblePlacement(new Point(Left, Top));
         if (persist)
             File.WriteAllText(PetScalePath(), _petScale.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
     }
 
-    private void ApplyFrameVisualScale(string? framePath, double targetVisibleRatio)
+    private void ApplyMotionVisualScale(PlayableMotion motion)
     {
-        var frameScale = MotionVisualSizer.RenderScaleFor(framePath, _runtime.ReferenceVisualFramePath, targetVisibleRatio);
+        _lockedFrameScale = MotionVisualSizer.RenderScaleForMotion(motion, _runtime.ReferenceVisualFramePath);
+        ApplyLockedVisualScale();
+    }
+
+    private void ApplyMotionVisualScale(PlayableMotion motion, MotionPhase phase, int phaseIndex)
+    {
+        if (_visualScalePhaseIndex == phaseIndex)
+            return;
+        _lockedFrameScale = MotionVisualSizer.RenderScaleForPhase(motion, phase, _runtime.ReferenceVisualFramePath);
+        _visualScalePhaseIndex = phaseIndex;
+        ApplyLockedVisualScale();
+    }
+
+    private void ApplyLockedVisualScale()
+    {
+        var frameScale = _lockedFrameScale;
         var windowScale = Math.Max(1.0, frameScale);
         Width = BaseWindowSize * _petScale * windowScale;
         Height = BaseWindowSize * _petScale * windowScale;
@@ -886,7 +1192,7 @@ public partial class MainWindow : Window
 
     public void SetPetScaleForTest(double scale) => ApplyPetScale(scale, persist: false);
 
-    private static double LoadPetScale()
+    private double LoadPetScale()
     {
         var path = PetScalePath();
         return File.Exists(path) &&
@@ -895,9 +1201,9 @@ public partial class MainWindow : Window
             : 1.0;
     }
 
-    private static string PetScalePath()
+    private string PetScalePath()
     {
-        var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Wukong", "profile");
+        var dir = _agentRuntime.DataPaths.ProfileDirectory;
         Directory.CreateDirectory(dir);
         return Path.Combine(dir, "pet-scale.txt");
     }

@@ -1,0 +1,45 @@
+{
+  "ActiveProvider": "OpenAICompatible",
+  "Configurations": {
+    "OpenAI": {
+      "Provider": "OpenAI",
+      "BaseUrl": "https://api.openai.com/v1",
+      "Model": "gpt-4.1-mini",
+      "TimeoutSeconds": 60,
+      "Temperature": 0.7,
+      "ApiKeyConfigured": false
+    },
+    "OpenAICompatible": {
+      "Provider": "OpenAICompatible",
+      "BaseUrl": "https://api.deepseek.com/v1",
+      "Model": "deepseek-chat",
+      "TimeoutSeconds": 60,
+      "Temperature": 0.7,
+      "ApiKeyConfigured": false
+    },
+    "Anthropic": {
+      "Provider": "Anthropic",
+      "BaseUrl": "https://api.anthropic.com",
+      "Model": "claude-sonnet-4-5",
+      "TimeoutSeconds": 60,
+      "Temperature": 0.7,
+      "ApiKeyConfigured": false
+    },
+    "Gemini": {
+      "Provider": "Gemini",
+      "BaseUrl": "https://generativelanguage.googleapis.com",
+      "Model": "gemini-2.5-flash",
+      "TimeoutSeconds": 60,
+      "Temperature": 0.7,
+      "ApiKeyConfigured": false
+    },
+    "Ollama": {
+      "Provider": "Ollama",
+      "BaseUrl": "http://127.0.0.1:11434",
+      "Model": "llama3.2",
+      "TimeoutSeconds": 120,
+      "Temperature": 0.7,
+      "ApiKeyConfigured": false
+    }
+  }
+}

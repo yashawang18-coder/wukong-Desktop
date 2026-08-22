@@ -26,7 +26,13 @@ var tests = new (string Name, Func<Task> Run)[]
     ("provider failures do not create assistant history", FailedReplyDoesNotPersist),
     ("conversation turn becomes pending memory candidate", ConversationTurnBecomesCandidate),
     ("developer diagnostics require authenticated session", DeveloperDiagnosticsRequireAuthentication),
-    ("developer password session can enter and exit", DeveloperPasswordSessionWorks)
+    ("developer password session can enter and exit", DeveloperPasswordSessionWorks),
+    ("behavior agent mock is deterministic for same seed", BehaviorAgentMockDeterministic),
+    ("behavior agent temperament and runtime state affect scores", BehaviorAgentMockScoreDrivers),
+    ("behavior agent owner commands branch by posture", BehaviorAgentOwnerCommandsBranchByPosture),
+    ("behavior agent plans posture transitions and keeps end posture", BehaviorAgentPlansTransitionsAndKeepsPosture),
+    ("behavior agent busy state blocks autonomous interruption", BehaviorAgentBusyBlocksAutonomous),
+    ("behavior agent dialogue context matches decision", BehaviorAgentDialogueContextMatchesState)
 };
 
 var failures = new List<string>();
@@ -364,6 +370,156 @@ static Task DeveloperPasswordSessionWorks()
     return Task.CompletedTask;
 }
 
+static Task BehaviorAgentMockDeterministic()
+{
+    var engine = new BehaviorAgentMockEngine();
+    var context = AgentDecisionContext(
+        OwnerCommandKind.None,
+        PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand, Energy = 0.92, Boredom = 0.88, Stress = 0.08 },
+        TemperamentProfile.Default with { Activity = 88, Mischief = 72 },
+        seed: 104);
+
+    var first = engine.Decide(context);
+    var second = engine.Decide(context);
+
+    Assert(first.SelectedActionId == second.SelectedActionId, "same state and seed selected different actions");
+    Assert(first.CandidateScores.Select(x => (x.ActionId, x.FinalScore)).SequenceEqual(second.CandidateScores.Select(x => (x.ActionId, x.FinalScore))), "same seed score table changed");
+    return Task.CompletedTask;
+}
+
+static Task BehaviorAgentMockScoreDrivers()
+{
+    var engine = new BehaviorAgentMockEngine();
+    var highPlay = engine.Decide(AgentDecisionContext(
+        OwnerCommandKind.None,
+        PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand, Energy = 0.94, Boredom = 0.91, Stress = 0.05, SocialNeed = 0.30 },
+        TemperamentProfile.Default with { Activity = 92, Mischief = 80, Attachment = 30 },
+        seed: 7));
+    var jump = Score(highPlay, MockCommandActionIds.PlayfulJump);
+    var spin = Score(highPlay, MockCommandActionIds.PlayfulSpin);
+    Assert(jump > Score(highPlay, MockCommandActionIds.MaintainCurrentIdle), "high activity/energy/boredom should raise playful jump");
+    Assert(spin > Score(highPlay, MockCommandActionIds.QuietProne), "high mischief should raise playful spin");
+
+    var lowEnergy = engine.Decide(AgentDecisionContext(
+        OwnerCommandKind.None,
+        PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand, Energy = 0.10, Boredom = 0.94, Stress = 0.04 },
+        TemperamentProfile.Default with { Activity = 95, Mischief = 90 },
+        seed: 7));
+    Assert(Reasons(lowEnergy, MockCommandActionIds.PlayfulJump).Contains("energy_too_low"), "low energy did not eliminate jump");
+
+    var highStress = engine.Decide(AgentDecisionContext(
+        OwnerCommandKind.None,
+        PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand, Energy = 0.90, Boredom = 0.88, Stress = 0.80 },
+        TemperamentProfile.Default with { Activity = 95, Sensitivity = 88 },
+        seed: 8));
+    Assert(Reasons(highStress, MockCommandActionIds.PlayfulSpin).Contains("stress_too_high"), "high stress did not suppress strong actions");
+
+    var attached = engine.Decide(AgentDecisionContext(
+        OwnerCommandKind.None,
+        PetRuntimeState.Default with { SocialNeed = 0.95, Energy = 0.50, Boredom = 0.20, Stress = 0.05 },
+        TemperamentProfile.Default with { Attachment = 92, Independence = 10 },
+        seed: 9));
+    var independent = engine.Decide(AgentDecisionContext(
+        OwnerCommandKind.None,
+        PetRuntimeState.Default with { SocialNeed = 0.95, Energy = 0.50, Boredom = 0.20, Stress = 0.05 },
+        TemperamentProfile.Default with { Attachment = 25, Independence = 92 },
+        seed: 9));
+    Assert(Score(attached, MockCommandActionIds.RequestAttention) > Score(independent, MockCommandActionIds.RequestAttention), "attachment/social need did not raise owner-oriented behavior");
+
+    var repeat = engine.Decide(AgentDecisionContext(
+        OwnerCommandKind.None,
+        PetRuntimeState.Default with { LastActionId = MockCommandActionIds.PlayfulJump, RepeatedActionCount = 3, Energy = 0.90, Boredom = 0.90, Stress = 0.05 },
+        TemperamentProfile.Default with { Activity = 95 },
+        seed: 10));
+    Assert(Component(repeat, MockCommandActionIds.PlayfulJump, "repetition_penalty") < 0, "repetition penalty missing");
+
+    var clickedLow = engine.ApplyRepeatedClick(PetRuntimeState.Default, TemperamentProfile.Default with { Sensitivity = 10 }, 4);
+    var clickedHigh = engine.ApplyRepeatedClick(PetRuntimeState.Default, TemperamentProfile.Default with { Sensitivity = 90 }, 4);
+    Assert(clickedHigh.Stress > clickedLow.Stress, "sensitivity did not amplify repeated-click stress");
+    return Task.CompletedTask;
+}
+
+static Task BehaviorAgentOwnerCommandsBranchByPosture()
+{
+    var engine = new BehaviorAgentMockEngine();
+    Assert(engine.Decide(AgentDecisionContext(OwnerCommandKind.Paw, PetRuntimeState.Default with { CurrentPosture = StablePosture.Prone }, seed: 11)).SelectedActionId == MockCommandActionIds.PawProne, "prone paw did not choose PawProne");
+    Assert(engine.Decide(AgentDecisionContext(OwnerCommandKind.Paw, PetRuntimeState.Default with { CurrentPosture = StablePosture.Sit }, seed: 12)).SelectedActionId == MockCommandActionIds.PawSit, "sit paw did not choose PawSit");
+    Assert(engine.Decide(AgentDecisionContext(OwnerCommandKind.Eat, PetRuntimeState.Default with { CurrentPosture = StablePosture.Prone }, seed: 13)).SelectedActionId == MockCommandActionIds.EatProne, "prone eat did not choose EatProne");
+    Assert(engine.Decide(AgentDecisionContext(OwnerCommandKind.Eat, PetRuntimeState.Default with { CurrentPosture = StablePosture.Sit }, seed: 14)).SelectedActionId == MockCommandActionIds.EatSit, "sit eat did not choose EatSit");
+
+    var ownerSit = engine.Decide(AgentDecisionContext(OwnerCommandKind.Sit, PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand }, TemperamentProfile.Default with { Independence = 95 }, seed: 15));
+    Assert(ownerSit.SelectedActionId == MockCommandActionIds.Sit && !ownerSit.ReasonCodes.Contains("rejected"), "high independence must not reject explicit owner command");
+    return Task.CompletedTask;
+}
+
+static Task BehaviorAgentPlansTransitionsAndKeepsPosture()
+{
+    var engine = new BehaviorAgentMockEngine();
+    var down = engine.Decide(AgentDecisionContext(OwnerCommandKind.Down, PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand }, seed: 16));
+    Assert(down.TransitionPlan.Select(x => x.ActionId).SequenceEqual(new[] { MockCommandActionIds.Sit, MockCommandActionIds.Down }), "stand down must plan sit before down");
+    Assert(down.EndPosture == StablePosture.Prone, "down end posture wrong");
+
+    var jump = engine.Decide(AgentDecisionContext(OwnerCommandKind.Jump, PetRuntimeState.Default with { CurrentPosture = StablePosture.Prone }, seed: 17));
+    Assert(jump.TransitionPlan.Any(x => x.ActionId == MockCommandActionIds.MockProneToSit), "prone jump missing prone-to-sit gap transition");
+    Assert(jump.TransitionPlan.Any(x => x.ActionId == MockCommandActionIds.MockSitToStand), "prone jump missing sit-to-stand gap transition");
+    Assert(jump.EndPosture == StablePosture.Stand, "jump should finish standing");
+
+    var update = engine.ApplyOutcome(PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand }, RelationshipState.Default, down, completed: true, down.CreatedAt.AddSeconds(2));
+    Assert(update.State.CurrentPosture == StablePosture.Prone, "completed action did not preserve declared end posture");
+    Assert(update.State.IsBusy == false && update.State.ActiveActionId is null, "completed action did not clear busy state");
+    return Task.CompletedTask;
+}
+
+static Task BehaviorAgentBusyBlocksAutonomous()
+{
+    var engine = new BehaviorAgentMockEngine();
+    var decision = engine.Decide(AgentDecisionContext(
+        OwnerCommandKind.None,
+        PetRuntimeState.Default with { IsBusy = true, ActiveActionId = MockCommandActionIds.Jump },
+        seed: 18,
+        isNonInterruptible: true));
+    Assert(decision.SelectedActionId == MockCommandActionIds.MaintainCurrentIdle, "busy non-interruptible state should block autonomous action");
+    Assert(decision.ReasonCodes.Contains("busy_non_interruptible"), "busy block reason missing");
+    return Task.CompletedTask;
+}
+
+static Task BehaviorAgentDialogueContextMatchesState()
+{
+    var engine = new BehaviorAgentMockEngine();
+    var state = PetRuntimeState.Default with { CurrentPosture = StablePosture.Prone, ActiveActionId = MockCommandActionIds.EatProne, Stress = 0.78, Energy = 0.20, MoodValence = 0.30 };
+    var context = AgentDecisionContext(OwnerCommandKind.Eat, state, TemperamentProfile.Default with { Sensitivity = 88 }, seed: 19);
+    var decision = engine.Decide(context);
+    var dialogue = engine.BuildDialogueContext(decision, context);
+    Assert(dialogue.CurrentPosture == StablePosture.Prone, "dialogue context posture changed");
+    Assert(dialogue.CurrentAction == MockCommandActionIds.EatProne, "dialogue context current action missing");
+    Assert(dialogue.StressLevel == "high" && dialogue.EnergyLevel == "low", "dialogue mood bands wrong");
+    Assert(dialogue.DialogueTone == "careful_short", "sensitive high-stress tone missing");
+    Assert(dialogue.ForbiddenClaims.Any(x => x.Contains("asset paths", StringComparison.Ordinal)), "dialogue forbidden claims missing asset boundary");
+    return Task.CompletedTask;
+}
+
+static BehaviorDecisionContext AgentDecisionContext(
+    OwnerCommandKind command,
+    PetRuntimeState state,
+    TemperamentProfile? temperament = null,
+    int seed = 1,
+    bool allowInitiative = true,
+    bool isNonInterruptible = false) =>
+    new(
+        temperament ?? TemperamentProfile.Default,
+        state,
+        RelationshipState.Default,
+        command,
+        Array.Empty<string>(),
+        new DateTimeOffset(2026, 8, 17, 10, 0, 0, TimeSpan.Zero),
+        new Dictionary<string, DateTimeOffset>(),
+        seed,
+        allowInitiative,
+        isNonInterruptible);
+
+static double Score(PetDecision decision, string actionId) => decision.CandidateScores.Single(x => x.ActionId == actionId).FinalScore;
+static IReadOnlyList<string> Reasons(PetDecision decision, string actionId) => decision.CandidateScores.Single(x => x.ActionId == actionId).Reasons;
+static double Component(PetDecision decision, string actionId, string component) => decision.CandidateScores.Single(x => x.ActionId == actionId).Components.Single(x => x.Name == component).Value;
 static ContextualConversationService CreateAgentService(
     PetContextSnapshot snapshot,
     out CapturingModelRuntime model,
