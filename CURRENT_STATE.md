@@ -1,3 +1,12 @@
+## Unified runtime state and autonomous arbitration - 2026-08-23
+
+- `PetRuntimeState` is now the single desktop source for energy, hunger, social need, boredom, stress, mood, arousal, curiosity, comfort, focus, posture, busy state, and active action. Desktop metric properties are read-only projections of this state.
+- Owner-command decisions remain pending while their animation plays. `ApplyOutcome(completed=true)` runs only after the renderer reaches `DesktopRuntimeHost.CompleteMotion`; owner stop records an interrupted outcome and does not commit the planned end posture.
+- The developer Behavior Agent switch no longer replaces the formal autonomous scheduler. Every autonomous tick uses one posture-compatible lifecycle selector, one state, and one cooldown/history table. Temperament, boredom, curiosity, energy, stress, mood, arousal, comfort, dwell, cooldown, and repetition influence selection.
+- Autonomous lifecycle completion updates posture and bounded state deltas without pretending that self-directed activity was an owner interaction. Trust and familiarity changes remain limited to completed owner/dialogue decisions.
+- Windows CI now runs on `main`, every `agent/**` push, pull requests, and manual dispatch. A successful Windows run is still required before this change is called build-verified.
+- Asset approval scopes are unchanged: legacy red/standard assets remain expired motion references, approved v4 actions remain owner-command-only, and approved P2 lifecycle assets remain the autonomous visual pool.
+
 ## Portable profile, album, and conversation data - 2026-08-22
 
 - Version-controlled, non-secret initial settings live under `config/defaults/` and are published as `WukongDefaults/` beside the executable.

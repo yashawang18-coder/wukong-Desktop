@@ -3,7 +3,8 @@ name: Windows desktop tests
 on:
   push:
     branches:
-      - agent/windows-runtime-assets-integration
+      - main
+      - "agent/**"
   pull_request:
   workflow_dispatch:
 

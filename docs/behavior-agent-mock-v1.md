@@ -1,10 +1,12 @@
 # Behavior Agent Mock v1
 
+> Runtime integration update (2026-08-23): this engine remains available for deterministic previews and owner-command planning, but it no longer owns a parallel autonomous execution path. Desktop autonomous behavior uses the single approved lifecycle scheduler and shared `PetRuntimeState`. Planned command outcomes are committed only after renderer completion.
+
 ## Scope
 
 This is a local, testable mock layer for Wukong personality, realtime state, mood, owner commands, autonomous scoring, and dialogue context. It does not promote any command mock art to production runtime.
 
-The layer is enabled only through the developer panel switch `EnableBehaviorAgentMock`. When disabled, current formal behavior routing and runtime gates remain unchanged.
+The developer panel switch `EnableBehaviorAgentMock` exposes diagnostics and decision previews. Formal runtime gates remain authoritative regardless of the switch, and autonomous playback always uses the unified approved lifecycle scheduler.
 
 ## Data Flow
 

@@ -62,6 +62,10 @@ public sealed record PetRuntimeState(
         StablePosture.Prone, 0.68, 0.24, 0.48, 0.34, 0.12, 0.72, 0.42,
         null, null, 0, null, false);
 
+    public double Curiosity { get; init; } = 0.46;
+    public double Comfort { get; init; } = 0.78;
+    public double Focus { get; init; } = 0.58;
+
     public PetRuntimeState Clamp() => this with
     {
         Energy = Clamp01(Energy),
@@ -71,6 +75,9 @@ public sealed record PetRuntimeState(
         Stress = Clamp01(Stress),
         MoodValence = Clamp01(MoodValence),
         Arousal = Clamp01(Arousal),
+        Curiosity = Clamp01(Curiosity),
+        Comfort = Clamp01(Comfort),
+        Focus = Clamp01(Focus),
         RepeatedActionCount = Math.Max(0, RepeatedActionCount)
     };
 
@@ -252,27 +259,31 @@ public sealed class BehaviorAgentMockEngine
         var repeat = string.Equals(next.LastActionId, decision.SelectedActionId, StringComparison.OrdinalIgnoreCase)
             ? next.RepeatedActionCount + 1
             : 0;
+        var ownerInteraction = decision.Source is BehaviorDecisionSource.OwnerCommand or BehaviorDecisionSource.Dialogue;
         next = next with
         {
             CurrentPosture = decision.EndPosture,
             LastActionId = decision.SelectedActionId,
-            LastInteractionAt = completedAt,
+            LastInteractionAt = ownerInteraction ? completedAt : next.LastInteractionAt,
             RepeatedActionCount = repeat,
             ActiveActionId = null,
             IsBusy = false,
             Energy = Clamp01(next.Energy + EnergyDelta(decision.SelectedActionId)),
             Hunger = Clamp01(next.Hunger + HungerDelta(decision.SelectedActionId)),
-            SocialNeed = Clamp01(next.SocialNeed - 0.05),
+            SocialNeed = Clamp01(next.SocialNeed + (ownerInteraction ? -0.05 : 0.005)),
             Boredom = Clamp01(next.Boredom - 0.08),
             Stress = Clamp01(next.Stress - 0.02),
             MoodValence = Clamp01(next.MoodValence + 0.025)
         };
-        relation = relation with
+        if (ownerInteraction)
         {
-            Trust = Clamp01(relation.Trust + 0.01),
-            Familiarity = Clamp01(relation.Familiarity + 0.006),
-            RecentPositiveInteractions = relation.RecentPositiveInteractions + 1
-        };
+            relation = relation with
+            {
+                Trust = Clamp01(relation.Trust + 0.01),
+                Familiarity = Clamp01(relation.Familiarity + 0.006),
+                RecentPositiveInteractions = relation.RecentPositiveInteractions + 1
+            };
+        }
         events.Add("outcome:completed");
         events.Add($"posture:{decision.EndPosture}");
         return new PetStateUpdate(next, relation, events);

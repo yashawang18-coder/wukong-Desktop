@@ -1495,6 +1495,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private RelationshipState _relationshipState = RelationshipState.Default;
     private TemperamentProfile _temperament = TemperamentProfile.Default;
     private PetDecision? _lastAgentDecision;
+    private PetDecision? _pendingAgentDecision;
+    private int _decisionSeed = 1508;
+    private int _autonomousDecisionCount;
     private DateTimeOffset _lastTapAt = DateTimeOffset.MinValue;
     private int _tapBurst;
     private DateTimeOffset _currentStartedAt = DateTimeOffset.MinValue;
@@ -1569,14 +1572,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public string AgentStatus { get; private set; } = "本地 fallback runtime";
     public string Willingness { get; private set; } = "悟空现在很平静，愿意听你说话，但不一定想起来";
     public string Reply { get; private set; } = "让我再趴一会儿";
-    public double Energy { get; private set; } = 0.68;
-    public double Hunger { get; private set; } = 0.22;
-    public double Mood { get; private set; } = 0.72;
-    public double Curiosity { get; private set; } = 0.46;
-    public double Social { get; private set; } = 0.52;
-    public double Stress { get; private set; } = 0.12;
-    public double Focus { get; private set; } = 0.58;
-    public double Comfort { get; private set; } = 0.78;
+    public double Energy => _agentState.Energy;
+    public double Hunger => _agentState.Hunger;
+    public double Mood => _agentState.MoodValence;
+    public double Curiosity => _agentState.Curiosity;
+    public double Social => _agentState.SocialNeed;
+    public double Stress => _agentState.Stress;
+    public double Focus => _agentState.Focus;
+    public double Comfort => _agentState.Comfort;
 
     public void SetBehaviorAgentMockEnabled(bool enabled)
     {
@@ -1591,6 +1594,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         _temperament = temperament;
         _agentState = state.Clamp();
         _relationshipState = relationship;
+        _decisionSeed = seed;
+        _autonomousDecisionCount = 0;
         Trace("behavior_agent_state", $"seed={seed} posture={_agentState.CurrentPosture} energy={_agentState.Energy:0.00} hunger={_agentState.Hunger:0.00} social={_agentState.SocialNeed:0.00} boredom={_agentState.Boredom:0.00} stress={_agentState.Stress:0.00}");
         OnPropertyChanged(nameof(CurrentStablePosture));
         OnPropertyChanged(nameof(BehaviorAgentSnapshot));
@@ -1723,6 +1728,12 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     private PetActionResult SubmitMockDecision(PetDecision decision, BehaviorRequestSource source, string trigger, bool allowAutonomous)
     {
+        if (decision.ReasonCodes.Contains("busy_non_interruptible", StringComparer.OrdinalIgnoreCase))
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "busy_non_interruptible", "Current action is not safely interruptible.");
+            return PetActionResult.Deferred;
+        }
+
         if (source == BehaviorRequestSource.AutonomousTick && !allowAutonomous)
         {
             UpdateDecision(PetActionResult.Deferred, source.ToString(), "mock_autonomous_forbidden", "Mock owner command cannot be started by autonomous tick.");
@@ -1736,12 +1747,6 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             return PetActionResult.MissingAsset;
         }
 
-        _agentState = _agentState.Clamp() with
-        {
-            IsBusy = true,
-            ActiveActionId = decision.SelectedActionId,
-            LastInteractionAt = _now()
-        };
         var executionMode = motion.RuntimeEnabled ? BehaviorExecutionMode.Normal : BehaviorExecutionMode.PrototypePreview;
         var gate = EvaluateGate(source, executionMode, motion);
         if (!gate.Allowed)
@@ -1760,20 +1765,16 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             return PetActionResult.Deferred;
         }
 
-        Accept(motion, source, executionMode, trigger, returnToIdle: true, loopCycles: 1);
-        var result = PetActionResult.Accepted;
-        if (result == PetActionResult.Accepted)
+        _agentState = _agentState.Clamp() with
         {
-            var update = _behaviorAgent.ApplyOutcome(_agentState, _relationshipState, decision, completed: true, _now());
-            _agentState = update.State;
-            _relationshipState = update.Relationship;
-            CurrentBehaviorId = motion.BehaviorId;
-            CurrentAction = motion.DisplayName;
-            Trace("behavior_agent_outcome", string.Join(",", update.Events));
-            OnPropertyChanged(nameof(CurrentStablePosture));
-            OnPropertyChanged(nameof(BehaviorAgentSnapshot));
-        }
-        return result;
+            IsBusy = true,
+            ActiveActionId = decision.SelectedActionId
+        };
+        _pendingAgentDecision = decision;
+        Accept(motion, source, executionMode, trigger, returnToIdle: true, loopCycles: 1);
+        Trace("behavior_agent_started", $"decision={decision.DecisionId} action={decision.SelectedActionId}");
+        OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+        return PetActionResult.Accepted;
     }
 
     private PlayableMotion? BuildMotionForDecision(PetDecision decision)
@@ -1909,6 +1910,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public Task<PetActionResult> StopAsync(string reason = "stop")
     {
+        CompletePendingAgentDecision(completed: false, "owner_stop");
         IsPetrified = false;
         ClearCoin();
         OnPropertyChanged(nameof(IsPetrified));
@@ -1920,21 +1922,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public Task SubmitAutonomousTickAsync()
     {
-        if (EnableBehaviorAgentMock && !_agentState.IsBusy)
-        {
-            var decision = _behaviorAgent.Decide(CreateDecisionContext(OwnerCommandKind.None, seed: 1508, allowInitiative: true));
-            _lastAgentDecision = decision;
-            TraceDecision(decision, "autonomous_mock");
-            if (decision.SelectedActionId is MockCommandActionIds.PlayfulJump or MockCommandActionIds.PlayfulSpin or MockCommandActionIds.OrientToOwner or MockCommandActionIds.QuietSit or MockCommandActionIds.QuietProne or MockCommandActionIds.Rest)
-                SubmitMockDecision(decision, BehaviorRequestSource.AutonomousTick, "autonomous:behavior_agent_mock", allowAutonomous: true);
-            OnPropertyChanged(nameof(BehaviorAgentSnapshot));
-            return Task.CompletedTask;
-        }
-
-        Energy = Clamp01(Energy - 0.015);
-        Hunger = Clamp01(Hunger + 0.006);
-        Curiosity = Clamp01(Curiosity + 0.018);
-        Comfort = Clamp01(Comfort + 0.004);
+        AdvanceRuntimeStateForAutonomousTick();
         RaiseMetrics();
 
         var now = _now();
@@ -1947,6 +1935,19 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             ? _random.Next(28, 51)
             : _random.Next(14, 25));
         return Task.CompletedTask;
+    }
+
+    private void AdvanceRuntimeStateForAutonomousTick()
+    {
+        _agentState = _agentState.Clamp() with
+        {
+            Energy = Clamp01(_agentState.Energy - 0.015),
+            Hunger = Clamp01(_agentState.Hunger + 0.006),
+            SocialNeed = Clamp01(_agentState.SocialNeed + 0.004),
+            Boredom = Clamp01(_agentState.Boredom + 0.012),
+            Curiosity = Clamp01(_agentState.Curiosity + 0.018),
+            Comfort = Clamp01(_agentState.Comfort + 0.004)
+        };
     }
 
     public async Task SubmitFakeModelMessageAsync(string text)
@@ -1995,7 +1996,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         {
             var completedRequestMotion = _currentMotion;
             _currentInterruptible = true;
-            _agentState = _agentState with { IsBusy = false, ActiveActionId = null };
+            CompletePendingAgentDecision(completed: true, $"motion_complete:{phase}");
             Trace("mock_motion_completed", $"{behaviorId} phase={phase} posture={_agentState.CurrentPosture}");
             OnPropertyChanged(nameof(BehaviorAgentSnapshot));
             StartCommandEndPoseHold(behaviorId, _agentState.CurrentPosture, $"command_complete:{behaviorId}", completedRequestMotion);
@@ -2013,16 +2014,35 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             var posture = completedFullLifecycle && string.Equals(phase, "exit", StringComparison.OrdinalIgnoreCase)
                 ? StablePosture.Stand
                 : StablePostureFromPose(completedMotion.EndPose, _agentState.CurrentPosture);
-            _agentState = _agentState with { CurrentPosture = posture, IsBusy = false, ActiveActionId = null };
+            var repeated = string.Equals(_agentState.LastActionId, behaviorId, StringComparison.OrdinalIgnoreCase)
+                ? _agentState.RepeatedActionCount + 1
+                : 0;
+            _agentState = _agentState with
+            {
+                CurrentPosture = posture,
+                LastActionId = behaviorId,
+                RepeatedActionCount = repeated,
+                IsBusy = false,
+                ActiveActionId = null,
+                Energy = Clamp01(_agentState.Energy - (completedFullLifecycle ? 0.06 : 0.005)),
+                Hunger = Clamp01(_agentState.Hunger + (completedFullLifecycle ? 0.012 : 0.002)),
+                Boredom = Clamp01(_agentState.Boredom - (completedFullLifecycle ? 0.14 : 0.025)),
+                MoodValence = Clamp01(_agentState.MoodValence + (completedFullLifecycle ? 0.015 : 0.003))
+            };
             Trace("lifecycle_motion_completed", $"{behaviorId} phase={phase} posture={posture}");
+            RaiseMetrics();
             StartStablePostureIdle(posture, $"lifecycle_complete:{behaviorId}");
             return;
         }
 
-        Mood = Clamp01(Mood + 0.01);
-        Comfort = Clamp01(Comfort + 0.01);
-        if (behaviorId == Phase15BehaviorIds.ProneTouch || behaviorId == Phase15BehaviorIds.StrokeEnjoy)
-            Social = Clamp01(Social + 0.04);
+        _agentState = _agentState with
+        {
+            MoodValence = Clamp01(_agentState.MoodValence + 0.01),
+            Comfort = Clamp01(_agentState.Comfort + 0.01),
+            SocialNeed = behaviorId == Phase15BehaviorIds.ProneTouch || behaviorId == Phase15BehaviorIds.StrokeEnjoy
+                ? Clamp01(_agentState.SocialNeed - 0.04)
+                : _agentState.SocialNeed
+        };
         Trace("motion_completed", $"{behaviorId} phase={phase}");
         StartIdle("safe_return");
         RaiseMetrics();
@@ -2166,6 +2186,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         var loopCycles = stableIdle || keepPetrified || longRunningEffect
             ? int.MaxValue
             : 2;
+        if (source == BehaviorRequestSource.AutonomousTick && !stableIdle)
+        {
+            _agentState = _agentState with
+            {
+                IsBusy = true,
+                ActiveActionId = behaviorId
+            };
+        }
         Accept(motion, source, executionMode, trigger, returnToIdle: !stableIdle && !keepPetrified, loopCycles: loopCycles);
         return PetActionResult.Accepted;
     }
@@ -2344,10 +2372,10 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         {
             case StablePosture.Stand:
                 AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.StandIdleMicroloop,
-                    0.52 + Comfort * 0.18 + (workQuiet ? 0.14 : 0.04), "autonomous:stable_stand_microloop");
+                    0.52 + Comfort * 0.18 + (1 - _agentState.Arousal) * 0.10 + (workQuiet ? 0.14 : 0.04), "autonomous:stable_stand_microloop");
                 if (elapsed >= TimeSpan.FromSeconds(24) && Energy >= 0.28 && Stress < 0.68)
                     AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.LivelyDailyP2,
-                        0.42 + Curiosity * 0.58 + Mood * 0.18 + Energy * 0.22 - Stress * 0.55 + (workQuiet ? 0 : 0.12),
+                        0.32 + Curiosity * 0.46 + _agentState.Boredom * 0.30 + Mood * 0.18 + Energy * 0.22 - Stress * 0.55 + _temperament.Activity01 * 0.18 + _temperament.Mischief01 * 0.08 + (workQuiet ? 0 : 0.12),
                         Energy < 0.38 ? "autonomous:state_driven_rest_lifecycle" : "autonomous:state_driven_lively_daily");
                 break;
             case StablePosture.Sit:
@@ -2371,7 +2399,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             return candidate with { Score = Math.Max(0.05, candidate.Score * penalty) };
         }).ToArray();
         var total = adjusted.Sum(x => x.Score);
-        var draw = _random.NextDouble() * total;
+        var decisionRandom = new Random(HashCode.Combine(_decisionSeed, _autonomousDecisionCount++, (int)_agentState.CurrentPosture));
+        var draw = decisionRandom.NextDouble() * total;
         foreach (var candidate in adjusted)
         {
             draw -= candidate.Score;
@@ -2380,6 +2409,25 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         }
         var fallback = adjusted[^1];
         return (fallback.BehaviorId, fallback.Reason);
+    }
+
+    private void CompletePendingAgentDecision(bool completed, string reason)
+    {
+        var decision = _pendingAgentDecision;
+        _pendingAgentDecision = null;
+        if (decision is null)
+        {
+            _agentState = _agentState with { IsBusy = false, ActiveActionId = null };
+            return;
+        }
+
+        var update = _behaviorAgent.ApplyOutcome(_agentState, _relationshipState, decision, completed, _now());
+        _agentState = update.State;
+        _relationshipState = update.Relationship;
+        Trace("behavior_agent_outcome", $"{reason},{string.Join(",", update.Events)}");
+        OnPropertyChanged(nameof(CurrentStablePosture));
+        OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+        RaiseMetrics();
     }
 
     private void AddIfEnabled(List<(string BehaviorId, double Score, string Reason)> candidates, string behaviorId, double score, string reason)

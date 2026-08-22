@@ -1,5 +1,13 @@
 # Decisions
 
+## 2026-08-23 - use one runtime state and one autonomous scheduler
+
+Desktop behavior state has one authority: `PetRuntimeState`. UI metrics are projections, not an independently mutated copy. A requested action may mark the state busy, but posture, relationship, and completed-action effects are committed only from the renderer completion callback. Interrupted or failed playback must not commit the planned end posture.
+
+The Behavior Agent developer switch may expose diagnostics and deterministic previews, but it must not replace production autonomous scheduling with a second execution path. Autonomous selection uses the approved posture-compatible lifecycle pool until additional daily assets receive their own autonomous approval. Legacy red/standard assets and owner-command-only v4 actions remain outside that pool.
+
+GitHub Actions validates pushes to `agent/**` in addition to `main`, pull requests, and manual dispatch so feature commits cannot silently bypass the Windows build.
+
 ## Portable user data and shareable defaults - 2026-08-22
 
 Decision:

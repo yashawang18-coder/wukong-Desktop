@@ -999,8 +999,9 @@ static void ApprovedOwnerCommandsTolerateMissingPostureBridgeAssets()
 
     var sit = runtime.SubmitOwnerCommandAsync("坐").GetAwaiter().GetResult();
     Assert(sit == PetActionResult.Accepted, "sit command was not accepted");
-    Assert(runtime.CurrentStablePosture == StablePosture.Sit, "sit command did not update stable posture");
+    Assert(runtime.CurrentStablePosture == StablePosture.Prone, "sit command updated posture before playback completed");
     runtime.CompleteMotion(MockCommandActionIds.Sit, "test_complete");
+    Assert(runtime.CurrentStablePosture == StablePosture.Sit, "sit command did not update stable posture after playback completed");
 
     var spin = runtime.SubmitOwnerCommandAsync("转圈").GetAwaiter().GetResult();
     Assert(spin == PetActionResult.Accepted, "spin from sit should play available spin while recording missing bridge");
@@ -2077,6 +2078,8 @@ static void AutonomousTickCanRequestMotion()
     var requests = new List<PetMotionRequest>();
     runtime.MotionRequested += (_, item) => requests.Add(item);
     runtime.StartIdle("Startup");
+    var energyBeforeTick = runtime.Energy;
+    var hungerBeforeTick = runtime.Hunger;
     Assert(runtime.CurrentStablePosture == StablePosture.Stand, "default healthy runtime state should start in stable stand");
     Assert(requests.Last().Motion.BehaviorId == LifecycleCandidateBehaviorIds.StandIdleMicroloop, "startup is still hard-coded to prone idle");
 
@@ -2091,6 +2094,8 @@ static void AutonomousTickCanRequestMotion()
         runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
     }
 
+    Assert(runtime.Energy < energyBeforeTick, "unified runtime state did not reduce energy during autonomous ticks");
+    Assert(runtime.Hunger > hungerBeforeTick, "unified runtime state did not increase hunger during autonomous ticks");
     Assert(requests.Any(x => x.Motion.BehaviorId == LifecycleCandidateBehaviorIds.LivelyDailyP2), "state-driven autonomous scheduling never selected the complete lively lifecycle");
     Assert(requests.All(x => x.Motion.BehaviorId is LifecycleCandidateBehaviorIds.ProneIdleMicroloop or LifecycleCandidateBehaviorIds.SitIdleMicroloop or LifecycleCandidateBehaviorIds.StandIdleMicroloop or LifecycleCandidateBehaviorIds.LivelyDailyP2), "autonomous tick selected an expired or out-of-scope behavior");
 }
