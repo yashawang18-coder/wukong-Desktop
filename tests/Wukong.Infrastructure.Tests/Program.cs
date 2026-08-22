@@ -22,7 +22,8 @@ var tests = new (string Name, Func<Task> Run)[]
     ("memory configuration store persists switches", MemoryConfigurationStorePersistsSwitches),
     ("portable data layout seeds defaults and migrates user files", PortableDataLayoutSeedsAndMigrates),
     ("conversation history file is removed after final clear", ConversationHistoryFileIsRemovedAfterFinalClear),
-    ("mock context editing requires developer session", MockContextRequiresDeveloperSession)
+    ("mock context editing requires developer session", MockContextRequiresDeveloperSession),
+    ("live runtime context follows current posture action and mood", LiveRuntimeContextFollowsDesktopState)
 };
 
 static Task PortableDataLayoutSeedsAndMigrates()
@@ -337,6 +338,35 @@ static Task MockContextRequiresDeveloperSession()
     mock.Update(PersonalitySnapshot.Default with { Affection = 0.2 }, RelationshipSnapshot.Default, PetRuntimeStateSnapshot.Default);
     Assert(Math.Abs(mock.GetStateAsync().Result.Personality.Affection - 0.2) < 0.001, "authenticated mock update failed");
     return Task.CompletedTask;
+}
+
+static async Task LiveRuntimeContextFollowsDesktopState()
+{
+    var live = PetRuntimeStateSnapshot.Default with
+    {
+        CurrentPosture = "stand",
+        CurrentAction = "standing_observe",
+        CurrentBehavior = "wk.lifecycle.stand_idle_microloop",
+        MoodValence = 0.74
+    };
+    var session = new DeveloperSession();
+    var provider = new MockRuntimeContextStateProvider(session, () => live);
+    var first = await provider.GetStateAsync();
+    Assert(first.RuntimeState.CurrentPosture == "stand", "live standing posture was not exposed");
+    Assert(first.RuntimeState.CurrentAction == "standing_observe", "live action was not exposed");
+    Assert(Math.Abs(first.RuntimeState.MoodValence - 0.74) < 0.001, "live mood was not exposed");
+
+    live = live with { CurrentPosture = "sit", CurrentAction = "sitting_idle", MoodValence = 0.42 };
+    var second = await provider.GetStateAsync();
+    Assert(second.RuntimeState.CurrentPosture == "sit", "context retained stale posture");
+    Assert(second.RuntimeState.CurrentAction == "sitting_idle", "context retained stale action");
+    Assert(Math.Abs(second.RuntimeState.MoodValence - 0.42) < 0.001, "context retained stale mood");
+
+    session.Authenticate("0714");
+    provider.Update(PersonalitySnapshot.Default, RelationshipSnapshot.Default, PetRuntimeStateSnapshot.Default with { CurrentPosture = "prone" });
+    Assert((await provider.GetStateAsync()).RuntimeState.CurrentPosture == "prone", "authenticated developer override was ignored");
+    session.SignOut();
+    Assert((await provider.GetStateAsync()).RuntimeState.CurrentPosture == "sit", "signed-out developer override leaked into normal dialogue");
 }
 
 static ChatProviderConnection Connection(ChatProviderType provider, string baseUrl, string model, string? key) =>

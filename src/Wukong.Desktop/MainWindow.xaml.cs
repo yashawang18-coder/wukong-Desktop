@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Wukong.Application;
 using Wukong.Domain;
 
 namespace Wukong.Desktop;
@@ -42,6 +43,7 @@ public partial class MainWindow : Window
     private const double PetScaleStep = 0.08;
     private ControlPanelWindow? _controlPanel;
     private DesktopChatWindow? _chatWindow;
+    private DesktopSpeechBubbleWindow? _speechBubbleWindow;
     private PetMotionRequest? _activeRequest;
     private int _phaseIndex;
     private int _frameIndex;
@@ -68,7 +70,7 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         _runtime = new DesktopRuntimeHost();
-        _agentRuntime = DesktopAgentRuntime.CreateDefault();
+        _agentRuntime = DesktopAgentRuntime.CreateDefault(BuildConversationRuntimeState);
         _runtime.MotionRequested += Runtime_MotionRequested;
         _runtime.PetPixelSizeRequested += Runtime_PetPixelSizeRequested;
         LocationChanged += (_, _) => RepositionChat();
@@ -82,6 +84,9 @@ public partial class MainWindow : Window
             var chatWindow = _chatWindow;
             _chatWindow = null;
             chatWindow?.Close();
+            var speechBubbleWindow = _speechBubbleWindow;
+            _speechBubbleWindow = null;
+            speechBubbleWindow?.Close();
             _imageCache.Clear();
             _imageCacheOrder.Clear();
             _agentRuntime.Dispose();
@@ -978,6 +983,7 @@ public partial class MainWindow : Window
             FallbackBadge.Visibility = Visibility.Collapsed;
             PhaseBadge.Visibility = Visibility.Collapsed;
             _runtime.MarkPhase(phase, path);
+            RepositionChat();
         }
         catch (Exception ex)
         {
@@ -1038,6 +1044,7 @@ public partial class MainWindow : Window
         PhaseBadge.Visibility = Visibility.Visible;
         PhaseText.Text = $"Fallback: {reason}";
         _runtime.ReportError($"fallback:{reason}");
+        RepositionChat();
     }
 
     private bool HitVisibleBody(Point point, byte alphaThreshold = 18)
@@ -1046,7 +1053,7 @@ public partial class MainWindow : Window
         if (source is null || PetImage.ActualWidth <= 0 || PetImage.ActualHeight <= 0)
             return false;
 
-        var imagePoint = PetImage.TranslatePoint(point, PetImage);
+        var imagePoint = TranslatePoint(point, PetImage);
         if (imagePoint.X < 0 || imagePoint.Y < 0 || imagePoint.X > PetImage.ActualWidth || imagePoint.Y > PetImage.ActualHeight)
             return false;
 
@@ -1084,14 +1091,40 @@ public partial class MainWindow : Window
 
     private void ToggleChat()
     {
-        _chatWindow ??= new DesktopChatWindow(_agentRuntime) { Owner = this };
-        _chatWindow.Toggle(SystemParameters.WorkArea, CurrentBounds());
+        EnsureChatWindow();
+        if (_chatWindow!.IsExpanded)
+            _chatWindow.Collapse();
+        else
+            OpenChatForInput();
     }
 
     private void OpenChatForInput()
     {
-        _chatWindow ??= new DesktopChatWindow(_agentRuntime) { Owner = this };
-        _chatWindow.ShowForInput(SystemParameters.WorkArea, CurrentBounds());
+        EnsureChatWindow();
+        var workArea = SystemParameters.WorkArea;
+        var visiblePet = CurrentVisiblePetBounds();
+        var adjusted = DesktopChatPlacement.MakeRoomBelow(
+            workArea,
+            visiblePet,
+            new Size(_chatWindow!.Width, _chatWindow.Height));
+        var verticalShift = adjusted.Top - visiblePet.Top;
+        if (Math.Abs(verticalShift) > 0.01)
+            ApplyVisiblePlacement(new Point(Left, Top + verticalShift));
+        _chatWindow.ShowForInput(workArea, CurrentVisiblePetBounds());
+    }
+
+    private void EnsureChatWindow()
+    {
+        if (_chatWindow is not null)
+            return;
+        _chatWindow = new DesktopChatWindow(_agentRuntime);
+        _chatWindow.AssistantReplyAvailable += (_, text) => ShowSpeechBubble(text);
+    }
+
+    private void ShowSpeechBubble(string text)
+    {
+        _speechBubbleWindow ??= new DesktopSpeechBubbleWindow();
+        _speechBubbleWindow.ShowMessage(text, SystemParameters.WorkArea, CurrentVisiblePetBounds());
     }
 
     private async void InitiativeSpeechTimer_Tick(object? sender, EventArgs e)
@@ -1105,8 +1138,7 @@ public partial class MainWindow : Window
 
             var text = InitiativeSpeechSchedule.SelectMessage(_initiativeSpeechRandom, _runtime.CurrentStablePosture);
             await _agentRuntime.AppendLocalAssistantMessageAsync(text);
-            _chatWindow ??= new DesktopChatWindow(_agentRuntime) { Owner = this };
-            await _chatWindow.ShowInitiativeAsync(SystemParameters.WorkArea, CurrentBounds());
+            ShowSpeechBubble(text);
         }
         catch (Exception ex)
         {
@@ -1126,14 +1158,63 @@ public partial class MainWindow : Window
         _initiativeSpeechTimer.Start();
     }
 
-    private void RepositionChat() =>
-        _chatWindow?.Reposition(SystemParameters.WorkArea, CurrentBounds());
+    private void RepositionChat()
+    {
+        if (_chatWindow is null && _speechBubbleWindow is null)
+            return;
+        var workArea = SystemParameters.WorkArea;
+        var bounds = CurrentVisiblePetBounds();
+        _chatWindow?.Reposition(workArea, bounds);
+        _speechBubbleWindow?.Reposition(workArea, bounds);
+    }
+
+    private Rect CurrentVisiblePetBounds()
+    {
+        var windowBounds = CurrentBounds();
+        if (PetImage.Source is not BitmapSource source ||
+            PetImage.ActualWidth <= 0 || PetImage.ActualHeight <= 0)
+            return windowBounds;
+
+        try
+        {
+            var origin = PetImage.TranslatePoint(new Point(0, 0), this);
+            var imageBounds = new Rect(
+                windowBounds.Left + origin.X,
+                windowBounds.Top + origin.Y,
+                PetImage.ActualWidth,
+                PetImage.ActualHeight);
+            var metrics = string.IsNullOrWhiteSpace(_currentFramePath)
+                ? new MotionVisibleMetrics(source.PixelWidth, source.PixelHeight, new Int32Rect(0, 0, source.PixelWidth, source.PixelHeight))
+                : MotionVisualSizer.Measure(_currentFramePath);
+            return DesktopChatPlacement.VisibleSubjectBounds(imageBounds, metrics);
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("visible_pet_bounds_failed", ex);
+            return windowBounds;
+        }
+    }
 
     private Rect CurrentBounds() => new(
         Left,
         Top,
         ActualWidth > 0 ? ActualWidth : Width,
         ActualHeight > 0 ? ActualHeight : Height);
+
+    private PetRuntimeStateSnapshot BuildConversationRuntimeState() => new(
+        _runtime.CurrentBehaviorId,
+        Math.Clamp((_runtime.Energy + _runtime.Curiosity) / 2, 0, 1),
+        _runtime.Stress,
+        _runtime.Social,
+        _runtime.Curiosity,
+        _runtime.Curiosity,
+        1.0 - _runtime.Energy,
+        _runtime.Comfort)
+    {
+        CurrentPosture = _runtime.CurrentStablePosture.ToString(),
+        CurrentAction = _runtime.CurrentAction,
+        MoodValence = _runtime.Mood
+    };
 
     private void ApplyVisiblePlacement(Point preferred)
     {

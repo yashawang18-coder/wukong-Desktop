@@ -6,8 +6,8 @@
 - API keys remain exclusively in Windows Credential Manager and are never copied into portable files.
 - Portable albums belong under `WukongData/albums/`. User albums, conversation history, memory candidates, and credentials are not committed to Git.
 - Clearing the final conversation session deletes `WukongData/agent/conversation-history.json`; the control panel also exposes an explicit clear-all action for preparing a blank shareable package.
-- Double-clicking the visible pet opens and focuses the compact chat window above the pet. Low-frequency initiative speech uses local templates, never invokes a model in the background, and writes to the same removable conversation history.
-- Album unlink now retains a selected, gray record until the user deletes that record; both operations persist through the same Markdown media list and never delete the local original image.
+- Double-clicking the visible pet opens a single-row input directly below the current frame's Alpha-visible subject. Replies and low-frequency initiative speech appear in a separate bubble directly above the visible subject; initiative speech uses local templates and never invokes a model in the background.
+- Album media unlink and record deletion persist through the same Markdown media list without deleting local originals. Child-album removal is persisted separately and removes only the album from Wukong's catalog.
 
 ## WK-INTERACTION-CAR-RIDE-CANDIDATE-v8 runtime promotion - 2026-08-16
 

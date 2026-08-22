@@ -8,7 +8,7 @@ Decision:
 - Ship non-secret initial files from `config/defaults/` as `WukongDefaults/` and seed only missing user files.
 - Keep albums, conversation history, memory candidates, logs, and credentials out of Git. A locally assembled package may include albums under `WukongData/albums/`, and conversation history can be removed before sharing.
 - Keep API keys in Windows Credential Manager; neither migration nor package preparation may export them.
-- Double-clicking the pet opens the focused desktop chat instead of the control panel. Occasional initiative speech is local-template based and does not call a model without an explicit conversation request.
+- Double-clicking the pet opens a compact single-row input directly below the current frame's Alpha-visible subject instead of opening the control panel. Replies appear above the visible subject in a separate speech bubble. Occasional initiative speech is local-template based and does not call a model without an explicit conversation request.
 
 Reason:
 

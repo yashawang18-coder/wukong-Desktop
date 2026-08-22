@@ -368,6 +368,7 @@
                   <Button x:Name="UnbindAlbumMediaButton" Content="解绑素材" Style="{StaticResource SecondaryButton}" Click="UnbindAlbumMedia_Click" />
                   <Button x:Name="DeleteAlbumMediaButton" Content="删除记录" Style="{StaticResource SecondaryButton}" Click="DeleteAlbumMedia_Click" />
                   <Button Content="打开子相册" Style="{StaticResource SecondaryButton}" Click="OpenSelectedAlbum_Click" />
+                  <Button x:Name="DeleteSelectedAlbumButton" Content="删除子相册" Style="{StaticResource SecondaryButton}" Click="DeleteSelectedAlbum_Click" />
                 </WrapPanel>
               </StackPanel>
             </Border>
@@ -432,31 +433,31 @@
                 <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="14" Background="White">
                   <StackPanel>
                     <Grid Style="{StaticResource SettingRow}">
-                      <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                      <StackPanel>
-                        <TextBlock Text="使用长期记忆" FontWeight="SemiBold" />
-                        <TextBlock Text="回答前检索档案、互动和习惯记忆。" Style="{StaticResource SubText}" Margin="0,4,0,0" />
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="52" /><ColumnDefinition /><ColumnDefinition Width="52" /></Grid.ColumnDefinitions>
+                      <StackPanel x:Name="LongTermMemoryText" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="使用长期记忆" FontWeight="SemiBold" TextAlignment="Center" />
+                        <TextBlock Text="回答前检索档案、互动和习惯记忆。" Style="{StaticResource SubText}" Margin="0,4,0,0" TextAlignment="Center" />
                       </StackPanel>
-                      <ToggleButton x:Name="UseLongTermMemoryCheck" Grid.Column="1" Style="{StaticResource SwitchToggle}" Checked="MemoryConfig_Changed" Unchecked="MemoryConfig_Changed" />
+                      <ToggleButton x:Name="UseLongTermMemoryCheck" Grid.Column="2" Style="{StaticResource SwitchToggle}" Margin="0" HorizontalAlignment="Right" Checked="MemoryConfig_Changed" Unchecked="MemoryConfig_Changed" />
                     </Grid>
                     <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
                       <Grid Style="{StaticResource SettingRow}">
-                        <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                        <StackPanel>
-                          <TextBlock Text="使用相册记忆" FontWeight="SemiBold" />
-                          <TextBlock Text="允许检索已保存描述的相册照片。" Style="{StaticResource SubText}" Margin="0,4,0,0" />
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="52" /><ColumnDefinition /><ColumnDefinition Width="52" /></Grid.ColumnDefinitions>
+                        <StackPanel x:Name="AlbumMemoryText" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                          <TextBlock Text="使用相册记忆" FontWeight="SemiBold" TextAlignment="Center" />
+                          <TextBlock Text="允许检索已保存描述的相册照片。" Style="{StaticResource SubText}" Margin="0,4,0,0" TextAlignment="Center" />
                         </StackPanel>
-                        <ToggleButton x:Name="UseAlbumMemoryCheck" Grid.Column="1" Style="{StaticResource SwitchToggle}" Checked="MemoryConfig_Changed" Unchecked="MemoryConfig_Changed" />
+                        <ToggleButton x:Name="UseAlbumMemoryCheck" Grid.Column="2" Style="{StaticResource SwitchToggle}" Margin="0" HorizontalAlignment="Right" Checked="MemoryConfig_Changed" Unchecked="MemoryConfig_Changed" />
                       </Grid>
                     </Border>
                     <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
                       <Grid Style="{StaticResource SettingRow}">
-                        <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                        <StackPanel>
-                          <TextBlock Text="使用短期记忆" FontWeight="SemiBold" />
-                          <TextBlock Text="保留有限轮次的当前会话上下文。" Style="{StaticResource SubText}" Margin="0,4,0,0" />
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="52" /><ColumnDefinition /><ColumnDefinition Width="52" /></Grid.ColumnDefinitions>
+                        <StackPanel x:Name="ShortTermMemoryText" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                          <TextBlock Text="使用短期记忆" FontWeight="SemiBold" TextAlignment="Center" />
+                          <TextBlock Text="保留有限轮次的当前会话上下文。" Style="{StaticResource SubText}" Margin="0,4,0,0" TextAlignment="Center" />
                         </StackPanel>
-                        <ToggleButton x:Name="UseShortTermMemoryCheck" Grid.Column="1" Style="{StaticResource SwitchToggle}" Checked="MemoryConfig_Changed" Unchecked="MemoryConfig_Changed" />
+                        <ToggleButton x:Name="UseShortTermMemoryCheck" Grid.Column="2" Style="{StaticResource SwitchToggle}" Margin="0" HorizontalAlignment="Right" Checked="MemoryConfig_Changed" Unchecked="MemoryConfig_Changed" />
                       </Grid>
                     </Border>
                   </StackPanel>

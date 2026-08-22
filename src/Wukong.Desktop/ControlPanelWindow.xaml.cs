@@ -205,6 +205,41 @@ public partial class ControlPanelWindow : Window
             OpenFolder(_selectedAlbum.DirectoryPath);
     }
 
+    private void DeleteSelectedAlbum_Click(object sender, RoutedEventArgs e)
+    {
+        if (_albumUnbindInProgress)
+            return;
+        if (_selectedAlbum is null)
+        {
+            AlbumStatusText.Text = "请先选择要删除的子相册。";
+            return;
+        }
+
+        var selected = _selectedAlbum;
+        var confirm = MessageBox.Show(
+            this,
+            $"从悟空相册中删除子相册“{selected.Name}”？\n\n本地文件夹和原始图片会保留。",
+            "删除子相册",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes)
+            return;
+
+        var result = AlbumFolderVisibility.RemoveFromCatalog(selected, markerPath =>
+        {
+            File.WriteAllText(markerPath, "hidden_from_wukong_album=true\n", System.Text.Encoding.UTF8);
+            return true;
+        });
+        if (result.Status != AlbumFolderRemovalStatus.Success)
+        {
+            AlbumStatusText.Text = result.UserMessage;
+            return;
+        }
+
+        RefreshAlbumView();
+        AlbumStatusText.Text = result.UserMessage;
+    }
+
     private void AlbumMediaList_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateSelectedAlbumMediaPreview();
 
     private void AlbumPreviousMedia_Click(object sender, RoutedEventArgs e) => MoveAlbumMediaSelection(-1);
@@ -273,10 +308,7 @@ public partial class ControlPanelWindow : Window
                 });
             AlbumStatusText.Text = result.UserMessage;
             if (result.Status == AlbumMediaUnbindStatus.Success)
-            {
-                AlbumMediaList.SelectedIndex = Math.Clamp(selectedIndex, 0, _albumMediaBindings.Count - 1);
-                UpdateSelectedAlbumMediaPreview();
-            }
+                SelectAlbumMediaAfterMutation(selectedIndex);
             else
                 UpdateSelectedAlbumMediaPreview();
         }
@@ -1232,7 +1264,9 @@ public partial class ControlPanelWindow : Window
             return;
         }
 
-        foreach (var directory in Directory.GetDirectories(_albumRoot).OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
+        foreach (var directory in Directory.GetDirectories(_albumRoot)
+                     .Where(AlbumFolderVisibility.IsVisible)
+                     .OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
             _albumFolders.Add(AlbumFolderItem.FromDirectory(directory));
 
         AlbumStatusText.Text = $"{_albumFolders.Count} albums";
@@ -1250,6 +1284,8 @@ public partial class ControlPanelWindow : Window
             AlbumDescriptionText.Text = string.Empty;
             _albumMediaBindings.Clear();
             AlbumMarkdownPathText.Text = "\u9009\u62e9\u672c\u5730\u76f8\u518c\u76ee\u5f55\u540e\uff0c\u4f1a\u8bfb\u53d6\u6bcf\u4e2a\u5b50\u6587\u4ef6\u5939\u7684 markdown \u63cf\u8ff0\u3002";
+            DeleteSelectedAlbumButton.IsEnabled = false;
+            UpdateSelectedAlbumMediaPreview();
             return;
         }
 
@@ -1263,6 +1299,7 @@ public partial class ControlPanelWindow : Window
         AlbumMarkdownPathText.Text = string.IsNullOrWhiteSpace(item.MarkdownPath)
             ? "\u672a\u627e\u5230 markdown\uff0c\u4fdd\u5b58\u540e\u4f1a\u521b\u5efa album.md"
             : item.MarkdownPath;
+        DeleteSelectedAlbumButton.IsEnabled = true;
         UpdateSelectedAlbumMediaPreview();
     }
 
@@ -1276,12 +1313,12 @@ public partial class ControlPanelWindow : Window
     {
         var selected = AlbumMediaList.SelectedItem as AlbumMediaItem;
         AlbumPreviewImage.Source = LoadBitmap(selected?.FullPath);
-        AlbumPreviewImage.Opacity = selected is { IsBound: false } ? 0.48 : 1.0;
+        AlbumPreviewImage.Opacity = 1.0;
         AlbumMediaStatusText.Text = selected is null
             ? (_albumMediaBindings.Count == 0 ? "暂无图片素材" : "请选择图片")
             : $"{AlbumMediaList.SelectedIndex + 1}/{_albumMediaBindings.Count} - {selected.FileName} - {selected.Status}";
         AlbumMediaEmptyState.Visibility = _albumMediaBindings.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        UnbindAlbumMediaButton.IsEnabled = selected is { IsBound: true };
+        UnbindAlbumMediaButton.IsEnabled = selected is not null;
         DeleteAlbumMediaButton.IsEnabled = selected is not null;
     }
 
@@ -1311,7 +1348,7 @@ public partial class ControlPanelWindow : Window
         var markdownPath = string.IsNullOrWhiteSpace(_selectedAlbum.MarkdownPath)
             ? Path.Combine(_selectedAlbum.DirectoryPath, "album.md")
             : _selectedAlbum.MarkdownPath;
-        var boundFiles = mediaFiles.Where(x => x.IsBound).Select(x => x.FileName).ToArray();
+        var boundFiles = mediaFiles.Select(x => x.FileName).ToArray();
         File.WriteAllText(markdownPath, _selectedAlbum.CreateMarkdown(CurrentAlbumDateText(), AlbumDescriptionText.Text, boundFiles));
         if (!refreshView)
             return;
@@ -1380,7 +1417,48 @@ public partial class ControlPanelWindow : Window
     }
 }
 
-public sealed record AlbumMediaItem(string FileName, string FullPath, string Status, bool IsBound = true);
+public sealed record AlbumMediaItem(string FileName, string FullPath, string Status);
+
+public enum AlbumFolderRemovalStatus
+{
+    Success,
+    NoSelection,
+    PersistenceFailed
+}
+
+public sealed record AlbumFolderRemovalResult(AlbumFolderRemovalStatus Status, string UserMessage);
+
+public static class AlbumFolderVisibility
+{
+    public const string HiddenMarkerFileName = ".wukong-album-hidden";
+
+    public static bool IsVisible(string directory) =>
+        Directory.Exists(directory) && !File.Exists(Path.Combine(directory, HiddenMarkerFileName));
+
+    public static AlbumFolderRemovalResult RemoveFromCatalog(
+        AlbumFolderItem? selected,
+        Func<string, bool> persistMarker)
+    {
+        if (selected is null)
+            return new AlbumFolderRemovalResult(AlbumFolderRemovalStatus.NoSelection, "请先选择要删除的子相册。");
+
+        var markerPath = Path.Combine(selected.DirectoryPath, HiddenMarkerFileName);
+        try
+        {
+            if (!persistMarker(markerPath))
+                throw new IOException("album visibility persistence returned false");
+        }
+        catch (Exception ex)
+        {
+            try { if (File.Exists(markerPath)) File.Delete(markerPath); } catch { }
+            return new AlbumFolderRemovalResult(AlbumFolderRemovalStatus.PersistenceFailed, $"删除子相册失败：{ex.GetType().Name}");
+        }
+
+        return new AlbumFolderRemovalResult(
+            AlbumFolderRemovalStatus.Success,
+            $"已从悟空相册中删除“{selected.Name}”，本地文件夹和原图未删除。");
+    }
+}
 
 public enum AlbumMediaUnbindStatus
 {
@@ -1407,10 +1485,7 @@ public static class AlbumMediaBindingEditor
             return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.NotFound, "未找到要解绑的素材。");
 
         var original = mediaBindings[index];
-        if (!original.IsBound)
-            return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.NotFound, "该素材已经解绑，可以直接删除记录。");
-        var unbound = original with { IsBound = false, Status = "已解绑，可删除记录" };
-        mediaBindings[index] = unbound;
+        mediaBindings.RemoveAt(index);
         try
         {
             if (!persist(mediaBindings.ToArray()))
@@ -1418,7 +1493,7 @@ public static class AlbumMediaBindingEditor
         }
         catch (Exception ex)
         {
-            mediaBindings[index] = original;
+            mediaBindings.Insert(Math.Min(index, mediaBindings.Count), original);
             return new AlbumMediaUnbindResult(AlbumMediaUnbindStatus.PersistenceFailed, $"解绑失败：{ex.GetType().Name}");
         }
 

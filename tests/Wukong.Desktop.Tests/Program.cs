@@ -27,11 +27,13 @@ var tests = new (string Name, Action Run)[]
 {
     ("input adapter emits input events", InputAdapterEmitsEvents),
     ("startup factory creates one main window", StartupFactoryCreatesOneMainWindow),
+    ("desktop single instance rejects a duplicate process", DesktopSingleInstanceRejectsDuplicate),
     ("control panel xaml constructs", ControlPanelXamlConstructs),
     ("agent windows construct and desktop chat starts hidden", AgentWindowsConstructAndChatStartsHidden),
-    ("desktop chat keyboard semantics distinguish send and newline", DesktopChatKeyboardSemantics),
+    ("desktop chat uses single-line enter send semantics", DesktopChatKeyboardSemantics),
     ("desktop chat sensor is limited to lower blank region", DesktopChatSensorIsLimited),
     ("desktop chat placement stays visible at all corners", DesktopChatPlacementStaysVisible),
+    ("desktop input opens directly below the live pet window", DesktopInputOpensBelowPet),
     ("double click targets compact chat and initiative speech stays low frequency", DesktopChatAndInitiativeContract),
     ("main window pet scale changes image size", MainWindowPetScaleChangesImageSize),
     ("initial placement stays in work area", InitialPlacementStaysInWorkArea),
@@ -78,6 +80,7 @@ var tests = new (string Name, Action Run)[]
     ("album folder item reads xhs markdown album", AlbumFolderItemReadsXhsMarkdownAlbum),
     ("album markdown update preserves unknown fields", AlbumMarkdownUpdatePreservesUnknownFields),
     ("album media unlink handles persistence and keeps files", AlbumMediaUnlinkHandlesPersistenceAndKeepsFiles),
+    ("album folder removal persists and keeps local files", AlbumFolderRemovalPersistsAndKeepsFiles),
     ("autonomous tick can request a motion after dwell", AutonomousTickCanRequestMotion),
     ("bootstrap log redacts and does not throw", BootstrapLogRedactsAndDoesNotThrow)
 };
@@ -493,6 +496,15 @@ static void StartupFactoryCreatesOneMainWindow()
         throw failure;
 }
 
+static void DesktopSingleInstanceRejectsDuplicate()
+{
+    var name = "Wukong.Desktop.Tests." + Guid.NewGuid().ToString("N");
+    using var primary = DesktopSingleInstance.Acquire(name);
+    using var duplicate = DesktopSingleInstance.Acquire(name);
+    Assert(primary.IsPrimary, "first process did not acquire the desktop instance");
+    Assert(!duplicate.IsPrimary, "duplicate process acquired a second desktop instance");
+}
+
 static void ControlPanelXamlConstructs()
 {
     Exception? failure = null;
@@ -508,6 +520,10 @@ static void ControlPanelXamlConstructs()
             Assert(panel.FindName("UseLongTermMemoryCheck") is ToggleButton, "long term memory switch missing");
             Assert(panel.FindName("UseAlbumMemoryCheck") is ToggleButton, "album memory switch missing");
             Assert(panel.FindName("UseShortTermMemoryCheck") is ToggleButton, "short term memory switch missing");
+            Assert(panel.FindName("LongTermMemoryText") is StackPanel { HorizontalAlignment: HorizontalAlignment.Center, VerticalAlignment: VerticalAlignment.Center }, "long term memory text should be centered");
+            Assert(panel.FindName("AlbumMemoryText") is StackPanel { HorizontalAlignment: HorizontalAlignment.Center, VerticalAlignment: VerticalAlignment.Center }, "album memory text should be centered");
+            Assert(panel.FindName("ShortTermMemoryText") is StackPanel { HorizontalAlignment: HorizontalAlignment.Center, VerticalAlignment: VerticalAlignment.Center }, "short term memory text should be centered");
+            Assert(panel.FindName("DeleteSelectedAlbumButton") is Button, "independent album deletion button missing");
             Assert(panel.FindName("OwnerBirthdayPicker") is DatePicker, "owner birthday field missing");
             Assert(panel.FindName("OwnerPetCallNameText") is TextBox, "owner pet call name field missing");
             var prompt = panel.FindName("PetPromptText") as TextBox;
@@ -545,9 +561,18 @@ static void AgentWindowsConstructAndChatStartsHidden()
             _ = EnsureTestApplication();
             using var agent = DesktopAgentRuntime.CreateDefault();
             var chat = new DesktopChatWindow(agent);
+            var bubble = new DesktopSpeechBubbleWindow();
             var login = new DeveloperLoginWindow(agent.DeveloperSession);
             Assert(!chat.IsExpanded, "desktop chat should be hidden until the sensor is clicked");
+            Assert(chat.Height is >= 50 and <= 60, "desktop input should be a single compact row");
+            Assert(chat.FindName("ChatInput") is TextBox, "desktop chat input missing");
+            Assert(chat.FindName("ChatList") is null, "desktop input should not embed conversation history");
+            Assert(chat.FindName("ChatStatus") is null, "desktop input should not show a status row");
+            Assert(chat.FindName("CancelButton") is null, "desktop input should not show a separate cancel button");
+            var xaml = File.ReadAllText(Path.GetFullPath(Path.Combine("src", "Wukong.Desktop", "DesktopChatWindow.xaml")));
+            Assert(!xaml.Contains("和悟空说话", StringComparison.Ordinal), "desktop input should not show a redundant title");
             chat.Close();
+            bubble.Close();
             login.Close();
         }
         catch (Exception ex)
@@ -566,7 +591,7 @@ static void AgentWindowsConstructAndChatStartsHidden()
 static void DesktopChatKeyboardSemantics()
 {
     Assert(DesktopChatWindow.ShouldSend(System.Windows.Input.Key.Enter, System.Windows.Input.ModifierKeys.None), "Enter should send");
-    Assert(!DesktopChatWindow.ShouldSend(System.Windows.Input.Key.Enter, System.Windows.Input.ModifierKeys.Shift), "Shift+Enter should insert a newline");
+    Assert(!DesktopChatWindow.ShouldSend(System.Windows.Input.Key.Enter, System.Windows.Input.ModifierKeys.Shift), "Shift+Enter should not send from the single-line input");
     Assert(!DesktopChatWindow.ShouldSend(System.Windows.Input.Key.Escape, System.Windows.Input.ModifierKeys.None), "Escape should not send");
 }
 
@@ -581,7 +606,7 @@ static void DesktopChatSensorIsLimited()
 static void DesktopChatPlacementStaysVisible()
 {
     var workArea = new Rect(0, 0, 1280, 720);
-    var overlay = new Size(400, 210);
+    var overlay = new Size(420, 54);
     var pets = new[]
     {
         new Rect(0, 0, 320, 320),
@@ -591,13 +616,69 @@ static void DesktopChatPlacementStaysVisible()
     };
     foreach (var pet in pets)
     {
-        var point = DesktopChatPlacement.Place(workArea, pet, overlay);
+        var adjustedPet = DesktopChatPlacement.MakeRoomBelow(workArea, pet, overlay);
+        var point = DesktopChatPlacement.Place(workArea, adjustedPet, overlay);
         Assert(point.X >= workArea.Left && point.Y >= workArea.Top, "chat escaped top or left work area");
         Assert(point.X + overlay.Width <= workArea.Right && point.Y + overlay.Height <= workArea.Bottom, "chat escaped right or bottom work area");
+        Assert(Math.Abs(point.Y - adjustedPet.Bottom - DesktopChatPlacement.PetGap) < 0.001, "chat should stay directly below the adjusted pet");
     }
-    var bottomPosition = DesktopChatPlacement.Place(workArea, pets[2], overlay);
-    Assert(bottomPosition.Y < pets[2].Top, "chat should open upward near the bottom edge");
-    Assert(Math.Abs(pets[2].Top - (bottomPosition.Y + overlay.Height) - DesktopChatPlacement.PetGap) < 0.001, "chat should stay close above the pet");
+    var bubble = DesktopChatPlacement.PlaceSpeechAbove(workArea, new Rect(480, 300, 320, 320), new Size(320, 100));
+    Assert(bubble.Y < 300, "assistant reply bubble should be above the pet");
+
+    var visible = DesktopChatPlacement.VisibleSubjectBounds(
+        new Rect(10, 20, 310, 310),
+        new MotionVisibleMetrics(1000, 1000, new Int32Rect(200, 100, 500, 700)));
+    Assert(Math.Abs(visible.Left - 72) < 0.001, "visible alpha left coordinate is wrong");
+    Assert(Math.Abs(visible.Top - 51) < 0.001, "visible alpha top coordinate is wrong");
+    Assert(Math.Abs(visible.Width - 155) < 0.001, "visible alpha width is wrong");
+    Assert(Math.Abs(visible.Height - 217) < 0.001, "visible alpha height is wrong");
+}
+
+static void DesktopInputOpensBelowPet()
+{
+    Exception? failure = null;
+    var thread = new Thread(() =>
+    {
+        MainWindow? window = null;
+        try
+        {
+            _ = EnsureTestApplication();
+            window = new MainWindow { Left = 420, Top = 330 };
+            window.Show();
+            window.UpdateLayout();
+            typeof(MainWindow)
+                .GetMethod("OpenChatForInput", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                .Invoke(window, null);
+            var chat = (DesktopChatWindow?)typeof(MainWindow)
+                .GetField("_chatWindow", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                .GetValue(window);
+            Assert(chat is { IsVisible: true }, "double-click input window did not open");
+            chat!.UpdateLayout();
+            var visiblePet = (Rect)typeof(MainWindow)
+                .GetMethod("CurrentVisiblePetBounds", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                .Invoke(window, null)!;
+            var petBottom = visiblePet.Bottom;
+            Assert(Math.Abs(chat.Top - petBottom - DesktopChatPlacement.PetGap) < 1.0, "desktop input is not adjacent below the pet");
+            Assert(chat.Top + chat.ActualHeight <= SystemParameters.WorkArea.Bottom + 1, "desktop input escaped the work area");
+        }
+        catch (System.Reflection.TargetInvocationException ex) when (ex.InnerException is not null)
+        {
+            failure = ex.InnerException;
+        }
+        catch (Exception ex)
+        {
+            failure = ex;
+        }
+        finally
+        {
+            window?.Close();
+        }
+    });
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
+    thread.Join();
+    if (failure is not null)
+        throw failure;
 }
 
 static void DesktopChatAndInitiativeContract()
@@ -666,6 +747,7 @@ static Application EnsureTestApplication()
 
     var app = new App();
     app.InitializeComponent();
+    app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
     return app;
 }
 
@@ -1925,26 +2007,17 @@ static void AlbumMediaUnlinkHandlesPersistenceAndKeepsFiles()
         bindings = item.MediaFiles.Select(x => new AlbumMediaItem(x, Path.Combine(album, x), "found")).ToList();
         var success = AlbumMediaBindingEditor.Unbind("remove.webp", bindings, mediaFiles =>
         {
-            File.WriteAllText(item.MarkdownPath, item.CreateMarkdown("2026-08-15", item.Description, mediaFiles.Where(x => x.IsBound).Select(x => x.FileName).ToArray()), System.Text.Encoding.UTF8);
+            File.WriteAllText(item.MarkdownPath, item.CreateMarkdown("2026-08-15", item.Description, mediaFiles.Select(x => x.FileName).ToArray()), System.Text.Encoding.UTF8);
             return true;
         });
         Assert(success.Status == AlbumMediaUnbindStatus.Success, "normal unlink should succeed");
-        Assert(bindings.Count == 2 && !bindings.Single(x => x.FileName == "remove.webp").IsBound, "unbound record should remain selectable for deletion");
+        Assert(bindings.Count == 1 && bindings.Single().FileName == "keep.webp", "unbound media should disappear from the current album UI model");
         Assert(File.Exists(removeFile), "unlink must not delete local original file");
         var reloaded = AlbumFolderItem.FromDirectory(album);
         Assert(reloaded.MediaFiles.SequenceEqual(new[] { "keep.webp" }), "restart should preserve the unbound media state");
         var markdown = File.ReadAllText(item.MarkdownPath, System.Text.Encoding.UTF8);
         Assert(markdown.Contains("keep.webp", StringComparison.Ordinal), "remaining binding was not persisted");
         Assert(!markdown.Contains("- `remove.webp`", StringComparison.Ordinal) && !markdown.Contains("- \"remove.webp\"", StringComparison.Ordinal), "removed binding was still persisted");
-
-        var deleteUnbound = AlbumMediaBindingEditor.Delete("remove.webp", bindings, mediaFiles =>
-        {
-            File.WriteAllText(item.MarkdownPath, item.CreateMarkdown("2026-08-15", item.Description, mediaFiles.Where(x => x.IsBound).Select(x => x.FileName).ToArray()), System.Text.Encoding.UTF8);
-            return true;
-        });
-        Assert(deleteUnbound.Status == AlbumMediaUnbindStatus.Success, "unbound record should remain deletable");
-        Assert(bindings.All(x => x.FileName != "remove.webp"), "deleted unbound record remained in the UI model");
-        Assert(File.Exists(removeFile), "deleting an unbound record must not delete the local original");
 
         var deleteItem = AlbumFolderItem.FromDirectory(album);
         bindings = deleteItem.MediaFiles.Select(x => new AlbumMediaItem(x, Path.Combine(album, x), "found")).ToList();
@@ -1957,6 +2030,41 @@ static void AlbumMediaUnlinkHandlesPersistenceAndKeepsFiles()
         Assert(File.Exists(keepFile), "delete record must not delete local original file by default");
         var afterDeleteReload = AlbumFolderItem.FromDirectory(album);
         Assert(afterDeleteReload.MediaFiles.Count == 0, "restart should preserve deleted media record state");
+    }
+    finally
+    {
+        TryDeleteDirectory(root);
+    }
+}
+
+static void AlbumFolderRemovalPersistsAndKeepsFiles()
+{
+    var root = Path.Combine(Path.GetTempPath(), "wukong-album-folder-remove-" + Guid.NewGuid().ToString("N"));
+    try
+    {
+        var album = Path.Combine(root, "child-album");
+        Directory.CreateDirectory(album);
+        var original = Path.Combine(album, "original.png");
+        File.WriteAllBytes(original, new byte[] { 1, 2, 3, 4 });
+        var item = AlbumFolderItem.FromDirectory(album);
+
+        var noSelection = AlbumFolderVisibility.RemoveFromCatalog(null, _ => true);
+        Assert(noSelection.Status == AlbumFolderRemovalStatus.NoSelection, "missing child album selection should be reported");
+
+        var failed = AlbumFolderVisibility.RemoveFromCatalog(item, _ => throw new IOException("read-only"));
+        Assert(failed.Status == AlbumFolderRemovalStatus.PersistenceFailed, "marker persistence failure should be reported");
+        Assert(AlbumFolderVisibility.IsVisible(album), "failed removal hid the album in memory");
+
+        var removed = AlbumFolderVisibility.RemoveFromCatalog(item, marker =>
+        {
+            File.WriteAllText(marker, "hidden_from_wukong_album=true\n", System.Text.Encoding.UTF8);
+            return true;
+        });
+        Assert(removed.Status == AlbumFolderRemovalStatus.Success, "child album removal failed");
+        Assert(Directory.Exists(album), "child album removal deleted the local directory");
+        Assert(File.Exists(original), "child album removal deleted the original image");
+        Assert(!AlbumFolderVisibility.IsVisible(album), "removed child album reappeared after persistence");
+        Assert(!Directory.GetDirectories(root).Where(AlbumFolderVisibility.IsVisible).Any(), "restart scan rediscovered the removed child album");
     }
     finally
     {

@@ -395,20 +395,34 @@ public sealed class FileAgentMemoryConfigurationStore : IAgentMemoryConfiguratio
 public sealed class MockRuntimeContextStateProvider : IRuntimeContextStateProvider, IMockContextController
 {
     private readonly IDeveloperSession? _developerSession;
+    private readonly Func<PetRuntimeStateSnapshot>? _liveRuntimeState;
     private readonly object _gate = new();
     private PersonalitySnapshot _personality = PersonalitySnapshot.Default;
     private RelationshipSnapshot _relationship = RelationshipSnapshot.Default;
     private PetRuntimeStateSnapshot _runtimeState = PetRuntimeStateSnapshot.Default;
+    private bool _hasDeveloperOverride;
 
-    public MockRuntimeContextStateProvider(IDeveloperSession? developerSession = null) =>
+    public MockRuntimeContextStateProvider(
+        IDeveloperSession? developerSession = null,
+        Func<PetRuntimeStateSnapshot>? liveRuntimeState = null)
+    {
         _developerSession = developerSession;
+        _liveRuntimeState = liveRuntimeState;
+    }
 
     public Task<(PersonalitySnapshot Personality, RelationshipSnapshot Relationship, PetRuntimeStateSnapshot RuntimeState)> GetStateAsync(
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         lock (_gate)
-            return Task.FromResult((_personality, _relationship, _runtimeState));
+        {
+            var activeDeveloperOverride = _hasDeveloperOverride &&
+                                          (_developerSession is null || _developerSession.IsAuthenticated);
+            var runtimeState = !activeDeveloperOverride && _liveRuntimeState is not null
+                ? _liveRuntimeState().Clamp()
+                : _runtimeState;
+            return Task.FromResult((_personality, _relationship, runtimeState));
+        }
     }
 
     public void Update(PersonalitySnapshot personality, RelationshipSnapshot relationship, PetRuntimeStateSnapshot runtimeState)
@@ -420,6 +434,7 @@ public sealed class MockRuntimeContextStateProvider : IRuntimeContextStateProvid
             _personality = personality.Clamp();
             _relationship = relationship.Clamp();
             _runtimeState = runtimeState.Clamp();
+            _hasDeveloperOverride = true;
         }
     }
 }

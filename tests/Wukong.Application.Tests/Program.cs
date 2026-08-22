@@ -259,6 +259,16 @@ static async Task AgentContextIncludesAllSources()
 {
     var snapshot = AgentSnapshot(new RelevantAlbumMemory(
         "m1", "第一次回家", "2025-12-13", "第一次坐车，头晕晕。", new[] { "car.webp" }, "private/album.md", 8));
+    snapshot = snapshot with
+    {
+        RuntimeState = snapshot.RuntimeState with
+        {
+            CurrentPosture = "stand",
+            CurrentAction = "standing_observe",
+            CurrentBehavior = "wk.lifecycle.stand_idle_microloop",
+            MoodValence = 0.73
+        }
+    };
     var service = CreateAgentService(snapshot, out var model, out _, out _);
     var result = await service.SendAsync(new("daily", "你记得回家那天吗？"));
 
@@ -268,6 +278,10 @@ static async Task AgentContextIncludesAllSources()
     Assert(system.Contains("老爸", StringComparison.Ordinal), "owner profile did not enter context");
     Assert(system.Contains("回答要温柔", StringComparison.Ordinal), "custom pet prompt did not enter context");
     Assert(system.Contains("stress=0.62", StringComparison.Ordinal), "runtime state did not enter context");
+    Assert(system.Contains("current_posture=stand", StringComparison.Ordinal), "live posture did not enter context");
+    Assert(system.Contains("current_action=standing_observe", StringComparison.Ordinal), "live action did not enter context");
+    Assert(system.Contains("mood_valence=0.73", StringComparison.Ordinal), "live mood did not enter context");
+    Assert(system.Contains("Never describe a posture or action that conflicts", StringComparison.Ordinal), "runtime consistency safety boundary missing");
     Assert(model.LastRequest.Messages.Any(x => x.Content.Contains("第一次回家", StringComparison.Ordinal)), "album memory did not enter request");
 }
 

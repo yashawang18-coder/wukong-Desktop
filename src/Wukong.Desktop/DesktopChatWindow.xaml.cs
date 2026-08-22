@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -10,7 +9,6 @@ namespace Wukong.Desktop;
 public partial class DesktopChatWindow : Window
 {
     private readonly DesktopAgentRuntime _agent;
-    private readonly ObservableCollection<ChatDisplayItem> _items = new();
     private readonly DispatcherTimer _autoCollapseTimer;
     private CancellationTokenSource? _requestCancellation;
 
@@ -18,18 +16,18 @@ public partial class DesktopChatWindow : Window
     {
         _agent = agent;
         InitializeComponent();
-        ChatList.ItemsSource = _items;
         _autoCollapseTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(45) };
         _autoCollapseTimer.Tick += (_, _) => Collapse();
-        Loaded += async (_, _) =>
+        Loaded += (_, _) =>
         {
-            await ReloadHistoryAsync();
             ChatInput.Focus();
             ResetAutoCollapse();
         };
+        Closed += (_, _) => _requestCancellation?.Cancel();
     }
 
     public bool IsExpanded => IsVisible;
+    public event EventHandler<string>? AssistantReplyAvailable;
 
     public static bool ShouldSend(Key key, ModifierKeys modifiers) =>
         key == Key.Enter && !modifiers.HasFlag(ModifierKeys.Shift);
@@ -50,13 +48,6 @@ public partial class DesktopChatWindow : Window
         ShowAt(workArea, petBounds);
         Activate();
         ChatInput.Focus();
-        _ = ReloadHistoryAsync();
-    }
-
-    public async Task ShowInitiativeAsync(Rect workArea, Rect petBounds)
-    {
-        await ReloadHistoryAsync();
-        ShowAt(workArea, petBounds);
     }
 
     public void Reposition(Rect workArea, Rect petBounds)
@@ -84,53 +75,44 @@ public partial class DesktopChatWindow : Window
         ResetAutoCollapse();
     }
 
-    private async Task ReloadHistoryAsync()
-    {
-        var history = await _agent.Conversation.GetHistoryAsync(DesktopAgentRuntime.DailySessionId);
-        _items.Clear();
-        foreach (var message in history.Where(x => x.Role != AgentChatRole.System))
-            _items.Add(ChatDisplayItem.From(message));
-        if (_items.Count > 0)
-            ChatList.ScrollIntoView(_items[^1]);
-    }
-
     private async Task SendAsync()
     {
         var input = ChatInput.Text.Trim();
         if (string.IsNullOrWhiteSpace(input) || _requestCancellation is not null)
             return;
 
-        _items.Add(ChatDisplayItem.User(input));
         ChatInput.Clear();
-        SetBusy(true, "悟空正在想...");
+        SetBusy(true);
         _requestCancellation = new CancellationTokenSource();
         try
         {
             var result = await _agent.Conversation.SendAsync(
                 new ConversationRequest(DesktopAgentRuntime.DailySessionId, input),
                 _requestCancellation.Token);
-            _items.Add(result.Success
-                ? ChatDisplayItem.Assistant(result.AssistantText ?? string.Empty)
-                : ChatDisplayItem.Error(result.UserFacingError ?? "请求失败，请检查模型配置。"));
-            ChatStatus.Text = result.Success
-                ? $"{result.Provider} / {result.Model} / {result.Duration.TotalSeconds:0.0}s"
-                : result.UserFacingError ?? "请求失败";
-            ChatList.ScrollIntoView(_items[^1]);
+            if (result.Success && !string.IsNullOrWhiteSpace(result.AssistantText))
+            {
+                AssistantReplyAvailable?.Invoke(this, result.AssistantText.Trim());
+                Collapse();
+            }
+            else if (!result.Success)
+            {
+                AssistantReplyAvailable?.Invoke(this, result.UserFacingError ?? "暂时无法回复，请稍后再试。");
+            }
         }
         finally
         {
             _requestCancellation?.Dispose();
             _requestCancellation = null;
-            SetBusy(false, ChatStatus.Text);
+            SetBusy(false);
             ResetAutoCollapse();
         }
     }
 
-    private void SetBusy(bool busy, string status)
+    private void SetBusy(bool busy)
     {
-        ChatStatus.Text = status;
+        ChatInput.IsEnabled = !busy;
         SendButton.IsEnabled = !busy;
-        CancelButton.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
+        SendButton.Content = busy ? "发送中" : "发送";
     }
 
     private void ResetAutoCollapse()
@@ -140,19 +122,10 @@ public partial class DesktopChatWindow : Window
     }
 
     private async void Send_Click(object sender, RoutedEventArgs e) => await SendAsync();
-    private async void ClearHistory_Click(object sender, RoutedEventArgs e)
-    {
-        await _agent.Conversation.ClearHistoryAsync(DesktopAgentRuntime.DailySessionId);
-        _items.Clear();
-        ChatStatus.Text = "对话历史已清空。";
-        ChatInput.Focus();
-        ResetAutoCollapse();
-    }
-    private void Cancel_Click(object sender, RoutedEventArgs e) => _requestCancellation?.Cancel();
     private void Collapse_Click(object sender, RoutedEventArgs e) => Collapse();
     private void ChatInput_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) => ResetAutoCollapse();
 
-    private async void ChatInput_KeyDown(object sender, KeyEventArgs e)
+    private async void ChatInput_PreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (!ShouldSend(e.Key, Keyboard.Modifiers))
             return;

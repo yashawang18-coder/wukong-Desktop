@@ -108,9 +108,18 @@ public sealed record PetRuntimeStateSnapshot(
     string CurrentBehavior, double Arousal, double Stress, double SocialDesire,
     double PlayDesire, double Curiosity, double Fatigue, double Safety)
 {
+    public string CurrentPosture { get; init; } = "prone";
+    public string CurrentAction { get; init; } = "quiet_prone";
+    public double MoodValence { get; init; } = 0.55;
+
     public PetRuntimeStateSnapshot Clamp() => this with
     {
         CurrentBehavior = string.IsNullOrWhiteSpace(CurrentBehavior) ? "quiet_prone" : CurrentBehavior.Trim(),
+        CurrentPosture = NormalizePosture(CurrentPosture),
+        CurrentAction = string.IsNullOrWhiteSpace(CurrentAction)
+            ? (string.IsNullOrWhiteSpace(CurrentBehavior) ? "quiet_prone" : CurrentBehavior.Trim())
+            : CurrentAction.Trim(),
+        MoodValence = Clamp01(MoodValence),
         Arousal = Clamp01(Arousal),
         Stress = Clamp01(Stress),
         SocialDesire = Clamp01(SocialDesire),
@@ -121,6 +130,13 @@ public sealed record PetRuntimeStateSnapshot(
     };
     public static PetRuntimeStateSnapshot Default { get; } = new("quiet_prone", 0.32, 0.12, 0.54, 0.35, 0.48, 0.28, 0.95);
     private static double Clamp01(double value) => Math.Clamp(value, 0, 1);
+    private static string NormalizePosture(string? value) => (value ?? string.Empty).Trim().ToLowerInvariant() switch
+    {
+        "stand" or "standing" => "stand",
+        "sit" or "sitting" => "sit",
+        "prone" or "lying" or "lie_down" => "prone",
+        _ => "prone"
+    };
 }
 
 public sealed record RelevantAlbumMemory(
