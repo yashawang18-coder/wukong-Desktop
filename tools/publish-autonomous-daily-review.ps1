@@ -61,11 +61,19 @@ $guide = Join-Path $repoRoot "docs\review\AUTONOMOUS_DAILY_REVIEW_GUIDE.md"
 Copy-Item -LiteralPath $guide -Destination (Join-Path $reviewRoot "README-REVIEW.md") -Force
 
 $checksumPath = Join-Path $reviewRoot "PACKAGE-SHA256.txt"
+$pathSeparator = [System.IO.Path]::DirectorySeparatorChar
+$reviewRootPrefix = $reviewRoot.TrimEnd([char[]]@($pathSeparator)) + $pathSeparator
 $checksums = Get-ChildItem -LiteralPath $reviewRoot -Recurse -File |
     Where-Object { $_.FullName -ne $checksumPath } |
     Sort-Object FullName |
     ForEach-Object {
-        $relative = [System.IO.Path]::GetRelativePath($reviewRoot, $_.FullName).Replace("\", "/")
+        # Windows PowerShell 5.1 runs on .NET Framework, which does not expose
+        # System.IO.Path.GetRelativePath. Every enumerated file is below reviewRoot,
+        # so a prefix-safe substring keeps the script compatible with powershell.exe.
+        if (-not $_.FullName.StartsWith($reviewRootPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "Package file is outside the review root: $($_.FullName)"
+        }
+        $relative = $_.FullName.Substring($reviewRootPrefix.Length).Replace($pathSeparator, [char]'/')
         $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
         "$hash  $relative"
     }
