@@ -541,7 +541,7 @@
             <Button x:Name="BaseAssetsTabButton" Content="基础动作" Tag="Base" Style="{StaticResource PanelTabButtonSelected}" Click="NormalAssetSubTab_Click" Margin="0,0,8,0" />
             <Button x:Name="PlayAssetsTabButton" Content="玩一下" Tag="Play" Style="{StaticResource PanelTabButton}" Click="NormalAssetSubTab_Click" Margin="0,0,8,0" />
             <Button x:Name="CommandAssetsTabButton" Content="口令动作" Tag="Command" Style="{StaticResource PanelTabButton}" Click="NormalAssetSubTab_Click" Margin="0,0,8,0" />
-            <Button x:Name="AutonomousDailyAssetsTabButton" Content="自主日常候选" Tag="AutonomousDaily" Style="{StaticResource PanelTabButton}" Click="NormalAssetSubTab_Click" Visibility="Collapsed" />
+            <Button x:Name="AutonomousDailyAssetsTabButton" Content="自主日常候选（开发者）" Tag="AutonomousDaily" Style="{StaticResource PanelTabButton}" Click="NormalAssetSubTab_Click" />
           </StackPanel>
           <Grid>
             <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="1.1*" /></Grid.ColumnDefinitions>

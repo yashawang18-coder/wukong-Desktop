@@ -1744,7 +1744,8 @@ static void ControlPanelExposesMagicSpecialsTab()
             var interactionReview = panel.FindName("InteractionReviewAssetList") as ItemsControl;
             Assert(interactionReview is not null && interactionReview.Items.Count == 1, "interaction review list must display the gated prone-touch candidate");
             Assert(interactionReview!.Items.OfType<PlayableMotion>().Single().BehaviorId == Phase15BehaviorIds.ProneTouch, "interaction review list exposed the wrong behavior");
-            Assert(panel.FindName("AutonomousDailyAssetsTabButton") is Button { Visibility: Visibility.Collapsed }, "autonomous daily tab must stay hidden before developer authentication");
+            Assert(panel.FindName("AutonomousDailyAssetsTabButton") is Button { Visibility: Visibility.Visible }, "autonomous daily developer tab must remain discoverable before authentication");
+            Assert(panel.FindName("AutonomousDailyAssetsPanel") is ScrollViewer { Visibility: Visibility.Collapsed }, "autonomous daily candidates must remain inaccessible before developer authentication");
             Assert(panel.FindName("PreviewBackgroundButton") is Button, "light/dark preview background control missing");
             var list = panel.FindName("MagicSpecialList") as ItemsControl;
             Assert(list is not null, "magic specials list missing");

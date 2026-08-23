@@ -800,7 +800,6 @@ public partial class ControlPanelWindow : Window
     {
         var visible = _agent.DeveloperSession.IsAuthenticated ? Visibility.Visible : Visibility.Collapsed;
         DeveloperDiagnosticsPanel.Visibility = visible;
-        AutonomousDailyAssetsTabButton.Visibility = visible;
         TraceList.Visibility = visible;
         if (visible == Visibility.Visible)
             RefreshDiagnosticsView();
@@ -1012,8 +1011,17 @@ public partial class ControlPanelWindow : Window
 
     private void NormalAssetSubTab_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button { Tag: string tab })
-            SelectNormalAssetSubTab(tab);
+        if (sender is not Button { Tag: string tab })
+            return;
+
+        if (tab == "AutonomousDaily" && !_agent.DeveloperSession.IsAuthenticated)
+        {
+            DeveloperToggle.IsChecked = true;
+            if (!_agent.DeveloperSession.IsAuthenticated)
+                return;
+        }
+
+        SelectNormalAssetSubTab(tab);
     }
 
     private void SelectNormalAssetSubTab(string tab)

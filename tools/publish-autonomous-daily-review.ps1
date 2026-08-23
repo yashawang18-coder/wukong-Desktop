@@ -36,25 +36,23 @@ if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish failed with exit code $LASTEXITCODE"
 }
 
-Get-ChildItem -LiteralPath $fullPublishRoot -File | Copy-Item -Destination $reviewRoot -Force
-Get-ChildItem -LiteralPath $fullPublishRoot -Directory |
-    Where-Object { $_.Name -ne "WukongAssets" } |
-    Copy-Item -Destination $reviewRoot -Recurse -Force
+Get-ChildItem -LiteralPath $fullPublishRoot -Force | Copy-Item -Destination $reviewRoot -Recurse -Force
 
-$batchNames = @(
-    "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
-    "WK-AUTONOMOUS-DAILY-BEHAVIORS-v1",
-    "WK-INTERACTION-PRONE-TOUCH-v4-1"
+$requiredManifestDirectories = @(
+    "WukongAssets\action-batches\WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
+    "WukongAssets\action-batches\WK-AUTONOMOUS-DAILY-BEHAVIORS-v1",
+    "WukongAssets\action-batches\WK-INTERACTION-PRONE-TOUCH-v4-1",
+    "WukongAssets\action-mocks\WK-COMMAND-PRODUCTION-CANDIDATES-v4",
+    "WukongAssets\action-batches\WK-COMMAND-ACTION-CANDIDATES-v3",
+    "WukongAssets\action-batches\WK-MAGIC-SPECIALS-CANDIDATE-v1",
+    "WukongAssets\action-batches\WK-INTERACTION-CAR-RIDE-CANDIDATE-v8"
 )
-$sourceBatchRoot = Join-Path $fullPublishRoot "WukongAssets\action-batches"
 $targetBatchRoot = Join-Path $reviewRoot "WukongAssets\action-batches"
-New-Item -ItemType Directory -Path $targetBatchRoot -Force | Out-Null
-foreach ($batchName in $batchNames) {
-    $source = Join-Path $sourceBatchRoot $batchName
-    if (-not (Test-Path -LiteralPath $source)) {
-        throw "Required review batch is missing from publish output: $batchName"
+foreach ($relativeDirectory in $requiredManifestDirectories) {
+    $manifest = Join-Path (Join-Path $reviewRoot $relativeDirectory) "manifest.json"
+    if (-not (Test-Path -LiteralPath $manifest -PathType Leaf)) {
+        throw "Required runtime asset is missing from review package: $relativeDirectory"
     }
-    Copy-Item -LiteralPath $source -Destination $targetBatchRoot -Recurse -Force
 }
 
 $guide = Join-Path $repoRoot "docs\review\AUTONOMOUS_DAILY_REVIEW_GUIDE.md"
@@ -86,4 +84,4 @@ if ($frameCount -ne 59) {
 
 Write-Host "Review package ready: $reviewRoot"
 Write-Host "Run: $(Join-Path $reviewRoot 'Wukong.Desktop.exe')"
-Write-Host "Included: 6 autonomous daily candidates / 59 frames + prone-touch candidate + approved lifecycle microloops"
+Write-Host "Included: full current runtime asset library + 6 autonomous daily candidates / 59 frames + prone-touch candidate"
