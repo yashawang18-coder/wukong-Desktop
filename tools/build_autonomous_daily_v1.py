@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the immutable autonomous-daily candidate from approved source pixels."""
+"""Build reference-only autonomous behavior bindings to approved motions."""
 
 from __future__ import annotations
 
@@ -19,44 +19,31 @@ def read_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def copy_frame(source_root: Path, source: dict, target_relative: str, source_batch: str, source_behavior: str) -> dict:
-    source_path = source_root / source["path"]
-    target_path = OUTPUT / target_relative
-    target_path.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(source_path, target_path)
-    data = target_path.read_bytes()
-    digest = hashlib.sha256(data).hexdigest()
-    if digest != source["sha256"] or len(data) != source["bytes"]:
-        raise ValueError(f"source bytes changed while copying {source_path}")
+def sequence_sha256(source_root: Path, frames: list[dict]) -> str:
+    digest = hashlib.sha256()
+    for frame in frames:
+        source_path = source_root / frame["path"]
+        data = source_path.read_bytes()
+        if hashlib.sha256(data).hexdigest() != frame["sha256"] or len(data) != frame["bytes"]:
+            raise ValueError(f"source frame no longer matches its manifest: {source_path}")
+        digest.update(data)
+    return digest.hexdigest()
+
+
+def source_binding(source_root: Path, frames: list[dict], source_batch: str, source_behavior: str, phase: str, start_frame: int) -> dict:
     return {
-        "path": target_relative.replace("\\", "/"),
-        "width": source["width"],
-        "height": source["height"],
-        "mode": source["mode"],
-        "sha256": digest,
-        "bytes": len(data),
-        "duration_ms": source["duration_ms"],
-        "derived_from": {
-            "batch_id": source_batch,
-            "behavior_id": source_behavior,
-            "path": source["path"],
-            "sha256": source["sha256"],
-        },
+        "asset_batch": source_batch,
+        "behavior_id": source_behavior,
+        "phase": phase,
+        "start_frame": start_frame,
+        "frame_count": len(frames),
+        "sequence_sha256": sequence_sha256(source_root, frames),
     }
 
 
 def command_action(command_manifest: dict, source_action: str, action: str, behavior_id: str, display_name: str, daily_role: str) -> dict:
     source = next(item for item in command_manifest["actions"] if item["action"] == source_action)
-    frames = [
-        copy_frame(
-            COMMAND_BATCH,
-            frame,
-            f"frames/{action}/frame-{index:03d}.png",
-            command_manifest["batch_id"],
-            source["behavior_id"],
-        )
-        for index, frame in enumerate(source["frames"], start=1)
-    ]
+    frames = source["frames"]
     return {
         "action": action,
         "behavior_id": behavior_id,
@@ -70,22 +57,19 @@ def command_action(command_manifest: dict, source_action: str, action: str, beha
         "autonomous_semantics_owner_approved": False,
         "runtime_approved": False,
         "runtime_use": False,
-        "frames": frames,
+        "source_binding": source_binding(
+            COMMAND_BATCH,
+            frames,
+            command_manifest["batch_id"],
+            source["behavior_id"],
+            "mock",
+            1,
+        ),
     }
 
 
-def lifecycle_action(lifecycle_manifest: dict, source_frames: list[dict], action: str, behavior_id: str, display_name: str, from_posture: str, to_posture: str, daily_role: str) -> dict:
+def lifecycle_action(lifecycle_manifest: dict, source_frames: list[dict], start_frame: int, action: str, behavior_id: str, display_name: str, from_posture: str, to_posture: str, daily_role: str) -> dict:
     source_behavior = lifecycle_manifest["actions"][0]["behavior_id"]
-    frames = [
-        copy_frame(
-            LIFECYCLE_BATCH,
-            frame,
-            f"frames/{action}/frame-{index:03d}.png",
-            lifecycle_manifest["batch_id"],
-            source_behavior,
-        )
-        for index, frame in enumerate(source_frames, start=1)
-    ]
     return {
         "action": action,
         "behavior_id": behavior_id,
@@ -93,13 +77,20 @@ def lifecycle_action(lifecycle_manifest: dict, source_frames: list[dict], action
         "daily_role": daily_role,
         "from_posture": from_posture,
         "to_posture": to_posture,
-        "frame_count": len(frames),
+        "frame_count": len(source_frames),
         "loop": False,
         "source_motion_design_approved": True,
         "autonomous_semantics_owner_approved": False,
         "runtime_approved": False,
         "runtime_use": False,
-        "frames": frames,
+        "source_binding": source_binding(
+            LIFECYCLE_BATCH,
+            source_frames,
+            lifecycle_manifest["batch_id"],
+            source_behavior,
+            "exit",
+            start_frame,
+        ),
     }
 
 
@@ -112,8 +103,8 @@ def main() -> None:
     actions = [
         command_action(command_manifest, "sit", "stand-to-sit", "wk.daily.stand_to_sit", "日常站立转坐下", "posture_transition"),
         command_action(command_manifest, "down", "sit-to-prone", "wk.daily.sit_to_prone", "日常坐姿转趴卧", "posture_transition"),
-        lifecycle_action(lifecycle_manifest, exit_frames[:4], "prone-to-sit", "wk.daily.prone_to_sit", "日常趴卧转坐起", "Prone", "Sit", "posture_transition"),
-        lifecycle_action(lifecycle_manifest, exit_frames[3:], "sit-to-stand", "wk.daily.sit_to_stand", "日常坐姿转站立", "Sit", "Stand", "posture_transition"),
+        lifecycle_action(lifecycle_manifest, exit_frames[:4], 1, "prone-to-sit", "wk.daily.prone_to_sit", "日常趴卧转坐起", "Prone", "Sit", "posture_transition"),
+        lifecycle_action(lifecycle_manifest, exit_frames[3:], 4, "sit-to-stand", "wk.daily.sit_to_stand", "日常坐姿转站立", "Sit", "Stand", "posture_transition"),
         command_action(command_manifest, "jump", "playful-hop", "wk.daily.playful_hop", "日常开心轻跳", "playful_release"),
         command_action(command_manifest, "spin", "playful-spin", "wk.daily.playful_spin", "日常开心转圈", "playful_release"),
     ]
@@ -122,7 +113,7 @@ def main() -> None:
         "batch_id": "WK-AUTONOMOUS-DAILY-BEHAVIORS-v1",
         "category": "autonomous_daily_behavior_candidate",
         "asset_stage": "production_candidate_owner_qa_pending",
-        "source_status": "byte_identical_derivative_of_runtime_approved_light_malt_gold_assets",
+        "source_status": "reference_binding_to_runtime_approved_light_malt_gold_assets",
         "source_batches": [command_manifest["batch_id"], lifecycle_manifest["batch_id"]],
         "identity_style": "wukong_light_malt_gold_lively",
         "motion_design_approved_at_source": True,
@@ -135,16 +126,20 @@ def main() -> None:
         "may_enter_autonomous_pool_by_default": False,
         "may_enter_command_pool": False,
         "may_enter_context_menu": False,
-        "pixel_policy": "copied_byte_for_byte; no recolor, redraw, blur, sharpen, rescale, or alpha edit",
+        "storage_policy": "reference_only_no_duplicate_png",
+        "pixel_policy": "source frames are resolved in place; no pixel copy, recolor, redraw, blur, sharpen, rescale, or alpha edit",
         "actions": actions,
         "notes": [
-            "This batch changes action semantics and storage paths only; every PNG is byte-identical to an approved source frame.",
+            "This batch stores behavior semantics only; every candidate resolves an immutable range from an approved source motion.",
             "Command-derived motion is not automatically approved for spontaneous daily use.",
             "The batch must remain outside production runtime until owner semantic review and real Windows renderer QA pass.",
             "No expired red/standard-Shiba asset contributes pixels, color, identity, or fur style.",
         ],
     }
     OUTPUT.mkdir(parents=True, exist_ok=True)
+    duplicate_frames = OUTPUT / "frames"
+    if duplicate_frames.exists():
+        shutil.rmtree(duplicate_frames)
     (OUTPUT / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 

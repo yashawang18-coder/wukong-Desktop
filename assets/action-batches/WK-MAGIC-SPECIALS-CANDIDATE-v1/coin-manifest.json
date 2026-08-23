@@ -165,6 +165,14 @@
       "runtime_validation": "pending",
       "runtime_approved": false,
       "runtime_use": false
+    },
+    {
+      "id": "2026-08-24-shared-complete-edge-baseline",
+      "date": "2026-08-24",
+      "change": "Unified all eight coin faces on one complete anti-aliased outer contour, removed white/red/yellow cutout contamination from inward rim samples, zeroed transparent RGB, and rebuilt all 36 flip frames from the repaired face pairs. Interior coin artwork and runtime gates remain unchanged.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
     }
   ],
   "previews": [
@@ -188,6 +196,36 @@
       "frames": 4,
       "frame_duration_ms": 700,
       "sha256": "b63ef5f7d8fa4ebdd609b2d4a99c4f18d1609f370d7bac3aa0fc946e0681dbd9"
+    },
+    {
+      "kind": "final-shared-edge-baseline-review",
+      "path": "petrificus_coin/previews/coin-edge-baseline-preview.gif",
+      "frames": 8,
+      "frame_duration_ms": 700,
+      "sha256": "4dd26c4a6cd5de3fbb0b964fedd6f1f533f2aa0f2d6d5acb6c4e8d476d47a980"
     }
-  ]
+  ],
+  "edge_baseline": {
+    "profile": "shared_complete_antialiased_ellipse_v1",
+    "visible_bounds": {
+      "x": 62,
+      "y": 70,
+      "width": 900,
+      "height": 882
+    },
+    "faces_share_exact_alpha": true,
+    "transparent_rgb_zeroed": true,
+    "flip_widths": [
+      900,
+      845,
+      672,
+      415,
+      112,
+      415,
+      672,
+      845,
+      900
+    ],
+    "repair_scope": "outer cutout band and deterministic flip derivation only"
+  }
 }

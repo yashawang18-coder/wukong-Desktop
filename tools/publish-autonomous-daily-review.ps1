@@ -77,11 +77,12 @@ $checksums = Get-ChildItem -LiteralPath $reviewRoot -Recurse -File |
     }
 Set-Content -LiteralPath $checksumPath -Value $checksums -Encoding utf8
 
-$frameCount = Get-ChildItem -LiteralPath (Join-Path $targetBatchRoot "WK-AUTONOMOUS-DAILY-BEHAVIORS-v1\frames") -Filter "*.png" -Recurse -File | Measure-Object | Select-Object -ExpandProperty Count
-if ($frameCount -ne 59) {
-    throw "Expected 59 autonomous daily review frames, found $frameCount"
+$autonomousBatchRoot = Join-Path $targetBatchRoot "WK-AUTONOMOUS-DAILY-BEHAVIORS-v1"
+$duplicateFrameCount = Get-ChildItem -LiteralPath $autonomousBatchRoot -Filter "*.png" -Recurse -File | Measure-Object | Select-Object -ExpandProperty Count
+if ($duplicateFrameCount -ne 0) {
+    throw "Autonomous daily review must reference source frames; found $duplicateFrameCount duplicate PNGs"
 }
 
 Write-Host "Review package ready: $reviewRoot"
 Write-Host "Run: $(Join-Path $reviewRoot 'Wukong.Desktop.exe')"
-Write-Host "Included: full current runtime asset library + 6 autonomous daily candidates / 59 frames + prone-touch candidate"
+Write-Host "Included: full current runtime asset library + 6 autonomous daily bindings / 59 shared source frames / 0 duplicate PNG + prone-touch candidate"

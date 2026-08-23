@@ -463,9 +463,9 @@ public sealed class DesktopMotionCatalog
         var commandCandidates = LoadCommandCandidates(root).ToArray();
         var magicCandidates = LoadMagicCandidates(root).ToArray();
         var lifecycleCandidates = LoadLifecycleCandidates(root).ToArray();
-        var autonomousDailyCandidates = LoadAutonomousDailyCandidates(root).ToArray();
         var carRideCandidates = LoadCarRideCandidates(root).ToArray();
         var commandMocks = LoadCommandMotionMocks(root).ToArray();
+        var autonomousDailyCandidates = LoadAutonomousDailyCandidates(root, lifecycleCandidates.Concat(commandMocks)).ToArray();
         ReferenceFramePath = lifecycleCandidates
             .FirstOrDefault(x => x.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop && x.RuntimeEnabled)?.FirstFrame
             ?? motions.FirstOrDefault(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle)?.FirstFrame
@@ -845,7 +845,9 @@ public sealed class DesktopMotionCatalog
         }
     }
 
-    private static IEnumerable<PlayableMotion> LoadAutonomousDailyCandidates(string root)
+    private static IEnumerable<PlayableMotion> LoadAutonomousDailyCandidates(
+        string root,
+        IEnumerable<PlayableMotion> approvedSourceMotions)
     {
         var manifestPath = Path.Combine(root, "action-batches", AutonomousDailyCandidateBehaviorIds.AssetBatch, "manifest.json");
         if (!File.Exists(manifestPath))
@@ -883,7 +885,7 @@ public sealed class DesktopMotionCatalog
             yield break;
         }
 
-        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        var sourceMotions = approvedSourceMotions.ToArray();
         foreach (var action in manifest.Actions)
         {
             var frames = new List<string>();
@@ -896,21 +898,57 @@ public sealed class DesktopMotionCatalog
             if (action.AutonomousSemanticsOwnerApproved || action.RuntimeApproved || action.RuntimeUse)
                 errors.Add("action_gate_must_remain_closed");
 
-            foreach (var frame in action.Frames ?? Array.Empty<CommandActionFrameManifest>())
+            var binding = action.SourceBinding;
+            if (binding is null)
             {
-                var path = Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar));
-                if (!File.Exists(path))
-                {
-                    errors.Add($"missing:{frame.Path}");
-                    continue;
-                }
+                errors.Add("source_binding_required");
+            }
+            else
+            {
+                var allowedSourceBatch =
+                    string.Equals(binding.AssetBatch, CommandMockBehaviorIds.AssetBatch, StringComparison.Ordinal) ||
+                    string.Equals(binding.AssetBatch, LifecycleCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal);
+                if (!allowedSourceBatch)
+                    errors.Add($"source_batch_not_allowed:{binding.AssetBatch}");
 
-                if (new FileInfo(path).Length != frame.Bytes)
-                    errors.Add($"bytes:{frame.Path}");
-                if (!string.Equals(Sha256(path), frame.Sha256, StringComparison.OrdinalIgnoreCase))
-                    errors.Add($"sha256:{frame.Path}");
-                frames.Add(path);
-                durations.Add(frame.DurationMs.GetValueOrDefault(120));
+                var matchingSources = sourceMotions
+                    .Where(x =>
+                        string.Equals(x.AssetBatch, binding.AssetBatch, StringComparison.Ordinal) &&
+                        string.Equals(x.BehaviorId, binding.BehaviorId, StringComparison.Ordinal))
+                    .ToArray();
+                if (matchingSources.Length != 1)
+                {
+                    errors.Add($"source_motion_count:{matchingSources.Length}");
+                }
+                else
+                {
+                    var source = matchingSources[0];
+                    if (!source.RuntimeEnabled || source.IsExpired)
+                        errors.Add("source_motion_must_be_runtime_approved_and_current");
+
+                    var sourcePhase = source.Phases.SingleOrDefault(x =>
+                        string.Equals(x.Name, binding.Phase, StringComparison.OrdinalIgnoreCase));
+                    if (sourcePhase is null)
+                    {
+                        errors.Add($"source_phase_missing:{binding.Phase}");
+                    }
+                    else if (binding.StartFrame < 1 || binding.FrameCount != action.FrameCount)
+                    {
+                        errors.Add("source_range_invalid");
+                    }
+                    else
+                    {
+                        var startIndex = binding.StartFrame - 1;
+                        frames.AddRange(sourcePhase.Frames.Skip(startIndex).Take(binding.FrameCount));
+                        durations.AddRange(
+                            Enumerable.Range(startIndex, frames.Count)
+                                .Select(index => sourcePhase.DurationForFrame(index, source.FrameDurationMs)));
+                        if (frames.Count != binding.FrameCount)
+                            errors.Add($"source_range_count:{frames.Count}/{binding.FrameCount}");
+                        else if (!string.Equals(SequenceSha256(frames), binding.SequenceSha256, StringComparison.OrdinalIgnoreCase))
+                            errors.Add("source_sequence_sha256");
+                    }
+                }
             }
 
             if (frames.Count != action.FrameCount)
@@ -924,9 +962,7 @@ public sealed class DesktopMotionCatalog
                 continue;
             }
 
-            var sourceRoot = frames.Count > 0
-                ? Path.GetDirectoryName(frames[0])!
-                : batchRoot;
+            var sourceRoot = frames.Count > 0 ? Path.GetDirectoryName(frames[0])! : root;
             yield return new PlayableMotion(
                 action.BehaviorId,
                 action.DisplayName,
@@ -945,7 +981,7 @@ public sealed class DesktopMotionCatalog
                 Disposition: "候选审阅",
                 PrototypeUse: false,
                 AssetBatch: manifest.BatchId,
-                Description: $"{action.DailyRole}; byte-identical derivative of approved light-malt-gold source frames; never selected by the autonomous pool while runtime_use=false.",
+                Description: $"{action.DailyRole}; shared immutable reference to approved light-malt-gold source frames; no duplicate PNG; never selected by the autonomous pool while runtime_use=false.",
                 CandidateProfile: manifest.AssetStage,
                 VisualScale: ApprovedPetVisualScale);
         }
@@ -1226,6 +1262,21 @@ public sealed class DesktopMotionCatalog
         using var stream = File.OpenRead(path);
         return Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
     }
+
+    private static string SequenceSha256(IEnumerable<string> paths)
+    {
+        using var digest = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        foreach (var path in paths)
+        {
+            using var stream = File.OpenRead(path);
+            var buffer = new byte[64 * 1024];
+            int bytesRead;
+            while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                digest.AppendData(buffer, 0, bytesRead);
+        }
+
+        return Convert.ToHexString(digest.GetHashAndReset()).ToLowerInvariant();
+    }
 }
 
 public static class Phase15BehaviorIds
@@ -1407,7 +1458,15 @@ public sealed record AutonomousDailyCandidateActionManifest(
     [property: JsonPropertyName("autonomous_semantics_owner_approved")] bool AutonomousSemanticsOwnerApproved,
     [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
     [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
-    [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames);
+    [property: JsonPropertyName("source_binding")] AutonomousDailySourceBindingManifest? SourceBinding);
+
+public sealed record AutonomousDailySourceBindingManifest(
+    [property: JsonPropertyName("asset_batch")] string AssetBatch,
+    [property: JsonPropertyName("behavior_id")] string BehaviorId,
+    [property: JsonPropertyName("phase")] string Phase,
+    [property: JsonPropertyName("start_frame")] int StartFrame,
+    [property: JsonPropertyName("frame_count")] int FrameCount,
+    [property: JsonPropertyName("sequence_sha256")] string SequenceSha256);
 
 public sealed record CarRideCandidateManifest(
     [property: JsonPropertyName("asset_id")] string AssetId,

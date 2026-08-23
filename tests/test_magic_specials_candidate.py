@@ -106,27 +106,46 @@ class MagicSpecialsCandidateTests(unittest.TestCase):
                 self.assertEqual(corners, [0, 0, 0, 0], f"opaque canvas corner: {path}")
         self.assertEqual(actual_empty, allowed_empty, "only the declared Apparate relocation cut may be fully transparent")
 
-    def test_first_two_coin_states_and_flips_have_no_pale_cutout_fringe(self):
-        relatives = [
-            "petrificus_coin/front/state-01-vivid.png",
-            "petrificus_coin/front/state-02-flat.png",
-            "petrificus_coin/back/state-01-vivid.png",
-        ]
-        relatives.extend(
+    def test_coin_edge_baseline_is_shared_complete_and_has_no_cutout_fringe(self):
+        baseline = self.coin["edge_baseline"]
+        self.assertEqual(baseline["profile"], "shared_complete_antialiased_ellipse_v1")
+        self.assertTrue(baseline["faces_share_exact_alpha"])
+        self.assertTrue(baseline["transparent_rgb_zeroed"])
+
+        face_relatives = [side for state in self.coin["states"] for side in (state["front"], state["back"])]
+        with Image.open(BATCH / face_relatives[0]) as image:
+            shared_face_alpha = image.getchannel("A").tobytes()
+        for relative in face_relatives[1:]:
+            with Image.open(BATCH / relative) as image:
+                self.assertEqual(image.getchannel("A").tobytes(), shared_face_alpha, f"face alpha drift: {relative}")
+
+        for index in range(1, 10):
+            alphas = []
+            for state in ("vivid", "flat", "faded", "exhausted"):
+                relative = f"petrificus_coin/flip/{state}/front-to-back/frame-{index:03d}.png"
+                with Image.open(BATCH / relative) as image:
+                    alphas.append(image.getchannel("A").tobytes())
+            self.assertTrue(all(alpha == alphas[0] for alpha in alphas[1:]), f"flip alpha drift at frame {index}")
+
+        relatives = face_relatives + [
             f"petrificus_coin/flip/{state}/front-to-back/frame-{index:03d}.png"
-            for state in ("vivid", "flat")
+            for state in ("vivid", "flat", "faded", "exhausted")
             for index in range(1, 10)
-        )
+        ]
         for relative in relatives:
             with self.subTest(path=relative), Image.open(BATCH / relative) as image:
                 rgba = image.convert("RGBA")
                 alpha = rgba.getchannel("A")
                 eroded = alpha.point(lambda value: 255 if value else 0).filter(ImageFilter.MinFilter(11))
                 pale_boundary = 0
+                transparent_rgb = 0
                 for (red, green, blue, visible), interior in zip(rgba.getdata(), eroded.getdata()):
+                    if not visible and (red or green or blue):
+                        transparent_rgb += 1
                     if visible and not interior and red >= 225 and green >= 215 and blue >= 158 and red - blue <= 96:
                         pale_boundary += 1
                 self.assertEqual(pale_boundary, 0, f"pale cutout fringe remains: {relative}")
+                self.assertEqual(transparent_rgb, 0, f"transparent RGB is not clean: {relative}")
 
 
 if __name__ == "__main__":

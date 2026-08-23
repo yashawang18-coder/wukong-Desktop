@@ -278,3 +278,9 @@ Coin scale and stone-dog scale are independent visual policies. The accepted coi
 When one behavior contains visually distinct phases, phase-level scale is part of the animation lifecycle. Petrification applies scale 0.92 to the stone-dog `intro` and scale 2/3 to the initial coin `loop` before each phase's first frame is displayed; a later coin state request must not cause a second size correction.
 
 Accio Broom and Car Ride owner showcases run for a randomized 10-20 seconds. Car Ride movement must use work-area-safe acceleration, sustained straight travel, adjacent direction-ring turn assets, and braking. Runtime interpolation, frame rewriting, or parallel effect players are not permitted.
+
+## 2026-08-24 - freeze a complete coin outline and reference shared autonomous frames
+
+The owner reported visible white edging and missing portions of the coin contour and authorized a full candidate-baseline repair. This supersedes the earlier limited instruction to preserve the defective coin alpha masks. All eight faces must instead share one complete anti-aliased outline, and all four flip states must share the same geometry at each flip step. The repaired PNG bytes and SHA-256 inventory form a frozen candidate baseline; this does not constitute owner visual approval or open any magic runtime gate.
+
+Autonomous daily semantics must reference approved source motion ranges rather than copy their PNGs. A binding records source batch, behavior, phase, one-based range, and concatenated source-byte SHA-256. Candidate semantic gates remain independent of source visual approval: approved command or lifecycle pixels do not automatically authorize spontaneous playback. Resolution must fail closed if source identity, status, range, or bytes no longer match.

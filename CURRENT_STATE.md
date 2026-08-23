@@ -217,3 +217,11 @@ Before implementation, add or provide the reviewed UX artifact and a pinned Pupu
 - Accio Broom and Car Ride showcase durations are selected deterministically within 10-20 seconds. Car Ride uses acceleration, longer straight segments, adjacent direction-ring turn sequences, braking, and work-area constraints.
 - Control-panel spacing, typography, buttons, tabs, fields, setting rows, and toggles share refined design-token styles. No product navigation or behavior-request boundary was bypassed.
 - Automated validation and a new portable EXE are required before this local candidate can be called build-verified. Windows owner visual QA is not yet claimed for these 2026-08-21 changes.
+
+## 2026-08-24 coin edge baseline and shared autonomous bindings
+
+- The 8 petrified coin faces now share one complete anti-aliased 900×882 visible outline on the existing 1024×1024 canvas. Transparent RGB is zeroed, contaminated pale/red/yellow cutout fringe is removed, and the complete reeded rim is preserved instead of losing pieces of the silhouette.
+- All 36 flip frames were deterministically rebuilt from the repaired matching front/back state. Each flip step has identical alpha geometry across vivid, flat, faded, and exhausted states; no image generation, recoloring of the face, blur, or sharpening was used.
+- `coin-checksums.sha256`, `coin-manifest.json`, the magic manifest references, and the review GIF freeze the exact candidate baseline. Magic remains `runtime_approved=false` and `runtime_use=false`; owner Windows renderer QA is still required.
+- `WK-AUTONOMOUS-DAILY-BEHAVIORS-v1` now stores six semantic source bindings and zero duplicated PNG files. They resolve 59 frames from the approved v4 command and P2 lifecycle batches using source batch, behavior, phase, one-based range, and a concatenated sequence SHA-256.
+- Runtime developer review resolves those shared source frames in place. Any missing, expired, disabled, disallowed, range-mismatched, or hash-mismatched source rejects the candidate. All autonomous semantic and runtime gates remain closed, so no candidate can be selected by normal autonomous ticks.

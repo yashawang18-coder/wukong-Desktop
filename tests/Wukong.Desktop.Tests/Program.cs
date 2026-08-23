@@ -875,6 +875,8 @@ static void AutonomousDailyCandidatesAreIndexedAndRemainGated()
     Assert(!root.GetProperty("runtime_approved").GetBoolean(), "autonomous daily batch must remain runtime locked");
     Assert(!root.GetProperty("runtime_use").GetBoolean(), "autonomous daily batch must keep runtime_use=false");
     Assert(!root.GetProperty("may_enter_autonomous_pool_by_default").GetBoolean(), "autonomous daily batch must not enter autonomous pool by default");
+    Assert(root.GetProperty("storage_policy").GetString() == "reference_only_no_duplicate_png", "autonomous daily assets must use reference-only storage");
+    Assert(!Directory.EnumerateFiles(Path.GetDirectoryName(manifestPath)!, "*.png", SearchOption.AllDirectories).Any(), "autonomous daily candidate batch must not duplicate source PNGs");
 
     var expected = new Dictionary<string, int>(StringComparer.Ordinal)
     {
@@ -895,16 +897,15 @@ static void AutonomousDailyCandidatesAreIndexedAndRemainGated()
         Assert(!action.GetProperty("autonomous_semantics_owner_approved").GetBoolean(), "action semantics must remain owner-unapproved");
         Assert(!action.GetProperty("runtime_approved").GetBoolean(), "daily action unexpectedly runtime approved");
         Assert(!action.GetProperty("runtime_use").GetBoolean(), "daily action unexpectedly enabled for runtime");
-        var frames = action.GetProperty("frames").EnumerateArray().ToArray();
-        Assert(frames.Length == expectedFrames, $"frame count changed for {behaviorId}");
-        foreach (var frame in frames)
-        {
-            var framePath = Path.Combine(Path.GetDirectoryName(manifestPath)!, frame.GetProperty("path").GetString()!.Replace('/', Path.DirectorySeparatorChar));
-            Assert(File.Exists(framePath), $"autonomous daily frame missing: {framePath}");
-            Assert(new FileInfo(framePath).Length == frame.GetProperty("bytes").GetInt64(), "autonomous daily frame byte length mismatch");
-            Assert(Sha256(framePath) == frame.GetProperty("sha256").GetString(), "autonomous daily frame sha256 mismatch");
-            Assert(frame.GetProperty("duration_ms").GetInt32() > 0, "autonomous daily frame duration missing");
-        }
+        Assert(action.GetProperty("frame_count").GetInt32() == expectedFrames, $"frame count changed for {behaviorId}");
+        var binding = action.GetProperty("source_binding");
+        var sourceBatch = binding.GetProperty("asset_batch").GetString();
+        Assert(
+            sourceBatch == CommandMockBehaviorIds.AssetBatch || sourceBatch == LifecycleCandidateBehaviorIds.AssetBatch,
+            $"unapproved source batch for {behaviorId}");
+        Assert(binding.GetProperty("frame_count").GetInt32() == expectedFrames, $"source range count changed for {behaviorId}");
+        Assert(binding.GetProperty("start_frame").GetInt32() >= 1, $"source range must be one-based for {behaviorId}");
+        Assert(binding.GetProperty("sequence_sha256").GetString()?.Length == 64, $"source sequence hash missing for {behaviorId}");
     }
 
     var catalog = DesktopMotionCatalog.Load(output);
@@ -917,6 +918,8 @@ static void AutonomousDailyCandidatesAreIndexedAndRemainGated()
     Assert(candidates.All(x => x.CandidateProfile == "production_candidate_owner_qa_pending"), "daily candidate stage was not preserved");
     Assert(candidates.All(x => x.VisualScale is > 0.91 and < 0.93), "daily candidates must inherit the approved 0.92 visual scale");
     Assert(candidates.All(x => x.Phases.Single().FrameDurationsMs?.Count == x.FrameCount), "daily candidate per-frame durations were not loaded");
+    Assert(candidates.All(x => !x.FirstFrame.Contains(AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase)), "daily candidates must resolve source frames instead of duplicate PNGs");
+    Assert(candidates.All(x => x.Description.Contains("no duplicate PNG", StringComparison.Ordinal)), "daily candidate cards must disclose shared source binding");
 }
 
 static void DeveloperAutonomousDailyCandidateCanRequestPlayback()

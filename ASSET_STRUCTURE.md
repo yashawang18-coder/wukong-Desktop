@@ -56,6 +56,16 @@ Owner preview approval must be represented separately from runtime approval. Unt
 
 New frames must be local motion deltas from approved anchors. Independent full-frame regeneration is prohibited because it causes identity drift.
 
+## Shared behavior bindings
+
+When a new behavior meaning uses an exact contiguous range from an existing approved motion, store a reference binding instead of copying PNG files. The binding must include the canonical source asset batch, behavior ID, phase, one-based start frame, frame count, and SHA-256 of the concatenated source frame bytes.
+
+- The source motion must be current, runtime-approved, and explicitly allowed for that binding domain.
+- The binding owns its own semantic and runtime gates; source approval never promotes the new behavior meaning automatically.
+- Missing sources, changed bytes, invalid ranges, expired sources, or disabled sources fail closed.
+- Timing is inherited from the exact source phase and range.
+- Duplicate PNG storage, implicit filename matching, pixel processing, and fallback to legacy/expired visuals are forbidden.
+
 ## Privacy and review rules
 
 - Do not commit real photographs of Wukong.
