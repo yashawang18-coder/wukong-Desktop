@@ -13,6 +13,7 @@ $publishCheckRoot = Join-Path $repoRoot ".publish-check"
 $fullPublishRoot = Join-Path $publishCheckRoot "autonomous-daily-review-full"
 $reviewRoot = Join-Path $publishCheckRoot "autonomous-daily-review-v1"
 $desktopProject = Join-Path $repoRoot "src\Wukong.Desktop\Wukong.Desktop.csproj"
+$officialNuGetSource = "https://api.nuget.org/v3/index.json"
 
 foreach ($path in @($fullPublishRoot, $reviewRoot)) {
     if (Test-Path -LiteralPath $path) {
@@ -25,6 +26,7 @@ dotnet publish $desktopProject `
     --configuration $Configuration `
     --runtime $RuntimeIdentifier `
     --self-contained true `
+    --source $officialNuGetSource `
     --output $fullPublishRoot `
     -p:PublishSingleFile=false `
     -p:PublishReadyToRun=false `
