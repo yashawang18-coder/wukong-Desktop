@@ -83,6 +83,12 @@ public partial class ControlPanelWindow : Window
         LifecycleCandidateList.ItemsSource = _runtime.LifecycleCandidateMotions
             .OrderBy(x => x.BehaviorId)
             .ToList();
+        AutonomousDailyAssetList.ItemsSource = _runtime.AutonomousDailyCandidateMotions
+            .OrderBy(x => x.BehaviorId)
+            .ToList();
+        InteractionReviewAssetList.ItemsSource = _runtime.Motions
+            .Where(x => string.Equals(x.BehaviorId, Phase15BehaviorIds.ProneTouch, StringComparison.OrdinalIgnoreCase))
+            .ToList();
         CarRideCandidateList.ItemsSource = _runtime.CarRideCandidateMotions.ToList();
         AlbumList.ItemsSource = _albumFolders;
         AlbumMediaList.ItemsSource = _albumMediaBindings;
@@ -794,6 +800,7 @@ public partial class ControlPanelWindow : Window
     {
         var visible = _agent.DeveloperSession.IsAuthenticated ? Visibility.Visible : Visibility.Collapsed;
         DeveloperDiagnosticsPanel.Visibility = visible;
+        AutonomousDailyAssetsTabButton.Visibility = visible;
         TraceList.Visibility = visible;
         if (visible == Visibility.Visible)
             RefreshDiagnosticsView();
@@ -802,6 +809,8 @@ public partial class ControlPanelWindow : Window
             DeveloperPage.Visibility = Visibility.Collapsed;
             OwnerPage.Visibility = Visibility.Visible;
         }
+        if (visible == Visibility.Collapsed && AutonomousDailyAssetsPanel.Visibility == Visibility.Visible)
+            SelectNormalAssetSubTab("Base");
     }
 
     private void RefreshDiagnostics_Click(object sender, RoutedEventArgs e) => RefreshDiagnosticsView();
@@ -943,6 +952,23 @@ public partial class ControlPanelWindow : Window
         MockStateStatus.Text = $"候选预览 {motion.DisplayName}: {result}";
     }
 
+    private async void ForceAutonomousDailyCandidate_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: PlayableMotion motion })
+            return;
+        if (!_agent.DeveloperSession.IsAuthenticated)
+        {
+            MagicShowStatus.Text = "开发者会话已失效，请重新登录。";
+            UpdateDeveloperVisibility();
+            return;
+        }
+
+        var result = await _runtime.SubmitDeveloperCandidateMotionAsync(motion.BehaviorId);
+        MagicShowStatus.Text = result == PetActionResult.Accepted
+            ? $"审阅展示 {motion.DisplayName}：已发送到桌面；正式自主池仍关闭"
+            : $"审阅展示 {motion.DisplayName}：{result}";
+    }
+
     private void CandidateSize_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button { Tag: string value } && int.TryParse(value, out var pixels))
@@ -975,6 +1001,7 @@ public partial class ControlPanelWindow : Window
         NormalAssetsPanel.Visibility = tab == "Normal" ? Visibility.Visible : Visibility.Collapsed;
         PlayAssetsPanel.Visibility = Visibility.Collapsed;
         CommandAssetsPanel.Visibility = Visibility.Collapsed;
+        AutonomousDailyAssetsPanel.Visibility = Visibility.Collapsed;
         MagicAssetsPanel.Visibility = tab == "Magic" ? Visibility.Visible : Visibility.Collapsed;
         NormalAssetSubTabs.Visibility = tab == "Normal" ? Visibility.Visible : Visibility.Collapsed;
         NormalAssetsTabButton.Style = PanelTabStyle(tab == "Normal");
@@ -995,9 +1022,11 @@ public partial class ControlPanelWindow : Window
         NormalAssetsPanel.Visibility = tab == "Base" ? Visibility.Visible : Visibility.Collapsed;
         PlayAssetsPanel.Visibility = tab == "Play" ? Visibility.Visible : Visibility.Collapsed;
         CommandAssetsPanel.Visibility = tab == "Command" ? Visibility.Visible : Visibility.Collapsed;
+        AutonomousDailyAssetsPanel.Visibility = tab == "AutonomousDaily" ? Visibility.Visible : Visibility.Collapsed;
         BaseAssetsTabButton.Style = PanelTabStyle(tab == "Base");
         PlayAssetsTabButton.Style = PanelTabStyle(tab == "Play");
         CommandAssetsTabButton.Style = PanelTabStyle(tab == "Command");
+        AutonomousDailyAssetsTabButton.Style = PanelTabStyle(tab == "AutonomousDaily");
     }
 
     private Style PanelTabStyle(bool selected) => (Style)FindResource(selected ? "PanelTabButtonSelected" : "PanelTabButton");
@@ -1183,9 +1212,11 @@ public partial class ControlPanelWindow : Window
     private void PreviewBackground_Click(object sender, RoutedEventArgs e)
     {
         _previewDark = !_previewDark;
-        PreviewStage.Background = _previewDark
-            ? MakeCheckerBrush(Color.FromRgb(36, 38, 34), Color.FromRgb(70, 74, 66))
-            : MakeCheckerBrush(Color.FromRgb(238, 236, 229), Color.FromRgb(250, 248, 241));
+        PreviewStage.Background = new SolidColorBrush(_previewDark
+            ? Color.FromRgb(28, 30, 27)
+            : Color.FromRgb(248, 247, 243));
+        PreviewBackgroundButton.Content = _previewDark ? "切换为明色背景" : "切换为深色背景";
+        PreviewBackgroundStatus.Text = _previewDark ? "当前：深色背景" : "当前：明色背景";
     }
 
     private void SelectPreviewPhase(MotionPhase? phase)

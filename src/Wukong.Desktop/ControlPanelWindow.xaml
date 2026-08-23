@@ -540,7 +540,8 @@
           <StackPanel x:Name="NormalAssetSubTabs" Orientation="Horizontal" Margin="0,0,0,14">
             <Button x:Name="BaseAssetsTabButton" Content="基础动作" Tag="Base" Style="{StaticResource PanelTabButtonSelected}" Click="NormalAssetSubTab_Click" Margin="0,0,8,0" />
             <Button x:Name="PlayAssetsTabButton" Content="玩一下" Tag="Play" Style="{StaticResource PanelTabButton}" Click="NormalAssetSubTab_Click" Margin="0,0,8,0" />
-            <Button x:Name="CommandAssetsTabButton" Content="口令动作" Tag="Command" Style="{StaticResource PanelTabButton}" Click="NormalAssetSubTab_Click" />
+            <Button x:Name="CommandAssetsTabButton" Content="口令动作" Tag="Command" Style="{StaticResource PanelTabButton}" Click="NormalAssetSubTab_Click" Margin="0,0,8,0" />
+            <Button x:Name="AutonomousDailyAssetsTabButton" Content="自主日常候选" Tag="AutonomousDaily" Style="{StaticResource PanelTabButton}" Click="NormalAssetSubTab_Click" Visibility="Collapsed" />
           </StackPanel>
           <Grid>
             <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="1.1*" /></Grid.ColumnDefinitions>
@@ -622,6 +623,61 @@
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
             </ScrollViewer>
+            <ScrollViewer x:Name="AutonomousDailyAssetsPanel" MaxHeight="560" Visibility="Collapsed">
+              <StackPanel>
+                <Border Style="{StaticResource Card}" Margin="0,0,12,12" Background="#FFF8E7">
+                  <StackPanel>
+                    <TextBlock Text="开发者审阅专用 · 不进入正式自主池" FontWeight="SemiBold" />
+                    <TextBlock Text="共 6 组、59 帧，逐字节复用已批准的浅麦芽金素材。这里只审阅动作语义、连续性和透明边缘；runtime_use=false。" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
+                  </StackPanel>
+                </Border>
+                <ItemsControl x:Name="AutonomousDailyAssetList">
+                  <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Border Style="{StaticResource AssetCard}" Width="284" Margin="0,0,12,12">
+                        <StackPanel>
+                          <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
+                          <DockPanel LastChildFill="False" Margin="0,10,0,0">
+                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
+                            <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding Disposition}" /></Border>
+                          </DockPanel>
+                          <TextBlock Text="{Binding BehaviorId}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" />
+                          <TextBlock Text="{Binding Direction, StringFormat=姿态: {0}}" />
+                          <TextBlock Text="{Binding FrameCount, StringFormat=frames: {0}}" />
+                          <TextBlock Text="{Binding PhaseSummary, StringFormat=phases: {0}}" TextWrapping="Wrap" />
+                          <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                          <WrapPanel Margin="0,10,0,0">
+                            <Button Content="逐帧/循环审阅" Style="{StaticResource SecondaryButton}" Tag="{Binding}" Click="PreviewAsset_Click" />
+                            <Button Content="在桌面强制展示" Style="{StaticResource PrimaryButton}" Tag="{Binding}" Click="ForceAutonomousDailyCandidate_Click" />
+                          </WrapPanel>
+                        </StackPanel>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="相关互动候选" FontWeight="SemiBold" Margin="0,8,0,8" />
+                <ItemsControl x:Name="InteractionReviewAssetList">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Border Style="{StaticResource AssetCard}" Width="284" Margin="0,0,12,12">
+                        <StackPanel>
+                          <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
+                          <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" Margin="0,10,0,0" />
+                          <TextBlock Text="{Binding BehaviorId}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                          <TextBlock Text="{Binding PhaseSummary}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                          <TextBlock Text="runtime_use=false · Windows 审阅候选" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                          <WrapPanel Margin="0,10,0,0">
+                            <Button Content="逐帧/循环审阅" Style="{StaticResource SecondaryButton}" Tag="{Binding}" Click="PreviewAsset_Click" />
+                            <Button Content="在桌面强制展示" Style="{StaticResource PrimaryButton}" Tag="{Binding}" Click="ForceAutonomousDailyCandidate_Click" />
+                          </WrapPanel>
+                        </StackPanel>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </ScrollViewer>
             <ScrollViewer x:Name="MagicAssetsPanel" MaxHeight="560" Visibility="Collapsed">
               <StackPanel>
               <ItemsControl x:Name="MagicSpecialList">
@@ -664,8 +720,9 @@
                   <Button Content="暂停/继续" Style="{StaticResource SecondaryButton}" Click="PreviewPause_Click" />
                   <Button Content="上一帧" Style="{StaticResource SecondaryButton}" Click="PreviewPrev_Click" />
                   <Button Content="下一帧" Style="{StaticResource SecondaryButton}" Click="PreviewNext_Click" />
-                  <CheckBox x:Name="PreviewLoopCheck" Content="循环" IsChecked="True" VerticalAlignment="Center" Margin="4,0,12,8" />
-                  <Button Content="切换棋盘背景" Style="{StaticResource SecondaryButton}" Click="PreviewBackground_Click" />
+                  <CheckBox x:Name="PreviewLoopCheck" Content="循环播放" IsChecked="True" VerticalAlignment="Center" Margin="4,0,12,8" />
+                  <Button x:Name="PreviewBackgroundButton" Content="切换为深色背景" Style="{StaticResource SecondaryButton}" Click="PreviewBackground_Click" />
+                  <TextBlock x:Name="PreviewBackgroundStatus" Text="当前：明色背景" Style="{StaticResource SubText}" VerticalAlignment="Center" Margin="4,0,0,8" />
                 </WrapPanel>
               </StackPanel>
             </Border>

@@ -463,15 +463,16 @@ public sealed class DesktopMotionCatalog
         var commandCandidates = LoadCommandCandidates(root).ToArray();
         var magicCandidates = LoadMagicCandidates(root).ToArray();
         var lifecycleCandidates = LoadLifecycleCandidates(root).ToArray();
+        var autonomousDailyCandidates = LoadAutonomousDailyCandidates(root).ToArray();
         var carRideCandidates = LoadCarRideCandidates(root).ToArray();
         var commandMocks = LoadCommandMotionMocks(root).ToArray();
         ReferenceFramePath = lifecycleCandidates
             .FirstOrDefault(x => x.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop && x.RuntimeEnabled)?.FirstFrame
             ?? motions.FirstOrDefault(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle)?.FirstFrame
             ?? string.Empty;
-        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
         BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
-        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(carRideCandidates).Concat(commandMocks), summary);
+        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks), summary);
     }
 
     private static PlayableMotion Motion(
@@ -844,6 +845,112 @@ public sealed class DesktopMotionCatalog
         }
     }
 
+    private static IEnumerable<PlayableMotion> LoadAutonomousDailyCandidates(string root)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", AutonomousDailyCandidateBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("autonomous_daily_candidate_manifest_missing");
+            yield break;
+        }
+
+        AutonomousDailyCandidateBatchManifest? manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<AutonomousDailyCandidateBatchManifest>(
+                File.ReadAllText(manifestPath),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Autonomous daily candidate manifest parse failed", ex);
+            yield break;
+        }
+
+        if (manifest?.Actions is null)
+            yield break;
+
+        var batchGateClosed =
+            string.Equals(manifest.BatchId, AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal) &&
+            string.Equals(manifest.AssetStage, "production_candidate_owner_qa_pending", StringComparison.Ordinal) &&
+            !manifest.AutonomousSemanticsOwnerApproved &&
+            !manifest.RuntimeApproved &&
+            !manifest.RuntimeUse &&
+            !manifest.MayEnterAutonomousPoolByDefault;
+        if (!batchGateClosed)
+        {
+            BootstrapLog.WriteRaw("autonomous_daily_candidate_invalid errors=batch_gate_must_remain_closed");
+            yield break;
+        }
+
+        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        foreach (var action in manifest.Actions)
+        {
+            var frames = new List<string>();
+            var durations = new List<int>();
+            var errors = new List<string>();
+            if (!action.BehaviorId.StartsWith("wk.daily.", StringComparison.Ordinal))
+                errors.Add("daily_namespace_required");
+            if (!action.SourceMotionDesignApproved)
+                errors.Add("source_motion_design_not_approved");
+            if (action.AutonomousSemanticsOwnerApproved || action.RuntimeApproved || action.RuntimeUse)
+                errors.Add("action_gate_must_remain_closed");
+
+            foreach (var frame in action.Frames ?? Array.Empty<CommandActionFrameManifest>())
+            {
+                var path = Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(path))
+                {
+                    errors.Add($"missing:{frame.Path}");
+                    continue;
+                }
+
+                if (new FileInfo(path).Length != frame.Bytes)
+                    errors.Add($"bytes:{frame.Path}");
+                if (!string.Equals(Sha256(path), frame.Sha256, StringComparison.OrdinalIgnoreCase))
+                    errors.Add($"sha256:{frame.Path}");
+                frames.Add(path);
+                durations.Add(frame.DurationMs.GetValueOrDefault(120));
+            }
+
+            if (frames.Count != action.FrameCount)
+                errors.Add($"frame_count:{frames.Count}/{action.FrameCount}");
+            if (durations.Any(x => x <= 0))
+                errors.Add("duration_must_be_positive");
+
+            if (errors.Count > 0)
+            {
+                BootstrapLog.WriteRaw($"autonomous_daily_candidate_invalid behavior={action.BehaviorId} errors={string.Join(",", errors)}");
+                continue;
+            }
+
+            var sourceRoot = frames.Count > 0
+                ? Path.GetDirectoryName(frames[0])!
+                : batchRoot;
+            yield return new PlayableMotion(
+                action.BehaviorId,
+                action.DisplayName,
+                "自主日常候选",
+                $"{action.FromPosture} -> {action.ToPosture}",
+                durations.Count > 0 ? durations[0] : 120,
+                Interruptible: true,
+                new[] { new MotionPhase("review", frames, action.Loop, durations) },
+                sourceRoot,
+                RuntimeEnabled: false,
+                Status: "仅开发者审阅：自发行为语义与 Windows 渲染待主人确认",
+                MissingContent: "owner semantic review / Windows renderer QA / runtime approval",
+                StartPose: action.FromPosture,
+                EndPose: action.ToPosture,
+                StyleGroup: "wukong-light-malt-gold-autonomous-daily-v1",
+                Disposition: "候选审阅",
+                PrototypeUse: false,
+                AssetBatch: manifest.BatchId,
+                Description: $"{action.DailyRole}; byte-identical derivative of approved light-malt-gold source frames; never selected by the autonomous pool while runtime_use=false.",
+                CandidateProfile: manifest.AssetStage,
+                VisualScale: ApprovedPetVisualScale);
+        }
+    }
+
     private static IEnumerable<PlayableMotion> LoadMagicCandidates(string root)
     {
         var manifestPath = Path.Combine(root, "action-batches", MagicBehaviorIds.AssetBatch, "manifest.json");
@@ -1143,6 +1250,17 @@ public static class LifecycleCandidateBehaviorIds
     public const string ProneIdleMicroloop = "wk.candidate.lifecycle.prone_idle_microloop";
 }
 
+public static class AutonomousDailyCandidateBehaviorIds
+{
+    public const string AssetBatch = "WK-AUTONOMOUS-DAILY-BEHAVIORS-v1";
+    public const string StandToSit = "wk.daily.stand_to_sit";
+    public const string SitToProne = "wk.daily.sit_to_prone";
+    public const string ProneToSit = "wk.daily.prone_to_sit";
+    public const string SitToStand = "wk.daily.sit_to_stand";
+    public const string PlayfulHop = "wk.daily.playful_hop";
+    public const string PlayfulSpin = "wk.daily.playful_spin";
+}
+
 public static class CommandBehaviorIds
 {
     public const string Sit = "wk.command.sit";
@@ -1266,6 +1384,29 @@ public sealed record LifecycleCandidatePhaseManifest(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("loop")] bool Loop,
     [property: JsonPropertyName("frame_count")] int FrameCount,
+    [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames);
+
+public sealed record AutonomousDailyCandidateBatchManifest(
+    [property: JsonPropertyName("batch_id")] string BatchId,
+    [property: JsonPropertyName("asset_stage")] string AssetStage,
+    [property: JsonPropertyName("autonomous_semantics_owner_approved")] bool AutonomousSemanticsOwnerApproved,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("may_enter_autonomous_pool_by_default")] bool MayEnterAutonomousPoolByDefault,
+    [property: JsonPropertyName("actions")] IReadOnlyList<AutonomousDailyCandidateActionManifest> Actions);
+
+public sealed record AutonomousDailyCandidateActionManifest(
+    [property: JsonPropertyName("behavior_id")] string BehaviorId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("daily_role")] string DailyRole,
+    [property: JsonPropertyName("from_posture")] string FromPosture,
+    [property: JsonPropertyName("to_posture")] string ToPosture,
+    [property: JsonPropertyName("frame_count")] int FrameCount,
+    [property: JsonPropertyName("loop")] bool Loop,
+    [property: JsonPropertyName("source_motion_design_approved")] bool SourceMotionDesignApproved,
+    [property: JsonPropertyName("autonomous_semantics_owner_approved")] bool AutonomousSemanticsOwnerApproved,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
     [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames);
 
 public sealed record CarRideCandidateManifest(
@@ -1555,6 +1696,10 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         .ToArray();
     public IReadOnlyList<PlayableMotion> LifecycleCandidateMotions => _catalog.Motions
         .Where(x => string.Equals(x.AssetBatch, LifecycleCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        .OrderBy(x => x.BehaviorId)
+        .ToArray();
+    public IReadOnlyList<PlayableMotion> AutonomousDailyCandidateMotions => _catalog.Motions
+        .Where(x => string.Equals(x.AssetBatch, AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
         .OrderBy(x => x.BehaviorId)
         .ToArray();
     public IReadOnlyList<PlayableMotion> CarRideCandidateMotions => _catalog.Motions
@@ -2093,6 +2238,23 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             Trace("lifecycle_motion_completed", $"{behaviorId} phase={phase} posture={posture}");
             RaiseMetrics();
             StartStablePostureIdle(posture, $"lifecycle_complete:{behaviorId}");
+            return;
+        }
+
+        if (completedMotion is not null &&
+            string.Equals(completedMotion.AssetBatch, AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        {
+            var posture = StablePostureFromPose(completedMotion.EndPose, _agentState.CurrentPosture);
+            _agentState = _agentState with
+            {
+                CurrentPosture = posture,
+                LastActionId = behaviorId,
+                IsBusy = false,
+                ActiveActionId = null
+            };
+            Trace("autonomous_daily_candidate_completed", $"{behaviorId} phase={phase} posture={posture} review_only=true");
+            RaiseMetrics();
+            StartStablePostureIdle(posture, $"autonomous_daily_candidate_complete:{behaviorId}");
             return;
         }
 
