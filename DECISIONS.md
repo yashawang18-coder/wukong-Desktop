@@ -284,3 +284,23 @@ Accio Broom and Car Ride owner showcases run for a randomized 10-20 seconds. Car
 The owner reported visible white edging and missing portions of the coin contour and authorized a full candidate-baseline repair. This supersedes the earlier limited instruction to preserve the defective coin alpha masks. All eight faces must instead share one complete anti-aliased outline, and all four flip states must share the same geometry at each flip step. The repaired PNG bytes and SHA-256 inventory form a frozen candidate baseline; this does not constitute owner visual approval or open any magic runtime gate.
 
 Autonomous daily semantics must reference approved source motion ranges rather than copy their PNGs. A binding records source batch, behavior, phase, one-based range, and concatenated source-byte SHA-256. Candidate semantic gates remain independent of source visual approval: approved command or lifecycle pixels do not automatically authorize spontaneous playback. Resolution must fail closed if source identity, status, range, or bytes no longer match.
+
+## 2026-08-26 - review V3R1 side-prone lifecycle and V4 forward-prone sequences in parallel
+
+Decision:
+
+Import V3R1 recovered lifecycle and V4 forward-prone as two separate developer-only owner-QA profiles. V3R1 preserves its historical side-prone identity across intro, idle, and exit. V4 is reviewed independently as a forward-prone calm loop and a one-shot lick microevent.
+
+Reason:
+
+The two packages have different terminal prone orientations and no approved side-prone to forward-prone bridge. A hard cut would misrepresent lifecycle continuity even though both source packages pass offline checksum and PNG integrity checks.
+
+Restrictions:
+
+- Do not replace or edit the approved V2 lifecycle binding or PNG files.
+- Do not concatenate a V3R1 side-prone phase with a V4 forward-prone phase.
+- Keep both new profiles out of Normal, owner UI, autonomous scheduling, dialogue, model, command, magic, and car ride routes.
+- Permit playback only through the existing isolated `DeveloperPreview` BehaviorRequest path.
+- Keep `visual_approved=false`, `runtime_validation=pending_windows_renderer_qa`, `runtime_approved=false`, `runtime_use=false`, and `production_asset=false` until a separate owner decision follows real Windows renderer review.
+- The owner-approved V4 stable anchor is anchor-only evidence and cannot promote the derived loop or lick sequence.
+- Preserve the original package manifests and SHA inventories unchanged; Wukong-specific review mapping lives in separate `asset.json` and `runtime-review-manifest.json` files.

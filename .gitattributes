@@ -1,0 +1,3 @@
+# Preserve the frozen candidate package bytes across Windows checkouts.
+assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED/** -text
+assets/action-batches/WK-AUTONOMOUS-PRONE-IDLE-FRONT-CANDIDATE-v4/** -text

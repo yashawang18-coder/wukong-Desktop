@@ -1,0 +1,220 @@
+{
+  "batch_id": "WK-AUTONOMOUS-PRONE-IDLE-FRONT-CANDIDATE-v4",
+  "status": "production_candidate_owner_qa_pending",
+  "identity_style": "wukong_light_malt_gold_lively",
+  "source_policy": {
+    "anchor": "owner-approved prone-front stable anchor, exact approved eat-prone F12 pixels",
+    "motion": "approved eat-prone F08-F12 only; no newly generated dog pixels",
+    "legacy_red_assets": "forbidden",
+    "side-looking_prone": "not used"
+  },
+  "integration": {
+    "replace_current_runtime": false,
+    "recommended_binding": "calm loop is base prone idle; lick loop is a low-frequency autonomous insert",
+    "owner_approval_required": true
+  },
+  "actions": [
+    {
+      "action_id": "wk.candidate.lifecycle.prone_idle_front_calm_v4",
+      "status": "production_candidate_owner_qa_pending",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "behavior": "continuous calm forward-prone idle; closed mouth only",
+      "recommended_cooldown_ms": [
+        600,
+        1800
+      ],
+      "loop": true,
+      "frame_count": 12,
+      "total_duration_ms": 6200,
+      "anchor_policy": "F01 and F12 are exact byte copies of the owner-approved forward-prone anchor",
+      "frames": [
+        {
+          "frame": 1,
+          "path": "frames/prone-idle-front-calm/frame-001.png",
+          "duration_ms": 900,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 2,
+          "path": "frames/prone-idle-front-calm/frame-002.png",
+          "duration_ms": 360,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 3,
+          "path": "frames/prone-idle-front-calm/frame-003.png",
+          "duration_ms": 260,
+          "approved_source_frame": 8,
+          "sha256": "b9a93fa5aedddcd8bbfcf660a3763f7ec06d548481eb9b78aa0f53e708dbfb93"
+        },
+        {
+          "frame": 4,
+          "path": "frames/prone-idle-front-calm/frame-004.png",
+          "duration_ms": 300,
+          "approved_source_frame": 8,
+          "sha256": "b9a93fa5aedddcd8bbfcf660a3763f7ec06d548481eb9b78aa0f53e708dbfb93"
+        },
+        {
+          "frame": 5,
+          "path": "frames/prone-idle-front-calm/frame-005.png",
+          "duration_ms": 420,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 6,
+          "path": "frames/prone-idle-front-calm/frame-006.png",
+          "duration_ms": 520,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 7,
+          "path": "frames/prone-idle-front-calm/frame-007.png",
+          "duration_ms": 260,
+          "approved_source_frame": 8,
+          "sha256": "b9a93fa5aedddcd8bbfcf660a3763f7ec06d548481eb9b78aa0f53e708dbfb93"
+        },
+        {
+          "frame": 8,
+          "path": "frames/prone-idle-front-calm/frame-008.png",
+          "duration_ms": 300,
+          "approved_source_frame": 8,
+          "sha256": "b9a93fa5aedddcd8bbfcf660a3763f7ec06d548481eb9b78aa0f53e708dbfb93"
+        },
+        {
+          "frame": 9,
+          "path": "frames/prone-idle-front-calm/frame-009.png",
+          "duration_ms": 420,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 10,
+          "path": "frames/prone-idle-front-calm/frame-010.png",
+          "duration_ms": 600,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 11,
+          "path": "frames/prone-idle-front-calm/frame-011.png",
+          "duration_ms": 760,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 12,
+          "path": "frames/prone-idle-front-calm/frame-012.png",
+          "duration_ms": 1100,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        }
+      ]
+    },
+    {
+      "action_id": "wk.candidate.lifecycle.prone_idle_front_lick_v4",
+      "status": "production_candidate_owner_qa_pending",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "behavior": "occasional forward-prone lip-lick event; not a continuous idle loop",
+      "recommended_cooldown_ms": [
+        45000,
+        120000
+      ],
+      "loop": true,
+      "frame_count": 12,
+      "total_duration_ms": 6920,
+      "anchor_policy": "F01 and F12 are exact byte copies of the owner-approved forward-prone anchor",
+      "frames": [
+        {
+          "frame": 1,
+          "path": "frames/prone-idle-front-lick/frame-001.png",
+          "duration_ms": 1100,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 2,
+          "path": "frames/prone-idle-front-lick/frame-002.png",
+          "duration_ms": 420,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 3,
+          "path": "frames/prone-idle-front-lick/frame-003.png",
+          "duration_ms": 220,
+          "approved_source_frame": 8,
+          "sha256": "b9a93fa5aedddcd8bbfcf660a3763f7ec06d548481eb9b78aa0f53e708dbfb93"
+        },
+        {
+          "frame": 4,
+          "path": "frames/prone-idle-front-lick/frame-004.png",
+          "duration_ms": 180,
+          "approved_source_frame": 9,
+          "sha256": "d0dada8aa4fa52402ca9975fcb3cfdff60060aacae2f50d1da1e7c1c7641e0b0"
+        },
+        {
+          "frame": 5,
+          "path": "frames/prone-idle-front-lick/frame-005.png",
+          "duration_ms": 180,
+          "approved_source_frame": 10,
+          "sha256": "15ef9778e447424a75c5da956446d9423c7153e564ee215058d72e6387440ecc"
+        },
+        {
+          "frame": 6,
+          "path": "frames/prone-idle-front-lick/frame-006.png",
+          "duration_ms": 260,
+          "approved_source_frame": 11,
+          "sha256": "1bca45ebc11a6612099fe270ebc082a96975ba10d8c33d18836acc631e854477"
+        },
+        {
+          "frame": 7,
+          "path": "frames/prone-idle-front-lick/frame-007.png",
+          "duration_ms": 240,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 8,
+          "path": "frames/prone-idle-front-lick/frame-008.png",
+          "duration_ms": 420,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 9,
+          "path": "frames/prone-idle-front-lick/frame-009.png",
+          "duration_ms": 600,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 10,
+          "path": "frames/prone-idle-front-lick/frame-010.png",
+          "duration_ms": 800,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 11,
+          "path": "frames/prone-idle-front-lick/frame-011.png",
+          "duration_ms": 1100,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        },
+        {
+          "frame": 12,
+          "path": "frames/prone-idle-front-lick/frame-012.png",
+          "duration_ms": 1400,
+          "approved_source_frame": 12,
+          "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+        }
+      ]
+    }
+  ]
+}

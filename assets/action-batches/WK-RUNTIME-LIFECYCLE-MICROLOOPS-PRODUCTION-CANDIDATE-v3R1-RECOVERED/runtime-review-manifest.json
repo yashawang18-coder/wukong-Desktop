@@ -1,0 +1,811 @@
+{
+  "schema_version": "1.0",
+  "asset_id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED",
+  "asset_stage": "production_candidate_owner_qa_pending",
+  "source_package_manifest": "manifest.json",
+  "source_package_manifest_sha256": "c38da6481c85607fb5547649d6d10a9f649f12d64f076e94be10e89ad85c6f9b",
+  "source_freeze_manifest": "SHA256SUMS",
+  "source_freeze_verified": true,
+  "recovery_class": "v3R1_reconstructed_from_repository_v2_sources",
+  "visual_approved": false,
+  "runtime_validation": "pending_windows_renderer_qa",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": false,
+  "bridge_policy": "legacy_side_prone_only; no forward-prone splice without an approved bridge",
+  "v2_runtime_binding_unchanged": true,
+  "batch_id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED",
+  "candidate_profile": "production_candidate_owner_qa_pending",
+  "actions": [
+    {
+      "behavior_id": "wk.candidate.lifecycle.lively_daily_v3r1",
+      "display_name": "V3R1 intro",
+      "description": "Recovered stand-to-legacy-side-prone intro.",
+      "source_action_name": "intro",
+      "source_folder": "frames/intro",
+      "frame_count": 20,
+      "frame_duration_ms": 180,
+      "from_pose": "stand.neutral.left_front",
+      "to_pose": "prone.awake.legacy_side",
+      "direction": "left-front",
+      "interruptible": true,
+      "lifecycle_role": "intro",
+      "legacy_side_prone": false,
+      "runtime_validation": "pending_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "visual_approved": false,
+      "prototype_use": false,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "expired_pixel_contribution": false,
+      "phases": [
+        {
+          "name": "intro",
+          "loop": false,
+          "frame_count": 20,
+          "frames": [
+            {
+              "path": "frames/intro/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "14d2373ecefcd9938999f953bac2dcc6af05e91443c514608e7e6ccb88bcd1c3",
+              "bytes": 355825,
+              "duration_ms": 520
+            },
+            {
+              "path": "frames/intro/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "14d2373ecefcd9938999f953bac2dcc6af05e91443c514608e7e6ccb88bcd1c3",
+              "bytes": 355825,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/intro/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "50b55d517a5ade4fc424609e251a89b30995140bb2d69b7976dcccb43551160f",
+              "bytes": 328267,
+              "duration_ms": 150
+            },
+            {
+              "path": "frames/intro/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "50b55d517a5ade4fc424609e251a89b30995140bb2d69b7976dcccb43551160f",
+              "bytes": 328267,
+              "duration_ms": 150
+            },
+            {
+              "path": "frames/intro/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "0d234edf6864518b4a487172610af9fed2577a5ac8b9d922fa020c82672d26c5",
+              "bytes": 345956,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/intro/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "13d7c4801f48d0dd6f67270bcf68a6c08213945e0a57b1ec3603a988dac04cdf",
+              "bytes": 322659,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/intro/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "508ee8efb50b6645cd8650d3188ed6fa3a3034e2906e08e2e0844b5629c2d545",
+              "bytes": 344055,
+              "duration_ms": 300
+            },
+            {
+              "path": "frames/intro/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "e28171247597fbd6394d110acd1fab8b2294cd4faa29ad9c1f0f71963571e3b4",
+              "bytes": 327325,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/intro/frame-009.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "8209f6fc1e181c278879b0097464e4b7d7d0bc38078ad8731890f3f6198e51c8",
+              "bytes": 394834,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/intro/frame-010.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "8209f6fc1e181c278879b0097464e4b7d7d0bc38078ad8731890f3f6198e51c8",
+              "bytes": 394834,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/intro/frame-011.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "9678cd21a3845b4095e302851830cd319ccc064a28d95df3979cb5beb290cd0c",
+              "bytes": 433963,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/intro/frame-012.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "9678cd21a3845b4095e302851830cd319ccc064a28d95df3979cb5beb290cd0c",
+              "bytes": 433963,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/intro/frame-013.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "aad1aac97ad8b1505337095c6f5514b9f5683b1d6059510b97c7a442b616a82b",
+              "bytes": 364490,
+              "duration_ms": 280
+            },
+            {
+              "path": "frames/intro/frame-014.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "add27f3b4836c99860c54742846e316c96e8b14e046fed0783fa8668b8dfb6ce",
+              "bytes": 330280,
+              "duration_ms": 320
+            },
+            {
+              "path": "frames/intro/frame-015.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "add27f3b4836c99860c54742846e316c96e8b14e046fed0783fa8668b8dfb6ce",
+              "bytes": 330280,
+              "duration_ms": 320
+            },
+            {
+              "path": "frames/intro/frame-016.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "347ef2a556ea4c8533e5ebab76f631388540c0e398d7fa0b1d5483033d47afd2",
+              "bytes": 492065,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/intro/frame-017.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "347ef2a556ea4c8533e5ebab76f631388540c0e398d7fa0b1d5483033d47afd2",
+              "bytes": 492065,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/intro/frame-018.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "214f933a988a428ad833f2049c88bd9b5cf0e1d23bb2ccb9ab8d04de15d0b3f0",
+              "bytes": 480602,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/intro/frame-019.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "71bd58ab524186210fc638f023ad495dd5f458f04d87cda8b34f15e54461000a",
+              "bytes": 307137,
+              "duration_ms": 360
+            },
+            {
+              "path": "frames/intro/frame-020.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "106483d70c6513a821a186a6f70e2d217acfb4ada8377656e226e4b361668d88",
+              "bytes": 316952,
+              "duration_ms": 650
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.review.lifecycle.lively_daily_v3r1_exit",
+      "display_name": "V3R1 exit",
+      "description": "Recovered legacy-side-prone-to-stand exit.",
+      "source_action_name": "exit",
+      "source_folder": "frames/exit",
+      "frame_count": 12,
+      "frame_duration_ms": 180,
+      "from_pose": "prone.awake.legacy_side",
+      "to_pose": "stand.neutral.left_front",
+      "direction": "left-front",
+      "interruptible": true,
+      "lifecycle_role": "exit",
+      "legacy_side_prone": false,
+      "runtime_validation": "pending_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "visual_approved": false,
+      "prototype_use": false,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "expired_pixel_contribution": false,
+      "phases": [
+        {
+          "name": "exit",
+          "loop": false,
+          "frame_count": 12,
+          "frames": [
+            {
+              "path": "frames/exit/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "106483d70c6513a821a186a6f70e2d217acfb4ada8377656e226e4b361668d88",
+              "bytes": 316952,
+              "duration_ms": 420
+            },
+            {
+              "path": "frames/exit/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "214f933a988a428ad833f2049c88bd9b5cf0e1d23bb2ccb9ab8d04de15d0b3f0",
+              "bytes": 480602,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/exit/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "214f933a988a428ad833f2049c88bd9b5cf0e1d23bb2ccb9ab8d04de15d0b3f0",
+              "bytes": 480602,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/exit/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "347ef2a556ea4c8533e5ebab76f631388540c0e398d7fa0b1d5483033d47afd2",
+              "bytes": 492065,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/exit/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "347ef2a556ea4c8533e5ebab76f631388540c0e398d7fa0b1d5483033d47afd2",
+              "bytes": 492065,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/exit/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "add27f3b4836c99860c54742846e316c96e8b14e046fed0783fa8668b8dfb6ce",
+              "bytes": 330280,
+              "duration_ms": 460
+            },
+            {
+              "path": "frames/exit/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "3d77b2e8c16196093cb25db872089cc62f3dd2ade6cdb332d60c13075ce6bf3d",
+              "bytes": 516350,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/exit/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "3d77b2e8c16196093cb25db872089cc62f3dd2ade6cdb332d60c13075ce6bf3d",
+              "bytes": 516350,
+              "duration_ms": 160
+            },
+            {
+              "path": "frames/exit/frame-009.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "8edfea5a8b06a8440715713809ce419a6a31fee153de22d968d1b59c10363934",
+              "bytes": 533938,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/exit/frame-010.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "7090841fff1b38f6924829fda6a9a9c6232f8f3ed76c082e2d4b3180b47fccdc",
+              "bytes": 506531,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/exit/frame-011.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "7090841fff1b38f6924829fda6a9a9c6232f8f3ed76c082e2d4b3180b47fccdc",
+              "bytes": 506531,
+              "duration_ms": 160
+            },
+            {
+              "path": "frames/exit/frame-012.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "14d2373ecefcd9938999f953bac2dcc6af05e91443c514608e7e6ccb88bcd1c3",
+              "bytes": 355825,
+              "duration_ms": 560
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.lifecycle.stand_idle_microloop_v3r1",
+      "display_name": "V3R1 stand idle",
+      "description": "Recovered low-frequency stand microloop.",
+      "source_action_name": "stand-idle",
+      "source_folder": "frames/microloops/stand-idle",
+      "frame_count": 12,
+      "frame_duration_ms": 180,
+      "from_pose": "stand.neutral.left_front",
+      "to_pose": "stand.neutral.left_front",
+      "direction": "left-front",
+      "interruptible": true,
+      "lifecycle_role": "loop",
+      "legacy_side_prone": false,
+      "runtime_validation": "pending_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "visual_approved": false,
+      "prototype_use": false,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "expired_pixel_contribution": false,
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 12,
+          "frames": [
+            {
+              "path": "frames/microloops/stand-idle/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "77be067001a7de36f6fe436f73ab05735b9a827612746dba52e43e9d8bc07758",
+              "bytes": 479979,
+              "duration_ms": 1100
+            },
+            {
+              "path": "frames/microloops/stand-idle/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "77be067001a7de36f6fe436f73ab05735b9a827612746dba52e43e9d8bc07758",
+              "bytes": 479979,
+              "duration_ms": 700
+            },
+            {
+              "path": "frames/microloops/stand-idle/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "bf81c9252d66c0d4e1a54f44f665e2269a260e2cea53c479981d5a339221b57a",
+              "bytes": 475925,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/stand-idle/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "68126b0fcdb7e0db3250bd0b4a1465db2fbcf535c6e049f6a40652b282063e72",
+              "bytes": 477567,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/microloops/stand-idle/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "315c967f447baa7074e6662c7a662698becbd8ff8b3136ea3da6f8800fb298ec",
+              "bytes": 479511,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/stand-idle/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "89aea07ffd0695e13d9f493e43d095cf393f46fbd476fd436d2b972c16e0ce99",
+              "bytes": 479839,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/microloops/stand-idle/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "315c967f447baa7074e6662c7a662698becbd8ff8b3136ea3da6f8800fb298ec",
+              "bytes": 479511,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/stand-idle/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "68126b0fcdb7e0db3250bd0b4a1465db2fbcf535c6e049f6a40652b282063e72",
+              "bytes": 477567,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/microloops/stand-idle/frame-009.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "bf81c9252d66c0d4e1a54f44f665e2269a260e2cea53c479981d5a339221b57a",
+              "bytes": 475925,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/stand-idle/frame-010.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "77be067001a7de36f6fe436f73ab05735b9a827612746dba52e43e9d8bc07758",
+              "bytes": 479979,
+              "duration_ms": 600
+            },
+            {
+              "path": "frames/microloops/stand-idle/frame-011.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "77be067001a7de36f6fe436f73ab05735b9a827612746dba52e43e9d8bc07758",
+              "bytes": 479979,
+              "duration_ms": 900
+            },
+            {
+              "path": "frames/microloops/stand-idle/frame-012.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "77be067001a7de36f6fe436f73ab05735b9a827612746dba52e43e9d8bc07758",
+              "bytes": 479979,
+              "duration_ms": 1200
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.lifecycle.sit_idle_microloop_v3r1",
+      "display_name": "V3R1 sit idle",
+      "description": "Recovered low-frequency sit microloop.",
+      "source_action_name": "sit-idle",
+      "source_folder": "frames/microloops/sit-idle",
+      "frame_count": 12,
+      "frame_duration_ms": 180,
+      "from_pose": "sit.neutral.left_front",
+      "to_pose": "sit.neutral.left_front",
+      "direction": "left-front",
+      "interruptible": true,
+      "lifecycle_role": "loop",
+      "legacy_side_prone": false,
+      "runtime_validation": "pending_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "visual_approved": false,
+      "prototype_use": false,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "expired_pixel_contribution": false,
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 12,
+          "frames": [
+            {
+              "path": "frames/microloops/sit-idle/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "a077213ae8a4012c83fd3b2c4373ab9fd026f3ecaa88ea5d65d230d220a4ac95",
+              "bytes": 425388,
+              "duration_ms": 1200
+            },
+            {
+              "path": "frames/microloops/sit-idle/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "a077213ae8a4012c83fd3b2c4373ab9fd026f3ecaa88ea5d65d230d220a4ac95",
+              "bytes": 425388,
+              "duration_ms": 700
+            },
+            {
+              "path": "frames/microloops/sit-idle/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "f79641f772959c10678fc99d568e743a472b09f4555f5e995a18535d8f1e18c6",
+              "bytes": 423833,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/microloops/sit-idle/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "4523c8ba00751382980c1e01f9a0f52bc2c806a6543e239c8669aa94c75d2090",
+              "bytes": 422014,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/sit-idle/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "e813187eec75ba5b154d0d674c85c123dec4ab98fb5915a261a428e48098cbb4",
+              "bytes": 427428,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/microloops/sit-idle/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "d62c1e70314e4aebaab52fa822cad0532182abe2b724ad399bac2f5c5518f5dc",
+              "bytes": 428591,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/microloops/sit-idle/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "e813187eec75ba5b154d0d674c85c123dec4ab98fb5915a261a428e48098cbb4",
+              "bytes": 427428,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/microloops/sit-idle/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "4523c8ba00751382980c1e01f9a0f52bc2c806a6543e239c8669aa94c75d2090",
+              "bytes": 422014,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/sit-idle/frame-009.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "f79641f772959c10678fc99d568e743a472b09f4555f5e995a18535d8f1e18c6",
+              "bytes": 423833,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/microloops/sit-idle/frame-010.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "a077213ae8a4012c83fd3b2c4373ab9fd026f3ecaa88ea5d65d230d220a4ac95",
+              "bytes": 425388,
+              "duration_ms": 700
+            },
+            {
+              "path": "frames/microloops/sit-idle/frame-011.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "a077213ae8a4012c83fd3b2c4373ab9fd026f3ecaa88ea5d65d230d220a4ac95",
+              "bytes": 425388,
+              "duration_ms": 900
+            },
+            {
+              "path": "frames/microloops/sit-idle/frame-012.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "a077213ae8a4012c83fd3b2c4373ab9fd026f3ecaa88ea5d65d230d220a4ac95",
+              "bytes": 425388,
+              "duration_ms": 1300
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.lifecycle.prone_idle_legacy_side_v3r1",
+      "display_name": "V3R1 legacy side prone idle",
+      "description": "Historical side-prone loop retained only to review V3R1 lifecycle continuity.",
+      "source_action_name": "prone-idle-legacy-side",
+      "source_folder": "frames/microloops/prone-idle-legacy-side",
+      "frame_count": 12,
+      "frame_duration_ms": 180,
+      "from_pose": "prone.awake.legacy_side",
+      "to_pose": "prone.awake.legacy_side",
+      "direction": "left-front",
+      "interruptible": true,
+      "lifecycle_role": "loop",
+      "legacy_side_prone": true,
+      "runtime_validation": "pending_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "visual_approved": false,
+      "prototype_use": false,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "expired_pixel_contribution": false,
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 12,
+          "frames": [
+            {
+              "path": "frames/microloops/prone-idle-legacy-side/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44",
+              "bytes": 393853,
+              "duration_ms": 1300
+            },
+            {
+              "path": "frames/microloops/prone-idle-legacy-side/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44",
+              "bytes": 393853,
+              "duration_ms": 800
+            },
+            {
+              "path": "frames/microloops/prone-idle-legacy-side/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "a61cb42ad580274974f6280a7155461fa25699e8cc47fb9974c1e3e00db4f7f8",
+              "bytes": 396653,
+              "duration_ms": 320
+            },
+            {
+              "path": "frames/microloops/prone-idle-legacy-side/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "0f22865f3fced20560aa3a5d50eb34dfa79acf1d57315771cc9e8949eca361e4",
+              "bytes": 393279,
+              "duration_ms": 320
+            },
+            {
+              "path": "frames/microloops/prone-idle-legacy-side/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "65f63ae53aa436117d3f07813fe44f644e2d01f6131484827b0bc2d46f9c0612",
+              "bytes": 395871,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/prone-idle-legacy-side/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "75f95772a50dc686568214c987b761c6f1f26fc1526e246d84c2850af4e24a18",
+              "bytes": 395938,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/microloops/prone-idle-legacy-side/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "65f63ae53aa436117d3f07813fe44f644e2d01f6131484827b0bc2d46f9c0612",
+              "bytes": 395871,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/prone-idle-legacy-side/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "0f22865f3fced20560aa3a5d50eb34dfa79acf1d57315771cc9e8949eca361e4",
+              "bytes": 393279,
+              "duration_ms": 320
+            },
+            {
+              "path": "frames/microloops/prone-idle-legacy-side/frame-009.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "a61cb42ad580274974f6280a7155461fa25699e8cc47fb9974c1e3e00db4f7f8",
+              "bytes": 396653,
+              "duration_ms": 320
+            },
+            {
+              "path": "frames/microloops/prone-idle-legacy-side/frame-010.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44",
+              "bytes": 393853,
+              "duration_ms": 700
+            },
+            {
+              "path": "frames/microloops/prone-idle-legacy-side/frame-011.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44",
+              "bytes": 393853,
+              "duration_ms": 1000
+            },
+            {
+              "path": "frames/microloops/prone-idle-legacy-side/frame-012.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44",
+              "bytes": 393853,
+              "duration_ms": 1500
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

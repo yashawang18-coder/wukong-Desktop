@@ -83,6 +83,9 @@ public partial class ControlPanelWindow : Window
         LifecycleCandidateList.ItemsSource = _runtime.LifecycleCandidateMotions
             .OrderBy(x => x.BehaviorId)
             .ToList();
+        LifecycleReviewCandidateList.ItemsSource = _runtime.LifecycleReviewCandidateMotions
+            .OrderBy(x => x.BehaviorId)
+            .ToList();
         AutonomousDailyAssetList.ItemsSource = _runtime.AutonomousDailyCandidateMotions
             .OrderBy(x => x.BehaviorId)
             .ToList();

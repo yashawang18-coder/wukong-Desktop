@@ -193,6 +193,18 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
 - Strict non-zero-alpha audit still records 17 frame references extending to y=932. The owner observed no visible foot jitter, transparent edge issue, or y=930/y=932 artifact in Windows renderer QA; PNGs were not cropped, recolored, resized, or baseline-shifted after acceptance.
 - It is not added to `contracts/runtime/asset-registry.json`, `pet_assets.json`, production command routing, right-click menus, training data, magic, or coin flows. It is activated only in the formal autonomous lifecycle mapping: full lifecycle as a low-frequency self-directed daily behavior, stand-idle for stable stand, sit-idle for stable sit, and prone-idle for stable prone.
 
+## 2026-08-26 lifecycle V3R1 and forward-prone V4 parallel review
+
+- Branch: `agent/lifecycle-v3r1-prone-front-v4-review` based on `origin/agent/personality-state-behavior-mock-v1` commit `24e2b121591cc86b7c50404970235de7b445de2c`.
+- Imported `WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED` and `WK-AUTONOMOUS-PRONE-IDLE-FRONT-CANDIDATE-v4` as two independent owner-QA profiles.
+- V3R1 retains the historical side-prone pose so its recovered intro, side-prone idle, and exit can be reviewed continuously. V4 contains only the independent forward-prone calm loop and one-shot lick microevent.
+- No side-prone to forward-prone bridge exists. The catalog, manifests, review guide, and developer panel explicitly prohibit treating a switch between these profiles as a valid lifecycle transition.
+- The V4 lick is eligible only from `Prone`, is one-shot, returns to its byte-identical stable anchor, and records a proposed 45-120 second cooldown. Its autonomous binding remains disabled.
+- The active V2 lifecycle manifest and runtime bindings are unchanged. Existing command, magic, car ride, and autonomous daily review areas remain available.
+- Both batches are `asset_stage=production_candidate_owner_qa_pending`, `visual_approved=false`, `runtime_validation=pending_windows_renderer_qa`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, and `autonomous_binding_enabled=false`.
+- The V4 stable anchor retains `anchor_owner_visual_approved=true`; that anchor-only fact does not approve either sequence.
+- Current stage: imported and wired for isolated `DeveloperPreview`; automated validation, PowerShell 5.1 review publishing, package checksum verification, and controlled Windows launch passed. Owner Windows renderer visual QA remains pending, and no runtime approval is claimed.
+
 ## Next implementation target
 
 Phase 1 is the smallest honest end-to-end runtime:

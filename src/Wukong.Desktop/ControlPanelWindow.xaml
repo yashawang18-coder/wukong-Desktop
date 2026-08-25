@@ -898,6 +898,40 @@
               </ItemsControl>
             </StackPanel>
           </Border>
+          <Border Style="{StaticResource Card}" Visibility="{Binding ElementName=DeveloperDiagnosticsPanel, Path=Visibility}">
+            <StackPanel>
+              <TextBlock Text="基础动作候审" FontWeight="SemiBold" />
+              <TextBlock Text="V3R1 侧身生命周期与 V4 正向趴姿为两组独立候审素材；没有桥接素材前禁止硬切拼接。" Style="{StaticResource SubText}" Margin="0,4,0,12" TextWrapping="Wrap" />
+              <ItemsControl x:Name="LifecycleReviewCandidateList">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Background="#F7F5F0" CornerRadius="12" Padding="10" Margin="0,0,10,10" Width="290">
+                      <StackPanel>
+                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding BehaviorId}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding AssetBatch, StringFormat=来源包：{0}}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding FrameCount, StringFormat=帧数：{0}}" Style="{StaticResource SubText}" />
+                        <TextBlock Text="{Binding PhaseSummary, StringFormat=阶段：{0}}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="runtime_approved=false / runtime_use=false" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="expired_pixel_contribution=false" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Description}" Style="{StaticResource SubText}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                        <WrapPanel Margin="0,8,0,0">
+                          <Button Content="面板预览" Tag="{Binding}" Style="{StaticResource SecondaryButton}" Click="PreviewAsset_Click" />
+                          <Button Content="桌面候审" Tag="{Binding}" Style="{StaticResource PrimaryButton}" Click="ForceLifecycleCandidate_Click" />
+                        </WrapPanel>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
           <Border Style="{StaticResource Card}">
             <StackPanel>
               <TextBlock Text="本地运行 Trace" FontWeight="SemiBold" />

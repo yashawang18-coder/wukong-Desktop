@@ -1,0 +1,324 @@
+{
+  "schema_version": "1.0",
+  "asset_id": "WK-AUTONOMOUS-PRONE-IDLE-FRONT-CANDIDATE-v4",
+  "asset_stage": "production_candidate_owner_qa_pending",
+  "source_package_manifest": "manifest.json",
+  "source_package_manifest_sha256": "a49bd51980435ed1432d149594b33bddca6a4e1e847fcd50b02d0fd51befa8e3",
+  "source_freeze_manifest": "SHA256SUMS",
+  "source_freeze_verified": true,
+  "visual_approved": false,
+  "anchor_owner_visual_approved": true,
+  "runtime_validation": "pending_windows_renderer_qa",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": false,
+  "bridge_policy": "independent_forward_prone_review; no legacy-side-to-front splice without an approved bridge",
+  "v2_runtime_binding_unchanged": true,
+  "batch_id": "WK-AUTONOMOUS-PRONE-IDLE-FRONT-CANDIDATE-v4",
+  "candidate_profile": "production_candidate_owner_qa_pending",
+  "actions": [
+    {
+      "behavior_id": "wk.candidate.lifecycle.prone_idle_front_microloop_v4",
+      "display_name": "V4 forward prone calm",
+      "description": "Independent forward-prone calm microloop.",
+      "source_action_id": "wk.candidate.lifecycle.prone_idle_front_calm_v4",
+      "source_folder": "frames/prone-idle-front-calm",
+      "frame_count": 12,
+      "frame_duration_ms": 180,
+      "from_pose": "prone.awake.front",
+      "to_pose": "prone.awake.front",
+      "direction": "front",
+      "interruptible": true,
+      "lifecycle_role": "loop",
+      "legacy_side_prone": false,
+      "runtime_validation": "pending_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "visual_approved": false,
+      "anchor_owner_visual_approved": true,
+      "prototype_use": false,
+      "autonomous_binding_enabled": false,
+      "eligible_postures": [
+        "Prone"
+      ],
+      "cooldown_min_ms": 600,
+      "cooldown_max_ms": 1800,
+      "continuous_loop": true,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "expired_pixel_contribution": false,
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 12,
+          "frames": [
+            {
+              "path": "frames/prone-idle-front-calm/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 900
+            },
+            {
+              "path": "frames/prone-idle-front-calm/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 360
+            },
+            {
+              "path": "frames/prone-idle-front-calm/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "b9a93fa5aedddcd8bbfcf660a3763f7ec06d548481eb9b78aa0f53e708dbfb93",
+              "bytes": 221832,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/prone-idle-front-calm/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "b9a93fa5aedddcd8bbfcf660a3763f7ec06d548481eb9b78aa0f53e708dbfb93",
+              "bytes": 221832,
+              "duration_ms": 300
+            },
+            {
+              "path": "frames/prone-idle-front-calm/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 420
+            },
+            {
+              "path": "frames/prone-idle-front-calm/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 520
+            },
+            {
+              "path": "frames/prone-idle-front-calm/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "b9a93fa5aedddcd8bbfcf660a3763f7ec06d548481eb9b78aa0f53e708dbfb93",
+              "bytes": 221832,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/prone-idle-front-calm/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "b9a93fa5aedddcd8bbfcf660a3763f7ec06d548481eb9b78aa0f53e708dbfb93",
+              "bytes": 221832,
+              "duration_ms": 300
+            },
+            {
+              "path": "frames/prone-idle-front-calm/frame-009.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 420
+            },
+            {
+              "path": "frames/prone-idle-front-calm/frame-010.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 600
+            },
+            {
+              "path": "frames/prone-idle-front-calm/frame-011.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 760
+            },
+            {
+              "path": "frames/prone-idle-front-calm/frame-012.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 1100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.daily.prone_front_lick_microevent_v4",
+      "display_name": "V4 forward prone lick",
+      "description": "One-shot forward-prone lick microevent; returns to the exact stable forward-prone anchor.",
+      "source_action_id": "wk.candidate.lifecycle.prone_idle_front_lick_v4",
+      "source_folder": "frames/prone-idle-front-lick",
+      "frame_count": 12,
+      "frame_duration_ms": 180,
+      "from_pose": "prone.awake.front",
+      "to_pose": "prone.awake.front",
+      "direction": "front",
+      "interruptible": true,
+      "lifecycle_role": "microevent",
+      "legacy_side_prone": false,
+      "runtime_validation": "pending_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "visual_approved": false,
+      "anchor_owner_visual_approved": true,
+      "prototype_use": false,
+      "autonomous_binding_enabled": false,
+      "eligible_postures": [
+        "Prone"
+      ],
+      "cooldown_min_ms": 45000,
+      "cooldown_max_ms": 120000,
+      "continuous_loop": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "expired_pixel_contribution": false,
+      "phases": [
+        {
+          "name": "intro",
+          "loop": false,
+          "frame_count": 12,
+          "frames": [
+            {
+              "path": "frames/prone-idle-front-lick/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 1100
+            },
+            {
+              "path": "frames/prone-idle-front-lick/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 420
+            },
+            {
+              "path": "frames/prone-idle-front-lick/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "b9a93fa5aedddcd8bbfcf660a3763f7ec06d548481eb9b78aa0f53e708dbfb93",
+              "bytes": 221832,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/prone-idle-front-lick/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "d0dada8aa4fa52402ca9975fcb3cfdff60060aacae2f50d1da1e7c1c7641e0b0",
+              "bytes": 211238,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/prone-idle-front-lick/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "15ef9778e447424a75c5da956446d9423c7153e564ee215058d72e6387440ecc",
+              "bytes": 216313,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/prone-idle-front-lick/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "1bca45ebc11a6612099fe270ebc082a96975ba10d8c33d18836acc631e854477",
+              "bytes": 217223,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/prone-idle-front-lick/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/prone-idle-front-lick/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 420
+            },
+            {
+              "path": "frames/prone-idle-front-lick/frame-009.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 600
+            },
+            {
+              "path": "frames/prone-idle-front-lick/frame-010.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 800
+            },
+            {
+              "path": "frames/prone-idle-front-lick/frame-011.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 1100
+            },
+            {
+              "path": "frames/prone-idle-front-lick/frame-012.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 1400
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

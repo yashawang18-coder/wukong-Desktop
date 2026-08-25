@@ -463,6 +463,7 @@ public sealed class DesktopMotionCatalog
         var commandCandidates = LoadCommandCandidates(root).ToArray();
         var magicCandidates = LoadMagicCandidates(root).ToArray();
         var lifecycleCandidates = LoadLifecycleCandidates(root).ToArray();
+        var lifecycleReviewCandidates = LoadLifecycleReviewCandidates(root).ToArray();
         var carRideCandidates = LoadCarRideCandidates(root).ToArray();
         var commandMocks = LoadCommandMotionMocks(root).ToArray();
         var autonomousDailyCandidates = LoadAutonomousDailyCandidates(root, lifecycleCandidates.Concat(commandMocks)).ToArray();
@@ -470,9 +471,9 @@ public sealed class DesktopMotionCatalog
             .FirstOrDefault(x => x.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop && x.RuntimeEnabled)?.FirstFrame
             ?? motions.FirstOrDefault(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle)?.FirstFrame
             ?? string.Empty;
-        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; lifecycle_review_candidates={lifecycleReviewCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch}/runtime-review-manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V4AssetBatch}/runtime-review-manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
         BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
-        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks), summary);
+        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(lifecycleReviewCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks), summary);
     }
 
     private static PlayableMotion Motion(
@@ -842,6 +843,125 @@ public sealed class DesktopMotionCatalog
                 Description: action.Description,
                 CandidateProfile: action.CandidateProfile ?? manifest.CandidateProfile,
                 VisualScale: ApprovedPetVisualScale);
+        }
+    }
+
+    private static IEnumerable<PlayableMotion> LoadLifecycleReviewCandidates(string root)
+    {
+        foreach (var assetBatch in LifecycleReviewCandidateBehaviorIds.AssetBatches)
+        {
+            var manifestPath = Path.Combine(root, "action-batches", assetBatch, "runtime-review-manifest.json");
+            if (!File.Exists(manifestPath))
+            {
+                BootstrapLog.WriteRaw($"lifecycle_review_manifest_missing batch={assetBatch}");
+                continue;
+            }
+
+            LifecycleReviewBatchManifest? manifest;
+            try
+            {
+                manifest = JsonSerializer.Deserialize<LifecycleReviewBatchManifest>(
+                    File.ReadAllText(manifestPath),
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+            catch (Exception ex)
+            {
+                BootstrapLog.Write($"Lifecycle review manifest parse failed: {assetBatch}", ex);
+                continue;
+            }
+
+            if (manifest?.Actions is null ||
+                !string.Equals(manifest.BatchId, assetBatch, StringComparison.Ordinal) ||
+                manifest.RuntimeApproved || manifest.RuntimeUse || manifest.ProductionAsset || manifest.VisualApproved ||
+                !string.Equals(manifest.RuntimeValidation, "pending_windows_renderer_qa", StringComparison.Ordinal))
+            {
+                BootstrapLog.WriteRaw($"lifecycle_review_manifest_gate_invalid batch={assetBatch}");
+                continue;
+            }
+
+            var batchRoot = Path.GetDirectoryName(manifestPath)!;
+            foreach (var action in manifest.Actions)
+            {
+                var errors = new List<string>();
+                if (!action.BehaviorId.StartsWith("wk.candidate.", StringComparison.Ordinal))
+                    errors.Add("candidate_namespace_required");
+                if (action.RuntimeApproved || action.RuntimeUse || action.ProductionAsset || action.VisualApproved || action.PrototypeUse || action.AutonomousBindingEnabled)
+                    errors.Add("candidate_gate_open");
+                if (action.AllowedSources is null || action.AllowedSources.Count != 1 ||
+                    !string.Equals(action.AllowedSources[0], "DeveloperPreview", StringComparison.Ordinal))
+                    errors.Add("developer_preview_only_required");
+                if (!string.Equals(action.RuntimeValidation, "pending_windows_renderer_qa", StringComparison.Ordinal))
+                    errors.Add("runtime_validation_not_pending");
+                if (string.Equals(assetBatch, LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch, StringComparison.Ordinal) &&
+                    (action.FromPose.Contains("front", StringComparison.OrdinalIgnoreCase) || action.ToPose.Contains("front", StringComparison.OrdinalIgnoreCase)) &&
+                    action.LegacySideProne)
+                    errors.Add("legacy_side_declared_as_front");
+                if (string.Equals(assetBatch, LifecycleReviewCandidateBehaviorIds.V4AssetBatch, StringComparison.Ordinal) &&
+                    (!action.FromPose.Contains("front", StringComparison.OrdinalIgnoreCase) || !action.ToPose.Contains("front", StringComparison.OrdinalIgnoreCase) || action.LegacySideProne))
+                    errors.Add("front_prone_identity_invalid");
+
+                var phases = new List<MotionPhase>();
+                foreach (var phase in action.Phases ?? Array.Empty<LifecycleCandidatePhaseManifest>())
+                {
+                    var frames = new List<string>();
+                    var durations = new List<int>();
+                    foreach (var frame in phase.Frames ?? Array.Empty<CommandActionFrameManifest>())
+                    {
+                        var path = Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar));
+                        if (!File.Exists(path))
+                        {
+                            errors.Add($"missing:{frame.Path}");
+                            continue;
+                        }
+
+                        if (new FileInfo(path).Length != frame.Bytes)
+                            errors.Add($"bytes:{frame.Path}");
+                        if (!string.Equals(Sha256(path), frame.Sha256, StringComparison.OrdinalIgnoreCase))
+                            errors.Add($"sha256:{frame.Path}");
+                        frames.Add(path);
+                        durations.Add(frame.DurationMs.GetValueOrDefault(action.FrameDurationMs));
+                    }
+
+                    if (frames.Count != phase.FrameCount)
+                        errors.Add($"phase_frame_count:{phase.Name}:{frames.Count}/{phase.FrameCount}");
+                    phases.Add(new MotionPhase(phase.Name, frames, phase.Loop, durations));
+                }
+
+                if (phases.Sum(x => x.Frames.Count) != action.FrameCount)
+                    errors.Add($"action_frame_count:{phases.Sum(x => x.Frames.Count)}/{action.FrameCount}");
+                if (errors.Count > 0)
+                {
+                    BootstrapLog.WriteRaw($"lifecycle_review_candidate_invalid behavior={action.BehaviorId} errors={string.Join(",", errors)}");
+                    continue;
+                }
+
+                var warning = action.LegacySideProne
+                    ? "Historical side-prone continuity review; do not splice to the V4 forward-prone candidate."
+                    : "Owner QA pending; developer preview only.";
+                yield return new PlayableMotion(
+                    action.BehaviorId,
+                    action.DisplayName,
+                    "基础动作候审",
+                    action.Direction,
+                    action.FrameDurationMs,
+                    action.Interruptible,
+                    phases,
+                    Path.Combine(batchRoot, action.SourceFolder.Replace('/', Path.DirectorySeparatorChar)),
+                    RuntimeEnabled: false,
+                    Status: "Owner QA pending / runtime locked",
+                    MissingContent: "Windows renderer QA and explicit runtime approval",
+                    StartPose: action.FromPose,
+                    EndPose: action.ToPose,
+                    StyleGroup: string.Equals(assetBatch, LifecycleReviewCandidateBehaviorIds.V4AssetBatch, StringComparison.Ordinal)
+                        ? "wukong-light-malt-gold-front-prone-v4"
+                        : "wukong-lifecycle-v3r1-recovered",
+                    Disposition: "候审",
+                    PrototypeUse: false,
+                    AssetBatch: manifest.BatchId,
+                    Description: $"{action.Description} source={manifest.BatchId}; expired_pixel_contribution=false; {warning}",
+                    CandidateProfile: manifest.CandidateProfile,
+                    VisualScale: ApprovedPetVisualScale);
+            }
         }
     }
 
@@ -1301,6 +1421,26 @@ public static class LifecycleCandidateBehaviorIds
     public const string ProneIdleMicroloop = "wk.candidate.lifecycle.prone_idle_microloop";
 }
 
+public static class LifecycleReviewCandidateBehaviorIds
+{
+    public const string V3R1AssetBatch = "WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED";
+    public const string V4AssetBatch = "WK-AUTONOMOUS-PRONE-IDLE-FRONT-CANDIDATE-v4";
+    public const string LivelyDailyV3R1 = "wk.candidate.lifecycle.lively_daily_v3r1";
+    public const string LivelyDailyExitV3R1 = "wk.candidate.review.lifecycle.lively_daily_v3r1_exit";
+    public const string StandIdleV3R1 = "wk.candidate.lifecycle.stand_idle_microloop_v3r1";
+    public const string SitIdleV3R1 = "wk.candidate.lifecycle.sit_idle_microloop_v3r1";
+    public const string LegacySideProneIdleV3R1 = "wk.candidate.lifecycle.prone_idle_legacy_side_v3r1";
+    public const string FrontProneIdleV4 = "wk.candidate.lifecycle.prone_idle_front_microloop_v4";
+    public const string FrontProneLickV4 = "wk.candidate.daily.prone_front_lick_microevent_v4";
+
+    public static readonly IReadOnlySet<string> AssetBatches =
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            V3R1AssetBatch,
+            V4AssetBatch
+        };
+}
+
 public static class AutonomousDailyCandidateBehaviorIds
 {
     public const string AssetBatch = "WK-AUTONOMOUS-DAILY-BEHAVIORS-v1";
@@ -1436,6 +1576,38 @@ public sealed record LifecycleCandidatePhaseManifest(
     [property: JsonPropertyName("loop")] bool Loop,
     [property: JsonPropertyName("frame_count")] int FrameCount,
     [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames);
+
+public sealed record LifecycleReviewBatchManifest(
+    [property: JsonPropertyName("batch_id")] string BatchId,
+    [property: JsonPropertyName("candidate_profile")] string CandidateProfile,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("actions")] IReadOnlyList<LifecycleReviewActionManifest> Actions);
+
+public sealed record LifecycleReviewActionManifest(
+    [property: JsonPropertyName("behavior_id")] string BehaviorId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("description")] string Description,
+    [property: JsonPropertyName("source_folder")] string SourceFolder,
+    [property: JsonPropertyName("frame_count")] int FrameCount,
+    [property: JsonPropertyName("frame_duration_ms")] int FrameDurationMs,
+    [property: JsonPropertyName("from_pose")] string FromPose,
+    [property: JsonPropertyName("to_pose")] string ToPose,
+    [property: JsonPropertyName("direction")] string Direction,
+    [property: JsonPropertyName("interruptible")] bool Interruptible,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
+    [property: JsonPropertyName("legacy_side_prone")] bool LegacySideProne,
+    [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
+    [property: JsonPropertyName("phases")] IReadOnlyList<LifecycleCandidatePhaseManifest> Phases);
 
 public sealed record AutonomousDailyCandidateBatchManifest(
     [property: JsonPropertyName("batch_id")] string BatchId,
@@ -1755,6 +1927,10 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         .ToArray();
     public IReadOnlyList<PlayableMotion> LifecycleCandidateMotions => _catalog.Motions
         .Where(x => string.Equals(x.AssetBatch, LifecycleCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        .OrderBy(x => x.BehaviorId)
+        .ToArray();
+    public IReadOnlyList<PlayableMotion> LifecycleReviewCandidateMotions => _catalog.Motions
+        .Where(x => LifecycleReviewCandidateBehaviorIds.AssetBatches.Contains(x.AssetBatch))
         .OrderBy(x => x.BehaviorId)
         .ToArray();
     public IReadOnlyList<PlayableMotion> AutonomousDailyCandidateMotions => _catalog.Motions
