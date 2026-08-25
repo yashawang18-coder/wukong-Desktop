@@ -1,4 +1,5 @@
 using System.IO;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -20,6 +21,24 @@ public enum MotionEasing
 
 public sealed record MotionRouteSegment(Point Target, string Direction, TimeSpan Duration, MotionEasing Easing);
 
+public sealed record EffectDisplaySnapshot(
+    double UserScale,
+    double ActionLocalScale,
+    double Opacity,
+    double Left,
+    double Top,
+    double Width,
+    double Height,
+    Point GroundAnchor,
+    string Posture,
+    Rect WorkingArea);
+
+public sealed record CarRideStartupMetrics(
+    double RequestToPipelineMs,
+    double ScaleCalculationMs,
+    double FirstFrameDecodeMs,
+    double FirstVisibleMs);
+
 public partial class MainWindow : Window
 {
     private readonly DesktopRuntimeHost _runtime;
@@ -32,6 +51,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _initiativeSpeechTimer = new();
     private readonly Dictionary<string, BitmapImage> _imageCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly Queue<string> _imageCacheOrder = new();
+    private readonly object _imageCacheSync = new();
     private readonly Random _effectRandom = new(240821);
     private readonly Random _initiativeSpeechRandom = new();
     private int _imageCacheEvictions;
@@ -40,7 +60,7 @@ public partial class MainWindow : Window
     private const double BasePetImageSize = 310;
     private const double BaseFallbackSize = 240;
     private const double MinPetScale = 0.5;
-    private const double MaxPetScale = 1.5;
+    private const double MaxPetScale = 2.5;
     private const double PetScaleStep = 0.08;
     private ControlPanelWindow? _controlPanel;
     private DesktopChatWindow? _chatWindow;
@@ -64,6 +84,8 @@ public partial class MainWindow : Window
     private bool _suspendAnimationFrames;
     private string _currentFramePath = string.Empty;
     private double _lockedFrameScale = 1.0;
+    private EffectDisplaySnapshot? _effectDisplaySnapshot;
+    public CarRideStartupMetrics? LastCarRideStartupMetrics { get; private set; }
 
     public MainWindow()
     {
@@ -74,6 +96,7 @@ public partial class MainWindow : Window
         _agentRuntime = DesktopAgentRuntime.CreateDefault(BuildConversationRuntimeState);
         _runtime.MotionRequested += Runtime_MotionRequested;
         _runtime.PetPixelSizeRequested += Runtime_PetPixelSizeRequested;
+        _runtime.PetScaleRequested += Runtime_PetScaleRequested;
         LocationChanged += (_, _) => RepositionChat();
         SizeChanged += (_, _) => RepositionChat();
         Closed += (_, _) =>
@@ -89,8 +112,11 @@ public partial class MainWindow : Window
             var speechBubbleWindow = _speechBubbleWindow;
             _speechBubbleWindow = null;
             speechBubbleWindow?.Close();
-            _imageCache.Clear();
-            _imageCacheOrder.Clear();
+            lock (_imageCacheSync)
+            {
+                _imageCache.Clear();
+                _imageCacheOrder.Clear();
+            }
             _agentRuntime.Dispose();
         };
 
@@ -370,6 +396,11 @@ public partial class MainWindow : Window
         Dispatcher.Invoke(() => SetPetScaleForTest(pixels / BasePetImageSize));
     }
 
+    private void Runtime_PetScaleRequested(object? sender, double scale)
+    {
+        Dispatcher.Invoke(() => ApplyPetScale(scale, persist: true));
+    }
+
     private void SetAnimationIntervalForCurrentFrame(PlayableMotion motion, int phaseIndex, int frameIndex, bool useDirectionalFrames)
     {
         var phases = motion.Phases.Where(x => x.Frames.Count > 0).ToList();
@@ -385,20 +416,36 @@ public partial class MainWindow : Window
     {
         Dispatcher.Invoke(() =>
         {
+            var pipelineElapsed = ElapsedMilliseconds(request.RequestedAtTimestamp);
             _activeRequest = request;
             _phaseIndex = 0;
             _frameIndex = 0;
             _loopCount = 0;
             _visualScalePhaseIndex = -1;
-            BeginMotionEffect(request);
+            PrepareMotionEffect(request);
             var firstPhase = request.Motion.Phases.FirstOrDefault(x => x.Frames.Count > 0);
+            var scaleStarted = Stopwatch.GetTimestamp();
             if (firstPhase is not null)
                 ApplyMotionVisualScale(request.Motion, firstPhase, 0);
             else
                 ApplyMotionVisualScale(request.Motion);
+            var scaleElapsed = ElapsedMilliseconds(scaleStarted);
             SetAnimationIntervalForCurrentFrame(request.Motion, phaseIndex: 0, frameIndex: 0, useDirectionalFrames: false);
+            var firstFrameStarted = Stopwatch.GetTimestamp();
             ShowFirstAvailableFrame(request.Motion);
+            var firstFrameElapsed = ElapsedMilliseconds(firstFrameStarted);
+            StartMotionEffect(request);
             _animationTimer.Start();
+            if (request.Motion.Effect == DesktopMotionEffect.CarRide)
+            {
+                PrefetchCarRideStartupFrames(request.Motion);
+                Dispatcher.BeginInvoke(DispatcherPriority.Render, () =>
+                {
+                    var firstVisible = ElapsedMilliseconds(request.RequestedAtTimestamp);
+                    LastCarRideStartupMetrics = new CarRideStartupMetrics(pipelineElapsed, scaleElapsed, firstFrameElapsed, firstVisible);
+                    _runtime.ReportPerformance($"car_ride_first_visible pipeline_ms={pipelineElapsed:0.0} scale_ms={scaleElapsed:0.0} first_frame_decode_ms={firstFrameElapsed:0.0} total_ms={firstVisible:0.0}");
+                });
+            }
         });
     }
 
@@ -497,24 +544,32 @@ public partial class MainWindow : Window
         await _runtime.StopAsync(reason);
     }
 
-    private void BeginMotionEffect(PetMotionRequest request)
+    private void PrepareMotionEffect(PetMotionRequest request)
     {
         _effectCancellation?.Cancel();
         _effectCancellation?.Dispose();
         _effectCancellation = new CancellationTokenSource();
         RestoreWindowAfterEffect();
+        _effectDisplaySnapshot = request.Motion.Effect == DesktopMotionEffect.None
+            ? null
+            : CaptureEffectDisplaySnapshot();
 
         if (request.Motion.Effect == DesktopMotionEffect.Petrify)
             _autonomousTimer.Stop();
         else if (request.Motion.Effect == DesktopMotionEffect.PetrifyRelease)
             _autonomousTimer.Start();
 
+    }
+
+    private void StartMotionEffect(PetMotionRequest request)
+    {
+        var token = _effectCancellation?.Token ?? CancellationToken.None;
         _ = request.Motion.Effect switch
         {
-            DesktopMotionEffect.BroomFlight => RunBroomFlightAsync(request, _effectCancellation.Token),
-            DesktopMotionEffect.Apparate => RunApparateAsync(request, _effectCancellation.Token),
-            DesktopMotionEffect.Scourgify => RunScourgifyAsync(_effectCancellation.Token),
-            DesktopMotionEffect.CarRide => RunCarRideAsync(request, _effectCancellation.Token),
+            DesktopMotionEffect.BroomFlight => RunBroomFlightAsync(request, token),
+            DesktopMotionEffect.Apparate => RunApparateAsync(request, token),
+            DesktopMotionEffect.Scourgify => RunScourgifyAsync(token),
+            DesktopMotionEffect.CarRide => RunCarRideAsync(request, token),
             _ => Task.CompletedTask
         };
     }
@@ -523,12 +578,17 @@ public partial class MainWindow : Window
     {
         try
         {
-            var workArea = SystemParameters.WorkArea;
+            var workArea = WindowPlacement.CurrentWorkingArea(this);
             var width = ActualWidth > 0 ? ActualWidth : Width;
             var height = ActualHeight > 0 ? ActualHeight : Height;
             var start = new Point(Left, Top);
             var duration = ChooseShowcaseDuration(_effectRandom);
             var route = BuildRandomFlightRoute(start, workArea, width, height, duration, _effectRandom);
+            var routePoints = new[] { start }.Concat(route.Select(x => x.Target)).ToArray();
+            _runtime.ReportBroomFlightMetrics(
+                routePoints.Max(x => x.X) - routePoints.Min(x => x.X),
+                routePoints.Max(x => x.Y) - routePoints.Min(x => x.Y),
+                workArea);
             var current = start;
             foreach (var segment in route)
             {
@@ -547,6 +607,7 @@ public partial class MainWindow : Window
         finally
         {
             _suspendAnimationFrames = false;
+            RestoreWindowAfterEffect();
             ApplyVisiblePlacement(new Point(Left, Top));
             if (ReferenceEquals(_activeRequest, request))
                 FinishCurrentMotion();
@@ -570,7 +631,7 @@ public partial class MainWindow : Window
             Opacity = 0;
             await Task.Delay(Random.Shared.Next(5000, 10001), token);
 
-            var workArea = SystemParameters.WorkArea;
+            var workArea = WindowPlacement.CurrentWorkingArea(this);
             var width = ActualWidth > 0 ? ActualWidth : Width;
             var height = ActualHeight > 0 ? ActualHeight : Height;
             var target = ChooseApparateTarget(new Point(Left, Top), workArea, width, height);
@@ -616,7 +677,7 @@ public partial class MainWindow : Window
         {
             PhaseBadge.Visibility = Visibility.Visible;
             PhaseText.Text = "Scourgify";
-            var workArea = SystemParameters.WorkArea;
+            var workArea = WindowPlacement.CurrentWorkingArea(this);
             var width = ActualWidth > 0 ? ActualWidth : Width;
             var height = ActualHeight > 0 ? ActualHeight : Height;
             var y = Math.Max(workArea.Top, workArea.Bottom - height - 22);
@@ -636,6 +697,7 @@ public partial class MainWindow : Window
         finally
         {
             PhaseBadge.Visibility = Visibility.Collapsed;
+            RestoreWindowAfterEffect();
             ApplyVisiblePlacement(new Point(Left, Top));
         }
     }
@@ -644,7 +706,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            var workArea = SystemParameters.WorkArea;
+            var workArea = WindowPlacement.CurrentWorkingArea(this);
             var width = ActualWidth > 0 ? ActualWidth : Width;
             var height = ActualHeight > 0 ? ActualHeight : Height;
             var start = ClampToWorkArea(new Point(Left, Top), workArea, width, height);
@@ -673,6 +735,7 @@ public partial class MainWindow : Window
         finally
         {
             _suspendAnimationFrames = false;
+            RestoreWindowAfterEffect();
             ApplyVisiblePlacement(new Point(Left, Top));
             if (ReferenceEquals(_activeRequest, request))
                 FinishCurrentMotion();
@@ -713,36 +776,37 @@ public partial class MainWindow : Window
         TimeSpan totalDuration,
         Random random)
     {
-        var route = new List<MotionRouteSegment>();
-        var current = ClampToWorkArea(start, workArea, width, height);
-        var elapsed = TimeSpan.Zero;
-        while (elapsed < totalDuration)
+        var origin = ClampToWorkArea(start, workArea, width, height);
+        var minX = workArea.Left;
+        var maxX = Math.Max(minX, workArea.Right - width);
+        var minY = workArea.Top;
+        var maxY = Math.Max(minY, workArea.Bottom - height);
+        var horizontal = Math.Min(maxX - minX, workArea.Width * (0.20 + random.NextDouble() * 0.08));
+        var vertical = Math.Min(maxY - minY, workArea.Height * (0.24 + random.NextDouble() * 0.08));
+        var direction = maxX - origin.X >= origin.X - minX ? 1.0 : -1.0;
+        var riseDirection = origin.Y - minY >= maxY - origin.Y ? -1.0 : 1.0;
+        var raw = new[]
         {
-            var remaining = totalDuration - elapsed;
-            var segmentDuration = TimeSpan.FromMilliseconds(Math.Min(remaining.TotalMilliseconds, random.Next(1450, 2601)));
-            if (segmentDuration < TimeSpan.FromMilliseconds(650))
-                segmentDuration = remaining;
-            var minX = workArea.Left;
-            var maxX = Math.Max(minX, workArea.Right - width);
-            var minY = workArea.Top;
-            var maxY = Math.Max(minY, workArea.Bottom - height);
-            var target = new Point(
-                minX + random.NextDouble() * Math.Max(1, maxX - minX),
-                minY + random.NextDouble() * Math.Max(1, maxY - minY));
-            if (Distance(current, target) < Math.Max(width, height) * 0.75)
-                target = new Point(maxX - (target.X - minX), maxY - (target.Y - minY));
-            target = ClampToWorkArea(target, workArea, width, height);
+            new Point(origin.X + direction * horizontal * 0.22, origin.Y + riseDirection * vertical * 0.72),
+            new Point(origin.X + direction * horizontal, origin.Y + riseDirection * vertical),
+            new Point(origin.X + direction * horizontal * 0.76, origin.Y + riseDirection * vertical * 0.30),
+            new Point(origin.X + direction * horizontal * 0.28, origin.Y + riseDirection * vertical * 0.58),
+            origin
+        };
+        var points = raw.Select(point => ClampToWorkArea(point, workArea, width, height)).ToArray();
+        var weights = new[] { 0.18, 0.24, 0.22, 0.20, 0.16 };
+        var route = new List<MotionRouteSegment>(points.Length);
+        var current = origin;
+        for (var index = 0; index < points.Length; index++)
+        {
+            var target = points[index];
             route.Add(new MotionRouteSegment(
                 target,
                 ResolveEightWayDirection(current, target),
-                segmentDuration,
-                route.Count == 0 ? MotionEasing.Accelerate : MotionEasing.EaseInOut));
-            elapsed += segmentDuration;
+                TimeSpan.FromMilliseconds(totalDuration.TotalMilliseconds * weights[index]),
+                index == 0 ? MotionEasing.Accelerate : index == points.Length - 1 ? MotionEasing.Decelerate : MotionEasing.EaseInOut));
             current = target;
         }
-
-        if (route.Count > 0)
-            route[^1] = route[^1] with { Easing = MotionEasing.Decelerate };
         return route;
     }
 
@@ -904,11 +968,43 @@ public partial class MainWindow : Window
         }
     }
 
+    private EffectDisplaySnapshot CaptureEffectDisplaySnapshot()
+    {
+        var width = ActualWidth > 0 ? ActualWidth : Width;
+        var height = ActualHeight > 0 ? ActualHeight : Height;
+        return new EffectDisplaySnapshot(
+            _petScale,
+            _lockedFrameScale,
+            Opacity,
+            Left,
+            Top,
+            width,
+            height,
+            new Point(Left + width / 2, Top + height),
+            _runtime.CurrentStablePosture.ToString(),
+            WindowPlacement.CurrentWorkingArea(this));
+    }
+
     private void RestoreWindowAfterEffect()
     {
-        Opacity = _savedOpacity <= 0 ? 1.0 : _savedOpacity;
-        ApplyVisiblePlacement(new Point(Left, Top));
+        var snapshot = _effectDisplaySnapshot;
+        Opacity = snapshot?.Opacity is > 0 ? snapshot.Opacity : _savedOpacity <= 0 ? 1.0 : _savedOpacity;
+        if (snapshot is not null)
+        {
+            var currentAnchor = CurrentGroundAnchor();
+            _petScale = RuntimeVisualScale.ClampUserScale(snapshot.UserScale);
+            _lockedFrameScale = snapshot.ActionLocalScale;
+            ApplyLockedVisualScale(currentAnchor);
+        }
+        else
+        {
+            ApplyVisiblePlacement(new Point(Left, Top));
+        }
+        _effectDisplaySnapshot = null;
     }
+
+    private static double ElapsedMilliseconds(long startedTimestamp) =>
+        startedTimestamp <= 0 ? 0 : Stopwatch.GetElapsedTime(startedTimestamp).TotalMilliseconds;
 
     public static Point ChooseApparateTarget(Point current, Rect workArea, double width, double height)
     {
@@ -1020,9 +1116,26 @@ public partial class MainWindow : Window
 
     private BitmapImage LoadImage(string path)
     {
-        if (_imageCache.TryGetValue(path, out var cached))
-            return cached;
+        lock (_imageCacheSync)
+        {
+            if (_imageCache.TryGetValue(path, out var cached))
+                return cached;
+        }
 
+        var image = DecodeFrozenBitmap(path);
+        lock (_imageCacheSync)
+        {
+            if (_imageCache.TryGetValue(path, out var existing))
+                return existing;
+            _imageCache[path] = image;
+            _imageCacheOrder.Enqueue(path);
+            TrimImageCache();
+        }
+        return image;
+    }
+
+    private static BitmapImage DecodeFrozenBitmap(string path)
+    {
         var image = new BitmapImage();
         image.BeginInit();
         image.CacheOption = BitmapCacheOption.OnLoad;
@@ -1030,10 +1143,34 @@ public partial class MainWindow : Window
         image.UriSource = new Uri(path, UriKind.Absolute);
         image.EndInit();
         image.Freeze();
-        _imageCache[path] = image;
-        _imageCacheOrder.Enqueue(path);
-        TrimImageCache();
         return image;
+    }
+
+    private void PrefetchCarRideStartupFrames(PlayableMotion motion)
+    {
+        var intro = motion.Phases.FirstOrDefault(x => x.Frames.Count > 0)?.Frames ?? Array.Empty<string>();
+        var directional = motion.DirectionalFrames?.TryGetValue(_carRideDirection, out var currentDirectionFrames) == true
+            ? currentDirectionFrames
+            : Array.Empty<string>();
+        var frames = intro
+            .Concat(directional)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(12)
+            .ToArray();
+        _ = Task.Run(() =>
+        {
+            foreach (var frame in frames)
+            {
+                try
+                {
+                    LoadImage(frame);
+                }
+                catch (Exception ex)
+                {
+                    BootstrapLog.WriteRaw($"car_ride_prefetch_failed_{ex.GetType().Name}");
+                }
+            }
+        });
     }
 
     private void TrimImageCache()
@@ -1053,9 +1190,15 @@ public partial class MainWindow : Window
         }
     }
 
-    public int DecodedFrameCacheCount => _imageCache.Count;
+    public int DecodedFrameCacheCount
+    {
+        get { lock (_imageCacheSync) return _imageCache.Count; }
+    }
 
-    public long EstimatedDecodedFrameBytes => _imageCache.Values.Sum(x => (long)x.PixelWidth * x.PixelHeight * 4);
+    public long EstimatedDecodedFrameBytes
+    {
+        get { lock (_imageCacheSync) return _imageCache.Values.Sum(x => (long)x.PixelWidth * x.PixelHeight * 4); }
+    }
 
     public int DecodedFrameCacheEvictions => _imageCacheEvictions;
     private void ShowFallback(string reason)
@@ -1244,7 +1387,7 @@ public partial class MainWindow : Window
 
     private void ApplyVisiblePlacement(Point preferred)
     {
-        var workArea = SystemParameters.WorkArea;
+        var workArea = WindowPlacement.CurrentWorkingArea(this);
         var width = Math.Max(ActualWidth > 0 ? ActualWidth : Width, MinWidth);
         var height = Math.Max(ActualHeight > 0 ? ActualHeight : Height, MinHeight);
         Left = Math.Min(Math.Max(preferred.X, workArea.Left), Math.Max(workArea.Left, workArea.Right - width));
@@ -1253,14 +1396,9 @@ public partial class MainWindow : Window
 
     private void ApplyPetScale(double scale, bool persist)
     {
-        _petScale = Math.Clamp(scale, MinPetScale, MaxPetScale);
-        Width = BaseWindowSize * _petScale;
-        Height = BaseWindowSize * _petScale;
-        MinWidth = 240 * _petScale;
-        MinHeight = 240 * _petScale;
-        ApplyLockedVisualScale();
-        if (!double.IsNaN(Left) && !double.IsNaN(Top))
-            ApplyVisiblePlacement(new Point(Left, Top));
+        var anchor = CurrentGroundAnchorOrNull();
+        _petScale = RuntimeVisualScale.ClampUserScale(Math.Clamp(scale, MinPetScale, MaxPetScale));
+        ApplyLockedVisualScale(anchor);
         if (persist)
             File.WriteAllText(PetScalePath(), _petScale.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
     }
@@ -1268,7 +1406,7 @@ public partial class MainWindow : Window
     private void ApplyMotionVisualScale(PlayableMotion motion)
     {
         _lockedFrameScale = MotionVisualSizer.RenderScaleForMotion(motion, _runtime.ReferenceVisualFramePath);
-        ApplyLockedVisualScale();
+        ApplyLockedVisualScale(CurrentGroundAnchorOrNull());
     }
 
     private void ApplyMotionVisualScale(PlayableMotion motion, MotionPhase phase, int phaseIndex)
@@ -1277,10 +1415,10 @@ public partial class MainWindow : Window
             return;
         _lockedFrameScale = MotionVisualSizer.RenderScaleForPhase(motion, phase, _runtime.ReferenceVisualFramePath);
         _visualScalePhaseIndex = phaseIndex;
-        ApplyLockedVisualScale();
+        ApplyLockedVisualScale(CurrentGroundAnchorOrNull());
     }
 
-    private void ApplyLockedVisualScale()
+    private void ApplyLockedVisualScale(Point? groundAnchor = null)
     {
         var frameScale = _lockedFrameScale;
         var windowScale = Math.Max(1.0, frameScale);
@@ -1293,9 +1431,21 @@ public partial class MainWindow : Window
         FallbackBadge.Width = BaseFallbackSize * _petScale;
         FallbackBadge.Height = BaseFallbackSize * _petScale;
         FallbackBadge.CornerRadius = new CornerRadius((BaseFallbackSize * _petScale) / 2);
+        if (groundAnchor is { } anchor)
+            ApplyVisiblePlacement(new Point(anchor.X - Width / 2, anchor.Y - Height));
     }
 
     public double PetScale => _petScale;
+    public double ActionLocalScale => _lockedFrameScale;
+    public double EffectivePetScale => RuntimeVisualScale.EffectiveScale(_petScale, _lockedFrameScale);
+
+    private Point CurrentGroundAnchor() =>
+        new(Left + (ActualWidth > 0 ? ActualWidth : Width) / 2, Top + (ActualHeight > 0 ? ActualHeight : Height));
+
+    private Point? CurrentGroundAnchorOrNull() =>
+        double.IsNaN(Left) || double.IsNaN(Top) || double.IsInfinity(Left) || double.IsInfinity(Top)
+            ? null
+            : CurrentGroundAnchor();
 
     public void SetPetScaleForTest(double scale) => ApplyPetScale(scale, persist: false);
 

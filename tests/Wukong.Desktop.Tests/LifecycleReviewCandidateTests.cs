@@ -70,13 +70,15 @@ internal static class LifecycleReviewCandidateTests
             Assert(File.Exists(manifestPath), $"review manifest was not copied: {batch}");
             using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
             var root = document.RootElement;
-            Assert(root.GetProperty("runtime_validation").GetString() == "pending_windows_renderer_qa", "runtime validation was promoted");
+            Assert(root.GetProperty("runtime_validation").GetString() == "owner_visual_qa_passed_runtime_behavior_pending", "owner visual QA state was not recorded");
             Assert(!root.GetProperty("runtime_approved").GetBoolean(), "runtime approval was opened");
             Assert(!root.GetProperty("runtime_use").GetBoolean(), "runtime use was opened");
             Assert(!root.GetProperty("production_asset").GetBoolean(), "candidate became a production asset");
-            Assert(!root.GetProperty("visual_approved").GetBoolean(), "candidate was visually approved without owner QA");
+            Assert(root.GetProperty("visual_approved").GetBoolean(), "owner visual approval was not recorded");
             foreach (var action in root.GetProperty("actions").EnumerateArray())
             {
+                Assert(action.GetProperty("visual_approved").GetBoolean(), "reviewed action lost visual approval");
+                Assert(action.GetProperty("runtime_validation").GetString() == "owner_visual_qa_passed_runtime_behavior_pending", "action runtime state did not remain pending behavior QA");
                 Assert(!action.GetProperty("autonomous_binding_enabled").GetBoolean(), "candidate entered autonomous bindings");
                 Assert(action.GetProperty("allowed_sources").EnumerateArray().Select(x => x.GetString()).SequenceEqual(new[] { "DeveloperPreview" }), "candidate source policy changed");
             }

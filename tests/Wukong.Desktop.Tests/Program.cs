@@ -44,6 +44,7 @@ var tests = new (string Name, Action Run)[]
     ("lifecycle review uses the existing developer request path", LifecycleReviewCandidateTests.DeveloperPreviewUsesTheExistingBehaviorRequestPath),
     ("lifecycle review manifests and panel keep gates closed", LifecycleReviewCandidateTests.ManifestsAndPanelKeepReviewGatesClosed),
     ("autonomous ticks cannot select lifecycle review candidates", LifecycleReviewCandidateTests.AutonomousTicksNeverSelectReviewCandidates),
+    ("autonomous allowlist excludes command-only jump and spin", AutonomousAllowlistExcludesCommandOnlyActions),
     ("autonomous daily candidates are indexed and remain gated", AutonomousDailyCandidatesAreIndexedAndRemainGated),
     ("developer autonomous daily candidate can request playback", DeveloperAutonomousDailyCandidateCanRequestPlayback),
     ("command action candidates are indexed and validated", CommandActionCandidatesAreIndexed),
@@ -58,6 +59,7 @@ var tests = new (string Name, Action Run)[]
     ("developer forced command candidate can request playback", DeveloperForcedCommandCandidateCanRequestPlayback),
     ("magic candidate assets are indexed and validated", MagicCandidateAssetsAreIndexed),
     ("car ride candidate assets are indexed and gated", CarRideCandidateAssetsAreIndexedAndGated),
+    ("car ride first-frame sizing uses bounded references", CarRideFirstFrameSizingUsesBoundedReferences),
     ("owner and panel car ride use approved normal gate", OwnerAndPanelCarRideUseApprovedNormalGate),
     ("non owner sources cannot trigger car ride", NonOwnerSourcesCannotTriggerCarRide),
     ("petrified coin assets and checksums are complete", PetrifiedCoinAssetsAndChecksumsAreComplete),
@@ -67,12 +69,14 @@ var tests = new (string Name, Action Run)[]
     ("petrified coin timing is configurable", PetrifiedCoinTimingIsConfigurable),
     ("petrified coin default timing and visual scale are stable", PetrifiedCoinDefaultTimingAndVisualScaleAreStable),
     ("motion visual sizing normalizes alpha bounds", MotionVisualSizingNormalizesAlphaBounds),
+    ("global user scale composes consistently across render modes", GlobalUserScaleComposesAcrossRenderModes),
     ("petrified coin clicks reset and double clicks flip", PetrifiedCoinClicksResetAndDoubleClicksFlip),
     ("stop clears petrification and requests idle", StopClearsPetrificationAndRequestsIdle),
     ("main window context menu matches owner action contract", MainWindowContextMenuMatchesContract),
     ("broom direction quantizer covers eight directions", BroomDirectionQuantizerCoversEightDirections),
     ("car ride direction quantizer matches v8 directions", CarRideDirectionQuantizerMatchesV8Directions),
     ("showcase durations and physical routes stay bounded", ShowcaseDurationsAndPhysicalRoutesStayBounded),
+    ("broom route has visible work-area travel", BroomRouteHasVisibleWorkAreaTravel),
     ("apparate target stays visible and relocates", ApparateTargetStaysVisibleAndRelocates),
     ("control panel exposes magic specials tab", ControlPanelExposesMagicSpecialsTab),
     ("expired asset cards are gray but remain previewable", ExpiredAssetCardsAreGrayButRemainPreviewable),
@@ -115,6 +119,7 @@ static int CarRideMemorySmoke(int seconds, string outputPath)
 {
     Exception? failure = null;
     var samples = new List<object>();
+    CarRideStartupMetrics? startupMetrics = null;
     var thread = new Thread(() =>
     {
         try
@@ -159,6 +164,7 @@ static int CarRideMemorySmoke(int seconds, string outputPath)
                 stopTimer.Stop();
                 sampleTimer.Stop();
                 triggerTimer.Stop();
+                startupMetrics = window.LastCarRideStartupMetrics;
                 window.Close();
                 window.Dispatcher.BeginInvokeShutdown(System.Windows.Threading.DispatcherPriority.Normal);
             };
@@ -193,6 +199,7 @@ static int CarRideMemorySmoke(int seconds, string outputPath)
         max_decoded_frame_cache_count = samples.Select(x => (int)x.GetType().GetProperty("decoded_frame_cache_count")!.GetValue(x)!).DefaultIfEmpty(0).Max(),
         max_decoded_frame_cache_bytes = samples.Select(x => (long)x.GetType().GetProperty("decoded_frame_cache_bytes")!.GetValue(x)!).DefaultIfEmpty(0).Max(),
         sample_count = samples.Count,
+        startup_metrics = startupMetrics,
         samples
     }, new JsonSerializerOptions { WriteIndented = true }));
     Console.WriteLine($"car ride memory smoke: {Path.GetFullPath(outputPath)}");
@@ -1749,16 +1756,20 @@ static void ControlPanelExposesMagicSpecialsTab()
             Assert(dailyList is not null, "autonomous daily review list missing");
             Assert(dailyList!.Items.Count == 6, "autonomous daily review list must display six candidates");
             var interactionReview = panel.FindName("InteractionReviewAssetList") as ItemsControl;
-            Assert(interactionReview is not null && interactionReview.Items.Count == 1, "interaction review list must display the gated prone-touch candidate");
-            Assert(interactionReview!.Items.OfType<PlayableMotion>().Single().BehaviorId == Phase15BehaviorIds.ProneTouch, "interaction review list exposed the wrong behavior");
+            Assert(interactionReview is not null && interactionReview.Items.Count == 0, "deprecated touch assets must be hidden by default");
+            var expiredFilter = panel.FindName("ShowDeprecatedAssetsCheckBox") as CheckBox;
+            Assert(expiredFilter is not null, "expired-only asset filter is missing");
+            expiredFilter!.IsChecked = true;
+            Assert(interactionReview!.Items.OfType<PlayableMotion>().Any(x => x.BehaviorId == Phase15BehaviorIds.ProneTouch && x.IsExpired), "owner-rejected prone touch is not visible in the expired-only filter");
+            expiredFilter.IsChecked = false;
             Assert(panel.FindName("AutonomousDailyAssetsTabButton") is Button { Visibility: Visibility.Visible }, "autonomous daily developer tab must remain discoverable before authentication");
             Assert(panel.FindName("AutonomousDailyAssetsPanel") is ScrollViewer { Visibility: Visibility.Collapsed }, "autonomous daily candidates must remain inaccessible before developer authentication");
             Assert(panel.FindName("PreviewBackgroundButton") is Button, "light/dark preview background control missing");
             var list = panel.FindName("MagicSpecialList") as ItemsControl;
             Assert(list is not null, "magic specials list missing");
-            Assert(commandList!.Items.Count == 12, "command assets tab must display eight approved v4 commands plus four expired v3 references");
+            Assert(commandList!.Items.Count == 8, "default command assets tab must hide four expired v3 references");
             Assert(commandList.Items.OfType<PlayableMotion>().Count(x => x.AssetBatch == CommandMockBehaviorIds.AssetBatch && x.RuntimeEnabled) == 8, "command assets tab must include eight approved v4 commands");
-            Assert(commandList.Items.OfType<PlayableMotion>().Count(x => x.Disposition == "已过期") == 4, "command assets tab must mark four legacy v3 commands expired");
+            Assert(commandList.Items.OfType<PlayableMotion>().All(x => !x.IsExpired), "default command list exposed expired references");
             Assert(list!.Items.Count == 4, "magic specials must display four owner-facing cards");
             Assert(playList!.Items.Count == 1, "play assets tab must display one car ride card");
             var carRideDeveloper = panel.FindName("CarRideCandidateList") as ItemsControl;
@@ -1941,7 +1952,73 @@ static void RuntimeRequestsTouchMotion()
     var result = runtime.SubmitGestureAsync(PetGestureKind.OwnerTouch, BehaviorRequestSource.OwnerUi).GetAwaiter().GetResult();
     Assert(result == PetActionResult.Deferred, "runtime-locked touch candidate was accepted");
     Assert(request is null, "runtime-locked touch candidate requested production playback");
-    Assert(runtime.CurrentReason.Contains("prone_touch_runtime_qa_pending", StringComparison.Ordinal), "touch gate reason did not explain pending runtime QA");
+    Assert(runtime.CurrentReason.Contains("asset_deprecated_owner_rejected", StringComparison.Ordinal), "touch gate reason did not explain owner deprecation");
+    var developer = runtime.SubmitDeveloperCandidateMotionAsync(Phase15BehaviorIds.ProneTouch).GetAwaiter().GetResult();
+    Assert(developer == PetActionResult.Deferred, "owner-rejected touch asset was revived by DeveloperPreview");
+    Assert(request is null, "owner-rejected touch asset emitted a developer motion request");
+}
+
+static void AutonomousAllowlistExcludesCommandOnlyActions()
+{
+    Assert(!BehaviorAgentMockEngine.IsAutonomousActionAllowed(MockCommandActionIds.PlayfulJump), "mock autonomous allowlist contains playful jump");
+    Assert(!BehaviorAgentMockEngine.IsAutonomousActionAllowed(MockCommandActionIds.PlayfulSpin), "mock autonomous allowlist contains playful spin");
+    Assert(!DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(MockCommandActionIds.Jump), "runtime autonomous allowlist contains owner jump");
+    Assert(!DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(MockCommandActionIds.Spin), "runtime autonomous allowlist contains owner spin");
+    Assert(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(LifecycleCandidateBehaviorIds.StandIdleMicroloop), "approved stand microloop is missing from autonomous allowlist");
+
+    foreach (var command in new[] { "跳", "转圈" })
+    {
+        var runtime = new DesktopRuntimeHost();
+        PetMotionRequest? request = null;
+        runtime.MotionRequested += (_, value) => request = value;
+        var result = runtime.SubmitOwnerCommandAsync(command).GetAwaiter().GetResult();
+        Assert(result == PetActionResult.Accepted, $"owner command {command} was blocked by the autonomous allowlist");
+        Assert(request is not null && request.Source == BehaviorRequestSource.OwnerContextMenu, $"owner command {command} did not use the owner request path");
+    }
+
+    var developerRuntime = new DesktopRuntimeHost();
+    Assert(developerRuntime.SubmitDeveloperMotionAsync(CommandBehaviorIds.Jump).GetAwaiter().GetResult() == PetActionResult.Accepted, "DeveloperPreview lost jump access");
+    Assert(developerRuntime.SubmitDeveloperMotionAsync(CommandBehaviorIds.SpinApproachStopSit).GetAwaiter().GetResult() == PetActionResult.Accepted, "DeveloperPreview lost spin access");
+}
+
+static void CarRideFirstFrameSizingUsesBoundedReferences()
+{
+    var catalog = DesktopMotionCatalog.Load(Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!);
+    var car = catalog.Motions.Single(x => x.BehaviorId == CarRideBehaviorIds.CarRide);
+    Assert(car.NamedSequences?.Values.Sum(x => x.Count) == 222, "car ride runtime frame mapping changed");
+    Assert(car.ScaleReferenceFrames is { Count: > 0 and <= 6 }, "car ride first-frame sizing would scan the full asset library");
+    Assert(car.ScaleReferenceFrames!.All(File.Exists), "car ride scale reference is missing");
+}
+
+static void GlobalUserScaleComposesAcrossRenderModes()
+{
+    const double userScale = 2.25;
+    var localScales = new Dictionary<string, double>
+    {
+        ["Normal"] = 0.92,
+        ["Command"] = 0.92,
+        ["Magic"] = 0.92,
+        ["CarRide"] = 0.92,
+        ["Coin"] = 2.0 / 3.0
+    };
+    foreach (var pair in localScales)
+        Assert(Math.Abs(RuntimeVisualScale.EffectiveScale(userScale, pair.Value) - userScale * pair.Value) < 0.0001, $"{pair.Key} dropped the global user scale");
+    Assert(RuntimeVisualScale.ClampUserScale(0.1) == 0.5, "minimum user scale changed");
+    Assert(RuntimeVisualScale.ClampUserScale(4.0) == 2.5, "maximum user scale changed");
+}
+
+static void BroomRouteHasVisibleWorkAreaTravel()
+{
+    var workArea = new Rect(0, 0, 1920, 1080);
+    var start = new Point(1500, 700);
+    var route = MainWindow.BuildRandomFlightRoute(start, workArea, 320, 320, TimeSpan.FromSeconds(14), new Random(260826));
+    var points = new[] { start }.Concat(route.Select(x => x.Target)).ToArray();
+    var horizontal = points.Max(x => x.X) - points.Min(x => x.X);
+    var vertical = points.Max(x => x.Y) - points.Min(x => x.Y);
+    Assert(horizontal >= workArea.Width * 0.15 && horizontal <= workArea.Width * 0.30, "broom horizontal travel is outside the reviewed range");
+    Assert(vertical >= workArea.Height * 0.20 && vertical <= workArea.Height * 0.35, "broom vertical travel is outside the reviewed range");
+    Assert(route.All(x => x.Target.X >= workArea.Left && x.Target.X <= workArea.Right - 320 && x.Target.Y >= workArea.Top && x.Target.Y <= workArea.Bottom - 320), "broom route leaves the working area");
+    Assert(MainWindow.ResolveEightWayDirection(route[^2].Target, route[^1].Target) == route[^1].Direction, "broom direction does not match travel");
 }
 
 static void RuntimeRapidTapDoesNotRequestTouchMotion()

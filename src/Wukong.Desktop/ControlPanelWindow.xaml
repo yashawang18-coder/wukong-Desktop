@@ -263,6 +263,7 @@
                         <StackPanel>
                           <TextBlock Text="{Binding Content}" TextWrapping="Wrap" />
                           <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" Margin="0,5,0,0" />
+                        <TextBlock Text="{Binding StatusDetails}" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
                           <WrapPanel Margin="0,8,0,0">
                             <Button Content="确认" Tag="{Binding}" Style="{StaticResource PrimaryButton}" Click="ConfirmMemory_Click" />
                             <Button Content="拒绝" Tag="{Binding}" Style="{StaticResource SecondaryButton}" Click="RejectMemory_Click" />
@@ -321,6 +322,7 @@
                             <TextBlock Text="{Binding DateText}" Style="{StaticResource SubText}" />
                             <TextBlock Text="{Binding PhotoCount, StringFormat=photos: {0}}" Style="{StaticResource SubText}" />
                             <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding StatusDetails}" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
                           </StackPanel>
                         </Button>
                       </DataTemplate>
@@ -354,6 +356,7 @@
                           <StackPanel Margin="10,0,0,0">
                             <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                             <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" />
+                        <TextBlock Text="{Binding StatusDetails}" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
                           </StackPanel>
                         </DockPanel>
                       </Border>
@@ -543,6 +546,7 @@
             <Button x:Name="CommandAssetsTabButton" Content="口令动作" Tag="Command" Style="{StaticResource PanelTabButton}" Click="NormalAssetSubTab_Click" Margin="0,0,8,0" />
             <Button x:Name="AutonomousDailyAssetsTabButton" Content="自主日常候选（开发者）" Tag="AutonomousDaily" Style="{StaticResource PanelTabButton}" Click="NormalAssetSubTab_Click" />
           </StackPanel>
+          <CheckBox x:Name="ShowDeprecatedAssetsCheckBox" Content="只看已过期" Margin="0,0,0,12" Checked="DeprecatedAssetsFilter_Changed" Unchecked="DeprecatedAssetsFilter_Changed" />
           <Grid>
             <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="1.1*" /></Grid.ColumnDefinitions>
             <ScrollViewer x:Name="NormalAssetsPanel" MaxHeight="560">
@@ -555,7 +559,7 @@
                         <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
                         <DockPanel LastChildFill="False" Margin="0,10,0,0">
                           <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
-                          <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding Disposition}" /></Border>
+                          <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding StatusSummary}" /></Border>
                         </DockPanel>
                         <TextBlock Text="{Binding BehaviorId}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Category}" Margin="0,6,0,0" />
@@ -563,6 +567,7 @@
                         <TextBlock Text="{Binding Direction, StringFormat=direction: {0}}" />
                         <TextBlock Text="{Binding PhaseSummary, StringFormat=phases: {0}}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                        <TextBlock Text="{Binding StatusDetails}" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding MissingContent, StringFormat=missing: {0}}" Style="{StaticResource SubText}" />
                         <Button Content="预览真实动画" Style="{StaticResource PrimaryButton}" Tag="{Binding}" Click="PreviewAsset_Click" Margin="0,10,0,0" />
                       </StackPanel>
@@ -581,12 +586,13 @@
                         <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
                         <DockPanel LastChildFill="False" Margin="0,10,0,0">
                           <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
-                          <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding Disposition}" /></Border>
+                          <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding StatusSummary}" /></Border>
                         </DockPanel>
                         <TextBlock Text="{Binding BehaviorId}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding FrameCount, StringFormat=frames: {0}}" />
                         <TextBlock Text="{Binding PhaseSummary, StringFormat=phases: {0}}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding StatusDetails}" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
                         <WrapPanel Margin="0,10,0,0">
                           <Button Content="预览" Style="{StaticResource SecondaryButton}" Tag="{Binding}" Click="PreviewAsset_Click" />
                           <Button Content="立即展示" Style="{StaticResource PrimaryButton}" Tag="{Binding}" Click="ShowPlayAsset_Click" />
@@ -607,12 +613,13 @@
                         <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
                         <DockPanel LastChildFill="False" Margin="0,10,0,0">
                           <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
-                          <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding Disposition}" /></Border>
+                          <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding StatusSummary}" /></Border>
                         </DockPanel>
                         <TextBlock Text="{Binding BehaviorId}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding FrameCount, StringFormat=frames: {0}}" />
                         <TextBlock Text="{Binding PhaseSummary, StringFormat=phases: {0}}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding StatusDetails}" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
                         <WrapPanel Margin="0,10,0,0">
                           <Button Content="预览" Style="{StaticResource SecondaryButton}" Tag="{Binding}" Click="PreviewAsset_Click" />
                           <Button Content="立即展示" Style="{StaticResource PrimaryButton}" Tag="{Binding}" Click="ShowCommandAsset_Click" />
@@ -640,13 +647,14 @@
                           <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
                           <DockPanel LastChildFill="False" Margin="0,10,0,0">
                             <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
-                            <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding Disposition}" /></Border>
+                            <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding StatusSummary}" /></Border>
                           </DockPanel>
                           <TextBlock Text="{Binding BehaviorId}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" />
                           <TextBlock Text="{Binding Direction, StringFormat=姿态: {0}}" />
                           <TextBlock Text="{Binding FrameCount, StringFormat=frames: {0}}" />
                           <TextBlock Text="{Binding PhaseSummary, StringFormat=phases: {0}}" TextWrapping="Wrap" />
                           <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding StatusDetails}" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
                           <WrapPanel Margin="0,10,0,0">
                             <Button Content="逐帧/循环审阅" Style="{StaticResource SecondaryButton}" Tag="{Binding}" Click="PreviewAsset_Click" />
                             <Button Content="在桌面强制展示" Style="{StaticResource PrimaryButton}" Tag="{Binding}" Click="ForceAutonomousDailyCandidate_Click" />
@@ -696,6 +704,7 @@
                         <TextBlock Text="{Binding FrameCount, StringFormat=frames: {0}}" />
                         <TextBlock Text="{Binding PhaseSummary, StringFormat=phases: {0}}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding StatusDetails}" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
                         <WrapPanel Margin="0,10,0,0">
                           <Button Content="预览" Style="{StaticResource SecondaryButton}" Tag="{Binding}" Click="PreviewAsset_Click" />
                           <Button Content="立即展示" Style="{StaticResource PrimaryButton}" Tag="{Binding}" Click="ShowMagic_Click" />
@@ -825,6 +834,7 @@
                         <TextBlock Text="{Binding BehaviorId}" Style="{StaticResource SubText}" />
                         <TextBlock Text="{Binding FrameCount, StringFormat=frames: {0}}" />
                         <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" />
+                        <TextBlock Text="{Binding StatusDetails}" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
                         <Button Content="强制预览" Tag="{Binding}" Style="{StaticResource PrimaryButton}" Click="ForceCommandMotion_Click" HorizontalAlignment="Left" Margin="0,8,0,0" />
                       </StackPanel>
                     </Border>
@@ -837,6 +847,7 @@
             <StackPanel>
               <TextBlock Text="兜风运行调试" FontWeight="SemiBold" />
               <TextBlock Text="已通过 Windows 验收，仅允许主人从右键菜单或控制面板手动触发；不进入自主行为、对话、模型或口令路由。" Style="{StaticResource SubText}" Margin="0,4,0,12" />
+              <TextBlock Text="{Binding BroomFlightMetrics, StringFormat=扫把轨迹：{0}}" Style="{StaticResource SubText}" Margin="0,0,0,8" TextWrapping="Wrap" />
               <ItemsControl x:Name="CarRideCandidateList">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
@@ -851,6 +862,7 @@
                         <TextBlock Text="{Binding BehaviorId}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding PhaseSummary}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding StatusDetails}" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
                         <WrapPanel Margin="0,8,0,0">
                           <Button Content="Preview" Tag="{Binding}" Style="{StaticResource SecondaryButton}" Click="PreviewAsset_Click" />
                           <Button Content="Play car ride" Tag="{Binding}" Style="{StaticResource PrimaryButton}" Click="ShowCarRide_Click" />
@@ -866,9 +878,11 @@
               <DockPanel LastChildFill="False">
                 <TextBlock Text="候选动作 profile" FontWeight="SemiBold" />
                 <WrapPanel DockPanel.Dock="Right">
-                  <Button Content="128px" Tag="128" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
-                  <Button Content="192px" Tag="192" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
-                  <Button Content="256px" Tag="256" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
+                  <Button Content="50%" Tag="0.5" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
+                  <Button Content="100%" Tag="1.0" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
+                  <Button Content="150%" Tag="1.5" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
+                  <Button Content="200%" Tag="2.0" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
+                  <Button Content="250%" Tag="2.5" Style="{StaticResource SecondaryButton}" Click="CandidateSize_Click" />
                 </WrapPanel>
               </DockPanel>
               <TextBlock Text="P2 Windows 验收已通过；此区仅用于开发者调试候选 profile。" Style="{StaticResource SubText}" Margin="0,4,0,12" />
@@ -887,6 +901,7 @@
                         <TextBlock Text="{Binding PhaseSummary}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding CandidateProfile, StringFormat=profile: {0}}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding StatusDetails}" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
                         <WrapPanel Margin="0,8,0,0">
                           <Button Content="预览" Tag="{Binding}" Style="{StaticResource SecondaryButton}" Click="PreviewAsset_Click" />
                           <Button Content="立即展示" Tag="{Binding}" Style="{StaticResource PrimaryButton}" Click="ForceLifecycleCandidate_Click" />
@@ -918,6 +933,7 @@
                         <TextBlock Text="{Binding FrameCount, StringFormat=帧数：{0}}" Style="{StaticResource SubText}" />
                         <TextBlock Text="{Binding PhaseSummary, StringFormat=阶段：{0}}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding StatusDetails}" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
                         <TextBlock Text="runtime_approved=false / runtime_use=false" Style="{StaticResource SubText}" TextWrapping="Wrap" />
                         <TextBlock Text="expired_pixel_contribution=false" Style="{StaticResource SubText}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding Description}" Style="{StaticResource SubText}" TextWrapping="Wrap" Margin="0,2,0,0" />

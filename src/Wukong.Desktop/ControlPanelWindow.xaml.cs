@@ -62,37 +62,11 @@ public partial class ControlPanelWindow : Window
         InitializeComponent();
         DataContext = _runtime;
         TraceList.ItemsSource = _runtime.TraceLines;
-        AssetList.ItemsSource = _runtime.Motions
-            .Where(IsBaseMotion)
-            .OrderBy(x => x.BehaviorId)
-            .ToList();
-        PlayAssetList.ItemsSource = _runtime.CarRideCandidateMotions.ToList();
-        CommandAssetList.ItemsSource = _runtime.Motions
-            .Where(IsCommandMotion)
-            .OrderByDescending(x => string.Equals(x.AssetBatch, CommandMockBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
-            .ThenBy(x => x.BehaviorId)
-            .ToList();
-        MagicSpecialList.ItemsSource = _runtime.MagicMotions
-            .Where(x => !string.Equals(x.BehaviorId, MagicBehaviorIds.PetrificusRelease, StringComparison.OrdinalIgnoreCase))
-            .OrderBy(x => x.DisplayName)
-            .ToList();
+        RefreshAssetLists(expiredOnly: false);
         CommandMotionList.ItemsSource = _runtime.Motions
             .Where(x => string.Equals(x.Category, "口令动作", StringComparison.Ordinal))
             .OrderBy(x => x.BehaviorId)
             .ToList();
-        LifecycleCandidateList.ItemsSource = _runtime.LifecycleCandidateMotions
-            .OrderBy(x => x.BehaviorId)
-            .ToList();
-        LifecycleReviewCandidateList.ItemsSource = _runtime.LifecycleReviewCandidateMotions
-            .OrderBy(x => x.BehaviorId)
-            .ToList();
-        AutonomousDailyAssetList.ItemsSource = _runtime.AutonomousDailyCandidateMotions
-            .OrderBy(x => x.BehaviorId)
-            .ToList();
-        InteractionReviewAssetList.ItemsSource = _runtime.Motions
-            .Where(x => string.Equals(x.BehaviorId, Phase15BehaviorIds.ProneTouch, StringComparison.OrdinalIgnoreCase))
-            .ToList();
-        CarRideCandidateList.ItemsSource = _runtime.CarRideCandidateMotions.ToList();
         AlbumList.ItemsSource = _albumFolders;
         AlbumMediaList.ItemsSource = _albumMediaBindings;
         OwnerChatList.ItemsSource = _chatItems;
@@ -973,11 +947,38 @@ public partial class ControlPanelWindow : Window
 
     private void CandidateSize_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button { Tag: string value } && int.TryParse(value, out var pixels))
+        if (sender is Button { Tag: string value } &&
+            double.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var scale))
         {
-            _runtime.RequestPetPixelSize(pixels);
-            MockStateStatus.Text = $"候选尺寸已设为 {pixels}px";
+            _runtime.RequestPetScale(scale);
+            MockStateStatus.Text = $"用户缩放已设为 {scale:P0}";
         }
+    }
+
+    private void DeprecatedAssetsFilter_Changed(object sender, RoutedEventArgs e) =>
+        RefreshAssetLists(ShowDeprecatedAssetsCheckBox.IsChecked == true);
+
+    private void RefreshAssetLists(bool expiredOnly)
+    {
+        static IEnumerable<PlayableMotion> Filter(IEnumerable<PlayableMotion> motions, bool showExpired) =>
+            motions.Where(motion => showExpired ? motion.IsExpired : !motion.IsExpired);
+
+        AssetList.ItemsSource = Filter(_runtime.Motions.Where(IsBaseMotion), expiredOnly).OrderBy(x => x.BehaviorId).ToList();
+        PlayAssetList.ItemsSource = Filter(_runtime.CarRideCandidateMotions, expiredOnly).ToList();
+        CommandAssetList.ItemsSource = Filter(_runtime.Motions.Where(IsCommandMotion), expiredOnly)
+            .OrderByDescending(x => string.Equals(x.AssetBatch, CommandMockBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+            .ThenBy(x => x.BehaviorId)
+            .ToList();
+        MagicSpecialList.ItemsSource = Filter(_runtime.MagicMotions
+            .Where(x => !string.Equals(x.BehaviorId, MagicBehaviorIds.PetrificusRelease, StringComparison.OrdinalIgnoreCase)), expiredOnly)
+            .OrderBy(x => x.DisplayName)
+            .ToList();
+        LifecycleCandidateList.ItemsSource = Filter(_runtime.LifecycleCandidateMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
+        LifecycleReviewCandidateList.ItemsSource = Filter(_runtime.LifecycleReviewCandidateMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
+        AutonomousDailyAssetList.ItemsSource = Filter(_runtime.AutonomousDailyCandidateMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
+        InteractionReviewAssetList.ItemsSource = Filter(_runtime.Motions.Where(x =>
+            string.Equals(x.AssetBatch, "WK-INTERACTION-PRONE-TOUCH-v4-1", StringComparison.OrdinalIgnoreCase)), expiredOnly).ToList();
+        CarRideCandidateList.ItemsSource = Filter(_runtime.CarRideCandidateMotions, expiredOnly).ToList();
     }
 
     private async void ForceCommandMotion_Click(object sender, RoutedEventArgs e)

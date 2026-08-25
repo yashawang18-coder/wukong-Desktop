@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -124,7 +125,11 @@ public sealed record PlayableMotion(
     string CandidateProfile = "",
     double VisualScale = 1.0,
     double? RenderScaleOverride = null,
-    IReadOnlyList<string>? ScaleReferenceFrames = null)
+    IReadOnlyList<string>? ScaleReferenceFrames = null,
+    bool VisualApproved = false,
+    bool RuntimeApproved = false,
+    bool AutonomousBindingEnabled = false,
+    bool Deprecated = false)
 {
     public bool IsUsable => Phases.Any(x => x.Frames.Count > 0);
     public string FirstFrame => Phases.SelectMany(x => x.Frames).FirstOrDefault() ?? string.Empty;
@@ -133,7 +138,28 @@ public sealed record PlayableMotion(
     public double Fps => FrameDurationMs <= 0 ? 0 : 1000.0 / FrameDurationMs;
     public string PreviewStatus => IsUsable ? "Preview ready" : "Missing frames";
     public string RuntimeStatus => RuntimeEnabled ? "Runtime enabled" : "Preview only / locked";
-    public bool IsExpired => string.Equals(Disposition, "已过期", StringComparison.OrdinalIgnoreCase);
+    public bool IsExpired => Deprecated || string.Equals(Disposition, "已过期", StringComparison.OrdinalIgnoreCase);
+    public bool EffectiveVisualApproved => VisualApproved || RuntimeEnabled;
+    public bool EffectiveRuntimeApproved => RuntimeApproved || RuntimeEnabled;
+    public string StatusSummary => IsExpired
+        ? "已过期"
+        : EffectiveRuntimeApproved && RuntimeEnabled
+            ? "已启用"
+            : EffectiveRuntimeApproved
+                ? "运行已批准 · 当前停用"
+                : EffectiveVisualApproved
+                    ? "视觉已通过 · 未启用"
+                    : "待视觉验收";
+    public string StatusDetails => string.Join(Environment.NewLine, new[]
+    {
+        $"视觉状态：{(EffectiveVisualApproved ? "已通过" : "待验收")}",
+        $"运行批准：{(EffectiveRuntimeApproved ? "已批准" : "未批准")}",
+        $"当前启用：{(RuntimeEnabled ? "是" : "否")}",
+        $"自主行为池：{(AutonomousBindingEnabled ? "是" : "否")}",
+        $"已过期：{(IsExpired ? "是" : "否")}",
+        $"来源包：{AssetBatch}",
+        $"action id：{BehaviorId}"
+    });
     public string PhaseSummary => string.Join(" / ", Phases.Select(x => $"{x.Name}:{x.Frames.Count}"));
     public bool HasVariableFrameDurations => Phases.Any(x => x.HasVariableDurations);
     public MotionVisibleMetrics VisibleMetrics => MotionVisualSizer.Measure(FirstFrame);
@@ -423,9 +449,16 @@ public sealed class DesktopMotionCatalog
                 "action-batches/WK-INTERACTION-PRONE-TOUCH-v4-1/sequences/reaction_nose_lick",
                 loop: false,
                 runtimeEnabled: false,
-                status: "Preview only: not part of runtime touch chain",
-                missing: "runtime compatibility review",
-                disposition: "Preview only"),
+                status: "Deprecated: owner rejected and removed from use",
+                missing: "deprecated_reason=owner_rejected_and_removed_from_use_2026_08_26",
+                disposition: "Deprecated") with
+            {
+                AssetBatch = "WK-INTERACTION-PRONE-TOUCH-v4-1",
+                VisualApproved = false,
+                RuntimeApproved = false,
+                AutonomousBindingEnabled = false,
+                Deprecated = true
+            },
             Motion(
                 "wk.preview.stand_to_prone",
                 "Stand to prone",
@@ -533,15 +566,19 @@ public sealed class DesktopMotionCatalog
             },
             touchRoot,
             RuntimeEnabled: false,
-            Status: "Owner sequence approved; Windows runtime validation pending",
-            MissingContent: "Runtime validation and registration approval",
+            Status: "已过期：主人已拒绝并移出使用范围",
+            MissingContent: "Deprecated by owner on 2026-08-26",
             StartPose: "prone.awake.left_front",
             EndPose: "prone.awake.left_front",
             StyleGroup: "wukong-light-malt-gold-v4",
-            Disposition: "Production candidate / runtime locked",
+            Disposition: "已过期",
             PrototypeUse: false,
             AssetBatch: "WK-INTERACTION-PRONE-TOUCH-v4-1",
-            Description: "asset.json declares runtime_validation=pending, runtime_approved=false, runtime_use=false; developer-forced preview only");
+            Description: "deprecated_reason=owner_rejected_and_removed_from_use_2026_08_26; archived preview only",
+            VisualApproved: false,
+            RuntimeApproved: false,
+            AutonomousBindingEnabled: false,
+            Deprecated: true);
     }
 
     private static IReadOnlyList<string> ReadFrames(string directory) =>
@@ -743,7 +780,10 @@ public sealed class DesktopMotionCatalog
                     : "Real command production candidate for deterministic personality/state/command behavior wiring.",
                 CandidateProfile: manifest.AssetStage,
                 VisualScale: approvedOwnerCommand ? 0.92 : 1.0,
-                ScaleReferenceFrames: sharedScaleReference);
+                ScaleReferenceFrames: sharedScaleReference,
+                VisualApproved: approvedOwnerCommand,
+                RuntimeApproved: action.RuntimeApproved,
+                AutonomousBindingEnabled: false);
         }
     }
 
@@ -842,7 +882,10 @@ public sealed class DesktopMotionCatalog
                 AssetBatch: manifest.BatchId,
                 Description: action.Description,
                 CandidateProfile: action.CandidateProfile ?? manifest.CandidateProfile,
-                VisualScale: ApprovedPetVisualScale);
+                VisualScale: ApprovedPetVisualScale,
+                VisualApproved: action.RuntimeApproved,
+                RuntimeApproved: action.RuntimeApproved,
+                AutonomousBindingEnabled: !string.IsNullOrWhiteSpace(action.AutonomousMapping));
         }
     }
 
@@ -872,8 +915,8 @@ public sealed class DesktopMotionCatalog
 
             if (manifest?.Actions is null ||
                 !string.Equals(manifest.BatchId, assetBatch, StringComparison.Ordinal) ||
-                manifest.RuntimeApproved || manifest.RuntimeUse || manifest.ProductionAsset || manifest.VisualApproved ||
-                !string.Equals(manifest.RuntimeValidation, "pending_windows_renderer_qa", StringComparison.Ordinal))
+                manifest.RuntimeApproved || manifest.RuntimeUse || manifest.ProductionAsset || !manifest.VisualApproved ||
+                !string.Equals(manifest.RuntimeValidation, "owner_visual_qa_passed_runtime_behavior_pending", StringComparison.Ordinal))
             {
                 BootstrapLog.WriteRaw($"lifecycle_review_manifest_gate_invalid batch={assetBatch}");
                 continue;
@@ -885,13 +928,15 @@ public sealed class DesktopMotionCatalog
                 var errors = new List<string>();
                 if (!action.BehaviorId.StartsWith("wk.candidate.", StringComparison.Ordinal))
                     errors.Add("candidate_namespace_required");
-                if (action.RuntimeApproved || action.RuntimeUse || action.ProductionAsset || action.VisualApproved || action.PrototypeUse || action.AutonomousBindingEnabled)
+                if (action.RuntimeApproved || action.RuntimeUse || action.ProductionAsset || action.PrototypeUse || action.AutonomousBindingEnabled)
                     errors.Add("candidate_gate_open");
+                if (!action.VisualApproved)
+                    errors.Add("owner_visual_approval_required");
                 if (action.AllowedSources is null || action.AllowedSources.Count != 1 ||
                     !string.Equals(action.AllowedSources[0], "DeveloperPreview", StringComparison.Ordinal))
                     errors.Add("developer_preview_only_required");
-                if (!string.Equals(action.RuntimeValidation, "pending_windows_renderer_qa", StringComparison.Ordinal))
-                    errors.Add("runtime_validation_not_pending");
+                if (!string.Equals(action.RuntimeValidation, "owner_visual_qa_passed_runtime_behavior_pending", StringComparison.Ordinal))
+                    errors.Add("runtime_behavior_validation_not_pending");
                 if (string.Equals(assetBatch, LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch, StringComparison.Ordinal) &&
                     (action.FromPose.Contains("front", StringComparison.OrdinalIgnoreCase) || action.ToPose.Contains("front", StringComparison.OrdinalIgnoreCase)) &&
                     action.LegacySideProne)
@@ -937,7 +982,7 @@ public sealed class DesktopMotionCatalog
 
                 var warning = action.LegacySideProne
                     ? "Historical side-prone continuity review; do not splice to the V4 forward-prone candidate."
-                    : "Owner QA pending; developer preview only.";
+                    : "Owner visual QA passed; runtime behavior approval remains pending.";
                 yield return new PlayableMotion(
                     action.BehaviorId,
                     action.DisplayName,
@@ -948,19 +993,22 @@ public sealed class DesktopMotionCatalog
                     phases,
                     Path.Combine(batchRoot, action.SourceFolder.Replace('/', Path.DirectorySeparatorChar)),
                     RuntimeEnabled: false,
-                    Status: "Owner QA pending / runtime locked",
-                    MissingContent: "Windows renderer QA and explicit runtime approval",
+                    Status: "视觉已通过；运行行为验收待完成",
+                    MissingContent: "runtime behavior QA and explicit runtime approval",
                     StartPose: action.FromPose,
                     EndPose: action.ToPose,
                     StyleGroup: string.Equals(assetBatch, LifecycleReviewCandidateBehaviorIds.V4AssetBatch, StringComparison.Ordinal)
                         ? "wukong-light-malt-gold-front-prone-v4"
                         : "wukong-lifecycle-v3r1-recovered",
-                    Disposition: "候审",
+                    Disposition: "视觉已通过 · 未启用",
                     PrototypeUse: false,
                     AssetBatch: manifest.BatchId,
                     Description: $"{action.Description} source={manifest.BatchId}; expired_pixel_contribution=false; {warning}",
                     CandidateProfile: manifest.CandidateProfile,
-                    VisualScale: ApprovedPetVisualScale);
+                    VisualScale: ApprovedPetVisualScale,
+                    VisualApproved: true,
+                    RuntimeApproved: false,
+                    AutonomousBindingEnabled: false);
             }
         }
     }
@@ -1245,6 +1293,7 @@ public sealed class DesktopMotionCatalog
 
     private static IEnumerable<PlayableMotion> LoadCarRideCandidates(string root)
     {
+        var loadStarted = Stopwatch.GetTimestamp();
         var manifestPath = Path.Combine(root, "action-batches", CarRideBehaviorIds.AssetBatch, "manifest.json");
         if (!File.Exists(manifestPath))
         {
@@ -1253,6 +1302,7 @@ public sealed class DesktopMotionCatalog
         }
 
         CarRideCandidateManifest? manifest;
+        var parseStarted = Stopwatch.GetTimestamp();
         try
         {
             manifest = JsonSerializer.Deserialize<CarRideCandidateManifest>(
@@ -1264,6 +1314,7 @@ public sealed class DesktopMotionCatalog
             BootstrapLog.Write("Car ride candidate manifest parse failed", ex);
             yield break;
         }
+        var manifestParseMs = Stopwatch.GetElapsedTime(parseStarted).TotalMilliseconds;
 
         if (manifest?.Phases is null || !string.Equals(manifest.BehaviorId, CarRideBehaviorIds.CarRide, StringComparison.OrdinalIgnoreCase))
             yield break;
@@ -1313,6 +1364,9 @@ public sealed class DesktopMotionCatalog
             yield break;
         }
 
+        BootstrapLog.WriteRaw(
+            $"car_ride_index_ready manifest_parse_ms={manifestParseMs:0.0} validation_index_ms={Stopwatch.GetElapsedTime(loadStarted).TotalMilliseconds:0.0} frame_refs={manifest.AllSequences?.Values.Sum(x => x.Count) ?? 0}");
+
         yield return new PlayableMotion(
             manifest.BehaviorId,
             manifest.DisplayName,
@@ -1336,7 +1390,11 @@ public sealed class DesktopMotionCatalog
             NamedSequences: BuildCarRideNamedSequences(manifest, batchRoot),
             Description: "Owner-only car ride v8 runtime approved interaction",
             CandidateProfile: manifest.AssetId,
-            VisualScale: 1.18);
+            VisualScale: 1.18,
+            ScaleReferenceFrames: phases.SelectMany(x => x.Frames).Take(6).ToArray(),
+            VisualApproved: true,
+            RuntimeApproved: manifest.RuntimeApproved,
+            AutonomousBindingEnabled: false);
     }
 
     private static IReadOnlyDictionary<string, IReadOnlyList<string>> BuildCarRideDirectionalFrames(CarRideCandidateManifest manifest, string batchRoot)
@@ -1419,6 +1477,18 @@ public static class LifecycleCandidateBehaviorIds
     public const string StandIdleMicroloop = "wk.candidate.lifecycle.stand_idle_microloop";
     public const string SitIdleMicroloop = "wk.candidate.lifecycle.sit_idle_microloop";
     public const string ProneIdleMicroloop = "wk.candidate.lifecycle.prone_idle_microloop";
+}
+
+public static class RuntimeVisualScale
+{
+    public const double MinimumUserScale = 0.5;
+    public const double MaximumUserScale = 2.5;
+
+    public static double ClampUserScale(double userScale) =>
+        Math.Clamp(userScale, MinimumUserScale, MaximumUserScale);
+
+    public static double EffectiveScale(double userScale, double actionLocalScale) =>
+        ClampUserScale(userScale) * Math.Max(0.01, actionLocalScale);
 }
 
 public static class LifecycleReviewCandidateBehaviorIds
@@ -1859,11 +1929,20 @@ public sealed record PetMotionRequest(
     bool ReturnToIdle,
     int LoopCycles,
     BehaviorRequestSource Source = BehaviorRequestSource.OwnerUi,
-    BehaviorExecutionMode ExecutionMode = BehaviorExecutionMode.Normal);
+    BehaviorExecutionMode ExecutionMode = BehaviorExecutionMode.Normal,
+    long RequestedAtTimestamp = 0);
 
 public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 {
     private const string StableHoldPrefix = "wk.runtime.posture_hold.";
+    private static readonly IReadOnlySet<string> AutonomousRuntimeAllowlist =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            LifecycleCandidateBehaviorIds.StandIdleMicroloop,
+            LifecycleCandidateBehaviorIds.SitIdleMicroloop,
+            LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
+            LifecycleCandidateBehaviorIds.LivelyDailyP2
+        };
     private readonly DesktopMotionCatalog _catalog;
     private readonly PetrifiedCoinAssets? _coinAssets;
     private readonly PetrifiedCoinOptions _coinOptions;
@@ -1882,6 +1961,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private PetDecision? _pendingAgentDecision;
     private int _decisionSeed = 1508;
     private int _autonomousDecisionCount;
+    private long _pendingRequestTimestamp;
     private DateTimeOffset _lastTapAt = DateTimeOffset.MinValue;
     private int _tapBurst;
     private DateTimeOffset _currentStartedAt = DateTimeOffset.MinValue;
@@ -1917,6 +1997,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
     public event EventHandler<PetMotionRequest>? MotionRequested;
     public event EventHandler<int>? PetPixelSizeRequested;
+    public event EventHandler<double>? PetScaleRequested;
 
     public ObservableCollection<string> TraceLines { get; } = new();
     public IReadOnlyList<PlayableMotion> Motions => _catalog.Motions;
@@ -1952,6 +2033,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public bool EnableBehaviorAgentMock { get; private set; }
     public StablePosture CurrentStablePosture => _agentState.CurrentPosture;
     public string BehaviorAgentSnapshot => BuildBehaviorAgentSnapshot();
+    public string BroomFlightMetrics { get; private set; } = "Not measured";
 
     public string CurrentAction { get; private set; } = "安静趴卧";
     public string CurrentBehaviorId { get; private set; } = Phase15BehaviorIds.ProneIdle;
@@ -2022,6 +2104,11 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     {
         var now = _now();
         Trace("gesture", gesture.ToString());
+        if (gesture == PetGestureKind.OwnerTouch && _catalog.Find(Phase15BehaviorIds.ProneTouch) is { Deprecated: true })
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "asset_deprecated_owner_rejected", "摸摸回应已由主人移出使用范围");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
         if (gesture == PetGestureKind.OwnerTouch)
         {
             var previousTapAt = _lastTapAt;
@@ -2143,6 +2230,22 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         Trace("developer_size", $"candidate_profile={LifecycleCandidateBehaviorIds.AssetBatch} pixels={clamped}");
     }
 
+    public void RequestPetScale(double scale)
+    {
+        var clamped = RuntimeVisualScale.ClampUserScale(scale);
+        PetScaleRequested?.Invoke(this, clamped);
+        Trace("user_scale", $"scale={clamped:0.00}");
+    }
+
+    public void ReportPerformance(string detail) => Trace("performance", detail);
+
+    public void ReportBroomFlightMetrics(double horizontalPixels, double verticalPixels, Rect workArea)
+    {
+        BroomFlightMetrics = $"horizontal={horizontalPixels:0}px ({horizontalPixels / Math.Max(1, workArea.Width):P0}), vertical={verticalPixels:0}px ({verticalPixels / Math.Max(1, workArea.Height):P0})";
+        Trace("broom_route", BroomFlightMetrics);
+        OnPropertyChanged(nameof(BroomFlightMetrics));
+    }
+
     public Task<PetActionResult> SubmitMagicAsync(string behaviorId, BehaviorRequestSource source)
     {
         if (behaviorId == MagicBehaviorIds.PetrificusTotalus && IsPetrified)
@@ -2150,8 +2253,18 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         return Task.FromResult(SubmitBehavior(source, behaviorId, $"magic:{behaviorId}", priority: 20, executionMode: BehaviorExecutionMode.PrototypePreview));
     }
 
-    public Task<PetActionResult> SubmitCarRideAsync(BehaviorRequestSource source) =>
-        Task.FromResult(SubmitBehavior(source, CarRideBehaviorIds.CarRide, "owner:car_ride_v8", priority: 18, executionMode: BehaviorExecutionMode.Normal));
+    public Task<PetActionResult> SubmitCarRideAsync(BehaviorRequestSource source)
+    {
+        _pendingRequestTimestamp = Stopwatch.GetTimestamp();
+        try
+        {
+            return Task.FromResult(SubmitBehavior(source, CarRideBehaviorIds.CarRide, "owner:car_ride_v8", priority: 18, executionMode: BehaviorExecutionMode.Normal));
+        }
+        finally
+        {
+            _pendingRequestTimestamp = 0;
+        }
+    }
 
     private PetActionResult SubmitBehaviorAgentCommand(OwnerCommandKind command, BehaviorRequestSource source, string trigger)
     {
@@ -2661,8 +2774,15 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         BehaviorExecutionMode executionMode,
         PlayableMotion motion)
     {
+        if (motion.Deprecated &&
+            string.Equals(motion.AssetBatch, "WK-INTERACTION-PRONE-TOUCH-v4-1", StringComparison.OrdinalIgnoreCase))
+            return (false, "asset_deprecated_owner_rejected", $"{motion.DisplayName} 已由主人明确移出使用范围");
+
         if (executionMode == BehaviorExecutionMode.DeveloperPreview)
             return (true, "developer_preview", "开发者预览已允许");
+
+        if (motion.IsExpired)
+            return (false, "asset_deprecated", $"{motion.DisplayName} 已过期，只能作为动作参考预览");
 
         if (executionMode == BehaviorExecutionMode.PrototypePreview)
         {
@@ -2762,7 +2882,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         }
         OnPropertyChanged(nameof(IsPetrified));
         UpdateDecision(PetActionResult.Accepted, source.ToString(), reason, executionMode == BehaviorExecutionMode.PrototypePreview ? "正在展示原型魔法" : "接受");
-        MotionRequested?.Invoke(this, new PetMotionRequest(motion, reason, returnToIdle, loopCycles, source, executionMode));
+        MotionRequested?.Invoke(this, new PetMotionRequest(motion, reason, returnToIdle, loopCycles, source, executionMode, _pendingRequestTimestamp));
         Trace("motion_requested", $"{motion.BehaviorId} source={source} mode={executionMode} asset_batch={motion.AssetBatch} reason={reason}");
         OnPropertyChanged(nameof(CurrentBehaviorId));
         OnPropertyChanged(nameof(CurrentAction));
@@ -2890,9 +3010,13 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     private void AddIfEnabled(List<(string BehaviorId, double Score, string Reason)> candidates, string behaviorId, double score, string reason)
     {
-        if (_catalog.Find(behaviorId) is { RuntimeEnabled: true })
+        if (AutonomousRuntimeAllowlist.Contains(behaviorId) &&
+            _catalog.Find(behaviorId) is { RuntimeEnabled: true, AutonomousBindingEnabled: true })
             candidates.Add((behaviorId, Math.Max(0.05, score), reason));
     }
+
+    public static bool IsAutonomousRuntimeBehaviorAllowed(string behaviorId) =>
+        AutonomousRuntimeAllowlist.Contains(behaviorId);
 
     private void UpdateDecision(PetActionResult result, string source, string reasonCode, string userFacing)
     {

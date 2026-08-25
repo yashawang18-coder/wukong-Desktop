@@ -72,8 +72,8 @@ class LifecycleV3R1ProneFrontV4ReviewTests(unittest.TestCase):
             review = json.loads((batch / "runtime-review-manifest.json").read_text(encoding="utf-8"))
             for document in (asset, review):
                 self.assertEqual("production_candidate_owner_qa_pending", document["asset_stage"])
-                self.assertEqual("pending_windows_renderer_qa", document["runtime_validation"])
-                self.assertFalse(document["visual_approved"])
+                self.assertEqual("owner_visual_qa_passed_runtime_behavior_pending", document["runtime_validation"])
+                self.assertTrue(document["visual_approved"])
                 self.assertFalse(document["runtime_approved"])
                 self.assertFalse(document["runtime_use"])
                 self.assertFalse(document["production_asset"])

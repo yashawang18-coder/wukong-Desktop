@@ -21,17 +21,29 @@ class ProneTouchV41CandidateTest(unittest.TestCase):
         cls.asset = load_json("asset.json")
         cls.contract = load_json("action-contract.json")
 
-    def test_runtime_gates_remain_closed(self):
+    def test_owner_rejected_asset_is_deprecated_and_all_runtime_gates_remain_closed(self):
         for document in (self.manifest, self.asset):
-            self.assertEqual(document["runtime_validation"], "pending")
+            self.assertEqual(document["runtime_validation"], "failed_owner_rejected")
             self.assertFalse(document["runtime_approved"])
             self.assertFalse(document["runtime_use"])
+            self.assertTrue(document["deprecated"])
+            self.assertEqual(document["deprecated_reason"], "owner_rejected_and_removed_from_use_2026_08_26")
+            self.assertFalse(document["visual_approved"])
+            self.assertFalse(document["production_asset"])
+            self.assertFalse(document["autonomous_binding_enabled"])
+            self.assertFalse(document["command_binding_enabled"])
+            self.assertFalse(document["appearance_reference_usable"])
+            self.assertFalse(document["motion_reference_usable"])
+            self.assertFalse(document["fallback_eligible"])
 
         gate = self.contract["runtime_gate"]
-        self.assertEqual(gate["runtime_validation"], "pending")
+        self.assertEqual(gate["runtime_validation"], "failed_owner_rejected")
         self.assertFalse(gate["runtime_approved"])
         self.assertFalse(gate["runtime_use"])
         self.assertTrue(gate["must_not_register_until_all_gates_pass"])
+        self.assertTrue(gate["permanently_removed_from_use"])
+        self.assertTrue(self.contract["deprecated"])
+        self.assertFalse(self.contract["fallback_eligible"])
         self.assertFalse(self.asset["runtime_registration"]["registered"])
         self.assertFalse(self.asset["runtime_registration"]["permitted"])
 

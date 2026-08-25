@@ -301,6 +301,24 @@ Restrictions:
 - Do not concatenate a V3R1 side-prone phase with a V4 forward-prone phase.
 - Keep both new profiles out of Normal, owner UI, autonomous scheduling, dialogue, model, command, magic, and car ride routes.
 - Permit playback only through the existing isolated `DeveloperPreview` BehaviorRequest path.
-- Keep `visual_approved=false`, `runtime_validation=pending_windows_renderer_qa`, `runtime_approved=false`, `runtime_use=false`, and `production_asset=false` until a separate owner decision follows real Windows renderer review.
+- Owner visual QA passed on 2026-08-26 for the seven V3R1/V4 entries actually reviewed. Record `visual_approved=true` and `runtime_validation=owner_visual_qa_passed_runtime_behavior_pending`, while keeping `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, and autonomous bindings disabled until runtime behavior is revalidated.
 - The owner-approved V4 stable anchor is anchor-only evidence and cannot promote the derived loop or lick sequence.
 - Preserve the original package manifests and SHA inventories unchanged; Wukong-specific review mapping lives in separate `asset.json` and `runtime-review-manifest.json` files.
+
+## 2026-08-26 - retire prone touch and separate autonomous daily behavior from commands
+
+Decision:
+
+Retire the panel asset named `摸摸回应`, identified from source as `wk.interaction.prone_touch` / `wk.interaction.prone_touch.v4.1`, and make autonomous daily selection an explicit semantic allowlist.
+
+Reason:
+
+The owner rejected the touch response and confirmed that ordinary daily behavior must not spontaneously jump or spin. Developer-preview capability is not evidence that an asset is enabled or eligible for autonomous use.
+
+Restrictions:
+
+- Preserve the touch PNGs and historical metadata, but mark the batch deprecated and reject it before every execution-mode bypass, including DeveloperPreview and fallback.
+- Hide deprecated assets from default material views; expose them only under the expired-only filter.
+- Permit autonomous selection only for approved stable posture idles, breathing, blink, minor observation/adjustment, and separately approved low-frequency daily lifecycle behavior.
+- Keep jump and spin available to explicit owner commands and eligible developer preview, but never derive them through tags, fallback, shared frames, or random autonomous sampling.
+- Keep V3R1 and forward-prone V4 independent until an approved bridge exists; visual approval does not permit a hard splice or runtime activation.

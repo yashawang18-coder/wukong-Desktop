@@ -195,6 +195,21 @@ public sealed class BehaviorAgentMockEngine
 {
     private static readonly TimeSpan OwnerCooldown = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan AutonomousCooldown = TimeSpan.FromSeconds(16);
+    private static readonly IReadOnlySet<string> AutonomousActionAllowlist =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            MockCommandActionIds.MaintainCurrentIdle,
+            MockCommandActionIds.OrientToOwner,
+            MockCommandActionIds.QuietSit,
+            MockCommandActionIds.QuietProne,
+            MockCommandActionIds.RequestAttention,
+            MockCommandActionIds.AskForFood,
+            MockCommandActionIds.Rest,
+            MockCommandActionIds.Observe
+        };
+
+    public static bool IsAutonomousActionAllowed(string actionId) =>
+        AutonomousActionAllowlist.Contains(actionId);
 
     public PetDecision Decide(BehaviorDecisionContext context)
     {
@@ -385,19 +400,7 @@ public sealed class BehaviorAgentMockEngine
 
     private static IEnumerable<BehaviorCandidateScore> AutonomousCandidates(BehaviorDecisionContext context)
     {
-        foreach (var action in new[]
-        {
-            MockCommandActionIds.MaintainCurrentIdle,
-            MockCommandActionIds.OrientToOwner,
-            MockCommandActionIds.QuietSit,
-            MockCommandActionIds.QuietProne,
-            MockCommandActionIds.RequestAttention,
-            MockCommandActionIds.PlayfulJump,
-            MockCommandActionIds.PlayfulSpin,
-            MockCommandActionIds.AskForFood,
-            MockCommandActionIds.Rest,
-            MockCommandActionIds.Observe
-        })
+        foreach (var action in AutonomousActionAllowlist)
         {
             var reasons = HardConstraintReasons(context, action).ToList();
             var components = ScoreComponents(context, action, baseWeight: BaseWeight(action));
@@ -533,7 +536,7 @@ public sealed class BehaviorAgentMockEngine
         MockCommandActionIds.PlayfulJump or MockCommandActionIds.PlayfulSpin => t.Activity01 * 0.75 + t.Mischief01 * 0.35,
         MockCommandActionIds.RequestAttention or MockCommandActionIds.OrientToOwner => t.Attachment01 * 0.65 - t.Independence01 * 0.22,
         MockCommandActionIds.MaintainCurrentIdle or MockCommandActionIds.Rest => t.Independence01 * 0.45,
-        MockCommandActionIds.Observe => t.Independence01 * 0.25 + t.Sensitivity01 * 0.12,
+        MockCommandActionIds.Observe => t.Activity01 * 0.35 + t.Mischief01 * 0.15 + t.Independence01 * 0.12 + t.Sensitivity01 * 0.08,
         _ => t.Activity01 * 0.12
     };
 

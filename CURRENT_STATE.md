@@ -127,8 +127,9 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
 ## WK-INTERACTION-PRONE-TOUCH-v4-1
 
 - PR #4 is merged into `main` as a 70-frame additive runtime candidate with `intro`, `loop`, `exit`, and `interrupt_exit` sequences.
-- Owner preview approval is recorded, but `runtime_validation=pending`, `runtime_approved=false`, and `runtime_use=false` remain unchanged.
-- It is evidence for the future animation lifecycle implementation; it is not yet a production behavior binding.
+- On 2026-08-26 the owner rejected the panel entry named `摸摸回应` (`wk.interaction.prone_touch`, asset `wk.interaction.prone_touch.v4.1`) and removed it from use.
+- It is now `deprecated=true`, `visual_approved=false`, `runtime_validation=failed_owner_rejected`, `runtime_approved=false`, `runtime_use=false`, and `production_asset=false`.
+- Autonomous, command, fallback, owner interaction, magic, car ride, and developer-forced execution are all disabled. The original PNGs and manifests remain for history, but the batch is visible only through the panel's expired-only filter.
 
 ## WK-COMMAND-ACTION-CANDIDATES-v3
 
@@ -201,9 +202,19 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
 - No side-prone to forward-prone bridge exists. The catalog, manifests, review guide, and developer panel explicitly prohibit treating a switch between these profiles as a valid lifecycle transition.
 - The V4 lick is eligible only from `Prone`, is one-shot, returns to its byte-identical stable anchor, and records a proposed 45-120 second cooldown. Its autonomous binding remains disabled.
 - The active V2 lifecycle manifest and runtime bindings are unchanged. Existing command, magic, car ride, and autonomous daily review areas remain available.
-- Both batches are `asset_stage=production_candidate_owner_qa_pending`, `visual_approved=false`, `runtime_validation=pending_windows_renderer_qa`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, and `autonomous_binding_enabled=false`.
+- Owner visual QA passed on 2026-08-26 for the seven entries actually shown in the review panel, excluding the separately rejected `摸摸回应` batch. Both lifecycle batches now record `visual_approved=true` and `runtime_validation=owner_visual_qa_passed_runtime_behavior_pending`.
+- Visual approval does not open runtime gates. Both batches remain `asset_stage=production_candidate_owner_qa_pending`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, and `autonomous_binding_enabled=false`.
 - The V4 stable anchor retains `anchor_owner_visual_approved=true`; that anchor-only fact does not approve either sequence.
-- Current stage: imported and wired for isolated `DeveloperPreview`; automated validation, PowerShell 5.1 review publishing, package checksum verification, and controlled Windows launch passed. Owner Windows renderer visual QA remains pending, and no runtime approval is claimed.
+- Current stage: visual review passed and wired only for isolated `DeveloperPreview`; runtime behavior revalidation remains pending after scale, effect recovery, and scheduling fixes. No runtime approval is claimed.
+
+## 2026-08-26 lifecycle review runtime corrections
+
+- Normal asset cards now show visual approval, runtime approval, active use, autonomous binding, deprecation, source batch, and action ID separately. Deprecated assets are hidden by default and available through an explicit expired-only filter.
+- Formal autonomous runtime uses an explicit allowlist containing only the approved P2 stand, sit, prone, and full lifecycle behaviors. The Behavior Agent Mock uses a separate daily allowlist. Jump, spin, shake-hand, eat command, magic, and car ride cannot enter either autonomous pool; explicit owner commands and developer previews remain available where their own gates allow them.
+- Pet scaling is a persistent global user scale in the 50%-250% range multiplied by the action-local presentation scale. Normal, command, magic, car ride, and coin rendering share the same user factor and preserve the bottom-center ground anchor across changes.
+- Car ride startup records request-pipeline, scale calculation, first-frame decode, and first-visible timings. The first frame is shown before motion starts; only startup/current-direction frames are prefetched through the existing bounded 36-frame frozen bitmap cache.
+- Accio Broom uses the pet's current monitor work area and a larger safe route targeting 20%-28% horizontal and 24%-32% vertical travel before returning near its start point. The developer panel reports measured pixel travel.
+- Magic effects capture the pre-effect user scale, action-local scale, opacity, position, ground anchor, posture, and work area. Recovery restores display scale and anchor without writing alpha-bound-derived values into the global scale.
 
 ## Next implementation target
 

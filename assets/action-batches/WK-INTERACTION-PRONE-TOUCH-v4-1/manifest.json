@@ -3,7 +3,17 @@
   "package_id": "wk.interaction.prone_touch.v4.1",
   "asset_file": "asset.json",
   "contract_file": "action-contract.json",
-  "runtime_validation": "pending",
+  "status": "deprecated",
+  "deprecated": true,
+  "deprecated_reason": "owner_rejected_and_removed_from_use_2026_08_26",
+  "visual_approved": false,
+  "production_asset": false,
+  "autonomous_binding_enabled": false,
+  "command_binding_enabled": false,
+  "appearance_reference_usable": false,
+  "motion_reference_usable": false,
+  "fallback_eligible": false,
+  "runtime_validation": "failed_owner_rejected",
   "runtime_approved": false,
   "runtime_use": false,
   "png_sequence_frame_count": 70,
@@ -11,18 +21,18 @@
   "files": [
     {
       "path": "README.md",
-      "bytes": 553,
-      "sha256": "40c5ea443f33e2c7e3ac231d3df308b953cffdb75f9082675062528e03788ac3"
+      "bytes": 874,
+      "sha256": "0e2607788f685929b6ad09d9c6a230221ab28eb7a4c8bad58df1dda5ffdfcce7"
     },
     {
       "path": "action-contract.json",
-      "bytes": 1653,
-      "sha256": "eb00ebf09285627f4cd0bd3e2900a0d9ec3265e00772570dbf0b3d9f0b697693"
+      "bytes": 1895,
+      "sha256": "252328e741823465e27b10e3a3d2630d8c8cae5727b0de8687eef5c9b68da6e1"
     },
     {
       "path": "asset.json",
-      "bytes": 2162,
-      "sha256": "9e9c3a708a7d1dfb5291f30bfac79e8ea8edd4b35d77632928c9a42b934c060d"
+      "bytes": 2586,
+      "sha256": "87fd4d2d8427de986c9360750d955a1bf02b03c1a39a6c088fb5393fc90fc330"
     },
     {
       "path": "sequences/exit/frame-001.png",

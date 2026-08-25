@@ -410,24 +410,22 @@ static Task BehaviorAgentMockScoreDrivers()
         PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand, Energy = 0.94, Boredom = 0.91, Stress = 0.05, SocialNeed = 0.30 },
         TemperamentProfile.Default with { Activity = 92, Mischief = 80, Attachment = 30 },
         seed: 7));
-    var jump = Score(highPlay, MockCommandActionIds.PlayfulJump);
-    var spin = Score(highPlay, MockCommandActionIds.PlayfulSpin);
-    Assert(jump > Score(highPlay, MockCommandActionIds.MaintainCurrentIdle), "high activity/energy/boredom should raise playful jump");
-    Assert(spin > Score(highPlay, MockCommandActionIds.QuietProne), "high mischief should raise playful spin");
+    Assert(!highPlay.CandidateScores.Any(x => x.ActionId is MockCommandActionIds.PlayfulJump or MockCommandActionIds.PlayfulSpin), "command-only jump/spin leaked into autonomous candidates");
+    Assert(Score(highPlay, MockCommandActionIds.Observe) > Score(highPlay, MockCommandActionIds.QuietProne), "high energy/boredom should raise an allowed observation behavior");
 
     var lowEnergy = engine.Decide(AgentDecisionContext(
         OwnerCommandKind.None,
         PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand, Energy = 0.10, Boredom = 0.94, Stress = 0.04 },
         TemperamentProfile.Default with { Activity = 95, Mischief = 90 },
         seed: 7));
-    Assert(Reasons(lowEnergy, MockCommandActionIds.PlayfulJump).Contains("energy_too_low"), "low energy did not eliminate jump");
+    Assert(Score(lowEnergy, MockCommandActionIds.Rest) > Score(highPlay, MockCommandActionIds.Rest), "low energy did not increase the rest utility");
 
     var highStress = engine.Decide(AgentDecisionContext(
         OwnerCommandKind.None,
         PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand, Energy = 0.90, Boredom = 0.88, Stress = 0.80 },
         TemperamentProfile.Default with { Activity = 95, Sensitivity = 88 },
         seed: 8));
-    Assert(Reasons(highStress, MockCommandActionIds.PlayfulSpin).Contains("stress_too_high"), "high stress did not suppress strong actions");
+    Assert(!highStress.CandidateScores.Any(x => x.ActionId is MockCommandActionIds.PlayfulJump or MockCommandActionIds.PlayfulSpin), "high stress evaluation exposed command-only strong actions");
 
     var attached = engine.Decide(AgentDecisionContext(
         OwnerCommandKind.None,
@@ -443,10 +441,21 @@ static Task BehaviorAgentMockScoreDrivers()
 
     var repeat = engine.Decide(AgentDecisionContext(
         OwnerCommandKind.None,
-        PetRuntimeState.Default with { LastActionId = MockCommandActionIds.PlayfulJump, RepeatedActionCount = 3, Energy = 0.90, Boredom = 0.90, Stress = 0.05 },
+        PetRuntimeState.Default with { LastActionId = MockCommandActionIds.Observe, RepeatedActionCount = 3, Energy = 0.90, Boredom = 0.90, Stress = 0.05 },
         TemperamentProfile.Default with { Activity = 95 },
         seed: 10));
-    Assert(Component(repeat, MockCommandActionIds.PlayfulJump, "repetition_penalty") < 0, "repetition penalty missing");
+    Assert(Component(repeat, MockCommandActionIds.Observe, "repetition_penalty") < 0, "repetition penalty missing");
+
+    foreach (var seed in Enumerable.Range(0, 256))
+    {
+        var sampled = engine.Decide(AgentDecisionContext(OwnerCommandKind.None, highPlay.EndPosture == StablePosture.Stand
+            ? PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand, Energy = 0.95, Boredom = 0.95 }
+            : PetRuntimeState.Default, TemperamentProfile.Default with { Activity = 100, Mischief = 100 }, seed));
+        Assert(sampled.SelectedActionId is not MockCommandActionIds.PlayfulJump and not MockCommandActionIds.PlayfulSpin, "autonomous sampling selected command-only jump/spin");
+    }
+
+    Assert(engine.Decide(AgentDecisionContext(OwnerCommandKind.Jump, PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand }, seed: 301)).SelectedActionId == MockCommandActionIds.Jump, "owner jump command was blocked by autonomous allowlist");
+    Assert(engine.Decide(AgentDecisionContext(OwnerCommandKind.Spin, PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand }, seed: 302)).SelectedActionId == MockCommandActionIds.Spin, "owner spin command was blocked by autonomous allowlist");
 
     var clickedLow = engine.ApplyRepeatedClick(PetRuntimeState.Default, TemperamentProfile.Default with { Sensitivity = 10 }, 4);
     var clickedHigh = engine.ApplyRepeatedClick(PetRuntimeState.Default, TemperamentProfile.Default with { Sensitivity = 90 }, 4);
@@ -564,7 +573,6 @@ static BehaviorDecisionContext AgentDecisionContext(
         isNonInterruptible);
 
 static double Score(PetDecision decision, string actionId) => decision.CandidateScores.Single(x => x.ActionId == actionId).FinalScore;
-static IReadOnlyList<string> Reasons(PetDecision decision, string actionId) => decision.CandidateScores.Single(x => x.ActionId == actionId).Reasons;
 static double Component(PetDecision decision, string actionId, string component) => decision.CandidateScores.Single(x => x.ActionId == actionId).Components.Single(x => x.Name == component).Value;
 static ContextualConversationService CreateAgentService(
     PetContextSnapshot snapshot,
