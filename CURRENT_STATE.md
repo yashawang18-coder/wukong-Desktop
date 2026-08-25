@@ -194,23 +194,23 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
 - Strict non-zero-alpha audit still records 17 frame references extending to y=932. The owner observed no visible foot jitter, transparent edge issue, or y=930/y=932 artifact in Windows renderer QA; PNGs were not cropped, recolored, resized, or baseline-shifted after acceptance.
 - It is not added to `contracts/runtime/asset-registry.json`, `pet_assets.json`, production command routing, right-click menus, training data, magic, or coin flows. It is activated only in the formal autonomous lifecycle mapping: full lifecycle as a low-frequency self-directed daily behavior, stand-idle for stable stand, sit-idle for stable sit, and prone-idle for stable prone.
 
-## 2026-08-26 lifecycle V3R1 and forward-prone V4 parallel review
+## 2026-08-26 lifecycle V3R1 and forward-prone V4 runtime approval
 
 - Branch: `agent/lifecycle-v3r1-prone-front-v4-review` based on `origin/agent/personality-state-behavior-mock-v1` commit `24e2b121591cc86b7c50404970235de7b445de2c`.
-- Imported `WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED` and `WK-AUTONOMOUS-PRONE-IDLE-FRONT-CANDIDATE-v4` as two independent owner-QA profiles.
-- V3R1 retains the historical side-prone pose so its recovered intro, side-prone idle, and exit can be reviewed continuously. V4 contains only the independent forward-prone calm loop and one-shot lick microevent.
+- Imported `WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED` and `WK-AUTONOMOUS-PRONE-IDLE-FRONT-CANDIDATE-v4` as two independent runtime profiles.
+- V3R1 retains the historical side-prone pose. Its autonomous full lifecycle is composed as `intro -> legacy-side-prone loop -> exit`; its stand and sit microloops are additional posture-compatible daily candidates. V4 contains the independent forward-prone calm loop and one-shot lick microevent.
 - No side-prone to forward-prone bridge exists. The catalog, manifests, review guide, and developer panel explicitly prohibit treating a switch between these profiles as a valid lifecycle transition.
-- The V4 lick is eligible only from `Prone`, is one-shot, returns to its byte-identical stable anchor, and records a proposed 45-120 second cooldown. Its autonomous binding remains disabled.
+- The V4 lick is eligible only in the V4 forward-prone profile, is one-shot, returns to its byte-identical stable anchor, and retains a 45-120 second source cooldown range with a minimum 45-second runtime gate. The profile is entered only from the approved `EatProne` terminal anchor with the same SHA-256; a generic prone state cannot hard-cut into V4.
 - The active V2 lifecycle manifest and runtime bindings are unchanged. Existing command, magic, car ride, and autonomous daily review areas remain available.
-- Owner visual QA passed on 2026-08-26 for the seven entries actually shown in the review panel, excluding the separately rejected `摸摸回应` batch. Both lifecycle batches now record `visual_approved=true` and `runtime_validation=owner_visual_qa_passed_runtime_behavior_pending`.
-- Visual approval does not open runtime gates. Both batches remain `asset_stage=production_candidate_owner_qa_pending`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, and `autonomous_binding_enabled=false`.
-- The V4 stable anchor retains `anchor_owner_visual_approved=true`; that anchor-only fact does not approve either sequence.
-- Current stage: visual review passed and wired only for isolated `DeveloperPreview`; runtime behavior revalidation remains pending after scale, effect recovery, and scheduling fixes. No runtime approval is claimed.
+- Owner Windows runtime QA passed on 2026-08-26 for all seven entries actually shown in the review panel, excluding the separately rejected `摸摸回应` batch.
+- Both lifecycle batches now record `asset_stage=runtime_approved_autonomous_daily`, `visual_approved=true`, `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, and `autonomous_binding_enabled=true` in their Wukong approval overlays.
+- The frozen source `manifest.json`, `SHA256SUMS`, and all PNG bytes remain unchanged. V2 remains active; this approval adds V3R1/V4 choices rather than replacing V2.
+- Runtime scope is autonomous daily behavior plus isolated `DeveloperPreview`. It does not add owner commands, dialogue/model routing, magic, car ride, or startup autoplay.
 
 ## 2026-08-26 lifecycle review runtime corrections
 
 - Normal asset cards now show visual approval, runtime approval, active use, autonomous binding, deprecation, source batch, and action ID separately. Deprecated assets are hidden by default and available through an explicit expired-only filter.
-- Formal autonomous runtime uses an explicit allowlist containing only the approved P2 stand, sit, prone, and full lifecycle behaviors. The Behavior Agent Mock uses a separate daily allowlist. Jump, spin, shake-hand, eat command, magic, and car ride cannot enter either autonomous pool; explicit owner commands and developer previews remain available where their own gates allow them.
+- Formal autonomous runtime uses an explicit allowlist containing approved P2 lifecycle actions plus the approved V3R1 full lifecycle/stand/sit actions and the V4 forward-prone calm/lick profile. The Behavior Agent Mock uses a separate daily allowlist. Jump, spin, shake-hand, eat command, magic, and car ride cannot enter either autonomous pool; explicit owner commands and developer previews remain available where their own gates allow them.
 - Pet scaling is a persistent global user scale in the 50%-250% range multiplied by the action-local presentation scale. Normal, command, magic, car ride, and coin rendering share the same user factor and preserve the bottom-center ground anchor across changes.
 - Car ride startup records request-pipeline, scale calculation, first-frame decode, and first-visible timings. The first frame is shown before motion starts; only startup/current-direction frames are prefetched through the existing bounded 36-frame frozen bitmap cache.
 - Accio Broom uses the pet's current monitor work area and a larger safe route targeting 20%-28% horizontal and 24%-32% vertical travel before returning near its start point. The developer panel reports measured pixel travel.

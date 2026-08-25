@@ -915,28 +915,30 @@ public sealed class DesktopMotionCatalog
 
             if (manifest?.Actions is null ||
                 !string.Equals(manifest.BatchId, assetBatch, StringComparison.Ordinal) ||
-                manifest.RuntimeApproved || manifest.RuntimeUse || manifest.ProductionAsset || !manifest.VisualApproved ||
-                !string.Equals(manifest.RuntimeValidation, "owner_visual_qa_passed_runtime_behavior_pending", StringComparison.Ordinal))
+                !manifest.RuntimeApproved || !manifest.RuntimeUse || !manifest.ProductionAsset || !manifest.VisualApproved ||
+                !string.Equals(manifest.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal))
             {
-                BootstrapLog.WriteRaw($"lifecycle_review_manifest_gate_invalid batch={assetBatch}");
+                BootstrapLog.WriteRaw($"lifecycle_approved_manifest_gate_invalid batch={assetBatch}");
                 continue;
             }
 
             var batchRoot = Path.GetDirectoryName(manifestPath)!;
+            var loaded = new List<PlayableMotion>();
             foreach (var action in manifest.Actions)
             {
                 var errors = new List<string>();
                 if (!action.BehaviorId.StartsWith("wk.candidate.", StringComparison.Ordinal))
                     errors.Add("candidate_namespace_required");
-                if (action.RuntimeApproved || action.RuntimeUse || action.ProductionAsset || action.PrototypeUse || action.AutonomousBindingEnabled)
-                    errors.Add("candidate_gate_open");
+                if (!action.RuntimeApproved || !action.RuntimeUse || !action.ProductionAsset || action.PrototypeUse || !action.AutonomousBindingEnabled)
+                    errors.Add("approved_runtime_gate_closed");
                 if (!action.VisualApproved)
                     errors.Add("owner_visual_approval_required");
-                if (action.AllowedSources is null || action.AllowedSources.Count != 1 ||
-                    !string.Equals(action.AllowedSources[0], "DeveloperPreview", StringComparison.Ordinal))
-                    errors.Add("developer_preview_only_required");
-                if (!string.Equals(action.RuntimeValidation, "owner_visual_qa_passed_runtime_behavior_pending", StringComparison.Ordinal))
-                    errors.Add("runtime_behavior_validation_not_pending");
+                if (action.AllowedSources is null ||
+                    !action.AllowedSources.Contains("AutonomousTick", StringComparer.Ordinal) ||
+                    !action.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
+                    errors.Add("approved_source_policy_invalid");
+                if (!string.Equals(action.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal))
+                    errors.Add("runtime_renderer_qa_not_passed");
                 if (string.Equals(assetBatch, LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch, StringComparison.Ordinal) &&
                     (action.FromPose.Contains("front", StringComparison.OrdinalIgnoreCase) || action.ToPose.Contains("front", StringComparison.OrdinalIgnoreCase)) &&
                     action.LegacySideProne)
@@ -981,35 +983,62 @@ public sealed class DesktopMotionCatalog
                 }
 
                 var warning = action.LegacySideProne
-                    ? "Historical side-prone continuity review; do not splice to the V4 forward-prone candidate."
-                    : "Owner visual QA passed; runtime behavior approval remains pending.";
-                yield return new PlayableMotion(
+                    ? "Approved side-prone continuity; never splice to the V4 forward-prone profile."
+                    : "Owner Windows review passed; approved only for the explicit autonomous lifecycle mapping.";
+                loaded.Add(new PlayableMotion(
                     action.BehaviorId,
                     action.DisplayName,
-                    "基础动作候审",
+                    "基础动作",
                     action.Direction,
                     action.FrameDurationMs,
                     action.Interruptible,
                     phases,
                     Path.Combine(batchRoot, action.SourceFolder.Replace('/', Path.DirectorySeparatorChar)),
-                    RuntimeEnabled: false,
-                    Status: "视觉已通过；运行行为验收待完成",
-                    MissingContent: "runtime behavior QA and explicit runtime approval",
+                    RuntimeEnabled: action.RuntimeApproved && action.RuntimeUse,
+                    Status: "Windows renderer QA passed; runtime enabled",
+                    MissingContent: "None",
                     StartPose: action.FromPose,
                     EndPose: action.ToPose,
                     StyleGroup: string.Equals(assetBatch, LifecycleReviewCandidateBehaviorIds.V4AssetBatch, StringComparison.Ordinal)
                         ? "wukong-light-malt-gold-front-prone-v4"
                         : "wukong-lifecycle-v3r1-recovered",
-                    Disposition: "视觉已通过 · 未启用",
+                    Disposition: "已启用",
                     PrototypeUse: false,
                     AssetBatch: manifest.BatchId,
                     Description: $"{action.Description} source={manifest.BatchId}; expired_pixel_contribution=false; {warning}",
                     CandidateProfile: manifest.CandidateProfile,
                     VisualScale: ApprovedPetVisualScale,
-                    VisualApproved: true,
-                    RuntimeApproved: false,
-                    AutonomousBindingEnabled: false);
+                    VisualApproved: action.VisualApproved,
+                    RuntimeApproved: action.RuntimeApproved,
+                    AutonomousBindingEnabled: action.AutonomousBindingEnabled));
             }
+
+            if (string.Equals(assetBatch, LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch, StringComparison.Ordinal))
+            {
+                var introIndex = loaded.FindIndex(x => string.Equals(x.BehaviorId, LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1, StringComparison.Ordinal));
+                var proneLoop = loaded.FirstOrDefault(x => string.Equals(x.BehaviorId, LifecycleReviewCandidateBehaviorIds.LegacySideProneIdleV3R1, StringComparison.Ordinal));
+                var exit = loaded.FirstOrDefault(x => string.Equals(x.BehaviorId, LifecycleReviewCandidateBehaviorIds.LivelyDailyExitV3R1, StringComparison.Ordinal));
+                if (introIndex < 0 || proneLoop is null || exit is null)
+                {
+                    BootstrapLog.WriteRaw("lifecycle_v3r1_composition_missing");
+                    continue;
+                }
+
+                var intro = loaded[introIndex];
+                loaded[introIndex] = intro with
+                {
+                    Phases = new[]
+                    {
+                        intro.Phases.Single(x => string.Equals(x.Name, "intro", StringComparison.OrdinalIgnoreCase)),
+                        proneLoop.Phases.Single(x => string.Equals(x.Name, "loop", StringComparison.OrdinalIgnoreCase)),
+                        exit.Phases.Single(x => string.Equals(x.Name, "exit", StringComparison.OrdinalIgnoreCase))
+                    },
+                    Description = $"{intro.Description} Runtime composition is intro -> legacy-side-prone loop -> exit; V4 is never hard-spliced."
+                };
+            }
+
+            foreach (var motion in loaded)
+                yield return motion;
         }
     }
 
@@ -1941,7 +1970,12 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             LifecycleCandidateBehaviorIds.StandIdleMicroloop,
             LifecycleCandidateBehaviorIds.SitIdleMicroloop,
             LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
-            LifecycleCandidateBehaviorIds.LivelyDailyP2
+            LifecycleCandidateBehaviorIds.LivelyDailyP2,
+            LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1,
+            LifecycleReviewCandidateBehaviorIds.StandIdleV3R1,
+            LifecycleReviewCandidateBehaviorIds.SitIdleV3R1,
+            LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
+            LifecycleReviewCandidateBehaviorIds.FrontProneLickV4
         };
     private readonly DesktopMotionCatalog _catalog;
     private readonly PetrifiedCoinAssets? _coinAssets;
@@ -1971,6 +2005,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private DateTimeOffset? _coinActivityAt;
     private DateTimeOffset? _lastInitiativeSpeechAt;
     private BehaviorRequestSource _coinPreviewSource = BehaviorRequestSource.OwnerContextMenu;
+    private bool _frontProneProfileActive;
 
     public DesktopRuntimeHost(PetrifiedCoinOptions? coinOptions = null, Func<DateTimeOffset>? now = null)
     {
@@ -2397,6 +2432,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         string.Equals(behaviorId, LifecycleCandidateBehaviorIds.StandIdleMicroloop, StringComparison.OrdinalIgnoreCase) ||
         string.Equals(behaviorId, LifecycleCandidateBehaviorIds.SitIdleMicroloop, StringComparison.OrdinalIgnoreCase) ||
         string.Equals(behaviorId, LifecycleCandidateBehaviorIds.ProneIdleMicroloop, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(behaviorId, LifecycleReviewCandidateBehaviorIds.StandIdleV3R1, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(behaviorId, LifecycleReviewCandidateBehaviorIds.SitIdleV3R1, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(behaviorId, LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4, StringComparison.OrdinalIgnoreCase) ||
         behaviorId.StartsWith(StableHoldPrefix, StringComparison.OrdinalIgnoreCase);
 
     private void TraceDecision(PetDecision decision, string trigger)
@@ -2551,6 +2589,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             var completedRequestMotion = _currentMotion;
             _currentInterruptible = true;
             CompletePendingAgentDecision(completed: true, $"motion_complete:{phase}");
+            _frontProneProfileActive = string.Equals(behaviorId, MockCommandActionIds.EatProne, StringComparison.OrdinalIgnoreCase) &&
+                _agentState.CurrentPosture == StablePosture.Prone;
             Trace("mock_motion_completed", $"{behaviorId} phase={phase} posture={_agentState.CurrentPosture}");
             OnPropertyChanged(nameof(BehaviorAgentSnapshot));
             StartCommandEndPoseHold(behaviorId, _agentState.CurrentPosture, $"command_complete:{behaviorId}", completedRequestMotion);
@@ -2590,6 +2630,38 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         }
 
         if (completedMotion is not null &&
+            LifecycleReviewCandidateBehaviorIds.AssetBatches.Contains(completedMotion.AssetBatch))
+        {
+            var completedFullLifecycle = string.Equals(
+                completedMotion.BehaviorId,
+                LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1,
+                StringComparison.OrdinalIgnoreCase);
+            var posture = completedFullLifecycle
+                ? StablePosture.Stand
+                : StablePostureFromPose(completedMotion.EndPose, _agentState.CurrentPosture);
+            _frontProneProfileActive = posture == StablePosture.Prone &&
+                (string.Equals(completedMotion.BehaviorId, LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(completedMotion.BehaviorId, LifecycleReviewCandidateBehaviorIds.FrontProneLickV4, StringComparison.OrdinalIgnoreCase));
+            _agentState = _agentState with
+            {
+                CurrentPosture = posture,
+                LastActionId = behaviorId,
+                RepeatedActionCount = string.Equals(_agentState.LastActionId, behaviorId, StringComparison.OrdinalIgnoreCase)
+                    ? _agentState.RepeatedActionCount + 1
+                    : 0,
+                IsBusy = false,
+                ActiveActionId = null,
+                Energy = Clamp01(_agentState.Energy - (completedFullLifecycle ? 0.055 : 0.004)),
+                Boredom = Clamp01(_agentState.Boredom - (completedFullLifecycle ? 0.13 : 0.02)),
+                MoodValence = Clamp01(_agentState.MoodValence + (completedFullLifecycle ? 0.015 : 0.002))
+            };
+            Trace("approved_lifecycle_motion_completed", $"{behaviorId} phase={phase} posture={posture} front_prone={_frontProneProfileActive}");
+            RaiseMetrics();
+            StartStablePostureIdle(posture, $"approved_lifecycle_complete:{behaviorId}");
+            return;
+        }
+
+        if (completedMotion is not null &&
             string.Equals(completedMotion.AssetBatch, AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
         {
             var posture = StablePostureFromPose(completedMotion.EndPose, _agentState.CurrentPosture);
@@ -2625,6 +2697,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         {
             StablePosture.Stand => LifecycleCandidateBehaviorIds.StandIdleMicroloop,
             StablePosture.Sit => LifecycleCandidateBehaviorIds.SitIdleMicroloop,
+            StablePosture.Prone when _frontProneProfileActive => LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
             StablePosture.Prone => LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
             _ => Phase15BehaviorIds.ProneIdle
         };
@@ -2951,18 +3024,40 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             case StablePosture.Stand:
                 AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.StandIdleMicroloop,
                     0.52 + Comfort * 0.18 + (1 - _agentState.Arousal) * 0.10 + (workQuiet ? 0.14 : 0.04), "autonomous:stable_stand_microloop");
+                AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.StandIdleV3R1,
+                    0.48 + Comfort * 0.16 + (1 - _agentState.Arousal) * 0.08 + (workQuiet ? 0.12 : 0.04), "autonomous:approved_v3r1_stand_microloop");
                 if (elapsed >= TimeSpan.FromSeconds(24) && Energy >= 0.28 && Stress < 0.68)
+                {
                     AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.LivelyDailyP2,
                         0.32 + Curiosity * 0.46 + _agentState.Boredom * 0.30 + Mood * 0.18 + Energy * 0.22 - Stress * 0.55 + _temperament.Activity01 * 0.18 + _temperament.Mischief01 * 0.08 + (workQuiet ? 0 : 0.12),
                         Energy < 0.38 ? "autonomous:state_driven_rest_lifecycle" : "autonomous:state_driven_lively_daily");
+                    AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1,
+                        0.27 + Curiosity * 0.40 + _agentState.Boredom * 0.26 + Mood * 0.16 + Energy * 0.18 - Stress * 0.52 + (workQuiet ? 0 : 0.10),
+                        "autonomous:approved_v3r1_complete_lifecycle");
+                }
                 break;
             case StablePosture.Sit:
                 AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.SitIdleMicroloop,
                     0.82 + Comfort * 0.12 + (workQuiet ? 0.14 : 0.03), "autonomous:stable_sit_microloop");
+                AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.SitIdleV3R1,
+                    0.72 + Comfort * 0.10 + (workQuiet ? 0.12 : 0.03), "autonomous:approved_v3r1_sit_microloop");
                 break;
             default:
-                AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
-                    0.86 + Comfort * 0.14 + (workQuiet ? 0.16 : 0.04), "autonomous:stable_prone_microloop");
+                if (_frontProneProfileActive)
+                {
+                    AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
+                        0.90 + Comfort * 0.14 + (workQuiet ? 0.16 : 0.04), "autonomous:approved_v4_front_prone_calm");
+                    var lickReady = !_lastAccepted.TryGetValue(LifecycleReviewCandidateBehaviorIds.FrontProneLickV4, out var lastLick) ||
+                        _now() - lastLick >= TimeSpan.FromSeconds(45);
+                    if (lickReady && string.Equals(_currentBehaviorId, LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4, StringComparison.OrdinalIgnoreCase))
+                        AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.FrontProneLickV4,
+                            0.08 + Curiosity * 0.06 + Mood * 0.04, "autonomous:approved_v4_single_lick_microevent");
+                }
+                else
+                {
+                    AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
+                        0.86 + Comfort * 0.14 + (workQuiet ? 0.16 : 0.04), "autonomous:stable_prone_microloop");
+                }
                 break;
         }
 

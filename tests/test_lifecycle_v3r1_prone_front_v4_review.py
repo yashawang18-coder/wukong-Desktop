@@ -64,23 +64,28 @@ class LifecycleV3R1ProneFrontV4ReviewTests(unittest.TestCase):
         self.assertFalse(lick["phases"][0]["loop"])
         self.assertEqual(["Prone"], lick["eligible_postures"])
         self.assertEqual((45000, 120000), (lick["cooldown_min_ms"], lick["cooldown_max_ms"]))
-        self.assertFalse(lick["autonomous_binding_enabled"])
+        self.assertTrue(lick["autonomous_binding_enabled"])
 
-    def test_both_profiles_are_review_only_and_never_hard_spliced(self):
+    def test_both_profiles_are_runtime_approved_and_never_hard_spliced(self):
         for batch in (V3, V4):
             asset = json.loads((batch / "asset.json").read_text(encoding="utf-8"))
             review = json.loads((batch / "runtime-review-manifest.json").read_text(encoding="utf-8"))
             for document in (asset, review):
-                self.assertEqual("production_candidate_owner_qa_pending", document["asset_stage"])
-                self.assertEqual("owner_visual_qa_passed_runtime_behavior_pending", document["runtime_validation"])
+                self.assertEqual("runtime_approved_autonomous_daily", document["asset_stage"])
+                self.assertEqual("passed_windows_renderer_qa", document["runtime_validation"])
                 self.assertTrue(document["visual_approved"])
-                self.assertFalse(document["runtime_approved"])
-                self.assertFalse(document["runtime_use"])
-                self.assertFalse(document["production_asset"])
-                self.assertFalse(document["autonomous_binding_enabled"])
+                self.assertTrue(document["runtime_approved"])
+                self.assertTrue(document["runtime_use"])
+                self.assertTrue(document["production_asset"])
+                self.assertTrue(document["autonomous_binding_enabled"])
                 self.assertIn("no", document["bridge_policy"].lower())
             for action in review["actions"]:
-                self.assertEqual(["DeveloperPreview"], action["allowed_sources"])
+                self.assertEqual(["AutonomousTick", "DeveloperPreview"], action["allowed_sources"])
+                self.assertEqual("passed_windows_renderer_qa", action["runtime_validation"])
+                self.assertTrue(action["runtime_approved"])
+                self.assertTrue(action["runtime_use"])
+                self.assertTrue(action["production_asset"])
+                self.assertTrue(action["autonomous_binding_enabled"])
                 self.assertFalse(action["prototype_use"])
                 self.assertFalse(action["expired_pixel_contribution"])
 

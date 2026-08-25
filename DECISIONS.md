@@ -322,3 +322,24 @@ Restrictions:
 - Permit autonomous selection only for approved stable posture idles, breathing, blink, minor observation/adjustment, and separately approved low-frequency daily lifecycle behavior.
 - Keep jump and spin available to explicit owner commands and eligible developer preview, but never derive them through tags, fallback, shared frames, or random autonomous sampling.
 - Keep V3R1 and forward-prone V4 independent until an approved bridge exists; visual approval does not permit a hard splice or runtime activation.
+
+## 2026-08-26 - approve V3R1 and V4 for constrained autonomous daily runtime
+
+Decision:
+
+Promote all seven reviewed V3R1/V4 entries after explicit owner Windows runtime approval. Record `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, and enable their constrained autonomous bindings.
+
+Reason:
+
+The owner completed the review build validation after the scale, scheduling, effect-recovery, and startup-performance corrections and explicitly approved the seven entries for autonomous daily use. Jump and spin remain inappropriate as spontaneous daily behavior and stay outside every autonomous allowlist.
+
+Restrictions:
+
+- Preserve the frozen source manifests, SHA inventories, and PNG bytes; runtime approval is recorded only in Wukong `asset.json` and `runtime-review-manifest.json` overlays.
+- Compose V3R1 only as its own `intro -> legacy-side-prone loop -> exit` lifecycle. Its exit and legacy-side loop may serve that composition without becoming unrelated top-level random actions.
+- Keep V3R1 side-prone and V4 forward-prone profiles independent. Never hard-cut or concatenate them without a separately approved bridge.
+- Enter the V4 profile only from its exact approved forward-prone anchor. The approved `EatProne` terminal frame provides the byte-identical anchor; a generic prone state does not.
+- Keep V4 lick a one-shot low-frequency microevent that returns to the same anchor.
+- Keep jump, spin, shake-hand, eat command, magic, car ride, dialogue/model actions, and all command-only behavior outside autonomous daily selection.
+- Preserve owner command and developer preview access to jump and spin; this decision changes only autonomous eligibility.
+- Keep V2 runtime bindings active; V3R1/V4 are additive rather than destructive replacements.

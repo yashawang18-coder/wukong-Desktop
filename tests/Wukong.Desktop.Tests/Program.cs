@@ -40,10 +40,11 @@ var tests = new (string Name, Action Run)[]
     ("phase15 motion assets are copied and decodable", Phase15MotionAssetsAreCopiedAndDecodable),
     ("lifecycle microloop candidates are indexed and gated", LifecycleMicroloopCandidatesAreIndexedAndGated),
     ("developer lifecycle candidate can request playback", DeveloperLifecycleCandidateCanRequestPlayback),
-    ("V3R1 and forward-prone V4 review profiles stay separate and gated", LifecycleReviewCandidateTests.CatalogKeepsBothProfilesSeparateAndGated),
+    ("V3R1 and forward-prone V4 approved profiles stay separate", LifecycleReviewCandidateTests.CatalogKeepsApprovedProfilesSeparate),
     ("lifecycle review uses the existing developer request path", LifecycleReviewCandidateTests.DeveloperPreviewUsesTheExistingBehaviorRequestPath),
-    ("lifecycle review manifests and panel keep gates closed", LifecycleReviewCandidateTests.ManifestsAndPanelKeepReviewGatesClosed),
-    ("autonomous ticks cannot select lifecycle review candidates", LifecycleReviewCandidateTests.AutonomousTicksNeverSelectReviewCandidates),
+    ("lifecycle manifests and panel show approved runtime state", LifecycleReviewCandidateTests.ManifestsAndPanelShowApprovedRuntimeState),
+    ("autonomous ticks use approved daily actions without commands", LifecycleReviewCandidateTests.AutonomousTicksUseApprovedDailyAllowlistWithoutCommands),
+    ("forward-prone profile requires the matching approved anchor", LifecycleReviewCandidateTests.ForwardProneProfileRequiresMatchingApprovedAnchor),
     ("autonomous allowlist excludes command-only jump and spin", AutonomousAllowlistExcludesCommandOnlyActions),
     ("autonomous daily candidates are indexed and remain gated", AutonomousDailyCandidatesAreIndexedAndRemainGated),
     ("developer autonomous daily candidate can request playback", DeveloperAutonomousDailyCandidateCanRequestPlayback),
@@ -1182,6 +1183,7 @@ static void ReportedCommandTerminalHoldsKeepRenderScale()
         {
             StablePosture.Stand => LifecycleCandidateBehaviorIds.StandIdleMicroloop,
             StablePosture.Sit => LifecycleCandidateBehaviorIds.SitIdleMicroloop,
+            StablePosture.Prone when item.Command == "Eat" => LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
             StablePosture.Prone => LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
             _ => throw new InvalidOperationException("unexpected posture")
         };
@@ -2311,7 +2313,9 @@ static void AutonomousTickCanRequestMotion()
     Assert(runtime.CurrentStablePosture == StablePosture.Stand, "default healthy runtime state should start in stable stand");
     Assert(requests.Last().Motion.BehaviorId == LifecycleCandidateBehaviorIds.StandIdleMicroloop, "startup is still hard-coded to prone idle");
 
-    for (var attempt = 0; attempt < 8 && requests.All(x => x.Motion.BehaviorId != LifecycleCandidateBehaviorIds.LivelyDailyP2); attempt++)
+    for (var attempt = 0; attempt < 8 && requests.All(x =>
+             x.Motion.BehaviorId != LifecycleCandidateBehaviorIds.LivelyDailyP2 &&
+             x.Motion.BehaviorId != LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1); attempt++)
     {
         typeof(DesktopRuntimeHost)
             .GetField("_currentStartedAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
@@ -2324,8 +2328,8 @@ static void AutonomousTickCanRequestMotion()
 
     Assert(runtime.Energy < energyBeforeTick, "unified runtime state did not reduce energy during autonomous ticks");
     Assert(runtime.Hunger > hungerBeforeTick, "unified runtime state did not increase hunger during autonomous ticks");
-    Assert(requests.Any(x => x.Motion.BehaviorId == LifecycleCandidateBehaviorIds.LivelyDailyP2), "state-driven autonomous scheduling never selected the complete lively lifecycle");
-    Assert(requests.All(x => x.Motion.BehaviorId is LifecycleCandidateBehaviorIds.ProneIdleMicroloop or LifecycleCandidateBehaviorIds.SitIdleMicroloop or LifecycleCandidateBehaviorIds.StandIdleMicroloop or LifecycleCandidateBehaviorIds.LivelyDailyP2), "autonomous tick selected an expired or out-of-scope behavior");
+    Assert(requests.Any(x => x.Motion.BehaviorId is LifecycleCandidateBehaviorIds.LivelyDailyP2 or LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1), "state-driven autonomous scheduling never selected an approved complete lively lifecycle");
+    Assert(requests.All(x => x.Motion.BehaviorId is LifecycleCandidateBehaviorIds.ProneIdleMicroloop or LifecycleCandidateBehaviorIds.SitIdleMicroloop or LifecycleCandidateBehaviorIds.StandIdleMicroloop or LifecycleCandidateBehaviorIds.LivelyDailyP2 or LifecycleReviewCandidateBehaviorIds.StandIdleV3R1 or LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1), "autonomous tick selected an expired or out-of-scope behavior");
 }
 
 static void BootstrapLogRedactsAndDoesNotThrow()
