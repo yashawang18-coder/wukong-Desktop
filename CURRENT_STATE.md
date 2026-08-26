@@ -7,6 +7,7 @@
 - A repository-wide, fail-closed mirror audit covers 26 action packages. None currently declares an explicit safe mirror contract, so no full-frame mirror derivative is generated or runtime-integrated. Native opposite-direction car/broom art remains authoritative; tail direction, paw handedness, prop orientation, text/effects, and approved pixel identity are never inferred to be mirror-safe.
 - `.gitattributes` now forces repository text files to LF while preserving image/archive binaries, closing the Windows checkout CRLF/hash mismatch that failed the earlier workflow.
 - Local Python asset/provenance validation and the branch's Windows WPF decoder/build/test workflow are the promotion prerequisites. No `passed_windows_renderer_qa` claim is recorded before that workflow succeeds.
+- The fail-closed release candidate is published on `agent/car-prone-runtime-release-v1` from remote commit `9f00fd54fc4d4dac0f2b2e67da52443594f9d659`; a subsequent ordinary branch commit triggers the required Windows workflow while revised v5 owner visual review remains pending.
 
 ## Autonomous daily candidate and interaction decisions - 2026-08-23
 
