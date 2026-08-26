@@ -1416,7 +1416,7 @@ public sealed class DesktopMotionCatalog
             AssetBatch: manifest.AssetId,
             Effect: DesktopMotionEffect.CarRide,
             DirectionalFrames: BuildCarRideDirectionalFrames(manifest, batchRoot),
-            NamedSequences: BuildCarRideNamedSequences(manifest, batchRoot),
+            NamedSequences: BuildCarRideNamedSequences(manifest, batchRoot, root),
             Description: "Owner-only car ride v8 runtime approved interaction",
             CandidateProfile: manifest.AssetId,
             VisualScale: 1.18,
@@ -1450,18 +1450,76 @@ public sealed class DesktopMotionCatalog
         return result;
     }
 
-    private static IReadOnlyDictionary<string, IReadOnlyList<string>> BuildCarRideNamedSequences(CarRideCandidateManifest manifest, string batchRoot)
+    private static IReadOnlyDictionary<string, IReadOnlyList<string>> BuildCarRideNamedSequences(
+        CarRideCandidateManifest manifest,
+        string batchRoot,
+        string assetRoot)
     {
         if (manifest.AllSequences is null)
             return new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
 
-        return manifest.AllSequences.ToDictionary(
+        var result = manifest.AllSequences.ToDictionary(
             entry => entry.Key,
             entry => (IReadOnlyList<string>)entry.Value
                 .Select(relative => Path.Combine(batchRoot, relative.Replace('/', Path.DirectorySeparatorChar)))
                 .Where(File.Exists)
                 .ToArray(),
             StringComparer.OrdinalIgnoreCase);
+
+        var extensionPath = Path.Combine(
+            assetRoot,
+            "action-batches",
+            CarRideBehaviorIds.RoadGazeAssetBatch,
+            "manifest.json");
+        if (!File.Exists(extensionPath))
+            return result;
+
+        try
+        {
+            var extension = JsonSerializer.Deserialize<CarRideRoadGazeManifest>(
+                File.ReadAllText(extensionPath),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (extension is null ||
+                !extension.RuntimeApproved ||
+                !extension.RuntimeUse ||
+                !string.Equals(extension.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.OrdinalIgnoreCase))
+            {
+                BootstrapLog.WriteRaw("car_ride_road_gaze_extension_gate_closed");
+                return result;
+            }
+
+            var extensionRoot = Path.GetDirectoryName(extensionPath)!;
+            foreach (var entry in extension.Sequences)
+            {
+                if (entry.Key is not ("road-gaze/left" or "road-gaze/right") ||
+                    entry.Value.Count < 6 ||
+                    entry.Value.Count % 6 != 0)
+                    continue;
+
+                var frames = new List<string>(entry.Value.Count);
+                var valid = true;
+                foreach (var frame in entry.Value)
+                {
+                    var path = Path.Combine(extensionRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar));
+                    if (!File.Exists(path) ||
+                        new FileInfo(path).Length != frame.Bytes ||
+                        !string.Equals(Sha256(path), frame.Sha256, StringComparison.OrdinalIgnoreCase))
+                    {
+                        valid = false;
+                        break;
+                    }
+                    frames.Add(path);
+                }
+                if (valid)
+                    result[entry.Key] = frames;
+            }
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Car ride road-gaze extension parse failed", ex);
+        }
+
+        return result;
     }
 
     private static string Sha256(string path)
@@ -1575,6 +1633,7 @@ public static class InteractionBehaviorIds
 public static class CarRideBehaviorIds
 {
     public const string AssetBatch = "WK-INTERACTION-CAR-RIDE-CANDIDATE-v8";
+    public const string RoadGazeAssetBatch = "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v9";
     public const string CarRide = "wk.interaction.car_ride";
 
     public static readonly IReadOnlySet<string> PrototypeWhitelist =
@@ -1750,6 +1809,17 @@ public sealed record CarRideCandidateManifest(
     [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
     [property: JsonPropertyName("all_sequences")] IReadOnlyDictionary<string, IReadOnlyList<string>>? AllSequences,
     [property: JsonPropertyName("phases")] IReadOnlyList<LifecycleCandidatePhaseManifest> Phases);
+
+public sealed record CarRideRoadGazeManifest(
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("sequences")] IReadOnlyDictionary<string, IReadOnlyList<CarRideRoadGazeFrameManifest>> Sequences);
+
+public sealed record CarRideRoadGazeFrameManifest(
+    [property: JsonPropertyName("path")] string Path,
+    [property: JsonPropertyName("sha256")] string Sha256,
+    [property: JsonPropertyName("bytes")] long Bytes);
 
 public sealed record MagicMockBatchManifest(    [property: JsonPropertyName("batch_id")] string BatchId,
     [property: JsonPropertyName("identity_profile")] string IdentityProfile,

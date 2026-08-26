@@ -77,6 +77,7 @@ var tests = new (string Name, Action Run)[]
     ("broom direction quantizer covers eight directions", BroomDirectionQuantizerCoversEightDirections),
     ("car ride direction quantizer matches v8 directions", CarRideDirectionQuantizerMatchesV8Directions),
     ("showcase durations and physical routes stay bounded", ShowcaseDurationsAndPhysicalRoutesStayBounded),
+    ("car ride road gaze waits for eligible straight cruise", CarRideRoadGazeWaitsForEligibleStraightCruise),
     ("broom route has visible work-area travel", BroomRouteHasVisibleWorkAreaTravel),
     ("apparate target stays visible and relocates", ApparateTargetStaysVisibleAndRelocates),
     ("control panel exposes magic specials tab", ControlPanelExposesMagicSpecialsTab),
@@ -1905,19 +1906,51 @@ static void ShowcaseDurationsAndPhysicalRoutesStayBounded()
     var start = new Point(320, 280);
     var expectedDuration = TimeSpan.FromSeconds(16);
     var route = MainWindow.BuildCarRidePhysicalRoute(start, workArea, 320, 320, expectedDuration, new Random(240821));
-    Assert(route.Count >= 5, "car ride route did not retain enough long physical segments");
+    Assert(route.Count >= 7, "car ride route did not retain enough physical segments");
     Assert(Math.Abs(route.Sum(x => x.Duration.TotalMilliseconds) - expectedDuration.TotalMilliseconds) < 1, "car ride route duration drifted");
     Assert(route[0].Easing == MotionEasing.Accelerate && route[^1].Easing == MotionEasing.Decelerate, "car ride did not accelerate and brake at route boundaries");
 
     var current = start;
     foreach (var segment in route)
     {
-        Assert(segment.Duration >= TimeSpan.FromMilliseconds(850), "car ride introduced a short jitter segment");
-        Assert(segment.Target.X >= workArea.Left && segment.Target.X <= workArea.Right - 320, "car ride route left horizontal work area");
-        Assert(segment.Target.Y >= workArea.Top && segment.Target.Y <= workArea.Bottom - 320, "car ride route left vertical work area");
-        Assert(MainWindow.ResolveCarRideDirection(current, segment.Target) == segment.Direction, "car body direction no longer matches window movement");
+        Assert(segment.Duration >= TimeSpan.FromMilliseconds(300), "car ride introduced a short jitter segment");
+        var segmentStart = segment.StartOverride ?? current;
+        if (segment.Visibility == MotionRouteVisibility.ExitOffscreen)
+            Assert(MainWindow.IsFullyOutsideWorkArea(segment.Target, workArea, 320, 320), "car ride exit did not become fully invisible");
+        else
+        {
+            Assert(segment.Target.X >= workArea.Left && segment.Target.X <= workArea.Right - 320, "car ride visible target left horizontal work area");
+            Assert(segment.Target.Y >= workArea.Top && segment.Target.Y <= workArea.Bottom - 320, "car ride visible target left vertical work area");
+        }
+        if (segment.Visibility == MotionRouteVisibility.ReenterFromOffscreen)
+            Assert(segment.StartOverride is Point hidden && MainWindow.IsFullyOutsideWorkArea(hidden, workArea, 320, 320), "car ride reentry start was visible before teleport");
+        Assert(MainWindow.ResolveCarRideDirection(segmentStart, segment.Target) == segment.Direction, "car body direction no longer matches window movement");
         current = segment.Target;
     }
+
+    var visible = new[] { start }.Concat(route.Where(x => x.Visibility != MotionRouteVisibility.ExitOffscreen).Select(x => x.Target)).ToArray();
+    Assert(visible.Max(x => x.X) - visible.Min(x => x.X) >= (workArea.Width - 320) * 0.55, "car ride horizontal activity radius is still too small");
+
+    var offscreenCounts = Enumerable.Range(1, 64)
+        .Select(seed => MainWindow.BuildCarRidePhysicalRoute(start, workArea, 320, 320, expectedDuration, new Random(seed)))
+        .Select(candidate => candidate.Count(x => x.Visibility == MotionRouteVisibility.ExitOffscreen))
+        .ToArray();
+    Assert(offscreenCounts.All(x => x is 0 or 1), "car ride produced more than one offscreen excursion");
+    Assert(offscreenCounts.Count(x => x == 1) is >= 4 and <= 24, "car ride offscreen probability left the low-frequency range");
+}
+
+static void CarRideRoadGazeWaitsForEligibleStraightCruise()
+{
+    var now = new DateTimeOffset(2026, 8, 26, 12, 0, 0, TimeSpan.Zero);
+    var eligible = new MotionRouteSegment(new Point(900, 300), "right", TimeSpan.FromSeconds(2), MotionEasing.Linear);
+    Assert(MainWindow.IsCarRoadGazeWindowEligible(eligible, 0, now, now, 0, 18), "valid road-gaze window was rejected");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible with { Direction = "front" }, 0, now, now, 0, 18), "road gaze entered a non-side cruise");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible with { Duration = TimeSpan.FromSeconds(1.7) }, 0, now, now, 0, 18), "road gaze entered a segment shorter than its 18-frame playback");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible, 2, now, now, 0, 18), "road gaze exceeded the per-ride cap");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible, 0, now.AddSeconds(1), now, 0, 18), "road gaze ignored cooldown");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible, 0, now, now, 1, 18), "road gaze did not wait for wheel-loop frame zero");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible, 0, now, now, 0, 17), "road gaze accepted a sequence not aligned to the six-frame wheel loop");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible with { Visibility = MotionRouteVisibility.ReenterFromOffscreen }, 0, now, now, 0, 18), "road gaze ran during offscreen reentry");
 }
 static void GestureInterpreterDistinguishesGestures()
 {
@@ -1988,6 +2021,8 @@ static void CarRideFirstFrameSizingUsesBoundedReferences()
     var catalog = DesktopMotionCatalog.Load(Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!);
     var car = catalog.Motions.Single(x => x.BehaviorId == CarRideBehaviorIds.CarRide);
     Assert(car.NamedSequences?.Values.Sum(x => x.Count) == 222, "car ride runtime frame mapping changed");
+    Assert(car.NamedSequences?.Keys.All(x => !x.StartsWith("road-gaze/", StringComparison.OrdinalIgnoreCase)) == true,
+        "owner-QA-pending road-gaze candidate escaped its runtime gate");
     Assert(car.ScaleReferenceFrames is { Count: > 0 and <= 6 }, "car ride first-frame sizing would scan the full asset library");
     Assert(car.ScaleReferenceFrames!.All(File.Exists), "car ride scale reference is missing");
 }
@@ -2014,13 +2049,26 @@ static void BroomRouteHasVisibleWorkAreaTravel()
     var workArea = new Rect(0, 0, 1920, 1080);
     var start = new Point(1500, 700);
     var route = MainWindow.BuildRandomFlightRoute(start, workArea, 320, 320, TimeSpan.FromSeconds(14), new Random(260826));
-    var points = new[] { start }.Concat(route.Select(x => x.Target)).ToArray();
+    var points = new[] { start }.Concat(route.Where(x => x.Visibility != MotionRouteVisibility.ExitOffscreen).Select(x => x.Target)).ToArray();
     var horizontal = points.Max(x => x.X) - points.Min(x => x.X);
     var vertical = points.Max(x => x.Y) - points.Min(x => x.Y);
-    Assert(horizontal >= workArea.Width * 0.15 && horizontal <= workArea.Width * 0.30, "broom horizontal travel is outside the reviewed range");
-    Assert(vertical >= workArea.Height * 0.20 && vertical <= workArea.Height * 0.35, "broom vertical travel is outside the reviewed range");
-    Assert(route.All(x => x.Target.X >= workArea.Left && x.Target.X <= workArea.Right - 320 && x.Target.Y >= workArea.Top && x.Target.Y <= workArea.Bottom - 320), "broom route leaves the working area");
-    Assert(MainWindow.ResolveEightWayDirection(route[^2].Target, route[^1].Target) == route[^1].Direction, "broom direction does not match travel");
+    Assert(horizontal >= workArea.Width * 0.45 && horizontal <= workArea.Width * 0.75, "broom horizontal travel is outside the expanded range");
+    Assert(vertical >= workArea.Height * 0.32 && vertical <= workArea.Height * 0.58, "broom vertical travel is outside the expanded range");
+    Assert(route.Where(x => x.Visibility == MotionRouteVisibility.Visible).All(x => x.Target.X >= workArea.Left && x.Target.X <= workArea.Right - 320 && x.Target.Y >= workArea.Top && x.Target.Y <= workArea.Bottom - 320), "broom visible route leaves the working area");
+    var previous = start;
+    foreach (var segment in route)
+    {
+        var segmentStart = segment.StartOverride ?? previous;
+        Assert(MainWindow.ResolveEightWayDirection(segmentStart, segment.Target) == segment.Direction, "broom direction does not match travel");
+        previous = segment.Target;
+    }
+
+    var offscreenCounts = Enumerable.Range(1, 64)
+        .Select(seed => MainWindow.BuildRandomFlightRoute(start, workArea, 320, 320, TimeSpan.FromSeconds(14), new Random(seed)))
+        .Select(candidate => candidate.Count(x => x.Visibility == MotionRouteVisibility.ExitOffscreen))
+        .ToArray();
+    Assert(offscreenCounts.All(x => x is 0 or 1), "broom produced more than one offscreen excursion");
+    Assert(offscreenCounts.Count(x => x == 1) is >= 4 and <= 24, "broom offscreen probability left the low-frequency range");
 }
 
 static void RuntimeRapidTapDoesNotRequestTouchMotion()

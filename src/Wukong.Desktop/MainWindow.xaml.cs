@@ -19,7 +19,21 @@ public enum MotionEasing
     EaseInOut
 }
 
-public sealed record MotionRouteSegment(Point Target, string Direction, TimeSpan Duration, MotionEasing Easing);
+public enum MotionRouteVisibility
+{
+    Visible,
+    ExitOffscreen,
+    ReenterFromOffscreen
+}
+
+public sealed record MotionRouteSegment(
+    Point Target,
+    string Direction,
+    TimeSpan Duration,
+    MotionEasing Easing,
+    MotionRouteVisibility Visibility = MotionRouteVisibility.Visible,
+    Point? StartOverride = null,
+    TimeSpan? HiddenHold = null);
 
 public sealed record EffectDisplaySnapshot(
     double UserScale,
@@ -584,7 +598,9 @@ public partial class MainWindow : Window
             var start = new Point(Left, Top);
             var duration = ChooseShowcaseDuration(_effectRandom);
             var route = BuildRandomFlightRoute(start, workArea, width, height, duration, _effectRandom);
-            var routePoints = new[] { start }.Concat(route.Select(x => x.Target)).ToArray();
+            var routePoints = new[] { start }
+                .Concat(route.Where(x => x.Visibility != MotionRouteVisibility.ExitOffscreen).Select(x => x.Target))
+                .ToArray();
             _runtime.ReportBroomFlightMetrics(
                 routePoints.Max(x => x.X) - routePoints.Min(x => x.X),
                 routePoints.Max(x => x.Y) - routePoints.Min(x => x.Y),
@@ -592,6 +608,7 @@ public partial class MainWindow : Window
             var current = start;
             foreach (var segment in route)
             {
+                current = await PrepareRouteSegmentStartAsync(current, segment, token);
                 await MoveWindowAsync(current, segment.Target, segment.Duration, token, segment.Easing);
                 current = segment.Target;
             }
@@ -714,12 +731,27 @@ public partial class MainWindow : Window
             var route = BuildCarRidePhysicalRoute(start, workArea, width, height, duration, _effectRandom);
             var current = start;
             var direction = _carRideDirection;
+            var roadGazeCount = 0;
+            var nextRoadGazeAt = DateTimeOffset.MinValue;
             foreach (var segment in route)
             {
+                current = await PrepareRouteSegmentStartAsync(current, segment, token);
                 if (!string.Equals(direction, segment.Direction, StringComparison.OrdinalIgnoreCase))
                     await PlayCarRideTurnPathAsync(request.Motion, direction, segment.Direction, token);
                 _carRideDirection = segment.Direction;
-                await MoveWindowAsync(current, segment.Target, segment.Duration, token, segment.Easing);
+                var movement = MoveWindowAsync(current, segment.Target, segment.Duration, token, segment.Easing);
+                if (CanPlayCarRoadGaze(request.Motion, segment, roadGazeCount, nextRoadGazeAt) &&
+                    _effectRandom.NextDouble() < 0.42)
+                {
+                    var key = $"road-gaze/{segment.Direction}";
+                    if (request.Motion.NamedSequences?.TryGetValue(key, out var gazeFrames) == true && gazeFrames.Count > 0)
+                    {
+                        roadGazeCount++;
+                        nextRoadGazeAt = DateTimeOffset.UtcNow.AddSeconds(_effectRandom.Next(6, 13));
+                        await PlayFramesAsync(request.Motion, $"road-gaze:{segment.Direction}", gazeFrames, token);
+                    }
+                }
+                await movement;
                 current = segment.Target;
                 direction = segment.Direction;
             }
@@ -741,6 +773,56 @@ public partial class MainWindow : Window
                 FinishCurrentMotion();
         }
     }
+
+    private async Task<Point> PrepareRouteSegmentStartAsync(
+        Point current,
+        MotionRouteSegment segment,
+        CancellationToken token)
+    {
+        if (segment.Visibility != MotionRouteVisibility.ReenterFromOffscreen || segment.StartOverride is not Point hiddenStart)
+            return current;
+
+        Left = hiddenStart.X;
+        Top = hiddenStart.Y;
+        if (segment.HiddenHold is { } hiddenHold && hiddenHold > TimeSpan.Zero)
+            await Task.Delay(hiddenHold, token);
+        return hiddenStart;
+    }
+
+    private bool CanPlayCarRoadGaze(
+        PlayableMotion motion,
+        MotionRouteSegment segment,
+        int roadGazeCount,
+        DateTimeOffset nextRoadGazeAt)
+    {
+        var key = $"road-gaze/{segment.Direction}";
+        var frameCount = 0;
+        if (motion.NamedSequences?.TryGetValue(key, out var frames) == true)
+            frameCount = frames.Count;
+        return IsCarRoadGazeWindowEligible(
+            segment,
+            roadGazeCount,
+            nextRoadGazeAt,
+            DateTimeOffset.UtcNow,
+            _frameIndex,
+            frameCount);
+    }
+
+    public static bool IsCarRoadGazeWindowEligible(
+        MotionRouteSegment segment,
+        int roadGazeCount,
+        DateTimeOffset nextRoadGazeAt,
+        DateTimeOffset now,
+        int currentFrameIndex,
+        int sequenceFrameCount) =>
+        roadGazeCount < 2 &&
+        now >= nextRoadGazeAt &&
+        segment.Visibility == MotionRouteVisibility.Visible &&
+        segment.Duration >= TimeSpan.FromMilliseconds(1800) &&
+        segment.Direction is "left" or "right" &&
+        currentFrameIndex == 0 &&
+        sequenceFrameCount >= 6 &&
+        sequenceFrameCount % 6 == 0;
     private async Task MoveWindowAsync(Point from, Point to, TimeSpan duration, CancellationToken token, MotionEasing easing = MotionEasing.EaseInOut)
     {
         if (_activeRequest?.Motion.Effect == DesktopMotionEffect.BroomFlight)
@@ -781,32 +863,39 @@ public partial class MainWindow : Window
         var maxX = Math.Max(minX, workArea.Right - width);
         var minY = workArea.Top;
         var maxY = Math.Max(minY, workArea.Bottom - height);
-        var horizontal = Math.Min(maxX - minX, workArea.Width * (0.20 + random.NextDouble() * 0.08));
-        var vertical = Math.Min(maxY - minY, workArea.Height * (0.24 + random.NextDouble() * 0.08));
-        var direction = maxX - origin.X >= origin.X - minX ? 1.0 : -1.0;
-        var riseDirection = origin.Y - minY >= maxY - origin.Y ? -1.0 : 1.0;
-        var raw = new[]
+        var availableWidth = Math.Max(1, maxX - minX);
+        var availableHeight = Math.Max(1, maxY - minY);
+        var spanX = availableWidth * (0.62 + random.NextDouble() * 0.18);
+        var spanY = availableHeight * (0.50 + random.NextDouble() * 0.22);
+        var left = Math.Clamp(origin.X - spanX * (0.42 + random.NextDouble() * 0.16), minX, maxX - spanX);
+        var top = Math.Clamp(origin.Y - spanY * (0.42 + random.NextDouble() * 0.16), minY, maxY - spanY);
+        var right = left + spanX;
+        var bottom = top + spanY;
+        var centerX = (left + right) / 2;
+        var centerY = (top + bottom) / 2;
+        var points = new List<Point>
         {
-            new Point(origin.X + direction * horizontal * 0.22, origin.Y + riseDirection * vertical * 0.72),
-            new Point(origin.X + direction * horizontal, origin.Y + riseDirection * vertical),
-            new Point(origin.X + direction * horizontal * 0.76, origin.Y + riseDirection * vertical * 0.30),
-            new Point(origin.X + direction * horizontal * 0.28, origin.Y + riseDirection * vertical * 0.58),
+            new(right, centerY + spanY * 0.24),
+            new(right - spanX * 0.18, top),
+            new(left + spanX * 0.22, top + spanY * 0.12),
+            new(left, bottom - spanY * 0.18),
+            new(centerX + spanX * 0.16, bottom),
+            new(right, centerY - spanY * 0.08),
             origin
         };
-        var points = raw.Select(point => ClampToWorkArea(point, workArea, width, height)).ToArray();
-        var weights = new[] { 0.18, 0.24, 0.22, 0.20, 0.16 };
-        var route = new List<MotionRouteSegment>(points.Length);
-        var current = origin;
-        for (var index = 0; index < points.Length; index++)
-        {
-            var target = points[index];
-            route.Add(new MotionRouteSegment(
-                target,
-                ResolveEightWayDirection(current, target),
-                TimeSpan.FromMilliseconds(totalDuration.TotalMilliseconds * weights[index]),
-                index == 0 ? MotionEasing.Accelerate : index == points.Length - 1 ? MotionEasing.Decelerate : MotionEasing.EaseInOut));
-            current = target;
-        }
+
+        var route = BuildVariablePaceRoute(
+            origin,
+            points,
+            totalDuration,
+            ResolveEightWayDirection,
+            random,
+            fastSpeedRange: (430, 620),
+            slowSpeedRange: (190, 300),
+            slowOnDirectionChange: true);
+        if (random.NextDouble() < 0.20)
+            InsertOffscreenExcursion(route, workArea, width, height, random, ResolveEightWayDirection);
+        NormalizeRouteDuration(route, totalDuration);
         return route;
     }
 
@@ -818,83 +907,158 @@ public partial class MainWindow : Window
         TimeSpan totalDuration,
         Random random)
     {
-        var directions = new[] { "right", "front-right", "front", "front-left", "left", "rear-left", "rear", "rear-right" };
-        var vectors = new[]
-        {
-            new Vector(1, 0), new Vector(0.707, 0.707), new Vector(0, 1), new Vector(-0.707, 0.707),
-            new Vector(-1, 0), new Vector(-0.707, -0.707), new Vector(0, -1), new Vector(0.707, -0.707)
-        };
         var minX = workArea.Left;
         var maxX = Math.Max(minX, workArea.Right - width);
         var minY = workArea.Top;
         var maxY = Math.Max(minY, workArea.Bottom - height);
-        var current = ClampToWorkArea(start, workArea, width, height);
-        var directionIndex = ChooseInitialCarDirection(current, minX, maxX, minY, maxY);
-        var elapsed = TimeSpan.Zero;
-        var route = new List<MotionRouteSegment>();
-
-        while (elapsed < totalDuration)
+        var origin = ClampToWorkArea(start, workArea, width, height);
+        var availableWidth = Math.Max(1, maxX - minX);
+        var availableHeight = Math.Max(1, maxY - minY);
+        var spanX = availableWidth * (0.62 + random.NextDouble() * 0.18);
+        var spanY = availableHeight * (0.38 + random.NextDouble() * 0.20);
+        var left = Math.Clamp(origin.X - spanX * (0.42 + random.NextDouble() * 0.16), minX, maxX - spanX);
+        var top = Math.Clamp(origin.Y - spanY * (0.42 + random.NextDouble() * 0.16), minY, maxY - spanY);
+        var right = left + spanX;
+        var bottom = top + spanY;
+        var centerX = (left + right) / 2;
+        var centerY = (top + bottom) / 2;
+        var ring = new List<Point>
         {
-            var remaining = totalDuration - elapsed;
-            if (remaining < TimeSpan.FromMilliseconds(850) && route.Count > 0)
-            {
-                route[^1] = route[^1] with { Duration = route[^1].Duration + remaining };
-                elapsed = totalDuration;
-                break;
-            }
-            var segmentDuration = TimeSpan.FromMilliseconds(Math.Min(remaining.TotalMilliseconds, random.Next(1750, 3201)));
-            var speed = route.Count == 0 ? 100.0 : 145.0;
-            var distance = speed * segmentDuration.TotalSeconds;
+            new(right, centerY),
+            new(right, bottom),
+            new(centerX, bottom),
+            new(left, bottom),
+            new(left, centerY),
+            new(left, top),
+            new(centerX, top),
+            new(right, top)
+        };
+        if (random.NextDouble() < 0.5)
+            ring.Reverse();
 
-            var chosenIndex = directionIndex;
-            Point target = default;
-            var found = false;
-            for (var turn = 0; turn < directions.Length; turn++)
-            {
-                var vector = vectors[chosenIndex];
-                var candidate = new Point(current.X + vector.X * distance, current.Y + vector.Y * distance);
-                if (candidate.X >= minX && candidate.X <= maxX && candidate.Y >= minY && candidate.Y <= maxY)
-                {
-                    target = candidate;
-                    found = true;
-                    break;
-                }
-                chosenIndex = (chosenIndex + 1) % directions.Length;
-            }
+        var nearestIndex = Enumerable.Range(0, ring.Count)
+            .OrderBy(index => Distance(origin, ring[index]))
+            .First();
+        var points = Enumerable.Range(1, 7)
+            .Select(offset => ring[(nearestIndex + offset) % ring.Count])
+            .ToList();
+        var route = BuildVariablePaceRoute(
+            origin,
+            points,
+            totalDuration,
+            ResolveCarRideDirection,
+            random,
+            fastSpeedRange: (280, 440),
+            slowSpeedRange: (105, 180),
+            slowOnDirectionChange: true);
+        if (random.NextDouble() < 0.20)
+            InsertOffscreenExcursion(route, workArea, width, height, random, ResolveCarRideDirection);
+        NormalizeRouteDuration(route, totalDuration);
+        return route;
+    }
 
-            if (!found)
-            {
-                var vector = vectors[chosenIndex];
-                target = ClampToWorkArea(new Point(current.X + vector.X * distance, current.Y + vector.Y * distance), workArea, width, height);
-            }
-
-            var easing = route.Count == 0 ? MotionEasing.Accelerate : MotionEasing.Linear;
-            route.Add(new MotionRouteSegment(target, directions[chosenIndex], segmentDuration, easing));
-            directionIndex = random.NextDouble() < 0.72 ? chosenIndex : (chosenIndex + 1) % directions.Length;
+    private static List<MotionRouteSegment> BuildVariablePaceRoute(
+        Point origin,
+        IReadOnlyList<Point> points,
+        TimeSpan totalDuration,
+        Func<Point, Point, string> resolveDirection,
+        Random random,
+        (double Min, double Max) fastSpeedRange,
+        (double Min, double Max) slowSpeedRange,
+        bool slowOnDirectionChange)
+    {
+        var route = new List<MotionRouteSegment>(points.Count);
+        var current = origin;
+        string? previousDirection = null;
+        for (var index = 0; index < points.Count; index++)
+        {
+            var target = points[index];
+            var direction = resolveDirection(current, target);
+            var turning = previousDirection is not null && !string.Equals(previousDirection, direction, StringComparison.OrdinalIgnoreCase);
+            var speedRange = turning && slowOnDirectionChange ? slowSpeedRange : fastSpeedRange;
+            var speed = speedRange.Min + random.NextDouble() * (speedRange.Max - speedRange.Min);
+            var seconds = Math.Max(0.55, Distance(current, target) / Math.Max(1, speed));
+            route.Add(new MotionRouteSegment(
+                target,
+                direction,
+                TimeSpan.FromSeconds(seconds),
+                index == 0 ? MotionEasing.Accelerate : turning ? MotionEasing.EaseInOut : MotionEasing.Linear));
             current = target;
-            elapsed += segmentDuration;
+            previousDirection = direction;
         }
 
         if (route.Count > 0)
             route[^1] = route[^1] with { Easing = MotionEasing.Decelerate };
+        NormalizeRouteDuration(route, totalDuration);
         return route;
     }
 
-    private static int ChooseInitialCarDirection(Point point, double minX, double maxX, double minY, double maxY)
+    private static void InsertOffscreenExcursion(
+        List<MotionRouteSegment> route,
+        Rect workArea,
+        double width,
+        double height,
+        Random random,
+        Func<Point, Point, string> resolveDirection)
     {
-        var spaces = new[]
+        if (route.Count < 4)
+            return;
+
+        var insertAt = random.Next(1, route.Count - 1);
+        var prior = route[insertAt - 1].Target;
+        var exitRight = prior.X >= workArea.Left + workArea.Width / 2;
+        var exitTarget = new Point(
+            exitRight ? workArea.Right + 24 : workArea.Left - width - 24,
+            Math.Clamp(prior.Y, workArea.Top, Math.Max(workArea.Top, workArea.Bottom - height)));
+        var entryStart = new Point(
+            exitRight ? workArea.Left - width - 24 : workArea.Right + 24,
+            Math.Clamp(workArea.Top + random.NextDouble() * Math.Max(1, workArea.Height - height), workArea.Top, Math.Max(workArea.Top, workArea.Bottom - height)));
+        var inset = Math.Min(90, Math.Max(12, workArea.Width * 0.05));
+        var entryTarget = new Point(
+            exitRight ? workArea.Left + inset : Math.Max(workArea.Left, workArea.Right - width - inset),
+            entryStart.Y);
+
+        route.Insert(insertAt, new MotionRouteSegment(
+            exitTarget,
+            resolveDirection(prior, exitTarget),
+            TimeSpan.FromMilliseconds(random.Next(700, 1101)),
+            MotionEasing.Accelerate,
+            MotionRouteVisibility.ExitOffscreen));
+        route.Insert(insertAt + 1, new MotionRouteSegment(
+            entryTarget,
+            resolveDirection(entryStart, entryTarget),
+            TimeSpan.FromMilliseconds(random.Next(800, 1251)),
+            MotionEasing.Decelerate,
+            MotionRouteVisibility.ReenterFromOffscreen,
+            entryStart,
+            TimeSpan.FromMilliseconds(random.Next(150, 451))));
+        if (insertAt + 2 < route.Count)
         {
-            maxX - point.X,
-            Math.Min(maxX - point.X, maxY - point.Y),
-            maxY - point.Y,
-            Math.Min(point.X - minX, maxY - point.Y),
-            point.X - minX,
-            Math.Min(point.X - minX, point.Y - minY),
-            point.Y - minY,
-            Math.Min(maxX - point.X, point.Y - minY)
-        };
-        return Array.IndexOf(spaces, spaces.Max());
+            var next = route[insertAt + 2];
+            route[insertAt + 2] = next with { Direction = resolveDirection(entryTarget, next.Target) };
+        }
     }
+
+    private static void NormalizeRouteDuration(List<MotionRouteSegment> route, TimeSpan totalDuration)
+    {
+        if (route.Count == 0)
+            return;
+        var currentTotal = route.Sum(x => x.Duration.TotalMilliseconds);
+        if (currentTotal <= 0)
+            return;
+        var scale = totalDuration.TotalMilliseconds / currentTotal;
+        for (var index = 0; index < route.Count; index++)
+            route[index] = route[index] with { Duration = TimeSpan.FromMilliseconds(Math.Max(300, route[index].Duration.TotalMilliseconds * scale)) };
+
+        var drift = totalDuration - TimeSpan.FromMilliseconds(route.Sum(x => x.Duration.TotalMilliseconds));
+        route[^1] = route[^1] with { Duration = route[^1].Duration + drift };
+    }
+
+    public static bool IsFullyOutsideWorkArea(Point topLeft, Rect workArea, double width, double height) =>
+        topLeft.X + width <= workArea.Left ||
+        topLeft.X >= workArea.Right ||
+        topLeft.Y + height <= workArea.Top ||
+        topLeft.Y >= workArea.Bottom;
 
     private async Task PlayCarRideTurnAsync(PlayableMotion motion, string from, string to, CancellationToken token)
     {

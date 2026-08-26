@@ -1,5 +1,19 @@
 # Decisions
 
+## 2026-08-26 - prefer native direction art and fail closed on mirror derivatives
+
+A horizontal mirror is a new versioned visual derivative, not free asset multiplication. It may be produced only when a package explicitly declares `mirror_safe=true`, has no handed action semantics, tail/identity asymmetry, directional prop, text, effect, or native opposite-direction art, and is then given new owner visual and Windows renderer QA. The repository audit records every package and never creates pixels. With the current 25 packages, zero are eligible and zero mirrored assets enter runtime.
+
+The car-road gaze sequences therefore use separately produced left and right head poses while preserving the matching native v8 vehicle and wheel direction. The side-prone forward-facing candidate likewise preserves approved source orientation and does not horizontally mirror the dog.
+
+## 2026-08-26 - gate new visual microevents independently from route behavior
+
+Route rhythm changes may be tested without promoting new pixels. Car and broom movement use a larger work-area span, faster straight travel, slower directional transitions, and no more than one low-frequency offscreen excursion. A cross-edge reposition is permitted only after the full pet window is outside the work area, followed by a short hidden hold and visible reentry from the opposite edge.
+
+`WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v9` is an optional extension to approved car ride v8, not a replacement. Its loader is fail-closed on its own Windows/owner approval fields and file hashes. Road-gaze may occur only on a left/right straight segment long enough for the complete 18-frame sequence, at wheel-loop phase zero, no more than twice per ride, with a six-to-twelve-second cooldown.
+
+`WK-AUTONOMOUS-SIDE-PRONE-FRONT-CANDIDATE-v1` is a review-only stable loop. It cannot replace the V3R1 rear-looking side-prone loop or enter autonomous selection until both orientation bridge sequences exist and the complete composition passes owner visual and Windows renderer QA. No hard cut between the two head directions is allowed.
+
 ## 2026-08-23 - derive daily candidates without widening source approvals
 
 Approved light-malt-gold pixels may be copied into a new versioned batch for a proposed daily semantic, but approval does not transfer automatically from owner-command use to autonomous use. `WK-AUTONOMOUS-DAILY-BEHAVIORS-v1` therefore preserves source bytes and hashes while keeping all autonomous and runtime gates closed until owner semantic review and real Windows renderer QA pass.
