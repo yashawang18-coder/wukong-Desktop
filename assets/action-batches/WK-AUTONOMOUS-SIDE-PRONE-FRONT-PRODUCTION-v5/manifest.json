@@ -1,0 +1,359 @@
+{
+  "schema_version": 1,
+  "batch_id": "WK-AUTONOMOUS-SIDE-PRONE-FRONT-PRODUCTION-v5",
+  "behavior_id": "wk.candidate.lifecycle.side_prone_front_observe_v5",
+  "display_name": "侧趴正面观察 v5",
+  "status": "production_candidate_owner_visual_review_pending",
+  "asset_stage": "production_candidate_owner_visual_review_pending",
+  "runtime_validation": "pending_owner_visual_review_and_windows_renderer_ci",
+  "visual_approved": false,
+  "owner_runtime_enable_requested": true,
+  "owner_runtime_enable_request_date": "2026-08-26",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
+  "prototype_use": false,
+  "autonomous_binding_enabled": false,
+  "developer_preview": true,
+  "allowed_sources": [
+    "DeveloperPreview"
+  ],
+  "bridge_policy": "V3R1 intro -> bridge-to-front -> forward-observe loop -> bridge-to-legacy -> V3R1 exit; no hard splice",
+  "source_policy": {
+    "pose_references": "three owner-supplied Shiba photos guide side-prone anatomy only; they are not repository/runtime assets",
+    "identity": "wukong-current-adult-v1 identity board plus the approved V3R1 lively rendering",
+    "body": "corresponding V3R1 side-prone microloop pixels remain unchanged at x >= 560 and y >= 760",
+    "forward_loop": "new V3R1-body composite with a shared front head/neck master, slow blink and subtle ear twitch",
+    "transition_heads": "six built-in image edits, chroma-keyed, despilled, warm-malt graded, lower-neck feathered and composited deterministically",
+    "legacy_red_assets": "forbidden",
+    "runtime_mirror_used": false,
+    "v3r1_source_modified": false
+  },
+  "frame_count": 36,
+  "total_duration_ms": 9660,
+  "frame_duration_ms": 100,
+  "from_pose": "prone.awake.legacy_side",
+  "to_pose": "prone.awake.legacy_side",
+  "interruptible": true,
+  "phases": [
+    {
+      "name": "bridge-to-front",
+      "frame_count": 12,
+      "total_duration_ms": 1200,
+      "loop": false,
+      "frames": [
+        {
+          "frame": 1,
+          "path": "frames/bridge-to-front/frame-001.png",
+          "duration_ms": 100,
+          "bytes": 393853,
+          "sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44"
+        },
+        {
+          "frame": 2,
+          "path": "frames/bridge-to-front/frame-002.png",
+          "duration_ms": 100,
+          "bytes": 393853,
+          "sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44"
+        },
+        {
+          "frame": 3,
+          "path": "frames/bridge-to-front/frame-003.png",
+          "duration_ms": 100,
+          "bytes": 454906,
+          "sha256": "6c14e8c85dff5a54998ab2ce8adba5b219826bf533733740dfb47df34ba7ace4"
+        },
+        {
+          "frame": 4,
+          "path": "frames/bridge-to-front/frame-004.png",
+          "duration_ms": 100,
+          "bytes": 450302,
+          "sha256": "620d8b8803f71f0e1a546dad732784aa188c2bf87744bca366f98a3729be08f4"
+        },
+        {
+          "frame": 5,
+          "path": "frames/bridge-to-front/frame-005.png",
+          "duration_ms": 100,
+          "bytes": 453808,
+          "sha256": "c88ee43d0d4bdfa11e0503733d3bf1345b7a6ecfa089d30c35c28b965c9a32f5"
+        },
+        {
+          "frame": 6,
+          "path": "frames/bridge-to-front/frame-006.png",
+          "duration_ms": 100,
+          "bytes": 454091,
+          "sha256": "182531e5180b5baf4ff2b0795892fb9646548d0cc11f5ade0934f410ca6358ce"
+        },
+        {
+          "frame": 7,
+          "path": "frames/bridge-to-front/frame-007.png",
+          "duration_ms": 100,
+          "bytes": 450899,
+          "sha256": "bc7d1c23e57b3761eecf9dbc5e8427ec6ad2468f2fa32563b389e21be40e504a"
+        },
+        {
+          "frame": 8,
+          "path": "frames/bridge-to-front/frame-008.png",
+          "duration_ms": 100,
+          "bytes": 447859,
+          "sha256": "a9887b5cd8ab7760b92b9442e8a08331eb8ea50685ef3ca26dc6282d58df5614"
+        },
+        {
+          "frame": 9,
+          "path": "frames/bridge-to-front/frame-009.png",
+          "duration_ms": 100,
+          "bytes": 460727,
+          "sha256": "882ebf4a0dc67c0fe7550a992ea8b33393e093befb098de7a484ddb22587b4a6"
+        },
+        {
+          "frame": 10,
+          "path": "frames/bridge-to-front/frame-010.png",
+          "duration_ms": 100,
+          "bytes": 456566,
+          "sha256": "372c3d8b1b2db9c5014f2afc44bdc980aa43d6113bb8762777841e7e14e20bc5"
+        },
+        {
+          "frame": 11,
+          "path": "frames/bridge-to-front/frame-011.png",
+          "duration_ms": 100,
+          "bytes": 456566,
+          "sha256": "372c3d8b1b2db9c5014f2afc44bdc980aa43d6113bb8762777841e7e14e20bc5"
+        },
+        {
+          "frame": 12,
+          "path": "frames/bridge-to-front/frame-012.png",
+          "duration_ms": 100,
+          "bytes": 456566,
+          "sha256": "372c3d8b1b2db9c5014f2afc44bdc980aa43d6113bb8762777841e7e14e20bc5"
+        }
+      ]
+    },
+    {
+      "name": "side-prone-front-calm",
+      "frame_count": 12,
+      "total_duration_ms": 7260,
+      "loop": true,
+      "frames": [
+        {
+          "frame": 1,
+          "path": "frames/side-prone-front-calm/frame-001.png",
+          "duration_ms": 1300,
+          "bytes": 456566,
+          "sha256": "372c3d8b1b2db9c5014f2afc44bdc980aa43d6113bb8762777841e7e14e20bc5"
+        },
+        {
+          "frame": 2,
+          "path": "frames/side-prone-front-calm/frame-002.png",
+          "duration_ms": 800,
+          "bytes": 456566,
+          "sha256": "372c3d8b1b2db9c5014f2afc44bdc980aa43d6113bb8762777841e7e14e20bc5"
+        },
+        {
+          "frame": 3,
+          "path": "frames/side-prone-front-calm/frame-003.png",
+          "duration_ms": 320,
+          "bytes": 461227,
+          "sha256": "24b66783853c904c1ebfea57c287b6b9aae13d287872df9cca19cac4deb6a5e8"
+        },
+        {
+          "frame": 4,
+          "path": "frames/side-prone-front-calm/frame-004.png",
+          "duration_ms": 320,
+          "bytes": 456819,
+          "sha256": "2bd78972e6ab8530a718ddb0d209205b35a8601d126bf0980bfc3d05f771c67d"
+        },
+        {
+          "frame": 5,
+          "path": "frames/side-prone-front-calm/frame-005.png",
+          "duration_ms": 220,
+          "bytes": 459750,
+          "sha256": "366a824632d858fe09e759ea131adef5b3d4428de43facb07dcc60a17b854ff1"
+        },
+        {
+          "frame": 6,
+          "path": "frames/side-prone-front-calm/frame-006.png",
+          "duration_ms": 240,
+          "bytes": 460130,
+          "sha256": "04e62684a2568e75d2d87b021087f77dcaad307b59b61f96037cea8005232d53"
+        },
+        {
+          "frame": 7,
+          "path": "frames/side-prone-front-calm/frame-007.png",
+          "duration_ms": 220,
+          "bytes": 459218,
+          "sha256": "d00bec58f049821c497a355a3d771b300003a7123d2c6f35d4e25d2152c20636"
+        },
+        {
+          "frame": 8,
+          "path": "frames/side-prone-front-calm/frame-008.png",
+          "duration_ms": 320,
+          "bytes": 456207,
+          "sha256": "23218ce4f8469c632ff839830baaf4f33447b1522a8ce3dd53e7587a1ab76ebe"
+        },
+        {
+          "frame": 9,
+          "path": "frames/side-prone-front-calm/frame-009.png",
+          "duration_ms": 320,
+          "bytes": 458188,
+          "sha256": "c2fa4f8495d9e6b22681852d9976cba3c15038e9e91bc3364437e11b42a0a814"
+        },
+        {
+          "frame": 10,
+          "path": "frames/side-prone-front-calm/frame-010.png",
+          "duration_ms": 700,
+          "bytes": 454281,
+          "sha256": "3042084772f3c94dcd66ccb6781d34b7579e1a9fdcd47381f01e37e033da4726"
+        },
+        {
+          "frame": 11,
+          "path": "frames/side-prone-front-calm/frame-011.png",
+          "duration_ms": 1000,
+          "bytes": 456566,
+          "sha256": "372c3d8b1b2db9c5014f2afc44bdc980aa43d6113bb8762777841e7e14e20bc5"
+        },
+        {
+          "frame": 12,
+          "path": "frames/side-prone-front-calm/frame-012.png",
+          "duration_ms": 1500,
+          "bytes": 456566,
+          "sha256": "372c3d8b1b2db9c5014f2afc44bdc980aa43d6113bb8762777841e7e14e20bc5"
+        }
+      ]
+    },
+    {
+      "name": "bridge-to-legacy",
+      "frame_count": 12,
+      "total_duration_ms": 1200,
+      "loop": false,
+      "frames": [
+        {
+          "frame": 1,
+          "path": "frames/bridge-to-legacy/frame-001.png",
+          "duration_ms": 100,
+          "bytes": 456566,
+          "sha256": "372c3d8b1b2db9c5014f2afc44bdc980aa43d6113bb8762777841e7e14e20bc5"
+        },
+        {
+          "frame": 2,
+          "path": "frames/bridge-to-legacy/frame-002.png",
+          "duration_ms": 100,
+          "bytes": 456566,
+          "sha256": "372c3d8b1b2db9c5014f2afc44bdc980aa43d6113bb8762777841e7e14e20bc5"
+        },
+        {
+          "frame": 3,
+          "path": "frames/bridge-to-legacy/frame-003.png",
+          "duration_ms": 100,
+          "bytes": 456566,
+          "sha256": "372c3d8b1b2db9c5014f2afc44bdc980aa43d6113bb8762777841e7e14e20bc5"
+        },
+        {
+          "frame": 4,
+          "path": "frames/bridge-to-legacy/frame-004.png",
+          "duration_ms": 100,
+          "bytes": 460727,
+          "sha256": "882ebf4a0dc67c0fe7550a992ea8b33393e093befb098de7a484ddb22587b4a6"
+        },
+        {
+          "frame": 5,
+          "path": "frames/bridge-to-legacy/frame-005.png",
+          "duration_ms": 100,
+          "bytes": 447859,
+          "sha256": "a9887b5cd8ab7760b92b9442e8a08331eb8ea50685ef3ca26dc6282d58df5614"
+        },
+        {
+          "frame": 6,
+          "path": "frames/bridge-to-legacy/frame-006.png",
+          "duration_ms": 100,
+          "bytes": 450899,
+          "sha256": "bc7d1c23e57b3761eecf9dbc5e8427ec6ad2468f2fa32563b389e21be40e504a"
+        },
+        {
+          "frame": 7,
+          "path": "frames/bridge-to-legacy/frame-007.png",
+          "duration_ms": 100,
+          "bytes": 454091,
+          "sha256": "182531e5180b5baf4ff2b0795892fb9646548d0cc11f5ade0934f410ca6358ce"
+        },
+        {
+          "frame": 8,
+          "path": "frames/bridge-to-legacy/frame-008.png",
+          "duration_ms": 100,
+          "bytes": 453808,
+          "sha256": "c88ee43d0d4bdfa11e0503733d3bf1345b7a6ecfa089d30c35c28b965c9a32f5"
+        },
+        {
+          "frame": 9,
+          "path": "frames/bridge-to-legacy/frame-009.png",
+          "duration_ms": 100,
+          "bytes": 450302,
+          "sha256": "620d8b8803f71f0e1a546dad732784aa188c2bf87744bca366f98a3729be08f4"
+        },
+        {
+          "frame": 10,
+          "path": "frames/bridge-to-legacy/frame-010.png",
+          "duration_ms": 100,
+          "bytes": 454906,
+          "sha256": "6c14e8c85dff5a54998ab2ce8adba5b219826bf533733740dfb47df34ba7ace4"
+        },
+        {
+          "frame": 11,
+          "path": "frames/bridge-to-legacy/frame-011.png",
+          "duration_ms": 100,
+          "bytes": 393853,
+          "sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44"
+        },
+        {
+          "frame": 12,
+          "path": "frames/bridge-to-legacy/frame-012.png",
+          "duration_ms": 100,
+          "bytes": 393853,
+          "sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44"
+        }
+      ]
+    }
+  ],
+  "owner_pose_reference_provenance": {
+    "62ad946a-ae32-4c74-a099-53d675fa1ca4.jpg": {
+      "sha256": "b95846d5c9db9b98c65f9a7c245f884097562830b745ba289b767d1840842f1a",
+      "role": "primary side-prone anatomy and forward head/neck reference",
+      "committed": false
+    },
+    "feae238f-58ae-4c5d-972f-13cd68a66220.jpg": {
+      "sha256": "b8774a75e812dcb420ecc496c83863b4639494e3eda26700905b519966ec2898",
+      "role": "front gaze and lively expression anatomy reference only",
+      "committed": false
+    },
+    "b1ee6b96-e826-4949-b844-36eb2f11760b.jpg": {
+      "sha256": "2cd2135024d2f84fb1d10f0491b365a203c4b8883e0cd97d09e16bcc63c8295f",
+      "role": "relaxed hip, rear-leg and side-lying weight reference",
+      "committed": false
+    }
+  },
+  "generation_provenance": {
+    "turn-52-original": {
+      "sha256": "dc04615dc00b4842906cd8886a6d06a409c27d265e39ed08425a8ae0ec1257ba",
+      "committed": false
+    },
+    "turn-35-original": {
+      "sha256": "34ea53a9a2f5aa5e475c23c124b89ad8a3958e1e8eec6cd69436f17564b60188",
+      "committed": false
+    },
+    "turn-15-original": {
+      "sha256": "fbf0198cd28ece9b6bc867d6709439a8796ddce1a8f51b431505f06e1ff75e1c",
+      "committed": false
+    },
+    "front-neutral-original": {
+      "sha256": "8ff0f249bec31a9f8214459a1c3a37055d9acdb7710ba8f2fc7ac71acde68aea",
+      "committed": false
+    },
+    "front-blink-original": {
+      "sha256": "e07073bc4b37019ebd88cedcb8ee9be7f17f6f9581590dff859dc00f914179b1",
+      "committed": false
+    },
+    "front-ear-twitch-original": {
+      "sha256": "c2ae6f9aef87ad2ff3d89ec58a4a10b2f1731ffd900b1c50d2b3fa631ac0543d",
+      "committed": false
+    }
+  }
+}

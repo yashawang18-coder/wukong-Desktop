@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Windows.Media.Imaging;
 using Wukong.Application;
 using Wukong.Desktop;
 using Wukong.Domain;
@@ -25,10 +26,14 @@ internal static class LifecycleReviewCandidateTests
             .Where(x => LifecycleReviewCandidateBehaviorIds.AssetBatches.Contains(x.AssetBatch))
             .OrderBy(x => x.BehaviorId)
             .ToArray();
+        var v5ManifestPath = Path.Combine(output, "WukongAssets", "action-batches", SideProneFrontBehaviorIds.AssetBatch, "manifest.json");
+        using var v5Document = JsonDocument.Parse(File.ReadAllText(v5ManifestPath));
+        var v5Enabled = v5Document.RootElement.GetProperty("runtime_approved").GetBoolean() &&
+                        v5Document.RootElement.GetProperty("runtime_use").GetBoolean();
 
         Assert(candidates.Length == 7, "review catalog must expose exactly seven lifecycle review cards");
         Assert(candidates.Select(x => x.BehaviorId).OrderBy(x => x).SequenceEqual(ExpectedIds.OrderBy(x => x)), "review behavior IDs changed");
-        Assert(candidates.Sum(x => x.FrameCount) == 116, "approved runtime composition must reference 116 phase frames across seven entries");
+        Assert(candidates.Sum(x => x.FrameCount) == (v5Enabled ? 140 : 116), "approved runtime composition frame total does not match the v5 promotion gate");
         Assert(candidates.All(x => x.Category == "基础动作"), "approved lifecycle material escaped the basic-action category");
         Assert(candidates.All(x => x.RuntimeEnabled && x.RuntimeApproved && !x.PrototypeUse), "approved runtime gates were not loaded");
         Assert(candidates.All(x => x.AutonomousBindingEnabled), "an approved lifecycle entry is missing its autonomous binding");
@@ -46,8 +51,12 @@ internal static class LifecycleReviewCandidateTests
         var calm = candidates.Single(x => x.BehaviorId == LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4);
         Assert(calm.Phases.Count == 1 && calm.Phases[0].Loop && calm.FrameCount == 12, "V4 calm must remain an independent loop");
         var full = candidates.Single(x => x.BehaviorId == LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1);
-        Assert(full.Phases.Select(x => x.Name).SequenceEqual(new[] { "intro", "loop", "exit" }), "V3R1 full lifecycle composition changed");
-        Assert(full.Phases[1].Loop && full.FrameCount == 44, "V3R1 must use its approved 20/12/12 intro-loop-exit composition");
+        var expectedPhases = v5Enabled
+            ? new[] { "intro", "bridge-to-front", "side-prone-front-calm", "bridge-to-legacy", "exit" }
+            : new[] { "intro", "loop", "exit" };
+        Assert(full.Phases.Select(x => x.Name).SequenceEqual(expectedPhases), "V3R1 full lifecycle composition does not match the v5 promotion gate");
+        Assert(full.FrameCount == (v5Enabled ? 68 : 44), "V3R1 lifecycle frame count does not match the v5 promotion gate");
+        Assert(v5Enabled ? full.Phases[2].Loop : full.Phases[1].Loop, "V3R1 lifecycle calm phase must loop");
     }
 
     public static void DeveloperPreviewUsesTheExistingBehaviorRequestPath()
@@ -168,6 +177,74 @@ internal static class LifecycleReviewCandidateTests
         runtime.CompleteMotion(holdId, "loop");
         Assert(request.Motion.BehaviorId == LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
             "matching EatProne anchor did not enter the approved V4 calm profile");
+    }
+
+    public static void RuntimeExtensionsPassWindowsWpfDecode()
+    {
+        var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
+        var assetRoot = Path.Combine(output, "WukongAssets", "action-batches");
+        var v5ManifestPath = Path.Combine(assetRoot, SideProneFrontBehaviorIds.AssetBatch, "manifest.json");
+        var roadGazeManifestPath = Path.Combine(assetRoot, CarRideBehaviorIds.RoadGazeAssetBatch, "manifest.json");
+        Assert(File.Exists(v5ManifestPath), "side-prone v5 manifest was not copied to Windows output");
+        Assert(File.Exists(roadGazeManifestPath), "road-gaze v9 manifest was not copied to Windows output");
+
+        using var v5Document = JsonDocument.Parse(File.ReadAllText(v5ManifestPath));
+        var v5 = v5Document.RootElement;
+        Assert(v5.GetProperty("frame_count").GetInt32() == 36, "side-prone v5 must contain 36 runtime frames");
+        Assert(v5.GetProperty("visual_approved").GetBoolean(), "side-prone v5 owner visual approval request was lost");
+        Assert(v5.GetProperty("owner_runtime_enable_requested").GetBoolean(), "side-prone v5 owner enable request was lost");
+        var v5Approved = v5.GetProperty("runtime_approved").GetBoolean();
+        Assert(v5Approved == v5.GetProperty("runtime_use").GetBoolean(), "side-prone v5 runtime gates diverged");
+        Assert(v5Approved == v5.GetProperty("production_asset").GetBoolean(), "side-prone v5 production gate diverged");
+        Assert(v5Approved == v5.GetProperty("autonomous_binding_enabled").GetBoolean(), "side-prone v5 autonomous gate diverged");
+        Assert(
+            v5.GetProperty("runtime_validation").GetString() == (v5Approved ? "passed_windows_renderer_qa" : "pending_windows_renderer_ci"),
+            "side-prone v5 validation state does not match its runtime gate");
+
+        var v5Frames = v5.GetProperty("phases")
+            .EnumerateArray()
+            .SelectMany(phase => phase.GetProperty("frames").EnumerateArray().Select(frame => frame.GetProperty("path").GetString()!))
+            .ToArray();
+        Assert(v5Frames.Length == 36, "side-prone v5 phase inventory changed");
+        DecodeFrames(Path.GetDirectoryName(v5ManifestPath)!, v5Frames, "side-prone v5");
+
+        using var roadGazeDocument = JsonDocument.Parse(File.ReadAllText(roadGazeManifestPath));
+        var roadGaze = roadGazeDocument.RootElement;
+        Assert(roadGaze.GetProperty("visual_approved").GetBoolean(), "road-gaze v9 owner visual approval request was lost");
+        Assert(roadGaze.GetProperty("owner_runtime_enable_requested").GetBoolean(), "road-gaze v9 owner enable request was lost");
+        var roadGazeApproved = roadGaze.GetProperty("runtime_approved").GetBoolean();
+        Assert(roadGazeApproved == roadGaze.GetProperty("runtime_use").GetBoolean(), "road-gaze v9 runtime gates diverged");
+        Assert(roadGazeApproved == roadGaze.GetProperty("production_asset").GetBoolean(), "road-gaze v9 production gate diverged");
+        Assert(
+            roadGaze.GetProperty("runtime_validation").GetString() == (roadGazeApproved ? "passed_windows_renderer_qa" : "pending_windows_renderer_ci"),
+            "road-gaze v9 validation state does not match its runtime gate");
+
+        var roadGazeFrames = roadGaze.GetProperty("sequences")
+            .EnumerateObject()
+            .SelectMany(sequence => sequence.Value.EnumerateArray().Select(frame => frame.GetProperty("path").GetString()!))
+            .ToArray();
+        Assert(roadGazeFrames.Length == 36, "road-gaze v9 must contain 36 runtime frames");
+        DecodeFrames(Path.GetDirectoryName(roadGazeManifestPath)!, roadGazeFrames, "road-gaze v9");
+
+        var catalog = DesktopMotionCatalog.Load(output);
+        var car = catalog.Motions.Single(x => x.BehaviorId == CarRideBehaviorIds.CarRide);
+        var hasRoadGaze = car.NamedSequences?.ContainsKey("road-gaze/left") == true &&
+                          car.NamedSequences.ContainsKey("road-gaze/right");
+        Assert(hasRoadGaze == roadGazeApproved, "road-gaze v9 catalog exposure does not match its runtime gate");
+    }
+
+    private static void DecodeFrames(string root, IEnumerable<string> relativePaths, string label)
+    {
+        foreach (var relative in relativePaths)
+        {
+            var path = Path.Combine(root, relative.Replace('/', Path.DirectorySeparatorChar));
+            Assert(File.Exists(path), $"{label} frame is missing: {relative}");
+            using var stream = File.OpenRead(path);
+            var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+            var frame = decoder.Frames.Single();
+            Assert(frame.PixelWidth == 1024 && frame.PixelHeight == 1024, $"{label} frame dimensions changed: {relative}");
+            Assert(frame.Format.ToString().Contains("a", StringComparison.OrdinalIgnoreCase), $"{label} frame lost alpha: {relative}");
+        }
     }
 
     private static void Assert(bool condition, string message)

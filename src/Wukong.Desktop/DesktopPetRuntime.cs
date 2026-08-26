@@ -504,7 +504,7 @@ public sealed class DesktopMotionCatalog
             .FirstOrDefault(x => x.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop && x.RuntimeEnabled)?.FirstFrame
             ?? motions.FirstOrDefault(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle)?.FirstFrame
             ?? string.Empty;
-        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; lifecycle_review_candidates={lifecycleReviewCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch}/runtime-review-manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V4AssetBatch}/runtime-review-manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; lifecycle_review_candidates={lifecycleReviewCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch}/runtime-review-manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V4AssetBatch}/runtime-review-manifest.json,action-batches/{SideProneFrontBehaviorIds.AssetBatch}/manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
         BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
         return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(lifecycleReviewCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks), summary);
     }
@@ -1025,21 +1025,129 @@ public sealed class DesktopMotionCatalog
                 }
 
                 var intro = loaded[introIndex];
-                loaded[introIndex] = intro with
-                {
-                    Phases = new[]
+                var introPhase = intro.Phases.Single(x => string.Equals(x.Name, "intro", StringComparison.OrdinalIgnoreCase));
+                var exitPhase = exit.Phases.Single(x => string.Equals(x.Name, "exit", StringComparison.OrdinalIgnoreCase));
+                var sideProneFront = LoadSideProneFrontProductionPhases(root);
+                loaded[introIndex] = sideProneFront is { Count: 3 }
+                    ? intro with
                     {
-                        intro.Phases.Single(x => string.Equals(x.Name, "intro", StringComparison.OrdinalIgnoreCase)),
-                        proneLoop.Phases.Single(x => string.Equals(x.Name, "loop", StringComparison.OrdinalIgnoreCase)),
-                        exit.Phases.Single(x => string.Equals(x.Name, "exit", StringComparison.OrdinalIgnoreCase))
-                    },
-                    Description = $"{intro.Description} Runtime composition is intro -> legacy-side-prone loop -> exit; V4 is never hard-spliced."
-                };
+                        Phases = new[] { introPhase }
+                            .Concat(sideProneFront)
+                            .Append(exitPhase)
+                            .ToArray(),
+                        Description = $"{intro.Description} Runtime composition is V3R1 intro -> v5 turn-to-front bridge -> forward-observe calm loop -> v5 return bridge -> V3R1 exit. Frozen V3R1 source bytes are unchanged."
+                    }
+                    : intro with
+                    {
+                        Phases = new[]
+                        {
+                            introPhase,
+                            proneLoop.Phases.Single(x => string.Equals(x.Name, "loop", StringComparison.OrdinalIgnoreCase)),
+                            exitPhase
+                        },
+                        Description = $"{intro.Description} Runtime composition is intro -> legacy-side-prone loop -> exit; the v5 bridge extension remains fail closed."
+                    };
             }
 
             foreach (var motion in loaded)
                 yield return motion;
         }
+    }
+
+    private static IReadOnlyList<MotionPhase>? LoadSideProneFrontProductionPhases(string root)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", SideProneFrontBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("side_prone_front_v5_manifest_missing");
+            return null;
+        }
+
+        SideProneFrontProductionManifest? manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<SideProneFrontProductionManifest>(
+                File.ReadAllText(manifestPath),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Side-prone front v5 manifest parse failed", ex);
+            return null;
+        }
+
+        if (manifest is null ||
+            !string.Equals(manifest.BatchId, SideProneFrontBehaviorIds.AssetBatch, StringComparison.Ordinal) ||
+            !string.Equals(manifest.BehaviorId, SideProneFrontBehaviorIds.ObserveV5, StringComparison.Ordinal))
+        {
+            BootstrapLog.WriteRaw("side_prone_front_v5_identity_invalid");
+            return null;
+        }
+
+        if (!manifest.VisualApproved || !manifest.RuntimeApproved || !manifest.RuntimeUse ||
+            !manifest.ProductionAsset || manifest.PrototypeUse || !manifest.AutonomousBindingEnabled ||
+            !string.Equals(manifest.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal) ||
+            manifest.AllowedSources is null ||
+            !manifest.AllowedSources.Contains("AutonomousTick", StringComparer.Ordinal) ||
+            !manifest.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
+        {
+            BootstrapLog.WriteRaw("side_prone_front_v5_gate_closed");
+            return null;
+        }
+
+        var expected = new[]
+        {
+            (Name: "bridge-to-front", Loop: false),
+            (Name: "side-prone-front-calm", Loop: true),
+            (Name: "bridge-to-legacy", Loop: false)
+        };
+        if (manifest.Phases is null || manifest.Phases.Count != expected.Length)
+        {
+            BootstrapLog.WriteRaw("side_prone_front_v5_phase_contract_invalid");
+            return null;
+        }
+
+        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        var phases = new List<MotionPhase>(expected.Length);
+        var errors = new List<string>();
+        for (var index = 0; index < expected.Length; index++)
+        {
+            var phase = manifest.Phases[index];
+            var contract = expected[index];
+            if (!string.Equals(phase.Name, contract.Name, StringComparison.Ordinal) ||
+                phase.Loop != contract.Loop || phase.FrameCount != 12)
+                errors.Add($"phase_contract:{phase.Name}");
+
+            var frames = new List<string>();
+            var durations = new List<int>();
+            foreach (var frame in phase.Frames ?? Array.Empty<CommandActionFrameManifest>())
+            {
+                var path = Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(path))
+                {
+                    errors.Add($"missing:{frame.Path}");
+                    continue;
+                }
+                if (new FileInfo(path).Length != frame.Bytes)
+                    errors.Add($"bytes:{frame.Path}");
+                if (!string.Equals(Sha256(path), frame.Sha256, StringComparison.OrdinalIgnoreCase))
+                    errors.Add($"sha256:{frame.Path}");
+                frames.Add(path);
+                durations.Add(frame.DurationMs.GetValueOrDefault(manifest.FrameDurationMs));
+            }
+            if (frames.Count != phase.FrameCount)
+                errors.Add($"phase_frame_count:{phase.Name}:{frames.Count}/{phase.FrameCount}");
+            phases.Add(new MotionPhase(phase.Name, frames, phase.Loop, durations));
+        }
+
+        if (errors.Count > 0)
+        {
+            BootstrapLog.WriteRaw($"side_prone_front_v5_invalid errors={string.Join(",", errors)}");
+            return null;
+        }
+
+        BootstrapLog.WriteRaw("side_prone_front_v5_runtime_ready frames=36 composition=v3r1_bidirectional_bridge");
+        return phases;
     }
 
     private static IEnumerable<PlayableMotion> LoadAutonomousDailyCandidates(
@@ -1598,6 +1706,12 @@ public static class LifecycleReviewCandidateBehaviorIds
         };
 }
 
+public static class SideProneFrontBehaviorIds
+{
+    public const string AssetBatch = "WK-AUTONOMOUS-SIDE-PRONE-FRONT-PRODUCTION-v5";
+    public const string ObserveV5 = "wk.candidate.lifecycle.side_prone_front_observe_v5";
+}
+
 public static class AutonomousDailyCandidateBehaviorIds
 {
     public const string AssetBatch = "WK-AUTONOMOUS-DAILY-BEHAVIORS-v1";
@@ -1764,6 +1878,20 @@ public sealed record LifecycleReviewActionManifest(
     [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
     [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
     [property: JsonPropertyName("legacy_side_prone")] bool LegacySideProne,
+    [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
+    [property: JsonPropertyName("phases")] IReadOnlyList<LifecycleCandidatePhaseManifest> Phases);
+
+public sealed record SideProneFrontProductionManifest(
+    [property: JsonPropertyName("batch_id")] string BatchId,
+    [property: JsonPropertyName("behavior_id")] string BehaviorId,
+    [property: JsonPropertyName("frame_duration_ms")] int FrameDurationMs,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
     [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
     [property: JsonPropertyName("phases")] IReadOnlyList<LifecycleCandidatePhaseManifest> Phases);
 

@@ -1,8 +1,16 @@
 # Decisions
 
+## 2026-08-26 - stage v9 and side-prone v5 promotion behind Windows evidence
+
+The owner's request for formal merge, CI closure, and runtime enablement is the visual/semantic authorization to promote the reviewed car-road-gaze extension. The owner subsequently supplied three new side-prone references, which supersede the earlier v5 visual authorization: the rebuilt v5 must be reviewed again before promotion. Neither request permits recording Windows evidence before the workflow exists and passes.
+
+Publish the completed assets first with `runtime_validation=pending_windows_renderer_ci` and every runtime binding closed. Windows CI must build the solution, run all .NET and Python suites, and decode every new RGBA frame through WPF. Only after that commit is green may a separate promotion commit set `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, and the corresponding production/autonomous gates.
+
+`WK-AUTONOMOUS-SIDE-PRONE-FRONT-PRODUCTION-v5` remains the only eligible bridge design: V3R1 intro -> 12-frame turn-to-front -> 12-frame calm loop -> exact 12-frame reverse bridge -> V3R1 exit. Its revised pose uses owner photographs only as anatomy references, retains `wukong-current-adult-v1` identity and V3R1 lively rendering, and keeps the V3R1 package frozen and unedited. `WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v9` remains an additive owner-only extension of approved v8 and does not widen car-ride request sources.
+
 ## 2026-08-26 - prefer native direction art and fail closed on mirror derivatives
 
-A horizontal mirror is a new versioned visual derivative, not free asset multiplication. It may be produced only when a package explicitly declares `mirror_safe=true`, has no handed action semantics, tail/identity asymmetry, directional prop, text, effect, or native opposite-direction art, and is then given new owner visual and Windows renderer QA. The repository audit records every package and never creates pixels. With the current 25 packages, zero are eligible and zero mirrored assets enter runtime.
+A horizontal mirror is a new versioned visual derivative, not free asset multiplication. It may be produced only when a package explicitly declares `mirror_safe=true`, has no handed action semantics, tail/identity asymmetry, directional prop, text, effect, or native opposite-direction art, and is then given new owner visual and Windows renderer QA. The repository audit records every package and never creates pixels. With the current 26 packages, zero are eligible and zero mirrored assets enter runtime.
 
 The car-road gaze sequences therefore use separately produced left and right head poses while preserving the matching native v8 vehicle and wheel direction. The side-prone forward-facing candidate likewise preserves approved source orientation and does not horizontally mirror the dog.
 

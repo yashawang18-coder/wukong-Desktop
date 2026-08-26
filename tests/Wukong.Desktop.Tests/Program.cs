@@ -45,6 +45,7 @@ var tests = new (string Name, Action Run)[]
     ("lifecycle manifests and panel show approved runtime state", LifecycleReviewCandidateTests.ManifestsAndPanelShowApprovedRuntimeState),
     ("autonomous ticks use approved daily actions without commands", LifecycleReviewCandidateTests.AutonomousTicksUseApprovedDailyAllowlistWithoutCommands),
     ("forward-prone profile requires the matching approved anchor", LifecycleReviewCandidateTests.ForwardProneProfileRequiresMatchingApprovedAnchor),
+    ("road-gaze and side-prone v5 extensions pass Windows WPF decode", LifecycleReviewCandidateTests.RuntimeExtensionsPassWindowsWpfDecode),
     ("autonomous allowlist excludes command-only jump and spin", AutonomousAllowlistExcludesCommandOnlyActions),
     ("autonomous daily candidates are indexed and remain gated", AutonomousDailyCandidatesAreIndexedAndRemainGated),
     ("developer autonomous daily candidate can request playback", DeveloperAutonomousDailyCandidateCanRequestPlayback),

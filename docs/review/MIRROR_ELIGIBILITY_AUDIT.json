@@ -58,6 +58,22 @@
       ]
     },
     {
+      "asset_batch": "WK-AUTONOMOUS-SIDE-PRONE-FRONT-PRODUCTION-v5",
+      "path": "assets/action-batches/WK-AUTONOMOUS-SIDE-PRONE-FRONT-PRODUCTION-v5",
+      "documents": [
+        "asset.json",
+        "manifest.json"
+      ],
+      "runtime_approved_source": false,
+      "native_directional_variants": false,
+      "explicit_mirror_safe": false,
+      "eligible_for_generated_horizontal_mirror": false,
+      "runtime_integration_allowed": false,
+      "reasons": [
+        "missing_explicit_mirror_safe_contract"
+      ]
+    },
+    {
       "asset_batch": "WK-BASIC-ACTIONS-BATCH-v2",
       "path": "assets/action-batches/WK-BASIC-ACTIONS-BATCH-v2",
       "documents": [],
