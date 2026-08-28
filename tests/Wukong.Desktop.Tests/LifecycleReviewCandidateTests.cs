@@ -191,15 +191,20 @@ internal static class LifecycleReviewCandidateTests
         using var v5Document = JsonDocument.Parse(File.ReadAllText(v5ManifestPath));
         var v5 = v5Document.RootElement;
         Assert(v5.GetProperty("frame_count").GetInt32() == 36, "side-prone v5 must contain 36 runtime frames");
-        Assert(v5.GetProperty("visual_approved").GetBoolean(), "side-prone v5 owner visual approval request was lost");
         Assert(v5.GetProperty("owner_runtime_enable_requested").GetBoolean(), "side-prone v5 owner enable request was lost");
+        var v5VisualApproved = v5.GetProperty("visual_approved").GetBoolean();
         var v5Approved = v5.GetProperty("runtime_approved").GetBoolean();
         Assert(v5Approved == v5.GetProperty("runtime_use").GetBoolean(), "side-prone v5 runtime gates diverged");
         Assert(v5Approved == v5.GetProperty("production_asset").GetBoolean(), "side-prone v5 production gate diverged");
         Assert(v5Approved == v5.GetProperty("autonomous_binding_enabled").GetBoolean(), "side-prone v5 autonomous gate diverged");
-        Assert(
-            v5.GetProperty("runtime_validation").GetString() == (v5Approved ? "passed_windows_renderer_qa" : "pending_windows_renderer_ci"),
-            "side-prone v5 validation state does not match its runtime gate");
+        var expectedV5Validation = v5Approved
+            ? "passed_windows_renderer_qa"
+            : v5VisualApproved
+                ? "pending_windows_renderer_ci"
+                : "pending_owner_visual_review_and_windows_renderer_ci";
+        Assert(v5.GetProperty("runtime_validation").GetString() == expectedV5Validation,
+            "side-prone v5 validation state does not match its visual/runtime gates");
+        Assert(!v5Approved || v5VisualApproved, "side-prone v5 runtime approval bypassed owner visual approval");
 
         var v5Frames = v5.GetProperty("phases")
             .EnumerateArray()
