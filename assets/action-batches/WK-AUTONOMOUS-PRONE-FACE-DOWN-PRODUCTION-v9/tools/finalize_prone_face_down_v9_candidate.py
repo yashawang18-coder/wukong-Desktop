@@ -38,6 +38,10 @@ def write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def is_package_artifact(path: Path) -> bool:
+    return "__pycache__" not in path.parts and path.suffix != ".pyc"
+
+
 def frame_paths(package: Path, phase: str) -> list[Path]:
     paths = [package / "frames" / phase / f"frame-{index:03d}.png" for index in range(1, 13)]
     if not all(path.is_file() for path in paths):
@@ -506,7 +510,11 @@ runtime gate until owner full-lifecycle review and Windows renderer CI pass.
     inventory_roots = ("animations", "frames", "reports", "review", "source", "tools")
     inventory = [package / "PROMPT-RECORD.md", package / "README.md", package / "SOURCE-SHA256SUMS", package / "WORK-IN-PROGRESS.md", package / "frame-timing.json", package / "manifest.json"]
     for root in inventory_roots:
-        inventory.extend(path for path in (package / root).rglob("*") if path.is_file())
+        inventory.extend(
+            path
+            for path in (package / root).rglob("*")
+            if path.is_file() and is_package_artifact(path)
+        )
     inventory = sorted(set(inventory), key=lambda path: path.relative_to(package).as_posix())
     (package / "SHA256SUMS").write_text(
         "".join(f"{sha256(path)}  {path.relative_to(package).as_posix()}\n" for path in inventory),
@@ -518,7 +526,12 @@ runtime gate until owner full-lifecycle review and Windows renderer CI pass.
     temporary.unlink(missing_ok=True)
     with zipfile.ZipFile(temporary, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as output:
         for path in sorted(package.rglob("*")):
-            if not path.is_file() or path in (archive, temporary) or path.name == "ZIP-SHA256.txt":
+            if (
+                not path.is_file()
+                or not is_package_artifact(path)
+                or path in (archive, temporary)
+                or path.name == "ZIP-SHA256.txt"
+            ):
                 continue
             output.write(path, (Path(BATCH_ID) / path.relative_to(package)).as_posix())
     temporary.replace(archive)

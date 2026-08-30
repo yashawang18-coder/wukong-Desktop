@@ -2,6 +2,7 @@ import hashlib
 import json
 import unittest
 from pathlib import Path
+import zipfile
 
 from PIL import Image
 
@@ -85,13 +86,17 @@ class ProneFaceDownV9CandidateTests(unittest.TestCase):
         self.assertFalse(self.manifest["visual_approved"])
 
     def test_checksum_inventory_and_zip(self):
-        for line in (BATCH / "SHA256SUMS").read_text(encoding="utf-8").splitlines():
+        lines = (BATCH / "SHA256SUMS").read_text(encoding="utf-8").splitlines()
+        self.assertFalse(any("__pycache__" in line or line.endswith(".pyc") for line in lines))
+        for line in lines:
             expected, relative = line.split(None, 1)
             path = BATCH / relative.strip()
             self.assertTrue(path.is_file(), path)
             self.assertEqual(expected, sha256(path), path)
         expected_zip, name = (BATCH / "ZIP-SHA256.txt").read_text(encoding="utf-8").split()
         self.assertEqual(expected_zip, sha256(BATCH / name))
+        with zipfile.ZipFile(BATCH / name) as archive:
+            self.assertFalse(any("__pycache__" in path or path.endswith(".pyc") for path in archive.namelist()))
 
 
 if __name__ == "__main__":
