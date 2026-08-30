@@ -1,0 +1,271 @@
+{
+  "threshold_percent": 5.0,
+  "max_adjacent_ratio_change_percent": 4.266,
+  "pass": true,
+  "frames": [
+    {
+      "frame": 1,
+      "left_eye": [
+        395.343,
+        564.332
+      ],
+      "right_eye": [
+        484.501,
+        565.337
+      ],
+      "eye_mid": [
+        439.922,
+        564.834
+      ],
+      "nose": [
+        440.669,
+        652.279
+      ],
+      "eye_distance": 89.158,
+      "eye_nose_distance": 87.445,
+      "eye_nose_ratio": 0.980782
+    },
+    {
+      "frame": 2,
+      "left_eye": [
+        397.176,
+        580.594
+      ],
+      "right_eye": [
+        483.078,
+        585.154
+      ],
+      "eye_mid": [
+        440.127,
+        582.874
+      ],
+      "nose": [
+        430.896,
+        666.342
+      ],
+      "eye_distance": 85.901,
+      "eye_nose_distance": 83.468,
+      "eye_nose_ratio": 0.97167
+    },
+    {
+      "frame": 3,
+      "left_eye": [
+        394.272,
+        592.52
+      ],
+      "right_eye": [
+        480.543,
+        595.773
+      ],
+      "eye_mid": [
+        437.407,
+        594.146
+      ],
+      "nose": [
+        428.121,
+        677.936
+      ],
+      "eye_distance": 86.271,
+      "eye_nose_distance": 83.789,
+      "eye_nose_ratio": 0.971234
+    },
+    {
+      "frame": 4,
+      "left_eye": [
+        391.351,
+        604.398
+      ],
+      "right_eye": [
+        478.116,
+        606.427
+      ],
+      "eye_mid": [
+        434.734,
+        605.413
+      ],
+      "nose": [
+        425.302,
+        689.519
+      ],
+      "eye_distance": 86.765,
+      "eye_nose_distance": 84.106,
+      "eye_nose_ratio": 0.969352
+    },
+    {
+      "frame": 5,
+      "left_eye": [
+        388.474,
+        616.333
+      ],
+      "right_eye": [
+        475.609,
+        617.022
+      ],
+      "eye_mid": [
+        432.041,
+        616.678
+      ],
+      "nose": [
+        422.473,
+        701.167
+      ],
+      "eye_distance": 87.135,
+      "eye_nose_distance": 84.49,
+      "eye_nose_ratio": 0.969636
+    },
+    {
+      "frame": 6,
+      "left_eye": [
+        385.393,
+        631.297
+      ],
+      "right_eye": [
+        472.923,
+        630.319
+      ],
+      "eye_mid": [
+        429.158,
+        630.808
+      ],
+      "nose": [
+        419.531,
+        715.7
+      ],
+      "eye_distance": 87.529,
+      "eye_nose_distance": 84.892,
+      "eye_nose_ratio": 0.969869
+    },
+    {
+      "frame": 7,
+      "left_eye": [
+        382.266,
+        646.148
+      ],
+      "right_eye": [
+        470.424,
+        643.521
+      ],
+      "eye_mid": [
+        426.345,
+        644.835
+      ],
+      "nose": [
+        416.547,
+        730.253
+      ],
+      "eye_distance": 88.158,
+      "eye_nose_distance": 85.418,
+      "eye_nose_ratio": 0.96892
+    },
+    {
+      "frame": 8,
+      "left_eye": [
+        379.149,
+        660.983
+      ],
+      "right_eye": [
+        467.768,
+        656.846
+      ],
+      "eye_mid": [
+        423.459,
+        658.914
+      ],
+      "nose": [
+        413.553,
+        744.699
+      ],
+      "eye_distance": 88.619,
+      "eye_nose_distance": 85.785,
+      "eye_nose_ratio": 0.968026
+    },
+    {
+      "frame": 9,
+      "left_eye": [
+        376.035,
+        675.866
+      ],
+      "right_eye": [
+        465.156,
+        670.015
+      ],
+      "eye_mid": [
+        420.595,
+        672.941
+      ],
+      "nose": [
+        410.34,
+        757.782
+      ],
+      "eye_distance": 89.121,
+      "eye_nose_distance": 84.841,
+      "eye_nose_ratio": 0.951976
+    },
+    {
+      "frame": 10,
+      "left_eye": [
+        373.231,
+        685.835
+      ],
+      "right_eye": [
+        462.666,
+        678.982
+      ],
+      "eye_mid": [
+        417.948,
+        682.409
+      ],
+      "nose": [
+        408.049,
+        764.029
+      ],
+      "eye_distance": 89.435,
+      "eye_nose_distance": 81.62,
+      "eye_nose_ratio": 0.912617
+    },
+    {
+      "frame": 11,
+      "left_eye": [
+        370.398,
+        695.662
+      ],
+      "right_eye": [
+        460.34,
+        687.758
+      ],
+      "eye_mid": [
+        415.369,
+        691.71
+      ],
+      "nose": [
+        405.751,
+        770.291
+      ],
+      "eye_distance": 89.942,
+      "eye_nose_distance": 78.581,
+      "eye_nose_ratio": 0.873686
+    },
+    {
+      "frame": 12,
+      "left_eye": [
+        370.398,
+        695.662
+      ],
+      "right_eye": [
+        460.34,
+        687.758
+      ],
+      "eye_mid": [
+        415.369,
+        691.71
+      ],
+      "nose": [
+        405.751,
+        770.291
+      ],
+      "eye_distance": 89.942,
+      "eye_nose_distance": 78.581,
+      "eye_nose_ratio": 0.873686
+    }
+  ]
+}

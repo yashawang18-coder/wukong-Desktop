@@ -1,0 +1,89 @@
+{
+  "calibration_mode": "single_carrier_no_per_frame_recolor",
+  "carrier_visible_rgb_mean": [
+    198.382,
+    151.578,
+    103.679
+  ],
+  "carrier_gold_rgb_mean": [
+    202.987,
+    154.806,
+    105.32
+  ],
+  "dark_eye_rgb_means_by_frame": [
+    [
+      35.825,
+      22.59,
+      13.787
+    ],
+    [
+      42.734,
+      27.547,
+      17.033
+    ],
+    [
+      42.478,
+      27.441,
+      17.031
+    ],
+    [
+      42.143,
+      27.242,
+      16.94
+    ],
+    [
+      41.163,
+      26.544,
+      16.507
+    ],
+    [
+      41.377,
+      26.782,
+      16.673
+    ],
+    [
+      41.746,
+      27.016,
+      16.758
+    ],
+    [
+      41.628,
+      27.09,
+      16.996
+    ],
+    [
+      41.592,
+      27.089,
+      17.011
+    ],
+    [
+      40.917,
+      26.595,
+      16.676
+    ],
+    [
+      40.978,
+      26.605,
+      16.643
+    ],
+    [
+      40.978,
+      26.605,
+      16.643
+    ]
+  ],
+  "generated_frame_blue_spill_pixels": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "generated_frame_blue_spill_pass": true,
+  "f01_exemption": "approved anchor preserved byte-for-byte; no recolor or defringe allowed"
+}

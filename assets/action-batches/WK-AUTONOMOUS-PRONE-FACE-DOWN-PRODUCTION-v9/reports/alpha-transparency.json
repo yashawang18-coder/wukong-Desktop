@@ -1,0 +1,7 @@
+{
+  "all_png_rgba_1024": true,
+  "all_canvas_borders_fully_transparent": true,
+  "calm_alpha_byte_stable": true,
+  "calm_face_head_front_paw_region_byte_stable": true,
+  "deterministic_blue_spill_removal_changes_alpha": false
+}

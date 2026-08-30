@@ -1,0 +1,11 @@
+{
+  "owner_selected_surface_authority": "blue_storyboard_images_4_5_6",
+  "production_carrier": "blue_storyboard_image_6",
+  "f02_f11_new_fur_generation": false,
+  "f02_f11_same_pixel_carrier": true,
+  "protected_regions_byte_stable": true,
+  "motion_method": "single_compact_support_bilinear_deformation_field",
+  "blur_used_to_hide_errors": false,
+  "sharpening_used": false,
+  "status": "owner_visual_review_pending"
+}

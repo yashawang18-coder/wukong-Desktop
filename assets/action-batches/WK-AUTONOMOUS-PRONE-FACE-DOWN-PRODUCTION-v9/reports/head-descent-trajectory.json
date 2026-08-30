@@ -1,0 +1,93 @@
+{
+  "nose_y_monotonic_non_decreasing": true,
+  "max_adjacent_eye_mid_x_shift_px": 2.886,
+  "horizontal_shift_limit_px": 3.0,
+  "protected_rear_x_ge_650_byte_stable_f02_f11": true,
+  "protected_ground_y_ge_790_byte_stable_f02_f11": true,
+  "frames": [
+    {
+      "frame": 1,
+      "eye_mid_x": 439.922,
+      "eye_mid_y": 564.834,
+      "nose_x": 440.669,
+      "nose_y": 652.279
+    },
+    {
+      "frame": 2,
+      "eye_mid_x": 440.127,
+      "eye_mid_y": 582.874,
+      "nose_x": 430.896,
+      "nose_y": 666.342
+    },
+    {
+      "frame": 3,
+      "eye_mid_x": 437.407,
+      "eye_mid_y": 594.146,
+      "nose_x": 428.121,
+      "nose_y": 677.936
+    },
+    {
+      "frame": 4,
+      "eye_mid_x": 434.734,
+      "eye_mid_y": 605.413,
+      "nose_x": 425.302,
+      "nose_y": 689.519
+    },
+    {
+      "frame": 5,
+      "eye_mid_x": 432.041,
+      "eye_mid_y": 616.678,
+      "nose_x": 422.473,
+      "nose_y": 701.167
+    },
+    {
+      "frame": 6,
+      "eye_mid_x": 429.158,
+      "eye_mid_y": 630.808,
+      "nose_x": 419.531,
+      "nose_y": 715.7
+    },
+    {
+      "frame": 7,
+      "eye_mid_x": 426.345,
+      "eye_mid_y": 644.835,
+      "nose_x": 416.547,
+      "nose_y": 730.253
+    },
+    {
+      "frame": 8,
+      "eye_mid_x": 423.459,
+      "eye_mid_y": 658.914,
+      "nose_x": 413.553,
+      "nose_y": 744.699
+    },
+    {
+      "frame": 9,
+      "eye_mid_x": 420.595,
+      "eye_mid_y": 672.941,
+      "nose_x": 410.34,
+      "nose_y": 757.782
+    },
+    {
+      "frame": 10,
+      "eye_mid_x": 417.948,
+      "eye_mid_y": 682.409,
+      "nose_x": 408.049,
+      "nose_y": 764.029
+    },
+    {
+      "frame": 11,
+      "eye_mid_x": 415.369,
+      "eye_mid_y": 691.71,
+      "nose_x": 405.751,
+      "nose_y": 770.291
+    },
+    {
+      "frame": 12,
+      "eye_mid_x": 415.369,
+      "eye_mid_y": 691.71,
+      "nose_x": 405.751,
+      "nose_y": 770.291
+    }
+  ]
+}

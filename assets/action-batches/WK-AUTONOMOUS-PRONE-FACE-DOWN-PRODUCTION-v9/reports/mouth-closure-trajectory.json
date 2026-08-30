@@ -1,0 +1,20 @@
+{
+  "method": "strict_red-pink_pixel_count_in_nose-relative_mouth_roi",
+  "tongue_or_pink_pixels_by_frame": [
+    287,
+    256,
+    250,
+    236,
+    208,
+    200,
+    189,
+    146,
+    14,
+    22,
+    0,
+    0
+  ],
+  "f11_f12_endpoint_count": 0,
+  "endpoint_closed_or_fully_occluded": true,
+  "f05_f08_review_board": "review/f05-f08-face-mouth-1x-board.png"
+}

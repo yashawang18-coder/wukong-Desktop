@@ -1,0 +1,16 @@
+{
+  "status": "automated_pass_owner_visual_review_pending",
+  "owner_selected_blue_storyboard_images": [
+    4,
+    5,
+    6
+  ],
+  "production_identity_and_fur_carrier": "source/owner-selected-blue-456/image-06-normalized-carrier.png",
+  "f01_approved_anchor_sha256": "c2a6f39a5d3f4db3d14fd80b9f4e8695add95c5e4a5d3e827de83e64b4a5f44d",
+  "f36_approved_anchor_sha256": "c2a6f39a5d3f4db3d14fd80b9f4e8695add95c5e4a5d3e827de83e64b4a5f44d",
+  "f01_f36_byte_identical": true,
+  "f11_f12_byte_identical": true,
+  "f02_f11_single_carrier_controlled_warp": true,
+  "whole_frame_crossfade_used": false,
+  "independent_per_frame_generation_used": false
+}

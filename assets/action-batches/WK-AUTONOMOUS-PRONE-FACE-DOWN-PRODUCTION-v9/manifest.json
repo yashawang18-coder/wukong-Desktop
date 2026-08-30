@@ -1,0 +1,255 @@
+{
+  "batch_id": "WK-AUTONOMOUS-PRONE-FACE-DOWN-PRODUCTION-v9",
+  "behavior_id": "wk.daily.prone_face_down",
+  "display_name": "贴地趴卧安静休息",
+  "category": "autonomous_daily_behavior_production_candidate",
+  "status": "production_candidate_owner_qa_pending",
+  "asset_stage": "production_candidate_owner_qa_pending",
+  "frame_count": 36,
+  "total_duration_ms": 17240,
+  "canvas": {
+    "width": 1024,
+    "height": 1024,
+    "mode": "RGBA"
+  },
+  "identity_style": "wukong_light_malt_gold_owner_selected_blue_456",
+  "motion_method": "single_carrier_compact_support_controlled_warp_and_exact_reverse",
+  "owner_visual_review_requested": true,
+  "visual_approved": false,
+  "owner_runtime_enable_requested": false,
+  "runtime_validation": "pending_owner_full_lifecycle_visual_review_and_windows_renderer_ci",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
+  "autonomous_binding_enabled": false,
+  "runtime_mapping_modified": false,
+  "main_modified": false,
+  "phases": [
+    {
+      "name": "settle-to-face-down",
+      "frame_count": 12,
+      "duration_ms": 1620,
+      "frames": [
+        {
+          "path": "frames/settle-to-face-down/frame-001.png",
+          "duration_ms": 180,
+          "sha256": "c2a6f39a5d3f4db3d14fd80b9f4e8695add95c5e4a5d3e827de83e64b4a5f44d"
+        },
+        {
+          "path": "frames/settle-to-face-down/frame-002.png",
+          "duration_ms": 140,
+          "sha256": "9a35a4fce27390a2fc41cf7eb01ba75c91c1d2d9a6b1196c1f384c5e5e1ecd94"
+        },
+        {
+          "path": "frames/settle-to-face-down/frame-003.png",
+          "duration_ms": 130,
+          "sha256": "fec1c817383d9a74a9e02ef906f4cea818af302b988362c3807252967102d467"
+        },
+        {
+          "path": "frames/settle-to-face-down/frame-004.png",
+          "duration_ms": 130,
+          "sha256": "054dca16fc0a5f2bafa018d786959a321b255fe89d76da7be9488e8a090c1c90"
+        },
+        {
+          "path": "frames/settle-to-face-down/frame-005.png",
+          "duration_ms": 120,
+          "sha256": "819935bba840f91e0c157024f471e8f6708e8e0021e3b25daa991c4614f73e52"
+        },
+        {
+          "path": "frames/settle-to-face-down/frame-006.png",
+          "duration_ms": 120,
+          "sha256": "745be1f591e04c125fb7b410fa0c3443ffb9220a267ea489db343cdb2fe97667"
+        },
+        {
+          "path": "frames/settle-to-face-down/frame-007.png",
+          "duration_ms": 110,
+          "sha256": "85e0f557c3f2b3b43cec558805dc12d5a1f319fb9e3b885bf0e106767ce59fb2"
+        },
+        {
+          "path": "frames/settle-to-face-down/frame-008.png",
+          "duration_ms": 110,
+          "sha256": "d019c13979ee971a555596ecba8e56af36d61b754c95661a8ebebf04c2fd35c7"
+        },
+        {
+          "path": "frames/settle-to-face-down/frame-009.png",
+          "duration_ms": 110,
+          "sha256": "9333dcd775fb5fa3f8284daca0007edb8c5a054c29a1637069cfd9f5684570f7"
+        },
+        {
+          "path": "frames/settle-to-face-down/frame-010.png",
+          "duration_ms": 120,
+          "sha256": "78f5539008c50b1eac7018cb328c8587dbea6ffa8cce9a65a99821d3d27591f4"
+        },
+        {
+          "path": "frames/settle-to-face-down/frame-011.png",
+          "duration_ms": 130,
+          "sha256": "79de5b2848217bcc50863edb82e3ac09d7abb88ed30451fa8dd695da8e9adc25"
+        },
+        {
+          "path": "frames/settle-to-face-down/frame-012.png",
+          "duration_ms": 220,
+          "sha256": "79de5b2848217bcc50863edb82e3ac09d7abb88ed30451fa8dd695da8e9adc25"
+        }
+      ]
+    },
+    {
+      "name": "face-down-calm",
+      "frame_count": 12,
+      "duration_ms": 14000,
+      "frames": [
+        {
+          "path": "frames/face-down-calm/frame-001.png",
+          "duration_ms": 2200,
+          "sha256": "79de5b2848217bcc50863edb82e3ac09d7abb88ed30451fa8dd695da8e9adc25"
+        },
+        {
+          "path": "frames/face-down-calm/frame-002.png",
+          "duration_ms": 1000,
+          "sha256": "a94e146f6a75cf666b54cf0e9532b3aaa497a4dc458f843dffd47f84af1a992b"
+        },
+        {
+          "path": "frames/face-down-calm/frame-003.png",
+          "duration_ms": 500,
+          "sha256": "5e2c3141c9bbe9e0c06b7e60c1bd68a8390950387ea44651dc907d8851fb7db4"
+        },
+        {
+          "path": "frames/face-down-calm/frame-004.png",
+          "duration_ms": 1000,
+          "sha256": "79de5b2848217bcc50863edb82e3ac09d7abb88ed30451fa8dd695da8e9adc25"
+        },
+        {
+          "path": "frames/face-down-calm/frame-005.png",
+          "duration_ms": 1800,
+          "sha256": "79de5b2848217bcc50863edb82e3ac09d7abb88ed30451fa8dd695da8e9adc25"
+        },
+        {
+          "path": "frames/face-down-calm/frame-006.png",
+          "duration_ms": 1200,
+          "sha256": "79de5b2848217bcc50863edb82e3ac09d7abb88ed30451fa8dd695da8e9adc25"
+        },
+        {
+          "path": "frames/face-down-calm/frame-007.png",
+          "duration_ms": 900,
+          "sha256": "a94e146f6a75cf666b54cf0e9532b3aaa497a4dc458f843dffd47f84af1a992b"
+        },
+        {
+          "path": "frames/face-down-calm/frame-008.png",
+          "duration_ms": 500,
+          "sha256": "5e2c3141c9bbe9e0c06b7e60c1bd68a8390950387ea44651dc907d8851fb7db4"
+        },
+        {
+          "path": "frames/face-down-calm/frame-009.png",
+          "duration_ms": 900,
+          "sha256": "79de5b2848217bcc50863edb82e3ac09d7abb88ed30451fa8dd695da8e9adc25"
+        },
+        {
+          "path": "frames/face-down-calm/frame-010.png",
+          "duration_ms": 1000,
+          "sha256": "79de5b2848217bcc50863edb82e3ac09d7abb88ed30451fa8dd695da8e9adc25"
+        },
+        {
+          "path": "frames/face-down-calm/frame-011.png",
+          "duration_ms": 1000,
+          "sha256": "79de5b2848217bcc50863edb82e3ac09d7abb88ed30451fa8dd695da8e9adc25"
+        },
+        {
+          "path": "frames/face-down-calm/frame-012.png",
+          "duration_ms": 2000,
+          "sha256": "79de5b2848217bcc50863edb82e3ac09d7abb88ed30451fa8dd695da8e9adc25"
+        }
+      ]
+    },
+    {
+      "name": "rise-to-down-anchor",
+      "frame_count": 12,
+      "duration_ms": 1620,
+      "frames": [
+        {
+          "path": "frames/rise-to-down-anchor/frame-001.png",
+          "duration_ms": 220,
+          "sha256": "79de5b2848217bcc50863edb82e3ac09d7abb88ed30451fa8dd695da8e9adc25"
+        },
+        {
+          "path": "frames/rise-to-down-anchor/frame-002.png",
+          "duration_ms": 130,
+          "sha256": "79de5b2848217bcc50863edb82e3ac09d7abb88ed30451fa8dd695da8e9adc25"
+        },
+        {
+          "path": "frames/rise-to-down-anchor/frame-003.png",
+          "duration_ms": 120,
+          "sha256": "78f5539008c50b1eac7018cb328c8587dbea6ffa8cce9a65a99821d3d27591f4"
+        },
+        {
+          "path": "frames/rise-to-down-anchor/frame-004.png",
+          "duration_ms": 110,
+          "sha256": "9333dcd775fb5fa3f8284daca0007edb8c5a054c29a1637069cfd9f5684570f7"
+        },
+        {
+          "path": "frames/rise-to-down-anchor/frame-005.png",
+          "duration_ms": 110,
+          "sha256": "d019c13979ee971a555596ecba8e56af36d61b754c95661a8ebebf04c2fd35c7"
+        },
+        {
+          "path": "frames/rise-to-down-anchor/frame-006.png",
+          "duration_ms": 110,
+          "sha256": "85e0f557c3f2b3b43cec558805dc12d5a1f319fb9e3b885bf0e106767ce59fb2"
+        },
+        {
+          "path": "frames/rise-to-down-anchor/frame-007.png",
+          "duration_ms": 120,
+          "sha256": "745be1f591e04c125fb7b410fa0c3443ffb9220a267ea489db343cdb2fe97667"
+        },
+        {
+          "path": "frames/rise-to-down-anchor/frame-008.png",
+          "duration_ms": 120,
+          "sha256": "819935bba840f91e0c157024f471e8f6708e8e0021e3b25daa991c4614f73e52"
+        },
+        {
+          "path": "frames/rise-to-down-anchor/frame-009.png",
+          "duration_ms": 130,
+          "sha256": "054dca16fc0a5f2bafa018d786959a321b255fe89d76da7be9488e8a090c1c90"
+        },
+        {
+          "path": "frames/rise-to-down-anchor/frame-010.png",
+          "duration_ms": 130,
+          "sha256": "fec1c817383d9a74a9e02ef906f4cea818af302b988362c3807252967102d467"
+        },
+        {
+          "path": "frames/rise-to-down-anchor/frame-011.png",
+          "duration_ms": 140,
+          "sha256": "9a35a4fce27390a2fc41cf7eb01ba75c91c1d2d9a6b1196c1f384c5e5e1ecd94"
+        },
+        {
+          "path": "frames/rise-to-down-anchor/frame-012.png",
+          "duration_ms": 180,
+          "sha256": "c2a6f39a5d3f4db3d14fd80b9f4e8695add95c5e4a5d3e827de83e64b4a5f44d"
+        }
+      ]
+    }
+  ],
+  "reports": [
+    "reports/identity-continuity.json",
+    "reports/eye-nose-ratio.json",
+    "reports/head-descent-trajectory.json",
+    "reports/mouth-closure-trajectory.json",
+    "reports/fur-surface-stability.json",
+    "reports/color-calibration.json",
+    "reports/alpha-transparency.json",
+    "reports/gif-global-palette.json",
+    "reports/QA-REPORT.md"
+  ],
+  "production_scripts": [
+    "tools/build_prone_face_down_v9_local_warp.py",
+    "tools/build_prone_face_down_v9.py",
+    "tools/finalize_prone_face_down_v9_candidate.py"
+  ],
+  "review_artifacts": [
+    "animations/full-lifecycle-transparent.gif",
+    "animations/full-lifecycle-light.gif",
+    "animations/full-lifecycle-dark.gif",
+    "review/full-36-light-board.png",
+    "review/full-36-dark-board.png",
+    "review/face-continuity-12-1x-board.png",
+    "review/f05-f08-face-mouth-1x-board.png"
+  ]
+}
