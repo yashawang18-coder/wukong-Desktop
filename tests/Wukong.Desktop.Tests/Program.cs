@@ -46,6 +46,7 @@ var tests = new (string Name, Action Run)[]
     ("autonomous ticks use approved daily actions without commands", LifecycleReviewCandidateTests.AutonomousTicksUseApprovedDailyAllowlistWithoutCommands),
     ("forward-prone profile requires the matching approved anchor", LifecycleReviewCandidateTests.ForwardProneProfileRequiresMatchingApprovedAnchor),
     ("road-gaze and side-prone v5 extensions pass Windows WPF decode", LifecycleReviewCandidateTests.RuntimeExtensionsPassWindowsWpfDecode),
+    ("road-gaze local review marker opens only the pending candidate", LifecycleReviewCandidateTests.RoadGazeReviewMarkerOpensOnlyPendingCandidate),
     ("autonomous allowlist excludes command-only jump and spin", AutonomousAllowlistExcludesCommandOnlyActions),
     ("autonomous daily candidates are indexed and remain gated", AutonomousDailyCandidatesAreIndexedAndRemainGated),
     ("developer autonomous daily candidate can request playback", DeveloperAutonomousDailyCandidateCanRequestPlayback),
@@ -884,8 +885,8 @@ static void AutonomousDailyCandidatesAreIndexedAndRemainGated()
 
     using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
     var root = manifest.RootElement;
-    Assert(root.GetProperty("asset_stage").GetString() == "production_candidate_owner_qa_pending", "autonomous daily asset stage changed");
-    Assert(!root.GetProperty("autonomous_semantics_owner_approved").GetBoolean(), "autonomous semantics must remain owner-unapproved");
+    Assert(root.GetProperty("asset_stage").GetString() == "runtime_candidate_owner_visual_qa_pending", "autonomous daily asset stage changed");
+    Assert(root.GetProperty("autonomous_semantics_owner_approved").GetBoolean(), "posture-transition semantics must remain owner-approved");
     Assert(!root.GetProperty("runtime_approved").GetBoolean(), "autonomous daily batch must remain runtime locked");
     Assert(!root.GetProperty("runtime_use").GetBoolean(), "autonomous daily batch must keep runtime_use=false");
     Assert(!root.GetProperty("may_enter_autonomous_pool_by_default").GetBoolean(), "autonomous daily batch must not enter autonomous pool by default");
@@ -897,18 +898,16 @@ static void AutonomousDailyCandidatesAreIndexedAndRemainGated()
         [AutonomousDailyCandidateBehaviorIds.StandToSit] = 10,
         [AutonomousDailyCandidateBehaviorIds.SitToProne] = 12,
         [AutonomousDailyCandidateBehaviorIds.ProneToSit] = 4,
-        [AutonomousDailyCandidateBehaviorIds.SitToStand] = 5,
-        [AutonomousDailyCandidateBehaviorIds.PlayfulHop] = 12,
-        [AutonomousDailyCandidateBehaviorIds.PlayfulSpin] = 16
+        [AutonomousDailyCandidateBehaviorIds.SitToStand] = 5
     };
     var actions = root.GetProperty("actions").EnumerateArray().ToArray();
-    Assert(actions.Length == expected.Count, "autonomous daily manifest must contain six review actions");
+    Assert(actions.Length == expected.Count, "autonomous daily manifest must contain four posture-transition review actions");
     foreach (var action in actions)
     {
         var behaviorId = action.GetProperty("behavior_id").GetString()!;
         Assert(expected.TryGetValue(behaviorId, out var expectedFrames), $"unexpected autonomous daily behavior: {behaviorId}");
         Assert(action.GetProperty("source_motion_design_approved").GetBoolean(), "source motion design approval must be preserved");
-        Assert(!action.GetProperty("autonomous_semantics_owner_approved").GetBoolean(), "action semantics must remain owner-unapproved");
+        Assert(action.GetProperty("autonomous_semantics_owner_approved").GetBoolean(), "posture-transition semantics must remain owner-approved");
         Assert(!action.GetProperty("runtime_approved").GetBoolean(), "daily action unexpectedly runtime approved");
         Assert(!action.GetProperty("runtime_use").GetBoolean(), "daily action unexpectedly enabled for runtime");
         Assert(action.GetProperty("frame_count").GetInt32() == expectedFrames, $"frame count changed for {behaviorId}");
@@ -925,36 +924,37 @@ static void AutonomousDailyCandidatesAreIndexedAndRemainGated()
     var catalog = DesktopMotionCatalog.Load(output);
     var candidates = catalog.Motions.Where(x => x.AssetBatch == AutonomousDailyCandidateBehaviorIds.AssetBatch).ToArray();
     Assert(candidates.Length == expected.Count, "autonomous daily candidates were not indexed for review");
-    Assert(candidates.Sum(x => x.FrameCount) == 59, "autonomous daily review set must contain 59 frames");
+    Assert(candidates.Sum(x => x.FrameCount) == 31, "autonomous daily review set must contain 31 referenced frames");
     Assert(candidates.All(x => x.Category == "自主日常候选"), "daily candidates must use the isolated review category");
     Assert(candidates.All(x => !x.RuntimeEnabled && !x.PrototypeUse), "daily candidates must remain outside normal and prototype runtime gates");
-    Assert(candidates.All(x => x.Disposition == "候选审阅"), "daily candidate cards must display review-only disposition");
-    Assert(candidates.All(x => x.CandidateProfile == "production_candidate_owner_qa_pending"), "daily candidate stage was not preserved");
+    Assert(candidates.All(x => x.Disposition == "待视觉验收"), "daily candidate cards must display visual-review disposition");
+    Assert(candidates.All(x => x.CandidateProfile == "runtime_candidate_owner_visual_qa_pending"), "daily candidate stage was not preserved");
     Assert(candidates.All(x => x.VisualScale is > 0.91 and < 0.93), "daily candidates must inherit the approved 0.92 visual scale");
     Assert(candidates.All(x => x.Phases.Single().FrameDurationsMs?.Count == x.FrameCount), "daily candidate per-frame durations were not loaded");
     Assert(candidates.All(x => !x.FirstFrame.Contains(AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase)), "daily candidates must resolve source frames instead of duplicate PNGs");
     Assert(candidates.All(x => x.Description.Contains("no duplicate PNG", StringComparison.Ordinal)), "daily candidate cards must disclose shared source binding");
+    Assert(candidates.All(x => x.BehaviorId is not "wk.daily.playful_hop" and not "wk.daily.playful_spin"), "owner-rejected playful command reuse must not remain in autonomous daily review");
 }
 
 static void DeveloperAutonomousDailyCandidateCanRequestPlayback()
 {
     var runtime = new DesktopRuntimeHost();
-    Assert(runtime.AutonomousDailyCandidateMotions.Count == 6, "runtime review list must expose six autonomous daily candidates");
+    Assert(runtime.AutonomousDailyCandidateMotions.Count == 4, "runtime review list must expose four autonomous posture-transition candidates");
 
     PetMotionRequest? request = null;
     runtime.MotionRequested += (_, item) => request = item;
-    var result = runtime.SubmitDeveloperCandidateMotionAsync(AutonomousDailyCandidateBehaviorIds.PlayfulHop).GetAwaiter().GetResult();
+    var result = runtime.SubmitDeveloperCandidateMotionAsync(AutonomousDailyCandidateBehaviorIds.StandToSit).GetAwaiter().GetResult();
     Assert(result == PetActionResult.Accepted, "developer autonomous daily review was not accepted");
     Assert(request is not null, "developer autonomous daily review did not request playback");
-    Assert(request!.Motion.BehaviorId == AutonomousDailyCandidateBehaviorIds.PlayfulHop, "wrong daily candidate requested");
+    Assert(request!.Motion.BehaviorId == AutonomousDailyCandidateBehaviorIds.StandToSit, "wrong daily candidate requested");
     Assert(request.ExecutionMode == BehaviorExecutionMode.DeveloperPreview, "daily candidate must use the developer-only gate");
     Assert(!request.Motion.RuntimeEnabled, "developer review must not change the runtime gate");
-    Assert(request.Motion.Phases.Single().Frames.Count == 12, "playful hop review frame count changed");
+    Assert(request.Motion.Phases.Single().Frames.Count == 10, "stand-to-sit review frame count changed");
     Assert(request.Motion.HasVariableFrameDurations, "daily candidate per-frame timings were not preserved");
 
-    runtime.CompleteMotion(AutonomousDailyCandidateBehaviorIds.PlayfulHop, "review");
-    Assert(runtime.CurrentStablePosture == StablePosture.Stand, "playful hop review must settle to stand");
-    Assert(request.Motion.BehaviorId == LifecycleCandidateBehaviorIds.StandIdleMicroloop, "daily review did not return to approved stable stand microloop");
+    runtime.CompleteMotion(AutonomousDailyCandidateBehaviorIds.StandToSit, "review");
+    Assert(runtime.CurrentStablePosture == StablePosture.Sit, "stand-to-sit review must settle to sit");
+    Assert(request.Motion.BehaviorId == LifecycleCandidateBehaviorIds.SitIdleMicroloop, "daily review did not return to approved stable sit microloop");
 
     typeof(DesktopRuntimeHost)
         .GetField("_nextAutonomousDecisionAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
@@ -1758,7 +1758,7 @@ static void ControlPanelExposesMagicSpecialsTab()
             Assert(panel.FindName("AutonomousDailyAssetsPanel") is ScrollViewer, "autonomous daily review panel missing");
             var dailyList = panel.FindName("AutonomousDailyAssetList") as ItemsControl;
             Assert(dailyList is not null, "autonomous daily review list missing");
-            Assert(dailyList!.Items.Count == 6, "autonomous daily review list must display six candidates");
+            Assert(dailyList!.Items.Count == 4, "autonomous daily review list must display four posture-transition candidates");
             var interactionReview = panel.FindName("InteractionReviewAssetList") as ItemsControl;
             Assert(interactionReview is not null && interactionReview.Items.Count == 0, "deprecated touch assets must be hidden by default");
             var expiredFilter = panel.FindName("ShowDeprecatedAssetsCheckBox") as CheckBox;
@@ -1907,11 +1907,12 @@ static void ShowcaseDurationsAndPhysicalRoutesStayBounded()
     var start = new Point(320, 280);
     var expectedDuration = TimeSpan.FromSeconds(16);
     var route = MainWindow.BuildCarRidePhysicalRoute(start, workArea, 320, 320, expectedDuration, new Random(240821));
-    Assert(route.Count >= 7, "car ride route did not retain enough physical segments");
+    Assert(route.Count == 7, "car ride route must contain four long cruises and three short turn connectors");
     Assert(Math.Abs(route.Sum(x => x.Duration.TotalMilliseconds) - expectedDuration.TotalMilliseconds) < 1, "car ride route duration drifted");
     Assert(route[0].Easing == MotionEasing.Accelerate && route[^1].Easing == MotionEasing.Decelerate, "car ride did not accelerate and brake at route boundaries");
 
     var current = start;
+    var measured = new List<(MotionRouteSegment Segment, double Distance, double Speed)>();
     foreach (var segment in route)
     {
         Assert(segment.Duration >= TimeSpan.FromMilliseconds(300), "car ride introduced a short jitter segment");
@@ -1926,8 +1927,18 @@ static void ShowcaseDurationsAndPhysicalRoutesStayBounded()
         if (segment.Visibility == MotionRouteVisibility.ReenterFromOffscreen)
             Assert(segment.StartOverride is Point hidden && MainWindow.IsFullyOutsideWorkArea(hidden, workArea, 320, 320), "car ride reentry start was visible before teleport");
         Assert(MainWindow.ResolveCarRideDirection(segmentStart, segment.Target) == segment.Direction, "car body direction no longer matches window movement");
+        var dx = segment.Target.X - segmentStart.X;
+        var dy = segment.Target.Y - segmentStart.Y;
+        var distance = Math.Sqrt(dx * dx + dy * dy);
+        measured.Add((segment, distance, distance / Math.Max(0.001, segment.Duration.TotalSeconds)));
         current = segment.Target;
     }
+
+    var cruises = measured.Where(x => x.Segment.Pace == MotionRoutePace.Cruise).ToArray();
+    var turns = measured.Where(x => x.Segment.Pace == MotionRoutePace.TurnConnector).ToArray();
+    Assert(cruises.Length == 4 && turns.Length == 3, "car ride cruise/turn segment counts changed");
+    Assert(cruises.Average(x => x.Distance) >= turns.Average(x => x.Distance) * 4.0, "car ride no longer has long straights and short turns");
+    Assert(cruises.Average(x => x.Speed) >= turns.Average(x => x.Speed) * 2.0, "car ride straight speed is not meaningfully faster than turning speed");
 
     var visible = new[] { start }.Concat(route.Where(x => x.Visibility != MotionRouteVisibility.ExitOffscreen).Select(x => x.Target)).ToArray();
     Assert(visible.Max(x => x.X) - visible.Min(x => x.X) >= (workArea.Width - 320) * 0.55, "car ride horizontal activity radius is still too small");
@@ -1936,22 +1947,38 @@ static void ShowcaseDurationsAndPhysicalRoutesStayBounded()
         .Select(seed => MainWindow.BuildCarRidePhysicalRoute(start, workArea, 320, 320, expectedDuration, new Random(seed)))
         .Select(candidate => candidate.Count(x => x.Visibility == MotionRouteVisibility.ExitOffscreen))
         .ToArray();
-    Assert(offscreenCounts.All(x => x is 0 or 1), "car ride produced more than one offscreen excursion");
-    Assert(offscreenCounts.Count(x => x == 1) is >= 4 and <= 24, "car ride offscreen probability left the low-frequency range");
+    Assert(offscreenCounts.All(x => x == 0), "car ride still uses non-physical offscreen teleport segments");
+    var routeSignatures = Enumerable.Range(1, 32)
+        .Select(seed => string.Join(";", MainWindow.BuildCarRidePhysicalRoute(start, workArea, 320, 320, expectedDuration, new Random(seed))
+            .Select(segment => $"{segment.Target.X:0},{segment.Target.Y:0}")))
+        .Distinct(StringComparer.Ordinal)
+        .Count();
+    Assert(routeSignatures >= 16, "car ride route geometry is not meaningfully randomized");
 }
 
 static void CarRideRoadGazeWaitsForEligibleStraightCruise()
 {
     var now = new DateTimeOffset(2026, 8, 26, 12, 0, 0, TimeSpan.Zero);
-    var eligible = new MotionRouteSegment(new Point(900, 300), "right", TimeSpan.FromSeconds(2), MotionEasing.Linear);
-    Assert(MainWindow.IsCarRoadGazeWindowEligible(eligible, 0, now, now, 0, 18), "valid road-gaze window was rejected");
-    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible with { Direction = "front" }, 0, now, now, 0, 18), "road gaze entered a non-side cruise");
-    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible with { Duration = TimeSpan.FromSeconds(1.7) }, 0, now, now, 0, 18), "road gaze entered a segment shorter than its 18-frame playback");
-    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible, 2, now, now, 0, 18), "road gaze exceeded the per-ride cap");
-    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible, 0, now.AddSeconds(1), now, 0, 18), "road gaze ignored cooldown");
-    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible, 0, now, now, 1, 18), "road gaze did not wait for wheel-loop frame zero");
-    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible, 0, now, now, 0, 17), "road gaze accepted a sequence not aligned to the six-frame wheel loop");
-    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible with { Visibility = MotionRouteVisibility.ReenterFromOffscreen }, 0, now, now, 0, 18), "road gaze ran during offscreen reentry");
+    const int sequenceDurationMs = 2770;
+    var eligible = new MotionRouteSegment(new Point(900, 300), "right", TimeSpan.FromSeconds(4), MotionEasing.Linear);
+    Assert(MainWindow.IsCarRoadGazeWindowEligible(eligible, 0, now, now, 0, 18, sequenceDurationMs), "valid road-gaze window was rejected");
+    Assert(MainWindow.RoadGazeDelayWithinSegment(eligible, 0, now.AddMilliseconds(500), now, 18, sequenceDurationMs) == TimeSpan.FromMilliseconds(500), "road gaze did not preserve its in-segment random delay");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible with { Direction = "front" }, 0, now, now, 0, 18, sequenceDurationMs), "road gaze entered a non-side cruise");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible with { Pace = MotionRoutePace.TurnConnector }, 0, now, now, 0, 18, sequenceDurationMs), "road gaze entered a slow turn connector");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible with { Duration = TimeSpan.FromSeconds(2.8) }, 0, now, now, 0, 18, sequenceDurationMs), "road gaze entered a segment shorter than its declared playback");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible, 2, now, now, 0, 18, sequenceDurationMs), "road gaze exceeded the per-ride cap");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible, 0, now.AddSeconds(1.2), now, 0, 18, sequenceDurationMs), "road gaze ignored a schedule that cannot fit in the straight");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible, 0, now, now, 1, 18, sequenceDurationMs), "road gaze did not wait for wheel-loop frame zero");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible, 0, now, now, 0, 17, sequenceDurationMs), "road gaze accepted a sequence not aligned to the six-frame wheel loop");
+    Assert(!MainWindow.IsCarRoadGazeWindowEligible(eligible with { Visibility = MotionRouteVisibility.ReenterFromOffscreen }, 0, now, now, 0, 18, sequenceDurationMs), "road gaze ran during offscreen reentry");
+    Assert(MainWindow.ShouldPlayCarRoadGaze(BehaviorExecutionMode.DeveloperPreview, 0.99), "developer review did not make the pending sequence observable");
+    Assert(MainWindow.ShouldPlayCarRoadGaze(BehaviorExecutionMode.Normal, 0.57), "normal road-gaze probability became too low");
+    Assert(!MainWindow.ShouldPlayCarRoadGaze(BehaviorExecutionMode.Normal, 0.58), "normal road-gaze probability became continuous");
+    var firstDelays = Enumerable.Range(1, 32).Select(seed => MainWindow.ChooseCarRoadGazeDelay(new Random(seed), true)).ToArray();
+    var laterDelays = Enumerable.Range(1, 32).Select(seed => MainWindow.ChooseCarRoadGazeDelay(new Random(seed), false)).ToArray();
+    Assert(firstDelays.All(x => x >= TimeSpan.FromMilliseconds(1800) && x <= TimeSpan.FromMilliseconds(4800)), "first road-gaze delay left its natural window");
+    Assert(laterDelays.All(x => x >= TimeSpan.FromMilliseconds(5200) && x <= TimeSpan.FromMilliseconds(9200)), "later road-gaze cooldown left its low-frequency window");
+    Assert(firstDelays.Distinct().Count() > 20 && laterDelays.Distinct().Count() > 20, "road gaze timing is not meaningfully irregular");
 }
 static void GestureInterpreterDistinguishesGestures()
 {
@@ -2378,7 +2405,14 @@ static void AutonomousTickCanRequestMotion()
     Assert(runtime.Energy < energyBeforeTick, "unified runtime state did not reduce energy during autonomous ticks");
     Assert(runtime.Hunger > hungerBeforeTick, "unified runtime state did not increase hunger during autonomous ticks");
     Assert(requests.Any(x => x.Motion.BehaviorId is LifecycleCandidateBehaviorIds.LivelyDailyP2 or LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1), "state-driven autonomous scheduling never selected an approved complete lively lifecycle");
+    var restLifecycle = requests.First(x => x.Motion.BehaviorId is LifecycleCandidateBehaviorIds.LivelyDailyP2 or LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1);
+    Assert(restLifecycle.LoopCycles is >= 4 and <= 7, "autonomous complete lifecycle no longer spends a sustained interval in its prone loop");
     Assert(requests.All(x => x.Motion.BehaviorId is LifecycleCandidateBehaviorIds.ProneIdleMicroloop or LifecycleCandidateBehaviorIds.SitIdleMicroloop or LifecycleCandidateBehaviorIds.StandIdleMicroloop or LifecycleCandidateBehaviorIds.LivelyDailyP2 or LifecycleReviewCandidateBehaviorIds.StandIdleV3R1 or LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1), "autonomous tick selected an expired or out-of-scope behavior");
+    var standDelays = Enumerable.Range(1, 64).Select(seed => DesktopRuntimeHost.ChooseAutonomousIdleDelay(StablePosture.Stand, new Random(seed))).ToArray();
+    var proneDelays = Enumerable.Range(1, 64).Select(seed => DesktopRuntimeHost.ChooseAutonomousIdleDelay(StablePosture.Prone, new Random(seed))).ToArray();
+    Assert(standDelays.All(x => x >= TimeSpan.FromSeconds(8) && x < TimeSpan.FromSeconds(16)), "stand dwell left its brief scheduling window");
+    Assert(proneDelays.All(x => x >= TimeSpan.FromSeconds(48) && x < TimeSpan.FromSeconds(77)), "prone dwell left its preferred long scheduling window");
+    Assert(proneDelays.Average(x => x.TotalSeconds) >= standDelays.Average(x => x.TotalSeconds) * 4, "daily scheduling no longer prefers prone dwell over standing");
 }
 
 static void BootstrapLogRedactsAndDoesNotThrow()

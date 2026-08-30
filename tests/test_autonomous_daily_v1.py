@@ -15,11 +15,12 @@ class AutonomousDailyV1Tests(unittest.TestCase):
     def setUpClass(cls):
         cls.manifest = json.loads((BATCH / "manifest.json").read_text(encoding="utf-8"))
 
-    def test_runtime_gates_remain_closed_until_owner_semantic_review(self):
+    def test_owner_approved_posture_transitions_remain_runtime_gated_for_visual_review(self):
         manifest = self.manifest
-        self.assertEqual(manifest["asset_stage"], "production_candidate_owner_qa_pending")
-        self.assertFalse(manifest["autonomous_semantics_owner_approved"])
+        self.assertEqual(manifest["asset_stage"], "runtime_candidate_owner_visual_qa_pending")
+        self.assertTrue(manifest["autonomous_semantics_owner_approved"])
         self.assertFalse(manifest["visual_approved"])
+        self.assertEqual(manifest["runtime_validation"], "pending_owner_windows_renderer_qa")
         self.assertFalse(manifest["runtime_approved"])
         self.assertFalse(manifest["runtime_use"])
         self.assertFalse(manifest["may_enter_autonomous_pool_by_default"])
@@ -30,13 +31,13 @@ class AutonomousDailyV1Tests(unittest.TestCase):
             "wk.daily.sit_to_prone": 12,
             "wk.daily.prone_to_sit": 4,
             "wk.daily.sit_to_stand": 5,
-            "wk.daily.playful_hop": 12,
-            "wk.daily.playful_spin": 16,
         }
         actual = {action["behavior_id"]: action["frame_count"] for action in self.manifest["actions"]}
         self.assertEqual(actual, expected)
         self.assertTrue(all(not action["runtime_use"] for action in self.manifest["actions"]))
-        self.assertTrue(all(not action["autonomous_semantics_owner_approved"] for action in self.manifest["actions"]))
+        self.assertTrue(all(action["autonomous_semantics_owner_approved"] for action in self.manifest["actions"]))
+        self.assertNotIn("wk.daily.playful_hop", actual)
+        self.assertNotIn("wk.daily.playful_spin", actual)
 
     def test_bindings_resolve_exact_approved_source_ranges_without_duplicate_png(self):
         approved_batches = {

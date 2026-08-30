@@ -122,6 +122,7 @@ public sealed record PlayableMotion(
     string Description = "",
     IReadOnlyDictionary<string, IReadOnlyList<string>>? DirectionalFrames = null,
     IReadOnlyDictionary<string, IReadOnlyList<string>>? NamedSequences = null,
+    IReadOnlyDictionary<string, IReadOnlyList<int>>? NamedSequenceFrameDurations = null,
     string CandidateProfile = "",
     double VisualScale = 1.0,
     double? RenderScaleOverride = null,
@@ -281,10 +282,14 @@ public static class MotionVisualSizer
 public sealed class DesktopMotionCatalog
 {
     private const double ApprovedPetVisualScale = 0.92;
+    public const string RoadGazeReviewMarkerFileName = "Wukong.RoadGazeReview.enabled";
     private readonly IReadOnlyList<PlayableMotion> _allMotions;
     private readonly Dictionary<string, PlayableMotion> _motions;
 
-    private DesktopMotionCatalog(IEnumerable<PlayableMotion> motions, string loadSummary)
+    private DesktopMotionCatalog(
+        IEnumerable<PlayableMotion> motions,
+        string loadSummary,
+        bool carRideRoadGazeReviewEnabled)
     {
         _allMotions = motions.Where(x => x.IsUsable).ToArray();
         _motions = new Dictionary<string, PlayableMotion>(StringComparer.OrdinalIgnoreCase);
@@ -294,10 +299,12 @@ public sealed class DesktopMotionCatalog
                 _motions.Add(motion.BehaviorId, motion);
         }
         LoadSummary = loadSummary;
+        CarRideRoadGazeReviewEnabled = carRideRoadGazeReviewEnabled;
     }
 
     public IReadOnlyList<PlayableMotion> Motions => _allMotions.OrderBy(x => x.BehaviorId).ToList();
     public string LoadSummary { get; }
+    public bool CarRideRoadGazeReviewEnabled { get; }
     public static string ReferenceFramePath { get; private set; } = string.Empty;
 
     public PlayableMotion? Find(string behaviorId) =>
@@ -313,6 +320,7 @@ public sealed class DesktopMotionCatalog
     public static DesktopMotionCatalog Load(string baseDirectory)
     {
         var root = Path.Combine(baseDirectory, "WukongAssets");
+        var carRideRoadGazeReviewEnabled = File.Exists(Path.Combine(baseDirectory, RoadGazeReviewMarkerFileName));
         var motions = new[]
         {
             Motion(
@@ -497,16 +505,19 @@ public sealed class DesktopMotionCatalog
         var magicCandidates = LoadMagicCandidates(root).ToArray();
         var lifecycleCandidates = LoadLifecycleCandidates(root).ToArray();
         var lifecycleReviewCandidates = LoadLifecycleReviewCandidates(root).ToArray();
-        var carRideCandidates = LoadCarRideCandidates(root).ToArray();
+        var carRideCandidates = LoadCarRideCandidates(root, carRideRoadGazeReviewEnabled).ToArray();
         var commandMocks = LoadCommandMotionMocks(root).ToArray();
         var autonomousDailyCandidates = LoadAutonomousDailyCandidates(root, lifecycleCandidates.Concat(commandMocks)).ToArray();
         ReferenceFramePath = lifecycleCandidates
             .FirstOrDefault(x => x.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop && x.RuntimeEnabled)?.FirstFrame
             ?? motions.FirstOrDefault(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle)?.FirstFrame
             ?? string.Empty;
-        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; lifecycle_review_candidates={lifecycleReviewCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch}/runtime-review-manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V4AssetBatch}/runtime-review-manifest.json,action-batches/{SideProneFrontBehaviorIds.AssetBatch}/manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; lifecycle_review_candidates={lifecycleReviewCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; car_ride_road_gaze_review={carRideRoadGazeReviewEnabled}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch}/runtime-review-manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V4AssetBatch}/runtime-review-manifest.json,action-batches/{SideProneFrontBehaviorIds.AssetBatch}/manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.RoadGazeAssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
         BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
-        return new DesktopMotionCatalog(motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(lifecycleReviewCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks), summary);
+        return new DesktopMotionCatalog(
+            motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(lifecycleReviewCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks),
+            summary,
+            carRideRoadGazeReviewEnabled);
     }
 
     private static PlayableMotion Motion(
@@ -1179,8 +1190,8 @@ public sealed class DesktopMotionCatalog
 
         var batchGateClosed =
             string.Equals(manifest.BatchId, AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal) &&
-            string.Equals(manifest.AssetStage, "production_candidate_owner_qa_pending", StringComparison.Ordinal) &&
-            !manifest.AutonomousSemanticsOwnerApproved &&
+            string.Equals(manifest.AssetStage, "runtime_candidate_owner_visual_qa_pending", StringComparison.Ordinal) &&
+            manifest.AutonomousSemanticsOwnerApproved &&
             !manifest.RuntimeApproved &&
             !manifest.RuntimeUse &&
             !manifest.MayEnterAutonomousPoolByDefault;
@@ -1200,7 +1211,7 @@ public sealed class DesktopMotionCatalog
                 errors.Add("daily_namespace_required");
             if (!action.SourceMotionDesignApproved)
                 errors.Add("source_motion_design_not_approved");
-            if (action.AutonomousSemanticsOwnerApproved || action.RuntimeApproved || action.RuntimeUse)
+            if (!action.AutonomousSemanticsOwnerApproved || action.RuntimeApproved || action.RuntimeUse)
                 errors.Add("action_gate_must_remain_closed");
 
             var binding = action.SourceBinding;
@@ -1278,12 +1289,12 @@ public sealed class DesktopMotionCatalog
                 new[] { new MotionPhase("review", frames, action.Loop, durations) },
                 sourceRoot,
                 RuntimeEnabled: false,
-                Status: "仅开发者审阅：自发行为语义与 Windows 渲染待主人确认",
-                MissingContent: "owner semantic review / Windows renderer QA / runtime approval",
+                Status: "候审已启用：等待主人 Windows 视觉验收",
+                MissingContent: "owner Windows renderer QA / runtime approval",
                 StartPose: action.FromPosture,
                 EndPose: action.ToPosture,
                 StyleGroup: "wukong-light-malt-gold-autonomous-daily-v1",
-                Disposition: "候选审阅",
+                Disposition: "待视觉验收",
                 PrototypeUse: false,
                 AssetBatch: manifest.BatchId,
                 Description: $"{action.DailyRole}; shared immutable reference to approved light-malt-gold source frames; no duplicate PNG; never selected by the autonomous pool while runtime_use=false.",
@@ -1428,7 +1439,7 @@ public sealed class DesktopMotionCatalog
             : DesktopMotionEffect.None;
 
 
-    private static IEnumerable<PlayableMotion> LoadCarRideCandidates(string root)
+    private static IEnumerable<PlayableMotion> LoadCarRideCandidates(string root, bool allowPendingRoadGazeReview)
     {
         var loadStarted = Stopwatch.GetTimestamp();
         var manifestPath = Path.Combine(root, "action-batches", CarRideBehaviorIds.AssetBatch, "manifest.json");
@@ -1504,6 +1515,7 @@ public sealed class DesktopMotionCatalog
         BootstrapLog.WriteRaw(
             $"car_ride_index_ready manifest_parse_ms={manifestParseMs:0.0} validation_index_ms={Stopwatch.GetElapsedTime(loadStarted).TotalMilliseconds:0.0} frame_refs={manifest.AllSequences?.Values.Sum(x => x.Count) ?? 0}");
 
+        var namedSequences = BuildCarRideNamedSequences(manifest, batchRoot, root, allowPendingRoadGazeReview);
         yield return new PlayableMotion(
             manifest.BehaviorId,
             manifest.DisplayName,
@@ -1524,7 +1536,8 @@ public sealed class DesktopMotionCatalog
             AssetBatch: manifest.AssetId,
             Effect: DesktopMotionEffect.CarRide,
             DirectionalFrames: BuildCarRideDirectionalFrames(manifest, batchRoot),
-            NamedSequences: BuildCarRideNamedSequences(manifest, batchRoot, root),
+            NamedSequences: namedSequences.Frames,
+            NamedSequenceFrameDurations: namedSequences.FrameDurations,
             Description: "Owner-only car ride v8 runtime approved interaction",
             CandidateProfile: manifest.AssetId,
             VisualScale: 1.18,
@@ -1558,13 +1571,20 @@ public sealed class DesktopMotionCatalog
         return result;
     }
 
-    private static IReadOnlyDictionary<string, IReadOnlyList<string>> BuildCarRideNamedSequences(
+    private sealed record CarRideNamedSequenceCatalog(
+        IReadOnlyDictionary<string, IReadOnlyList<string>> Frames,
+        IReadOnlyDictionary<string, IReadOnlyList<int>> FrameDurations);
+
+    private static CarRideNamedSequenceCatalog BuildCarRideNamedSequences(
         CarRideCandidateManifest manifest,
         string batchRoot,
-        string assetRoot)
+        string assetRoot,
+        bool allowPendingRoadGazeReview)
     {
         if (manifest.AllSequences is null)
-            return new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+            return new CarRideNamedSequenceCatalog(
+                new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase),
+                new Dictionary<string, IReadOnlyList<int>>(StringComparer.OrdinalIgnoreCase));
 
         var result = manifest.AllSequences.ToDictionary(
             entry => entry.Key,
@@ -1573,6 +1593,7 @@ public sealed class DesktopMotionCatalog
                 .Where(File.Exists)
                 .ToArray(),
             StringComparer.OrdinalIgnoreCase);
+        var durations = new Dictionary<string, IReadOnlyList<int>>(StringComparer.OrdinalIgnoreCase);
 
         var extensionPath = Path.Combine(
             assetRoot,
@@ -1580,21 +1601,40 @@ public sealed class DesktopMotionCatalog
             CarRideBehaviorIds.RoadGazeAssetBatch,
             "manifest.json");
         if (!File.Exists(extensionPath))
-            return result;
+            return new CarRideNamedSequenceCatalog(result, durations);
 
         try
         {
             var extension = JsonSerializer.Deserialize<CarRideRoadGazeManifest>(
                 File.ReadAllText(extensionPath),
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            if (extension is null ||
-                !extension.RuntimeApproved ||
-                !extension.RuntimeUse ||
-                !string.Equals(extension.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.OrdinalIgnoreCase))
+            if (extension is null || extension.Sequences is null)
             {
                 BootstrapLog.WriteRaw("car_ride_road_gaze_extension_gate_closed");
-                return result;
+                return new CarRideNamedSequenceCatalog(result, durations);
             }
+
+            var runtimeApproved = extension.RuntimeApproved &&
+                                  extension.RuntimeUse &&
+                                  extension.ProductionAsset &&
+                                  extension.VisualApproved &&
+                                  !extension.PrototypeUse &&
+                                  string.Equals(extension.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.OrdinalIgnoreCase);
+            var localReviewAllowed = allowPendingRoadGazeReview &&
+                                     string.Equals(extension.AssetId, CarRideBehaviorIds.RoadGazeAssetBatch, StringComparison.Ordinal) &&
+                                     string.Equals(extension.Status, "runtime_candidate_owner_visual_qa_pending", StringComparison.Ordinal) &&
+                                     extension.PrototypeUse &&
+                                     !extension.RuntimeApproved &&
+                                     !extension.RuntimeUse &&
+                                     !extension.ProductionAsset &&
+                                     string.Equals(extension.RuntimeValidation, "pending_owner_windows_renderer_qa", StringComparison.OrdinalIgnoreCase);
+            if (!runtimeApproved && !localReviewAllowed)
+            {
+                BootstrapLog.WriteRaw("car_ride_road_gaze_extension_gate_closed");
+                return new CarRideNamedSequenceCatalog(result, durations);
+            }
+            if (localReviewAllowed)
+                BootstrapLog.WriteRaw("car_ride_road_gaze_local_review_enabled");
 
             var extensionRoot = Path.GetDirectoryName(extensionPath)!;
             foreach (var entry in extension.Sequences)
@@ -1605,6 +1645,7 @@ public sealed class DesktopMotionCatalog
                     continue;
 
                 var frames = new List<string>(entry.Value.Count);
+                var frameDurations = new List<int>(entry.Value.Count);
                 var valid = true;
                 foreach (var frame in entry.Value)
                 {
@@ -1617,9 +1658,13 @@ public sealed class DesktopMotionCatalog
                         break;
                     }
                     frames.Add(path);
+                    frameDurations.Add(frame.DurationMs.GetValueOrDefault(manifest.FrameDurationMs));
                 }
                 if (valid)
+                {
                     result[entry.Key] = frames;
+                    durations[entry.Key] = frameDurations;
+                }
             }
         }
         catch (Exception ex)
@@ -1627,7 +1672,7 @@ public sealed class DesktopMotionCatalog
             BootstrapLog.Write("Car ride road-gaze extension parse failed", ex);
         }
 
-        return result;
+        return new CarRideNamedSequenceCatalog(result, durations);
     }
 
     private static string Sha256(string path)
@@ -1719,8 +1764,6 @@ public static class AutonomousDailyCandidateBehaviorIds
     public const string SitToProne = "wk.daily.sit_to_prone";
     public const string ProneToSit = "wk.daily.prone_to_sit";
     public const string SitToStand = "wk.daily.sit_to_stand";
-    public const string PlayfulHop = "wk.daily.playful_hop";
-    public const string PlayfulSpin = "wk.daily.playful_spin";
 }
 
 public static class CommandBehaviorIds
@@ -1747,7 +1790,7 @@ public static class InteractionBehaviorIds
 public static class CarRideBehaviorIds
 {
     public const string AssetBatch = "WK-INTERACTION-CAR-RIDE-CANDIDATE-v8";
-    public const string RoadGazeAssetBatch = "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v9";
+    public const string RoadGazeAssetBatch = "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v13";
     public const string CarRide = "wk.interaction.car_ride";
 
     public static readonly IReadOnlySet<string> PrototypeWhitelist =
@@ -1939,13 +1982,20 @@ public sealed record CarRideCandidateManifest(
     [property: JsonPropertyName("phases")] IReadOnlyList<LifecycleCandidatePhaseManifest> Phases);
 
 public sealed record CarRideRoadGazeManifest(
+    [property: JsonPropertyName("asset_id")] string AssetId,
+    [property: JsonPropertyName("status")] string Status,
     [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("owner_runtime_enable_requested")] bool OwnerRuntimeEnableRequested,
     [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
     [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
     [property: JsonPropertyName("sequences")] IReadOnlyDictionary<string, IReadOnlyList<CarRideRoadGazeFrameManifest>> Sequences);
 
 public sealed record CarRideRoadGazeFrameManifest(
     [property: JsonPropertyName("path")] string Path,
+    [property: JsonPropertyName("duration_ms")] int? DurationMs,
     [property: JsonPropertyName("sha256")] string Sha256,
     [property: JsonPropertyName("bytes")] long Bytes);
 
@@ -2223,7 +2273,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         CurrentBehaviorId = _catalog.RequiredIdle.BehaviorId;
         _currentBehaviorId = _catalog.RequiredIdle.BehaviorId;
         _currentStartedAt = _now();
-        _nextAutonomousDecisionAt = _currentStartedAt + TimeSpan.FromSeconds(_random.Next(24, 41));
+        _nextAutonomousDecisionAt = _currentStartedAt + ChooseAutonomousIdleDelay(_agentState.CurrentPosture, _random);
         Trace("asset_catalog_loaded", $"{_catalog.LoadSummary}; motions={_catalog.Motions.Count}");
     }
 
@@ -2491,7 +2541,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         _pendingRequestTimestamp = Stopwatch.GetTimestamp();
         try
         {
-            return Task.FromResult(SubmitBehavior(source, CarRideBehaviorIds.CarRide, "owner:car_ride_v8", priority: 18, executionMode: BehaviorExecutionMode.Normal));
+            var roadGazeReview = _catalog.CarRideRoadGazeReviewEnabled;
+            return Task.FromResult(SubmitBehavior(
+                source,
+                CarRideBehaviorIds.CarRide,
+                roadGazeReview ? "owner:car_ride_v8_road_gaze_review" : "owner:car_ride_v8",
+                priority: 18,
+                executionMode: roadGazeReview ? BehaviorExecutionMode.DeveloperPreview : BehaviorExecutionMode.Normal,
+                bypassRuntimeGate: roadGazeReview));
         }
         finally
         {
@@ -2721,9 +2778,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
         var choice = ChooseAutonomousBehavior();
         var result = SubmitBehavior(BehaviorRequestSource.AutonomousTick, choice.BehaviorId, choice.Reason, priority: -5);
-        _nextAutonomousDecisionAt = now + TimeSpan.FromSeconds(result == PetActionResult.Accepted
-            ? _random.Next(28, 51)
-            : _random.Next(14, 25));
+        _nextAutonomousDecisionAt = now + (result == PetActionResult.Accepted
+            ? ChooseAutonomousIdleDelay(_agentState.CurrentPosture, _random)
+            : TimeSpan.FromSeconds(_random.Next(14, 25)));
         return Task.CompletedTask;
     }
 
@@ -2906,7 +2963,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                 ? motion with { RenderScaleOverride = renderScaleOverride }
                 : motion;
             _agentState = _agentState with { CurrentPosture = posture, IsBusy = false, ActiveActionId = null };
-            _nextAutonomousDecisionAt = _now() + TimeSpan.FromSeconds(_random.Next(24, 41));
+            _nextAutonomousDecisionAt = _now() + ChooseAutonomousIdleDelay(posture, _random);
             Accept(playbackMotion, BehaviorRequestSource.OwnerUi, BehaviorExecutionMode.Normal, source, returnToIdle: false, loopCycles: int.MaxValue);
             return;
         }
@@ -2914,7 +2971,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         var fallback = _catalog.RequiredIdle;
         var fallbackPosture = StablePostureFromPose(fallback.EndPose, StablePosture.Prone);
         _agentState = _agentState with { CurrentPosture = fallbackPosture, IsBusy = false, ActiveActionId = null };
-        _nextAutonomousDecisionAt = _now() + TimeSpan.FromSeconds(_random.Next(24, 41));
+        _nextAutonomousDecisionAt = _now() + ChooseAutonomousIdleDelay(fallbackPosture, _random);
         Accept(fallback, BehaviorRequestSource.OwnerUi, BehaviorExecutionMode.Normal, source, returnToIdle: false, loopCycles: int.MaxValue);
     }
 
@@ -3028,6 +3085,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         var loopCycles = stableIdle || keepPetrified || longRunningEffect
             ? int.MaxValue
             : 2;
+        if (source == BehaviorRequestSource.AutonomousTick &&
+            behaviorId is LifecycleCandidateBehaviorIds.LivelyDailyP2 or LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1)
+            loopCycles = ChooseAutonomousProneLoopCycles(_random);
         if (source == BehaviorRequestSource.AutonomousTick && !stableIdle)
         {
             _agentState = _agentState with
@@ -3221,17 +3281,17 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         {
             case StablePosture.Stand:
                 AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.StandIdleMicroloop,
-                    0.52 + Comfort * 0.18 + (1 - _agentState.Arousal) * 0.10 + (workQuiet ? 0.14 : 0.04), "autonomous:stable_stand_microloop");
+                    0.16 + Comfort * 0.08 + (1 - _agentState.Arousal) * 0.05 + (workQuiet ? 0.04 : 0.01), "autonomous:brief_stable_stand_microloop");
                 AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.StandIdleV3R1,
-                    0.48 + Comfort * 0.16 + (1 - _agentState.Arousal) * 0.08 + (workQuiet ? 0.12 : 0.04), "autonomous:approved_v3r1_stand_microloop");
-                if (elapsed >= TimeSpan.FromSeconds(24) && Energy >= 0.28 && Stress < 0.68)
+                    0.12 + Comfort * 0.07 + (1 - _agentState.Arousal) * 0.04 + (workQuiet ? 0.03 : 0.01), "autonomous:brief_approved_v3r1_stand_microloop");
+                if (elapsed >= TimeSpan.FromSeconds(8) && Energy >= 0.18 && Stress < 0.85)
                 {
                     AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.LivelyDailyP2,
-                        0.32 + Curiosity * 0.46 + _agentState.Boredom * 0.30 + Mood * 0.18 + Energy * 0.22 - Stress * 0.55 + _temperament.Activity01 * 0.18 + _temperament.Mischief01 * 0.08 + (workQuiet ? 0 : 0.12),
-                        Energy < 0.38 ? "autonomous:state_driven_rest_lifecycle" : "autonomous:state_driven_lively_daily");
+                        0.94 + Comfort * 0.38 + (1 - Energy) * 0.24 + Curiosity * 0.16 + _agentState.Boredom * 0.12 + Mood * 0.08 - Stress * 0.18 + (workQuiet ? 0.12 : 0.04),
+                        "autonomous:prefer_long_prone_rest_lifecycle");
                     AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1,
-                        0.27 + Curiosity * 0.40 + _agentState.Boredom * 0.26 + Mood * 0.16 + Energy * 0.18 - Stress * 0.52 + (workQuiet ? 0 : 0.10),
-                        "autonomous:approved_v3r1_complete_lifecycle");
+                        0.78 + Comfort * 0.32 + (1 - Energy) * 0.20 + Curiosity * 0.12 + _agentState.Boredom * 0.10 + Mood * 0.06 - Stress * 0.16 + (workQuiet ? 0.10 : 0.03),
+                        "autonomous:prefer_approved_v3r1_long_prone_rest");
                 }
                 break;
             case StablePosture.Sit:
@@ -3281,6 +3341,15 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         var fallback = adjusted[^1];
         return (fallback.BehaviorId, fallback.Reason);
     }
+
+    public static TimeSpan ChooseAutonomousIdleDelay(StablePosture posture, Random random) => posture switch
+    {
+        StablePosture.Stand => TimeSpan.FromSeconds(random.Next(8, 16)),
+        StablePosture.Sit => TimeSpan.FromSeconds(random.Next(26, 45)),
+        _ => TimeSpan.FromSeconds(random.Next(48, 77))
+    };
+
+    public static int ChooseAutonomousProneLoopCycles(Random random) => random.Next(4, 8);
 
     private void CompletePendingAgentDecision(bool completed, string reason)
     {

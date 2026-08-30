@@ -54,7 +54,7 @@ def command_action(command_manifest: dict, source_action: str, action: str, beha
         "frame_count": len(frames),
         "loop": False,
         "source_motion_design_approved": True,
-        "autonomous_semantics_owner_approved": False,
+        "autonomous_semantics_owner_approved": True,
         "runtime_approved": False,
         "runtime_use": False,
         "source_binding": source_binding(
@@ -80,7 +80,7 @@ def lifecycle_action(lifecycle_manifest: dict, source_frames: list[dict], start_
         "frame_count": len(source_frames),
         "loop": False,
         "source_motion_design_approved": True,
-        "autonomous_semantics_owner_approved": False,
+        "autonomous_semantics_owner_approved": True,
         "runtime_approved": False,
         "runtime_use": False,
         "source_binding": source_binding(
@@ -105,22 +105,20 @@ def main() -> None:
         command_action(command_manifest, "down", "sit-to-prone", "wk.daily.sit_to_prone", "日常坐姿转趴卧", "posture_transition"),
         lifecycle_action(lifecycle_manifest, exit_frames[:4], 1, "prone-to-sit", "wk.daily.prone_to_sit", "日常趴卧转坐起", "Prone", "Sit", "posture_transition"),
         lifecycle_action(lifecycle_manifest, exit_frames[3:], 4, "sit-to-stand", "wk.daily.sit_to_stand", "日常坐姿转站立", "Sit", "Stand", "posture_transition"),
-        command_action(command_manifest, "jump", "playful-hop", "wk.daily.playful_hop", "日常开心轻跳", "playful_release"),
-        command_action(command_manifest, "spin", "playful-spin", "wk.daily.playful_spin", "日常开心转圈", "playful_release"),
     ]
 
     manifest = {
         "batch_id": "WK-AUTONOMOUS-DAILY-BEHAVIORS-v1",
         "category": "autonomous_daily_behavior_candidate",
-        "asset_stage": "production_candidate_owner_qa_pending",
+        "asset_stage": "runtime_candidate_owner_visual_qa_pending",
         "source_status": "reference_binding_to_runtime_approved_light_malt_gold_assets",
         "source_batches": [command_manifest["batch_id"], lifecycle_manifest["batch_id"]],
         "identity_style": "wukong_light_malt_gold_lively",
         "motion_design_approved_at_source": True,
-        "autonomous_semantics_owner_approved": False,
+        "autonomous_semantics_owner_approved": True,
         "production_asset": False,
         "visual_approved": False,
-        "runtime_validation": "pending_owner_semantic_and_windows_renderer_qa",
+        "runtime_validation": "pending_owner_windows_renderer_qa",
         "runtime_approved": False,
         "runtime_use": False,
         "may_enter_autonomous_pool_by_default": False,
@@ -131,8 +129,8 @@ def main() -> None:
         "actions": actions,
         "notes": [
             "This batch stores behavior semantics only; every candidate resolves an immutable range from an approved source motion.",
-            "Command-derived motion is not automatically approved for spontaneous daily use.",
-            "The batch must remain outside production runtime until owner semantic review and real Windows renderer QA pass.",
+            "Owner removed the command-derived playful hop and spin from autonomous daily review; the original command actions remain unchanged.",
+            "The four posture transitions are enabled only for explicit developer review and remain outside production runtime until real Windows renderer QA and runtime approval pass.",
             "No expired red/standard-Shiba asset contributes pixels, color, identity, or fur style.",
         ],
     }

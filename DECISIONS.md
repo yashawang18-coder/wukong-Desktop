@@ -1,5 +1,29 @@
 # Decisions
 
+## 2026-08-30 - reject complete-scene v12 identity drift
+
+Owner review rejected v12 because complete-scene generation changed the approved v8 silver vehicle, black/red harness, dog identity, and body proportions. A generated frame is not consistent merely because it contains one complete dog and one complete car. Preserve v12 as failed evidence and close Normal, PrototypePreview, DeveloperPreview, and production gates.
+
+Any successor must use the approved v8 left/right cruise frames as immutable direction anchors. It must preserve the same dog, silver vehicle, black/red harness, steering geometry, whole-subject scale, wheel baseline, and head/ear trajectory. Independently generated full scenes that drift from those anchors cannot enter review. When exact non-moving-region preservation conflicts with a no-composite requirement, fail closed rather than claiming guaranteed consistency.
+
+## 2026-08-30 - historical decision to replace head-only repair with v12 generation
+
+Owner review rejected v11 after deterministic vertical alignment because rebuilding and compositing only the head/neck region still produced unacceptable motion. Preserve v11 bytes and failure evidence, close all of its playback gates, and do not attempt another local head patch.
+
+Create v12 from complete generated scene masters. Each master must contain the entire Wukong puppy, connected neck/body, harness, steering wheel, turquoise car, and wheels. Post-processing may remove the generation key background and apply uniform whole-frame scale/translation to a shared wheel baseline; it may not independently paste, warp, translate, or scale any anatomical or vehicle region.
+
+This review path was later rejected by the owner. v12 now remains visual_approved=false, runtime_validation=failed_owner_visual_qa, runtime_approved=false, runtime_use=false, prototype_use=false, and production_asset=false. Automated alpha, hash, geometry, WPF decode, and baseline checks did not establish visual consistency.
+
+## 2026-08-30 - historical v9/v10 repair decision that produced v11
+
+Owner review found visible head/neck discontinuities, duplicate ears, detached chin fragments, and incorrect full-frame reuse in v9 frames 3-15. Preserve v9 PNG and provenance bytes, but close its Normal, prototype, and production gates. Do not repair approved or reviewed image bytes in place.
+
+v10 rebuilt coherent native left/right head-and-neck poses and restored the matching approved v8 car/body pixels, but owner playback review found that its pose masters used inconsistent vertical anchors and made the head move up and down. Preserve v10 as failed review evidence and close its prototype gate.
+
+Create v11 as a separate owner-review candidate. Apply only deterministic vertical registration above a fixed neck root, preserve the v10 pose content and all approved v8 pixels at y >= 650, and verify the head-top envelope before Windows review. Do not mirror, redraw, scale the body, crossfade, interpolate, or hide defects with motion blur.
+
+That decision originally allowed v11 only behind the local DeveloperPreview marker. The later owner rejection and complete-scene v12 decision above supersede that review path; v11 is now fail-closed in every execution mode.
+
 ## 2026-08-26 - stage v9 and side-prone v5 promotion behind Windows evidence
 
 The owner's request for formal merge, CI closure, and runtime enablement is the visual/semantic authorization to promote the reviewed car-road-gaze extension. The owner subsequently supplied three new side-prone references, which supersede the earlier v5 visual authorization: the rebuilt v5 must be reviewed again before promotion. Neither request permits recording Windows evidence before the workflow exists and passes.
@@ -365,3 +389,59 @@ Restrictions:
 - Keep jump, spin, shake-hand, eat command, magic, car ride, dialogue/model actions, and all command-only behavior outside autonomous daily selection.
 - Preserve owner command and developer preview access to jump and spin; this decision changes only autonomous eligibility.
 - Keep V2 runtime bindings active; V3R1/V4 are additive rather than destructive replacements.
+
+## 2026-08-30 - rebuild car ride road-gaze as complete-scene review masters
+
+Decision:
+
+Replace the rejected head-only/composite road-gaze approach with a new v13 review candidate built from complete dog, harness, and car scenes. Preserve approved v8 unchanged and permit v13 only through the existing explicit local review marker until Windows owner visual QA.
+
+Reason:
+
+V9 introduced visible head/neck seams, v10 introduced vertical head jitter, v11 retained a head-only reconstruction strategy, and v12 changed the dog, harness, and vehicle. The original v8 package proves a complete-master plus deterministic-sequence workflow, but it does not expose a reusable image checkpoint, seed, sampler, or consistency-adapter parameters. Those values must not be guessed.
+
+Restrictions:
+
+- Treat v8 direction and expression masters as immutable identity and geometry references.
+- Generate each new pose as a complete dog + harness + car scene; do not paste or composite a head or neck.
+- Permit only deterministic full-frame chroma removal, one generated-source scale, whole-frame alignment, sequence assembly, preview generation, and hash generation after image creation.
+- Keep `visual_approved=false`, `runtime_approved=false`, `runtime_use=false`, and `production_asset=false` until owner Windows renderer review passes.
+- Keep Normal, AutonomousTick, Dialogue, model routing, commands, startup autoplay, and production release closed.
+- Preserve v9-v12 as rejected provenance and do not overwrite or delete their files.
+
+## 2026-08-30 - use physically paced car routes and prefer prone daily dwell
+
+Decision:
+
+Keep road-gaze v13 behind its existing local review gate while correcting playback semantics. A ride is composed from long, fast straight cruises and short, slower turn connectors. Head turns are low-frequency events scheduled inside eligible straight cruises and use the candidate manifest's declared per-frame timing. Daily autonomous presentation should spend substantially more time in approved prone loops than in stand idle.
+
+Reason:
+
+The owner found the complete-scene v13 art broadly acceptable but observed mechanical timing and route behavior. The previous route marked almost every rectangle segment as a direction change, which selected the slow speed range for most movement. The loader also discarded v13 `duration_ms` values. Separately, a completed lifecycle returned to stand and then waited 24-40 seconds before another decision, making standing visually dominant despite the approved prone loops.
+
+Restrictions:
+
+- Do not modify v8 or v13 PNG bytes, hashes, identity, vehicle, or harness.
+- Do not promote v13 from its pending owner Windows renderer gate based on this code change.
+- Do not start a road-gaze sequence unless its complete declared duration fits in the current side-facing cruise.
+- Do not use offscreen teleportation as a car-route shortcut.
+- Preserve adjacent-direction turn animation, braking, work-area bounds, single-player mutual exclusion, and owner-only car-ride triggering.
+- Preserve the autonomous allowlist and the prohibition on spontaneous jump, spin, commands, magic, and car ride.
+- Prefer prone dwell by extending already approved lifecycle loops and scheduling policy; do not invent or hard-cut an unapproved posture transition.
+
+## 2026-08-31 - narrow the autonomous daily review batch to posture transitions
+
+Decision:
+
+Remove `wk.daily.playful_hop` and `wk.daily.playful_spin` from `WK-AUTONOMOUS-DAILY-BEHAVIORS-v1`. Accept the autonomous semantics of the four retained stand/sit/prone posture transitions and expose them only through the existing developer review path for Windows visual QA.
+
+Reason:
+
+The owner confirmed that happy jumping and spinning are not appropriate spontaneous daily behavior. The remaining posture transitions are suitable for review, but review availability does not prove renderer quality or authorize production autonomous use.
+
+Restrictions:
+
+- Keep the original `wk.command.jump` and `wk.command.spin` owner-command assets and behavior unchanged.
+- Keep `visual_approved=false`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, and `may_enter_autonomous_pool_by_default=false` for the four retained review bindings.
+- Permit playback only through explicit developer review until Windows renderer QA and a separate owner runtime approval.
+- Do not infer autonomous eligibility from shared source frames, command approval, tags, or fallback behavior.

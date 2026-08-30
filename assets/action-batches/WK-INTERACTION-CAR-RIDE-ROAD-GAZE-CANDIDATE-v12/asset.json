@@ -1,0 +1,26 @@
+{
+  "asset_id": "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v12",
+  "parent_asset": "WK-INTERACTION-CAR-RIDE-CANDIDATE-v8",
+  "supersedes": "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v11",
+  "status": "failed_owner_visual_qa_identity_consistency",
+  "runtime_validation": "failed_owner_visual_qa",
+  "visual_approved": false,
+  "owner_runtime_enable_requested": false,
+  "runtime_approved": false,
+  "runtime_use": false,
+  "prototype_use": false,
+  "production_asset": false,
+  "rejected_reason": [
+    "vehicle_design_and_color_drift_from_approved_v8",
+    "harness_design_drift_from_approved_v8",
+    "dog_identity_and_body_proportion_drift_from_approved_v8",
+    "complete_scene_pose_transitions_not_consistent_enough_for_runtime"
+  ],
+  "generation_strategy": "full_scene_generation_no_local_composite",
+  "repair_scope": [
+    "replace_head_only_rebuild_strategy",
+    "remove_head_neck_composite_discontinuity",
+    "remove_head_vertical_anchor_jitter",
+    "normalize_complete_scene_scale_and_wheel_baseline"
+  ]
+}

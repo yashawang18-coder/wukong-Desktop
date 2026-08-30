@@ -26,6 +26,12 @@ public enum MotionRouteVisibility
     ReenterFromOffscreen
 }
 
+public enum MotionRoutePace
+{
+    Cruise,
+    TurnConnector
+}
+
 public sealed record MotionRouteSegment(
     Point Target,
     string Direction,
@@ -33,7 +39,8 @@ public sealed record MotionRouteSegment(
     MotionEasing Easing,
     MotionRouteVisibility Visibility = MotionRouteVisibility.Visible,
     Point? StartOverride = null,
-    TimeSpan? HiddenHold = null);
+    TimeSpan? HiddenHold = null,
+    MotionRoutePace Pace = MotionRoutePace.Cruise);
 
 public sealed record EffectDisplaySnapshot(
     double UserScale,
@@ -732,23 +739,42 @@ public partial class MainWindow : Window
             var current = start;
             var direction = _carRideDirection;
             var roadGazeCount = 0;
-            var nextRoadGazeAt = DateTimeOffset.MinValue;
+            var nextRoadGazeAt = DateTimeOffset.UtcNow + ChooseCarRoadGazeDelay(_effectRandom, firstEvent: true);
             foreach (var segment in route)
             {
                 current = await PrepareRouteSegmentStartAsync(current, segment, token);
                 if (!string.Equals(direction, segment.Direction, StringComparison.OrdinalIgnoreCase))
                     await PlayCarRideTurnPathAsync(request.Motion, direction, segment.Direction, token);
                 _carRideDirection = segment.Direction;
+                var segmentStartedAt = DateTimeOffset.UtcNow;
                 var movement = MoveWindowAsync(current, segment.Target, segment.Duration, token, segment.Easing);
-                if (CanPlayCarRoadGaze(request.Motion, segment, roadGazeCount, nextRoadGazeAt) &&
-                    _effectRandom.NextDouble() < 0.42)
+                var key = $"road-gaze/{segment.Direction}";
+                if (request.Motion.NamedSequences?.TryGetValue(key, out var gazeFrames) == true && gazeFrames.Count > 0)
                 {
-                    var key = $"road-gaze/{segment.Direction}";
-                    if (request.Motion.NamedSequences?.TryGetValue(key, out var gazeFrames) == true && gazeFrames.Count > 0)
+                    IReadOnlyList<int>? gazeDurations = null;
+                    request.Motion.NamedSequenceFrameDurations?.TryGetValue(key, out gazeDurations);
+                    var gazeDurationMs = gazeFrames.Select((_, index) =>
+                        gazeDurations is not null && index < gazeDurations.Count && gazeDurations[index] > 0
+                            ? gazeDurations[index]
+                            : request.Motion.FrameDurationMs).Sum();
+                    var wait = RoadGazeDelayWithinSegment(
+                        segment,
+                        roadGazeCount,
+                        nextRoadGazeAt,
+                        segmentStartedAt,
+                        gazeFrames.Count,
+                        gazeDurationMs);
+                    if (wait is not null && ShouldPlayCarRoadGaze(request.ExecutionMode, _effectRandom.NextDouble()))
                     {
+                        if (wait.Value > TimeSpan.Zero)
+                            await Task.Delay(wait.Value, token);
+                        await WaitForCarRideLoopBoundaryAsync(token);
                         roadGazeCount++;
-                        nextRoadGazeAt = DateTimeOffset.UtcNow.AddSeconds(_effectRandom.Next(6, 13));
-                        await PlayFramesAsync(request.Motion, $"road-gaze:{segment.Direction}", gazeFrames, token);
+                        nextRoadGazeAt = DateTimeOffset.UtcNow + ChooseCarRoadGazeDelay(_effectRandom, firstEvent: false);
+                        var phase = gazeDurations is { Count: > 0 }
+                            ? new MotionPhase($"road-gaze:{segment.Direction}", gazeFrames, Loop: false, gazeDurations)
+                            : null;
+                        await PlayFramesAsync(request.Motion, $"road-gaze:{segment.Direction}", gazeFrames, token, phase);
                     }
                 }
                 await movement;
@@ -789,23 +815,24 @@ public partial class MainWindow : Window
         return hiddenStart;
     }
 
-    private bool CanPlayCarRoadGaze(
-        PlayableMotion motion,
+    public static TimeSpan? RoadGazeDelayWithinSegment(
         MotionRouteSegment segment,
         int roadGazeCount,
-        DateTimeOffset nextRoadGazeAt)
+        DateTimeOffset nextRoadGazeAt,
+        DateTimeOffset now,
+        int sequenceFrameCount,
+        int sequenceDurationMs)
     {
-        var key = $"road-gaze/{segment.Direction}";
-        var frameCount = 0;
-        if (motion.NamedSequences?.TryGetValue(key, out var frames) == true)
-            frameCount = frames.Count;
-        return IsCarRoadGazeWindowEligible(
-            segment,
-            roadGazeCount,
-            nextRoadGazeAt,
-            DateTimeOffset.UtcNow,
-            _frameIndex,
-            frameCount);
+        if (!IsCarRoadGazeWindowEligible(
+                segment,
+                roadGazeCount,
+                nextRoadGazeAt,
+                now,
+                currentFrameIndex: 0,
+                sequenceFrameCount,
+                sequenceDurationMs))
+            return null;
+        return nextRoadGazeAt > now ? nextRoadGazeAt - now : TimeSpan.Zero;
     }
 
     public static bool IsCarRoadGazeWindowEligible(
@@ -814,15 +841,35 @@ public partial class MainWindow : Window
         DateTimeOffset nextRoadGazeAt,
         DateTimeOffset now,
         int currentFrameIndex,
-        int sequenceFrameCount) =>
+        int sequenceFrameCount,
+        int sequenceDurationMs = 0) =>
         roadGazeCount < 2 &&
-        now >= nextRoadGazeAt &&
         segment.Visibility == MotionRouteVisibility.Visible &&
-        segment.Duration >= TimeSpan.FromMilliseconds(1800) &&
+        segment.Pace == MotionRoutePace.Cruise &&
         segment.Direction is "left" or "right" &&
         currentFrameIndex == 0 &&
         sequenceFrameCount >= 6 &&
-        sequenceFrameCount % 6 == 0;
+        sequenceFrameCount % 6 == 0 &&
+        segment.Duration >=
+            (nextRoadGazeAt > now ? nextRoadGazeAt - now : TimeSpan.Zero) +
+            TimeSpan.FromMilliseconds(sequenceDurationMs > 0 ? sequenceDurationMs : sequenceFrameCount * 90) +
+            TimeSpan.FromMilliseconds(620);
+
+    public static bool ShouldPlayCarRoadGaze(BehaviorExecutionMode executionMode, double randomDraw) =>
+        executionMode == BehaviorExecutionMode.DeveloperPreview || randomDraw < 0.58;
+
+    public static TimeSpan ChooseCarRoadGazeDelay(Random random, bool firstEvent) =>
+        firstEvent
+            ? TimeSpan.FromMilliseconds(random.Next(1_800, 4_801))
+            : TimeSpan.FromMilliseconds(random.Next(5_200, 9_201));
+
+    private async Task WaitForCarRideLoopBoundaryAsync(CancellationToken token)
+    {
+        var deadline = DateTimeOffset.UtcNow.AddMilliseconds(520);
+        while (_frameIndex != 0 && DateTimeOffset.UtcNow < deadline)
+            await Task.Delay(24, token);
+    }
+
     private async Task MoveWindowAsync(Point from, Point to, TimeSpan duration, CancellationToken token, MotionEasing easing = MotionEasing.EaseInOut)
     {
         if (_activeRequest?.Motion.Effect == DesktopMotionEffect.BroomFlight)
@@ -914,45 +961,49 @@ public partial class MainWindow : Window
         var origin = ClampToWorkArea(start, workArea, width, height);
         var availableWidth = Math.Max(1, maxX - minX);
         var availableHeight = Math.Max(1, maxY - minY);
-        var spanX = availableWidth * (0.62 + random.NextDouble() * 0.18);
-        var spanY = availableHeight * (0.38 + random.NextDouble() * 0.20);
-        var left = Math.Clamp(origin.X - spanX * (0.42 + random.NextDouble() * 0.16), minX, maxX - spanX);
-        var top = Math.Clamp(origin.Y - spanY * (0.42 + random.NextDouble() * 0.16), minY, maxY - spanY);
+        var spanX = availableWidth * (0.72 + random.NextDouble() * 0.16);
+        var spanY = availableHeight * (0.22 + random.NextDouble() * 0.14);
+        var left = Math.Clamp(origin.X - spanX * (0.42 + random.NextDouble() * 0.16), minX, Math.Max(minX, maxX - spanX));
+        var top = Math.Clamp(origin.Y - spanY * (0.42 + random.NextDouble() * 0.16), minY, Math.Max(minY, maxY - spanY));
         var right = left + spanX;
-        var bottom = top + spanY;
-        var centerX = (left + right) / 2;
-        var centerY = (top + bottom) / 2;
-        var ring = new List<Point>
-        {
-            new(right, centerY),
-            new(right, bottom),
-            new(centerX, bottom),
-            new(left, bottom),
-            new(left, centerY),
-            new(left, top),
-            new(centerX, top),
-            new(right, top)
-        };
+        var laneStep = spanY / 3;
+        var lanes = Enumerable.Range(0, 4)
+            .Select(index => Math.Clamp(top + laneStep * index, minY, maxY))
+            .ToArray();
         if (random.NextDouble() < 0.5)
-            ring.Reverse();
+            Array.Reverse(lanes);
 
-        var nearestIndex = Enumerable.Range(0, ring.Count)
-            .OrderBy(index => Distance(origin, ring[index]))
-            .First();
-        var points = Enumerable.Range(1, 7)
-            .Select(offset => ring[(nearestIndex + offset) % ring.Count])
-            .ToList();
-        var route = BuildVariablePaceRoute(
-            origin,
-            points,
-            totalDuration,
-            ResolveCarRideDirection,
-            random,
-            fastSpeedRange: (280, 440),
-            slowSpeedRange: (105, 180),
-            slowOnDirectionChange: true);
-        if (random.NextDouble() < 0.20)
-            InsertOffscreenExcursion(route, workArea, width, height, random, ResolveCarRideDirection);
+        var firstMovesRight = right - origin.X >= origin.X - left;
+        var firstX = firstMovesRight ? right : left;
+        var secondX = firstMovesRight ? left : right;
+        var points = new[]
+        {
+            new Point(firstX, lanes[0]),
+            new Point(firstX, lanes[1]),
+            new Point(secondX, lanes[1]),
+            new Point(secondX, lanes[2]),
+            new Point(firstX, lanes[2]),
+            new Point(firstX, lanes[3]),
+            new Point(secondX, lanes[3])
+        };
+        var route = new List<MotionRouteSegment>(points.Length);
+        var current = origin;
+        for (var index = 0; index < points.Length; index++)
+        {
+            var target = points[index];
+            var turnConnector = index % 2 == 1;
+            var speedRange = turnConnector ? (Min: 120.0, Max: 190.0) : (Min: 520.0, Max: 760.0);
+            var speed = speedRange.Min + random.NextDouble() * (speedRange.Max - speedRange.Min);
+            var seconds = Math.Max(turnConnector ? 0.58 : 0.85, Distance(current, target) / speed);
+            route.Add(new MotionRouteSegment(
+                target,
+                ResolveCarRideDirection(current, target),
+                TimeSpan.FromSeconds(seconds),
+                index == 0 ? MotionEasing.Accelerate : turnConnector ? MotionEasing.EaseInOut : MotionEasing.Linear,
+                Pace: turnConnector ? MotionRoutePace.TurnConnector : MotionRoutePace.Cruise));
+            current = target;
+        }
+        route[^1] = route[^1] with { Easing = MotionEasing.Decelerate };
         NormalizeRouteDuration(route, totalDuration);
         return route;
     }

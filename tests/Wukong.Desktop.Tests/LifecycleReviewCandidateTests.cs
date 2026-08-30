@@ -185,8 +185,16 @@ internal static class LifecycleReviewCandidateTests
         var assetRoot = Path.Combine(output, "WukongAssets", "action-batches");
         var v5ManifestPath = Path.Combine(assetRoot, SideProneFrontBehaviorIds.AssetBatch, "manifest.json");
         var roadGazeManifestPath = Path.Combine(assetRoot, CarRideBehaviorIds.RoadGazeAssetBatch, "manifest.json");
+        var rejectedRoadGazeV12ManifestPath = Path.Combine(assetRoot, "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v12", "manifest.json");
+        var rejectedRoadGazeV11ManifestPath = Path.Combine(assetRoot, "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v11", "manifest.json");
+        var rejectedRoadGazeV10ManifestPath = Path.Combine(assetRoot, "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v10", "manifest.json");
+        var supersededRoadGazeManifestPath = Path.Combine(assetRoot, "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v9", "manifest.json");
         Assert(File.Exists(v5ManifestPath), "side-prone v5 manifest was not copied to Windows output");
-        Assert(File.Exists(roadGazeManifestPath), "road-gaze v9 manifest was not copied to Windows output");
+        Assert(File.Exists(roadGazeManifestPath), "road-gaze v13 manifest was not copied to Windows output");
+        Assert(File.Exists(rejectedRoadGazeV12ManifestPath), "rejected road-gaze v12 evidence was not copied to Windows output");
+        Assert(File.Exists(rejectedRoadGazeV11ManifestPath), "rejected road-gaze v11 evidence was not copied to Windows output");
+        Assert(File.Exists(rejectedRoadGazeV10ManifestPath), "rejected road-gaze v10 evidence was not copied to Windows output");
+        Assert(File.Exists(supersededRoadGazeManifestPath), "superseded road-gaze v9 evidence was not copied to Windows output");
 
         using var v5Document = JsonDocument.Parse(File.ReadAllText(v5ManifestPath));
         var v5 = v5Document.RootElement;
@@ -215,27 +223,123 @@ internal static class LifecycleReviewCandidateTests
 
         using var roadGazeDocument = JsonDocument.Parse(File.ReadAllText(roadGazeManifestPath));
         var roadGaze = roadGazeDocument.RootElement;
-        Assert(roadGaze.GetProperty("visual_approved").GetBoolean(), "road-gaze v9 owner visual approval request was lost");
-        Assert(roadGaze.GetProperty("owner_runtime_enable_requested").GetBoolean(), "road-gaze v9 owner enable request was lost");
-        var roadGazeApproved = roadGaze.GetProperty("runtime_approved").GetBoolean();
-        Assert(roadGazeApproved == roadGaze.GetProperty("runtime_use").GetBoolean(), "road-gaze v9 runtime gates diverged");
-        Assert(roadGazeApproved == roadGaze.GetProperty("production_asset").GetBoolean(), "road-gaze v9 production gate diverged");
-        Assert(
-            roadGaze.GetProperty("runtime_validation").GetString() == (roadGazeApproved ? "passed_windows_renderer_qa" : "pending_windows_renderer_ci"),
-            "road-gaze v9 validation state does not match its runtime gate");
+        Assert(roadGaze.GetProperty("asset_id").GetString() == CarRideBehaviorIds.RoadGazeAssetBatch, "road-gaze v13 asset id changed");
+        Assert(roadGaze.GetProperty("status").GetString() == "runtime_candidate_owner_visual_qa_pending", "road-gaze v13 review status changed");
+        Assert(roadGaze.GetProperty("runtime_validation").GetString() == "pending_owner_windows_renderer_qa", "road-gaze v13 validation gate changed");
+        Assert(!roadGaze.GetProperty("visual_approved").GetBoolean(), "road-gaze v13 claimed owner visual approval");
+        Assert(!roadGaze.GetProperty("owner_runtime_enable_requested").GetBoolean(), "road-gaze v13 claimed owner enablement");
+        Assert(!roadGaze.GetProperty("runtime_approved").GetBoolean(), "road-gaze v13 entered approved runtime");
+        Assert(!roadGaze.GetProperty("runtime_use").GetBoolean(), "road-gaze v13 entered normal runtime");
+        Assert(roadGaze.GetProperty("prototype_use").GetBoolean(), "road-gaze v13 cannot enter explicit local review");
+        Assert(!roadGaze.GetProperty("production_asset").GetBoolean(), "road-gaze v13 was marked production");
+        Assert(roadGaze.GetProperty("pixel_policy").GetProperty("generation_strategy").GetString() is string strategy &&
+               strategy.Contains("complete dog", StringComparison.Ordinal),
+            "road-gaze v13 did not record complete-scene generation");
+        Assert(!roadGaze.GetProperty("pixel_policy").GetProperty("local_region_composite_used").GetBoolean(),
+            "road-gaze v13 reintroduced local compositing");
+        Assert(!roadGaze.GetProperty("pixel_policy").GetProperty("head_only_edit_used").GetBoolean(),
+            "road-gaze v13 reintroduced a head-only edit");
 
         var roadGazeFrames = roadGaze.GetProperty("sequences")
             .EnumerateObject()
             .SelectMany(sequence => sequence.Value.EnumerateArray().Select(frame => frame.GetProperty("path").GetString()!))
             .ToArray();
-        Assert(roadGazeFrames.Length == 36, "road-gaze v9 must contain 36 runtime frames");
-        DecodeFrames(Path.GetDirectoryName(roadGazeManifestPath)!, roadGazeFrames, "road-gaze v9");
+        Assert(roadGazeFrames.Length == 36, "road-gaze v13 must contain 36 review frames");
+        DecodeFrames(Path.GetDirectoryName(roadGazeManifestPath)!, roadGazeFrames, "road-gaze v13");
+
+        using var rejectedV12Document = JsonDocument.Parse(File.ReadAllText(rejectedRoadGazeV12ManifestPath));
+        var rejectedV12 = rejectedV12Document.RootElement;
+        Assert(rejectedV12.GetProperty("status").GetString() == "failed_owner_visual_qa_identity_consistency",
+            "road-gaze v12 owner rejection was not preserved");
+        Assert(rejectedV12.GetProperty("runtime_validation").GetString() == "failed_owner_visual_qa",
+            "road-gaze v12 failed validation state changed");
+        Assert(!rejectedV12.GetProperty("runtime_approved").GetBoolean() &&
+               !rejectedV12.GetProperty("runtime_use").GetBoolean() &&
+               !rejectedV12.GetProperty("prototype_use").GetBoolean(),
+            "road-gaze v12 escaped its failed gate");
+
+        using var rejectedV11Document = JsonDocument.Parse(File.ReadAllText(rejectedRoadGazeV11ManifestPath));
+        var rejectedV11 = rejectedV11Document.RootElement;
+        Assert(rejectedV11.GetProperty("status").GetString() == "superseded_owner_visual_qa_failed",
+            "road-gaze v11 owner rejection was not recorded");
+        Assert(rejectedV11.GetProperty("superseded_by").GetString() == "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v12",
+            "road-gaze v11 does not point to v12");
+        Assert(!rejectedV11.GetProperty("visual_approved").GetBoolean() &&
+               !rejectedV11.GetProperty("runtime_approved").GetBoolean() &&
+               !rejectedV11.GetProperty("runtime_use").GetBoolean() &&
+               !rejectedV11.GetProperty("prototype_use").GetBoolean(),
+            "road-gaze v11 can still enter a playback path");
+
+        using var rejectedV10Document = JsonDocument.Parse(File.ReadAllText(rejectedRoadGazeV10ManifestPath));
+        var rejectedV10 = rejectedV10Document.RootElement;
+        Assert(rejectedV10.GetProperty("status").GetString() == "superseded_owner_visual_qa_failed",
+            "road-gaze v10 owner rejection was not recorded");
+        Assert(rejectedV10.GetProperty("superseded_by").GetString() == "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v11",
+            "road-gaze v10 does not point to v11");
+        Assert(!rejectedV10.GetProperty("visual_approved").GetBoolean() &&
+               !rejectedV10.GetProperty("runtime_approved").GetBoolean() &&
+               !rejectedV10.GetProperty("runtime_use").GetBoolean() &&
+               !rejectedV10.GetProperty("prototype_use").GetBoolean(),
+            "road-gaze v10 can still enter a playback path");
+
+        using var supersededDocument = JsonDocument.Parse(File.ReadAllText(supersededRoadGazeManifestPath));
+        var superseded = supersededDocument.RootElement;
+        Assert(superseded.GetProperty("status").GetString() == "superseded_visual_rework_required", "road-gaze v9 was not superseded");
+        Assert(!superseded.GetProperty("visual_approved").GetBoolean(), "road-gaze v9 retained visual approval");
+        Assert(!superseded.GetProperty("runtime_approved").GetBoolean() &&
+               !superseded.GetProperty("runtime_use").GetBoolean() &&
+               !superseded.GetProperty("prototype_use").GetBoolean(),
+            "road-gaze v9 can still enter a playback path");
 
         var catalog = DesktopMotionCatalog.Load(output);
         var car = catalog.Motions.Single(x => x.BehaviorId == CarRideBehaviorIds.CarRide);
         var hasRoadGaze = car.NamedSequences?.ContainsKey("road-gaze/left") == true &&
                           car.NamedSequences.ContainsKey("road-gaze/right");
-        Assert(hasRoadGaze == roadGazeApproved, "road-gaze v9 catalog exposure does not match its runtime gate");
+        Assert(!hasRoadGaze, "road-gaze v13 escaped its normal runtime gate");
+    }
+
+    public static void RoadGazeReviewMarkerOpensOnlyPendingCandidate()
+    {
+        var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
+        var marker = Path.Combine(output, DesktopMotionCatalog.RoadGazeReviewMarkerFileName);
+        Assert(!File.Exists(marker), "normal test output unexpectedly contains the local road-gaze review marker");
+
+        var normalCatalog = DesktopMotionCatalog.Load(output);
+        var normalCar = normalCatalog.Motions.Single(x => x.BehaviorId == CarRideBehaviorIds.CarRide);
+        Assert(!normalCatalog.CarRideRoadGazeReviewEnabled, "normal catalog enabled local road-gaze review");
+        Assert(normalCar.NamedSequences?.Keys.All(x => !x.StartsWith("road-gaze/", StringComparison.OrdinalIgnoreCase)) == true,
+            "pending road-gaze frames entered the normal catalog");
+
+        try
+        {
+            File.WriteAllText(marker, "local_windows_review_only=true\n", System.Text.Encoding.UTF8);
+            var reviewCatalog = DesktopMotionCatalog.Load(output);
+            var reviewCar = reviewCatalog.Motions.Single(x => x.BehaviorId == CarRideBehaviorIds.CarRide);
+            Assert(reviewCatalog.CarRideRoadGazeReviewEnabled, "local review marker state was not reported");
+            Assert(reviewCatalog.LoadSummary.Contains(CarRideBehaviorIds.RoadGazeAssetBatch, StringComparison.Ordinal),
+                "startup load summary omitted the actual road-gaze manifest");
+            Assert(reviewCar.NamedSequences?.ContainsKey("road-gaze/left") == true &&
+                   reviewCar.NamedSequences.ContainsKey("road-gaze/right"),
+                "local marker did not open the pending v13 road-gaze candidate");
+            Assert(reviewCar.NamedSequenceFrameDurations?.ContainsKey("road-gaze/left") == true &&
+                   reviewCar.NamedSequenceFrameDurations.ContainsKey("road-gaze/right"),
+                "local marker loaded v13 frames without their declared timing");
+            var roadGazeDurations = reviewCar.NamedSequenceFrameDurations!;
+            Assert(roadGazeDurations["road-gaze/left"].Sum() == 2770 &&
+                   roadGazeDurations["road-gaze/right"].Sum() == 2770,
+                "v13 road-gaze timing no longer matches the reviewed manifest");
+        }
+        finally
+        {
+            if (File.Exists(marker))
+                File.Delete(marker);
+        }
+
+        var restoredCatalog = DesktopMotionCatalog.Load(output);
+        var restoredCar = restoredCatalog.Motions.Single(x => x.BehaviorId == CarRideBehaviorIds.CarRide);
+        Assert(!restoredCatalog.CarRideRoadGazeReviewEnabled &&
+               restoredCar.NamedSequences?.Keys.All(x => !x.StartsWith("road-gaze/", StringComparison.OrdinalIgnoreCase)) == true,
+            "removing the local review marker did not restore the production gate");
     }
 
     private static void DecodeFrames(string root, IEnumerable<string> relativePaths, string label)

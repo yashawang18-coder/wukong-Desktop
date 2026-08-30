@@ -1,0 +1,540 @@
+{
+  "schema_version": 1,
+  "asset_id": "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v13",
+  "parent_asset": "WK-INTERACTION-CAR-RIDE-CANDIDATE-v8",
+  "status": "runtime_candidate_owner_visual_qa_pending",
+  "runtime_validation": "pending_owner_windows_renderer_qa",
+  "visual_approved": false,
+  "owner_runtime_enable_requested": false,
+  "runtime_approved": false,
+  "runtime_use": false,
+  "prototype_use": true,
+  "production_asset": false,
+  "developer_preview": true,
+  "behavior_id": "wk.interaction.car_ride",
+  "extension_role": "optional_side_cruise_road_gaze",
+  "generation_workflow": {
+    "method": "whole_scene_reference_conditioned_generation",
+    "generation_surface": "Codex built-in image_gen",
+    "backend_model": "not_exposed_by_tool",
+    "seed": null,
+    "source_background": "model-generated blue chroma source",
+    "alpha_method": "deterministic chroma removal with despill",
+    "normalization": "single global scale plus whole-frame translation",
+    "head_or_neck_compositing": false,
+    "runtime_interpolation": false,
+    "runtime_mirroring": false
+  },
+  "pixel_policy": {
+    "generation_strategy": "complete dog, harness, and car scene generation",
+    "local_region_composite_used": false,
+    "head_only_edit_used": false,
+    "runtime_mirror_used": false
+  },
+  "canvas": {
+    "width": 1024,
+    "height": 1024,
+    "format": "PNG",
+    "mode": "RGBA",
+    "wheel_baseline_y": 900,
+    "generated_global_scale": 0.8135
+  },
+  "trigger_contract": {
+    "eligible_directions": [
+      "left",
+      "right"
+    ],
+    "min_segment_ms": 1800,
+    "max_events_per_ride": 2,
+    "cooldown_ms": [
+      6000,
+      12000
+    ],
+    "forbidden_during": [
+      "turn",
+      "brake",
+      "offscreen_exit",
+      "offscreen_reentry"
+    ]
+  },
+  "known_candidate_limits": [
+    "backend image checkpoint and reusable seed are not exposed",
+    "generated whole-scene masters are visually close but not byte-identical to v8",
+    "wheel phase is static during the short road-gaze event",
+    "Windows owner visual QA is required before any runtime promotion"
+  ],
+  "sequences": {
+    "road-gaze/right": [
+      {
+        "path": "frames/road-gaze-right/frame-001.png",
+        "duration_ms": 140,
+        "bytes": 1532659,
+        "sha256": "703988d7e221b0b85044ea611298783f67f1e97ad9afd8c65e0b956871d58b55",
+        "head_pose": "original",
+        "alpha_bbox": [
+          54,
+          296,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-002.png",
+        "duration_ms": 110,
+        "bytes": 1532659,
+        "sha256": "703988d7e221b0b85044ea611298783f67f1e97ad9afd8c65e0b956871d58b55",
+        "head_pose": "original",
+        "alpha_bbox": [
+          54,
+          296,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-003.png",
+        "duration_ms": 110,
+        "bytes": 431340,
+        "sha256": "1a38e19009cb68d278858c2bd3545f754b87205b813cf6e084b0fbcd1d0131b2",
+        "head_pose": "slight",
+        "alpha_bbox": [
+          53,
+          296,
+          970,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-004.png",
+        "duration_ms": 110,
+        "bytes": 431340,
+        "sha256": "1a38e19009cb68d278858c2bd3545f754b87205b813cf6e084b0fbcd1d0131b2",
+        "head_pose": "slight",
+        "alpha_bbox": [
+          53,
+          296,
+          970,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-005.png",
+        "duration_ms": 110,
+        "bytes": 503926,
+        "sha256": "d9e7a37f905ddc8d3dc484f93d60e54f6bd2446b901ac0d814f5c2fc3ae60ee6",
+        "head_pose": "half",
+        "alpha_bbox": [
+          55,
+          286,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-006.png",
+        "duration_ms": 110,
+        "bytes": 503926,
+        "sha256": "d9e7a37f905ddc8d3dc484f93d60e54f6bd2446b901ac0d814f5c2fc3ae60ee6",
+        "head_pose": "half",
+        "alpha_bbox": [
+          55,
+          286,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-007.png",
+        "duration_ms": 180,
+        "bytes": 533661,
+        "sha256": "ee9e7cfffccb76f9c5bccfa9c48ccdcbec0425b353143483c976950c887f9cd7",
+        "head_pose": "profile",
+        "alpha_bbox": [
+          49,
+          270,
+          975,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-008.png",
+        "duration_ms": 220,
+        "bytes": 533661,
+        "sha256": "ee9e7cfffccb76f9c5bccfa9c48ccdcbec0425b353143483c976950c887f9cd7",
+        "head_pose": "profile",
+        "alpha_bbox": [
+          49,
+          270,
+          975,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-009.png",
+        "duration_ms": 260,
+        "bytes": 533661,
+        "sha256": "ee9e7cfffccb76f9c5bccfa9c48ccdcbec0425b353143483c976950c887f9cd7",
+        "head_pose": "profile",
+        "alpha_bbox": [
+          49,
+          270,
+          975,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-010.png",
+        "duration_ms": 260,
+        "bytes": 533661,
+        "sha256": "ee9e7cfffccb76f9c5bccfa9c48ccdcbec0425b353143483c976950c887f9cd7",
+        "head_pose": "profile",
+        "alpha_bbox": [
+          49,
+          270,
+          975,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-011.png",
+        "duration_ms": 220,
+        "bytes": 533661,
+        "sha256": "ee9e7cfffccb76f9c5bccfa9c48ccdcbec0425b353143483c976950c887f9cd7",
+        "head_pose": "profile",
+        "alpha_bbox": [
+          49,
+          270,
+          975,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-012.png",
+        "duration_ms": 180,
+        "bytes": 533661,
+        "sha256": "ee9e7cfffccb76f9c5bccfa9c48ccdcbec0425b353143483c976950c887f9cd7",
+        "head_pose": "profile",
+        "alpha_bbox": [
+          49,
+          270,
+          975,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-013.png",
+        "duration_ms": 110,
+        "bytes": 503926,
+        "sha256": "d9e7a37f905ddc8d3dc484f93d60e54f6bd2446b901ac0d814f5c2fc3ae60ee6",
+        "head_pose": "half",
+        "alpha_bbox": [
+          55,
+          286,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-014.png",
+        "duration_ms": 110,
+        "bytes": 503926,
+        "sha256": "d9e7a37f905ddc8d3dc484f93d60e54f6bd2446b901ac0d814f5c2fc3ae60ee6",
+        "head_pose": "half",
+        "alpha_bbox": [
+          55,
+          286,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-015.png",
+        "duration_ms": 110,
+        "bytes": 431340,
+        "sha256": "1a38e19009cb68d278858c2bd3545f754b87205b813cf6e084b0fbcd1d0131b2",
+        "head_pose": "slight",
+        "alpha_bbox": [
+          53,
+          296,
+          970,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-016.png",
+        "duration_ms": 110,
+        "bytes": 431340,
+        "sha256": "1a38e19009cb68d278858c2bd3545f754b87205b813cf6e084b0fbcd1d0131b2",
+        "head_pose": "slight",
+        "alpha_bbox": [
+          53,
+          296,
+          970,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-017.png",
+        "duration_ms": 140,
+        "bytes": 1532659,
+        "sha256": "703988d7e221b0b85044ea611298783f67f1e97ad9afd8c65e0b956871d58b55",
+        "head_pose": "original",
+        "alpha_bbox": [
+          54,
+          296,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-right/frame-018.png",
+        "duration_ms": 180,
+        "bytes": 1532659,
+        "sha256": "703988d7e221b0b85044ea611298783f67f1e97ad9afd8c65e0b956871d58b55",
+        "head_pose": "original",
+        "alpha_bbox": [
+          54,
+          296,
+          969,
+          901
+        ]
+      }
+    ],
+    "road-gaze/left": [
+      {
+        "path": "frames/road-gaze-left/frame-001.png",
+        "duration_ms": 140,
+        "bytes": 1533163,
+        "sha256": "9f2968f3a5c9c086396c5214ed9b0338d9941ff34f3730303f7bc5d9256a1dbf",
+        "head_pose": "original",
+        "alpha_bbox": [
+          55,
+          296,
+          970,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-002.png",
+        "duration_ms": 110,
+        "bytes": 1533163,
+        "sha256": "9f2968f3a5c9c086396c5214ed9b0338d9941ff34f3730303f7bc5d9256a1dbf",
+        "head_pose": "original",
+        "alpha_bbox": [
+          55,
+          296,
+          970,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-003.png",
+        "duration_ms": 110,
+        "bytes": 496713,
+        "sha256": "02195bf11f9f64848ea8f2eb36b73494c4545a72ca3ff1dd4aff93c88b8e7894",
+        "head_pose": "slight",
+        "alpha_bbox": [
+          55,
+          304,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-004.png",
+        "duration_ms": 110,
+        "bytes": 496713,
+        "sha256": "02195bf11f9f64848ea8f2eb36b73494c4545a72ca3ff1dd4aff93c88b8e7894",
+        "head_pose": "slight",
+        "alpha_bbox": [
+          55,
+          304,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-005.png",
+        "duration_ms": 110,
+        "bytes": 509483,
+        "sha256": "e22229926ba2544a50baffe2b6c5b2eed868a57175f0aed058c73f55187d158b",
+        "head_pose": "half",
+        "alpha_bbox": [
+          55,
+          300,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-006.png",
+        "duration_ms": 110,
+        "bytes": 509483,
+        "sha256": "e22229926ba2544a50baffe2b6c5b2eed868a57175f0aed058c73f55187d158b",
+        "head_pose": "half",
+        "alpha_bbox": [
+          55,
+          300,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-007.png",
+        "duration_ms": 180,
+        "bytes": 512330,
+        "sha256": "a26fe71f9c545d0d4165146b0405ee2ae3d4e126f0c9856583fbc62d91810794",
+        "head_pose": "profile",
+        "alpha_bbox": [
+          55,
+          285,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-008.png",
+        "duration_ms": 220,
+        "bytes": 512330,
+        "sha256": "a26fe71f9c545d0d4165146b0405ee2ae3d4e126f0c9856583fbc62d91810794",
+        "head_pose": "profile",
+        "alpha_bbox": [
+          55,
+          285,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-009.png",
+        "duration_ms": 260,
+        "bytes": 512330,
+        "sha256": "a26fe71f9c545d0d4165146b0405ee2ae3d4e126f0c9856583fbc62d91810794",
+        "head_pose": "profile",
+        "alpha_bbox": [
+          55,
+          285,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-010.png",
+        "duration_ms": 260,
+        "bytes": 512330,
+        "sha256": "a26fe71f9c545d0d4165146b0405ee2ae3d4e126f0c9856583fbc62d91810794",
+        "head_pose": "profile",
+        "alpha_bbox": [
+          55,
+          285,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-011.png",
+        "duration_ms": 220,
+        "bytes": 512330,
+        "sha256": "a26fe71f9c545d0d4165146b0405ee2ae3d4e126f0c9856583fbc62d91810794",
+        "head_pose": "profile",
+        "alpha_bbox": [
+          55,
+          285,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-012.png",
+        "duration_ms": 180,
+        "bytes": 512330,
+        "sha256": "a26fe71f9c545d0d4165146b0405ee2ae3d4e126f0c9856583fbc62d91810794",
+        "head_pose": "profile",
+        "alpha_bbox": [
+          55,
+          285,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-013.png",
+        "duration_ms": 110,
+        "bytes": 509483,
+        "sha256": "e22229926ba2544a50baffe2b6c5b2eed868a57175f0aed058c73f55187d158b",
+        "head_pose": "half",
+        "alpha_bbox": [
+          55,
+          300,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-014.png",
+        "duration_ms": 110,
+        "bytes": 509483,
+        "sha256": "e22229926ba2544a50baffe2b6c5b2eed868a57175f0aed058c73f55187d158b",
+        "head_pose": "half",
+        "alpha_bbox": [
+          55,
+          300,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-015.png",
+        "duration_ms": 110,
+        "bytes": 496713,
+        "sha256": "02195bf11f9f64848ea8f2eb36b73494c4545a72ca3ff1dd4aff93c88b8e7894",
+        "head_pose": "slight",
+        "alpha_bbox": [
+          55,
+          304,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-016.png",
+        "duration_ms": 110,
+        "bytes": 496713,
+        "sha256": "02195bf11f9f64848ea8f2eb36b73494c4545a72ca3ff1dd4aff93c88b8e7894",
+        "head_pose": "slight",
+        "alpha_bbox": [
+          55,
+          304,
+          969,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-017.png",
+        "duration_ms": 140,
+        "bytes": 1533163,
+        "sha256": "9f2968f3a5c9c086396c5214ed9b0338d9941ff34f3730303f7bc5d9256a1dbf",
+        "head_pose": "original",
+        "alpha_bbox": [
+          55,
+          296,
+          970,
+          901
+        ]
+      },
+      {
+        "path": "frames/road-gaze-left/frame-018.png",
+        "duration_ms": 180,
+        "bytes": 1533163,
+        "sha256": "9f2968f3a5c9c086396c5214ed9b0338d9941ff34f3730303f7bc5d9256a1dbf",
+        "head_pose": "original",
+        "alpha_bbox": [
+          55,
+          296,
+          970,
+          901
+        ]
+      }
+    ]
+  }
+}

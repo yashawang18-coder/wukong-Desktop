@@ -1,5 +1,6 @@
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,7 +14,7 @@ class MirrorEligibilityAuditTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "mirror-audit.json"
             subprocess.run(
-                ["python3", str(ROOT / "scripts" / "audit_mirror_eligibility.py"), "--root", str(ROOT), "--output", str(output)],
+                [sys.executable, str(ROOT / "scripts" / "audit_mirror_eligibility.py"), "--root", str(ROOT), "--output", str(output)],
                 check=True,
                 cwd=ROOT,
             )

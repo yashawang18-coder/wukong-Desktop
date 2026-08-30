@@ -1,7 +1,7 @@
 {
   "batch_id": "WK-AUTONOMOUS-DAILY-BEHAVIORS-v1",
   "category": "autonomous_daily_behavior_candidate",
-  "asset_stage": "production_candidate_owner_qa_pending",
+  "asset_stage": "runtime_candidate_owner_visual_qa_pending",
   "source_status": "reference_binding_to_runtime_approved_light_malt_gold_assets",
   "source_batches": [
     "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
@@ -9,10 +9,10 @@
   ],
   "identity_style": "wukong_light_malt_gold_lively",
   "motion_design_approved_at_source": true,
-  "autonomous_semantics_owner_approved": false,
+  "autonomous_semantics_owner_approved": true,
   "production_asset": false,
   "visual_approved": false,
-  "runtime_validation": "pending_owner_semantic_and_windows_renderer_qa",
+  "runtime_validation": "pending_owner_windows_renderer_qa",
   "runtime_approved": false,
   "runtime_use": false,
   "may_enter_autonomous_pool_by_default": false,
@@ -31,7 +31,7 @@
       "frame_count": 10,
       "loop": false,
       "source_motion_design_approved": true,
-      "autonomous_semantics_owner_approved": false,
+      "autonomous_semantics_owner_approved": true,
       "runtime_approved": false,
       "runtime_use": false,
       "source_binding": {
@@ -53,7 +53,7 @@
       "frame_count": 12,
       "loop": false,
       "source_motion_design_approved": true,
-      "autonomous_semantics_owner_approved": false,
+      "autonomous_semantics_owner_approved": true,
       "runtime_approved": false,
       "runtime_use": false,
       "source_binding": {
@@ -75,7 +75,7 @@
       "frame_count": 4,
       "loop": false,
       "source_motion_design_approved": true,
-      "autonomous_semantics_owner_approved": false,
+      "autonomous_semantics_owner_approved": true,
       "runtime_approved": false,
       "runtime_use": false,
       "source_binding": {
@@ -97,7 +97,7 @@
       "frame_count": 5,
       "loop": false,
       "source_motion_design_approved": true,
-      "autonomous_semantics_owner_approved": false,
+      "autonomous_semantics_owner_approved": true,
       "runtime_approved": false,
       "runtime_use": false,
       "source_binding": {
@@ -108,56 +108,12 @@
         "frame_count": 5,
         "sequence_sha256": "b20baf5122b43d006cc3f2a212d7885a5df6a17ca2685656f6ce2fa798cdd807"
       }
-    },
-    {
-      "action": "playful-hop",
-      "behavior_id": "wk.daily.playful_hop",
-      "display_name": "日常开心轻跳",
-      "daily_role": "playful_release",
-      "from_posture": "Stand",
-      "to_posture": "Stand",
-      "frame_count": 12,
-      "loop": false,
-      "source_motion_design_approved": true,
-      "autonomous_semantics_owner_approved": false,
-      "runtime_approved": false,
-      "runtime_use": false,
-      "source_binding": {
-        "asset_batch": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
-        "behavior_id": "wk.command.jump",
-        "phase": "mock",
-        "start_frame": 1,
-        "frame_count": 12,
-        "sequence_sha256": "fa3d749f29ff6f7e3a0708af7e12a1226dd649c3da5e764560662058ee8741e1"
-      }
-    },
-    {
-      "action": "playful-spin",
-      "behavior_id": "wk.daily.playful_spin",
-      "display_name": "日常开心转圈",
-      "daily_role": "playful_release",
-      "from_posture": "Stand",
-      "to_posture": "Stand",
-      "frame_count": 16,
-      "loop": false,
-      "source_motion_design_approved": true,
-      "autonomous_semantics_owner_approved": false,
-      "runtime_approved": false,
-      "runtime_use": false,
-      "source_binding": {
-        "asset_batch": "WK-COMMAND-PRODUCTION-CANDIDATES-v4",
-        "behavior_id": "wk.command.spin",
-        "phase": "mock",
-        "start_frame": 1,
-        "frame_count": 16,
-        "sequence_sha256": "88b0e341098daeb2bca7c21185c9f763be5002cb6b451196a42de5cd5fa20b30"
-      }
     }
   ],
   "notes": [
     "This batch stores behavior semantics only; every candidate resolves an immutable range from an approved source motion.",
-    "Command-derived motion is not automatically approved for spontaneous daily use.",
-    "The batch must remain outside production runtime until owner semantic review and real Windows renderer QA pass.",
+    "Owner removed the command-derived playful hop and spin from autonomous daily review; the original command actions remain unchanged.",
+    "The four posture transitions are enabled only for explicit developer review and remain outside production runtime until real Windows renderer QA and runtime approval pass.",
     "No expired red/standard-Shiba asset contributes pixels, color, identity, or fur style."
   ]
 }

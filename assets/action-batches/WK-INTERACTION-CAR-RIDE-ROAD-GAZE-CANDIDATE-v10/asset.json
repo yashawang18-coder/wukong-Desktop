@@ -1,0 +1,23 @@
+{
+  "asset_id": "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v10",
+  "parent_asset": "WK-INTERACTION-CAR-RIDE-CANDIDATE-v8",
+  "supersedes": "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v9",
+  "status": "superseded_owner_visual_qa_failed",
+  "runtime_validation": "failed_owner_visual_qa",
+  "visual_approved": false,
+  "owner_runtime_enable_requested": false,
+  "runtime_approved": false,
+  "runtime_use": false,
+  "prototype_use": false,
+  "production_asset": false,
+  "repair_scope": [
+    "head_neck_composite_discontinuity",
+    "duplicate_ears",
+    "detached_chin_fragment",
+    "wheel_phase_reuse"
+  ],
+  "superseded_by": "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v11",
+  "rejected_reason": [
+    "head_vertical_anchor_jitter"
+  ]
+}

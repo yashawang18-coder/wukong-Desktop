@@ -19,14 +19,14 @@ The decision order is:
 
 | Proposed daily behavior | Frames | Approved pixel source | Current gate | Review question |
 |---|---:|---|---|---|
-| `wk.daily.stand_to_sit` | 10 | v4 Sit | Candidate | Does a command-style sit feel self-motivated without an owner cue? |
-| `wk.daily.sit_to_prone` | 12 | v4 Down | Candidate | Is pacing calm enough for routine settling? |
-| `wk.daily.prone_to_sit` | 4 | P2 lifecycle exit | Candidate | Are four frames sufficient at desktop scale? |
-| `wk.daily.sit_to_stand` | 5 | P2 lifecycle exit | Candidate | Is the rise smooth at variable frame timing? |
-| `wk.daily.playful_hop` | 12 | v4 Jump | Candidate | Should autonomous use be rarer and lower-energy than the command? |
-| `wk.daily.playful_spin` | 16 | v4 Spin | Candidate | Does a full spin look spontaneous or trained on command? |
+| `wk.daily.stand_to_sit` | 10 | v4 Sit | Review enabled / runtime locked | Does a command-style sit feel self-motivated without an owner cue? |
+| `wk.daily.sit_to_prone` | 12 | v4 Down | Review enabled / runtime locked | Is pacing calm enough for routine settling? |
+| `wk.daily.prone_to_sit` | 4 | P2 lifecycle exit | Review enabled / runtime locked | Are four frames sufficient at desktop scale? |
+| `wk.daily.sit_to_stand` | 5 | P2 lifecycle exit | Review enabled / runtime locked | Is the rise smooth at variable frame timing? |
 
-Approval sequence: owner semantic review board/GIF, Windows transparent-renderer playback, scale/pivot/alpha/interruption checks, explicit runtime approval, then and only then autonomous-pool registration with state thresholds and cooldowns.
+The owner removed the proposed autonomous happy hop and happy spin. Their original command actions remain available only through explicit command/developer paths and cannot be reintroduced through tags, fallback, or shared-source inference.
+
+Approval sequence for the four retained transitions: Windows transparent-renderer playback, scale/pivot/alpha/interruption checks, explicit runtime approval, then and only then autonomous-pool registration with state thresholds and cooldowns.
 
 ## Next visual assets, in priority order
 
