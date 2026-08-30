@@ -24,6 +24,13 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def repository_sha256(path: Path) -> str:
+    data = path.read_bytes()
+    if path.suffix.lower() in {".json", ".md", ".py", ".txt"}:
+        data = data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
 class CarRoadGazeAndSideProneFrontCandidateTests(unittest.TestCase):
     def test_car_road_gaze_v12_rejection_is_fail_closed_and_preserves_evidence(self):
         manifest = json.loads((CAR_V12 / "manifest.json").read_text(encoding="utf-8"))
@@ -182,12 +189,21 @@ class CarRoadGazeAndSideProneFrontCandidateTests(unittest.TestCase):
             self.assertTrue(np.array_equal(candidate[:, 560:, :], approved_body[:, 560:, :]), f"side body changed outside head/neck region: {path}")
 
     def test_candidate_checksum_inventories_match(self):
-        for batch in (CAR_V9, CAR_V10, CAR_V11, CAR_V12, SIDE, SIDE_V5):
-            for raw in (batch / "SHA256SUMS").read_text(encoding="utf-8").splitlines():
+        inventories = (
+            (CAR_V9, "SHA256SUMS"),
+            (CAR_V10, "SHA256SUMS"),
+            (CAR_V11, "SHA256SUMS"),
+            (CAR_V12, "SHA256SUMS"),
+            (CAR_V13, "SHA256SUMS.txt"),
+            (SIDE, "SHA256SUMS"),
+            (SIDE_V5, "SHA256SUMS"),
+        )
+        for batch, inventory in inventories:
+            for raw in (batch / inventory).read_text(encoding="utf-8").splitlines():
                 expected, relative = raw.split(None, 1)
                 path = batch / relative.strip()
                 self.assertTrue(path.is_file(), path)
-                self.assertEqual(expected, sha256(path), path)
+                self.assertEqual(expected, repository_sha256(path), path)
 
     def test_side_prone_front_v5_has_bidirectional_bridges_and_a_calm_loop(self):
         manifest = json.loads((SIDE_V5 / "manifest.json").read_text(encoding="utf-8"))

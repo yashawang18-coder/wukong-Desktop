@@ -17,6 +17,11 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def sha256_canonical_crlf_text(path: Path) -> str:
+    text = path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(text.replace("\n", "\r\n").encode("utf-8")).hexdigest()
+
+
 class LifecycleV3R1ProneFrontV4ReviewTests(unittest.TestCase):
     def test_source_freeze_checksums_remain_valid(self):
         for batch in (V3, V4):
@@ -96,9 +101,9 @@ class LifecycleV3R1ProneFrontV4ReviewTests(unittest.TestCase):
         self.assertTrue(all(action["from_pose"] == "prone.awake.front" for action in v4_review["actions"]))
         self.assertTrue(all(not action["legacy_side_prone"] for action in v4_review["actions"]))
 
-    def test_v2_runtime_manifest_is_byte_unchanged(self):
+    def test_v2_runtime_manifest_content_is_unchanged_across_git_line_endings(self):
         current = BATCH_ROOT / "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2" / "manifest.json"
-        self.assertEqual(V2_MANIFEST_SHA256, sha256(current))
+        self.assertEqual(V2_MANIFEST_SHA256, sha256_canonical_crlf_text(current))
 
     def test_review_publish_includes_both_profiles_and_keeps_powershell_51_compatibility(self):
         script = (ROOT / "tools" / "publish-autonomous-daily-review.ps1").read_text(encoding="utf-8-sig")
