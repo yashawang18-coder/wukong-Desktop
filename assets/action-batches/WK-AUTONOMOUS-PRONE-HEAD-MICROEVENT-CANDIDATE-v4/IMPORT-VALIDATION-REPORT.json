@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "source_package": "prone-v4-candidate-review/prone-v4-candidate",
+  "source_status": "visual_candidate_owner_qa_pending",
+  "imported_frame_count": 24,
+  "sequence_counts": {
+    "head-lower": 12,
+    "head-turn": 12
+  },
+  "unique_visual_pose_count": 12,
+  "canvas": [1024, 1024],
+  "mode": "RGBA",
+  "alpha_edges_transparent": true,
+  "non_empty_alpha": true,
+  "ground_baseline_y": 770,
+  "blue_spill_edge_pixels": 0,
+  "internal_handoff_exact": true,
+  "internal_handoff_sha256": "0d8f1d4b86720d1e15aee644f6a450596f025de5b55f4e697a4cb64d39b70bf2",
+  "current_runtime_prone_anchor_exact": false,
+  "runtime_plan_frame_references": 44,
+  "runtime_plan_total_duration_ms": 8200,
+  "png_bytes_modified_during_import": false,
+  "visual_owner_qa": "pending",
+  "windows_renderer_qa": "pending"
+}

@@ -1,5 +1,13 @@
 # Decisions
 
+## 2026-09-05 - approve seven low-frequency autonomous daily entries
+
+The owner explicitly confirmed Windows renderer QA and runtime approval for four posture transitions, prone head-lower/turn V4, and both patrol-walk directions. Enable only these seven IDs for `AutonomousTick` and retain explicit `DeveloperPreview` access. Their runtime state is `passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, and `prototype_use=false`.
+
+Keep selection deterministic and posture-compatible. Stand may choose stand-to-sit or a low-frequency two-cycle in-place patrol gait; sit may choose sit-to-prone or less frequently sit-to-stand; compatible non-front prone may choose the head microevent or less frequently prone-to-sit. Continue to exclude jump, spin, every command-only action, magic, car ride, and unapproved sleep actions from autonomous selection.
+
+This approval does not claim a byte-identical V4 high-head anchor. Preserve `current_runtime_prone_anchor_exact=false` and require the explicit `non_front_prone_owner_validated` profile in both the manifest loader and selector. It also does not approve patrol window movement: keep `window_motion_enabled=false` and do not infer a route from the gait frames. Source PNGs, timings, hashes, and approved reference ranges remain immutable.
+
 ## 2026-08-30 - reject complete-scene v12 identity drift
 
 Owner review rejected v12 because complete-scene generation changed the approved v8 silver vehicle, black/red harness, dog identity, and body proportions. A generated frame is not consistent merely because it contains one complete dog and one complete car. Preserve v12 as failed evidence and close Normal, PrototypePreview, DeveloperPreview, and production gates.
@@ -445,3 +453,107 @@ Restrictions:
 - Keep `visual_approved=false`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, and `may_enter_autonomous_pool_by_default=false` for the four retained review bindings.
 - Permit playback only through explicit developer review until Windows renderer QA and a separate owner runtime approval.
 - Do not infer autonomous eligibility from shared source frames, command approval, tags, or fallback behavior.
+
+## 2026-09-01 - review prone head-lower and head-turn v4 as a closed microevent
+
+Decision:
+
+Import the owner's 24 prone v4 PNGs unchanged and expose one closed
+head-lower/turn/return microevent through the existing developer review path.
+Do not add it to Normal or autonomous scheduling before Windows owner review.
+
+Reason:
+
+The two source sequences pass offline PNG, alpha, baseline, count, and SHA
+checks, and their low-head handoff is byte-identical. Their imported high-head
+start/end carrier is not byte-identical to any current approved runtime prone
+anchor. Reversing the turn and lower phases makes the candidate internally
+closed, but does not prove that a cut from an existing runtime prone profile is
+visually seamless.
+
+Restrictions:
+
+- Preserve all 24 imported PNG bytes and the source-frame SHA inventory.
+- Keep `visual_approved=false`, `runtime_approved=false`,
+  `runtime_use=false`, `production_asset=false`, and autonomous binding
+  disabled until real transparent-WPF owner QA.
+- Permit only `DeveloperPreview` through the existing BehaviorRequest path.
+- Do not infer a bridge from posture labels, matching canvas dimensions, or
+  similar coat color; an exact anchor or explicit renderer approval is required.
+- Do not use this candidate as fallback, owner command, dialogue/model action,
+  startup animation, or ordinary autonomous behavior.
+
+## 2026-09-05 - replace the local sleep v5 preview with immutable v10 source PNGs
+
+Decision:
+
+Replace every active local v5 sleep-preview reference with the versioned v10
+batch while preserving stable behavior IDs for the eight semantic sequences that
+v10 actually supplies. Import exactly the 48 PNG payloads from the uploaded ZIP
+and expose the eight motions only through the existing DeveloperPreview
+BehaviorRequest path. Do not enable Normal or autonomous routing.
+
+Reason:
+
+The owner supplied v10 to replace v5 for preview. The v10 archive is an immutable
+PNG-only package with eight groups and 48 frames; it omits the two additional
+camera-view loops present in v5 and provides no source manifest, timing report,
+GIF, or checksum list. Source PNG bytes remain authoritative. Repository-side
+metadata may describe stable preview timing, but automated integrity checks and
+a successful EXE launch cannot establish owner visual approval or real
+transparent-WPF transition, loop, anchor, and wake quality.
+
+Restrictions:
+
+- Keep `owner_preview_approved=false`, `visual_approved=false`,
+  `runtime_validation=pending_owner_windows_renderer_qa`,
+  `runtime_approved=false`, `runtime_use=false`, `production_asset=false`,
+  `prototype_use=false`, and autonomous binding disabled.
+- Copy every v10 runtime PNG byte-for-byte. Do not regenerate, re-encode, recolor,
+  resize, crop, sharpen, blur, key, composite, or repair any pixel.
+- Do not carry forward the absent v5 front-three-quarter-side and right-rear
+  frames. Do not use `WK-CORE-SLEEP-BREATH-v2`, GIF frames, checkerboards,
+  legacy sleep art, or another action package as a visual source or fallback.
+- Treat the established 260/1100 ms lifecycle, 260/800 ms roll, and 650 ms loop
+  values as repository preview timing only; do not claim they came from v10.
+- The 16-frame main lifecycle owns its roll. Never append the separate 8-frame
+  bridge after it.
+- Treat each supplied breathing camera view as an independent loop. Do not
+  hard-cut incompatible front, top-down, or side views.
+- No approved wake or interrupt-exit asset exists. Do not reverse the sleep-entry
+  frames or invoke legacy artwork to simulate one; report `Deferred` or
+  `MissingAsset` until a separately approved exit exists.
+- Do not register an owner command, dialogue/model action, startup behavior,
+  ordinary autonomous action, or production fallback without separate Windows
+  renderer evidence and owner approval.
+
+## 2026-09-04 - import patrol-walk v1 as an in-place developer review candidate
+
+Decision:
+
+Import the owner's 24 patrol-walk PNGs byte-for-byte and expose separate left
+and right gait loops through the existing developer candidate BehaviorRequest
+path. Keep the pet window stationary during this first review build.
+
+Reason:
+
+The source package passes offline count, PNG decode, RGBA, transparent-edge,
+SHA-256, GIF timing, and exact mirror checks. Those checks do not prove the
+transparent-WPF visual scale, gait-loop seam, transition quality, or a safe
+desktop movement route. Reviewing the gait before enabling translation keeps
+the asset decision separate from movement policy.
+
+Restrictions:
+
+- Keep `owner_preview_approved=false`, `visual_approved=false`,
+  `runtime_validation=pending_owner_windows_renderer_qa`,
+  `runtime_approved=false`, `runtime_use=false`, `production_asset=false`,
+  `prototype_use=false`, and autonomous binding disabled.
+- Permit only `DeveloperPreview` through the existing developer-forced request
+  path. Do not add either behavior ID to the autonomous allowlist.
+- Do not move the desktop window, infer stand/walk transitions, or claim a
+  complete patrol behavior from the two gait loops.
+- Do not use the candidate from Normal, owner UI, dialogue/model routing,
+  startup, commands, magic, car ride, or fallback behavior.
+- Preserve the source PNG bytes, source package identity, QA report, and frame
+  checksum inventory until owner Windows renderer review is complete.

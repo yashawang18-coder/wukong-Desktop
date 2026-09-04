@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "batch_id": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate",
+  "asset_id": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate",
+  "asset_stage": "runtime-approved",
+  "candidate_profile": "autonomous-patrol-walk-v1-approved",
+  "source_package": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate.zip",
+  "source_zip_sha256": "a96ff60c48c0fe79e8c7a20d1d62b1658eebc8175e959b70d6b81f40c4f958ed",
+  "source_frame_count": 24,
+  "runtime_frame_count": 24,
+  "sequence_count": 2,
+  "source_png_byte_identity": true,
+  "owner_preview_approved": true,
+  "visual_approved": true,
+  "runtime_validation": "passed_windows_renderer_qa",
+  "runtime_approved": true,
+  "runtime_use": true,
+  "production_asset": true,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": true,
+  "normal_runtime_available": true,
+  "allowed_sources": [
+    "AutonomousTick",
+    "DeveloperPreview"
+  ],
+  "runtime_render_scale": 0.92,
+  "window_motion_enabled": false,
+  "mirror_policy": {
+    "walk_right_is_exact_horizontal_mirror": true,
+    "source_report_all_mirror_pixel_equal": true,
+    "runtime_mirroring_required": false
+  },
+  "runtime_frame_format": "1024x1024 RGBA PNG copied byte-for-byte from the source ZIP",
+  "review_scope": "owner-approved in-place gait playback for low-frequency autonomous use",
+  "notes": "Enabled for low-frequency AutonomousTick gait playback and DeveloperPreview. Window translation remains disabled because it was not part of this approval."
+}

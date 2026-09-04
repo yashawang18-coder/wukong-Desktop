@@ -634,8 +634,8 @@
               <StackPanel>
                 <Border Style="{StaticResource Card}" Margin="0,0,12,12" Background="#FFF8E7">
                   <StackPanel>
-                    <TextBlock Text="开发者审阅专用 · 不进入正式自主池" FontWeight="SemiBold" />
-                    <TextBlock Text="共 4 组、31 帧，逐字节复用已批准的浅麦芽金素材。姿态语义已确认，等待 Windows 视觉验收；runtime_use=false。" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
+                    <TextBlock Text="自主日常素材 · 运行状态分项显示" FontWeight="SemiBold" />
+                    <TextBlock Text="四个姿态过渡、趴姿低头转头 v4 和巡逻行走 v1 已通过 Windows 验收并进入低频自主池；巡逻行走只播放原地步态，不移动窗口。睡眠 v10 仍保持候审，不进入正式自主行为。" Style="{StaticResource SubText}" Margin="0,4,0,0" TextWrapping="Wrap" />
                   </StackPanel>
                 </Border>
                 <ItemsControl x:Name="AutonomousDailyAssetList">

@@ -16,10 +16,12 @@
 
   <ItemGroup>
     <Content Include="..\..\assets\**\*.png"
+             Exclude="..\..\assets\actions\WK-CORE-SLEEP-BREATH-v2\**\*.png"
              LinkBase="WukongAssets"
              CopyToOutputDirectory="PreserveNewest"
              CopyToPublishDirectory="PreserveNewest" />
     <Content Include="..\..\assets\**\*.json"
+             Exclude="..\..\assets\actions\WK-CORE-SLEEP-BREATH-v2\**\*.json"
              LinkBase="WukongAssets"
              CopyToOutputDirectory="PreserveNewest"
              CopyToPublishDirectory="PreserveNewest" />

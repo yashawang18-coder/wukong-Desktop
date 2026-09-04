@@ -47,8 +47,15 @@ var tests = new (string Name, Action Run)[]
     ("forward-prone profile requires the matching approved anchor", LifecycleReviewCandidateTests.ForwardProneProfileRequiresMatchingApprovedAnchor),
     ("road-gaze and side-prone v5 extensions pass Windows WPF decode", LifecycleReviewCandidateTests.RuntimeExtensionsPassWindowsWpfDecode),
     ("road-gaze local review marker opens only the pending candidate", LifecycleReviewCandidateTests.RoadGazeReviewMarkerOpensOnlyPendingCandidate),
+    ("prone head v4 approved manifest frames and gate are valid", ProneHeadCandidateTests.ManifestFramesAndGateAreValid),
+    ("prone head v4 uses autonomous allowlist and isolated developer preview", ProneHeadCandidateTests.ApprovedMicroeventUsesAutonomousAllowlistAndDeveloperPreviewStaysIsolated),
+    ("sleep runtime v10 candidate manifest frames and gate are valid", SleepCandidateTests.ManifestFramesAndGateAreValid),
+    ("sleep runtime v10 uses developer behavior request and stays out of autonomous", SleepCandidateTests.DeveloperPreviewUsesBehaviorRequestAndAutonomousStaysClosed),
+    ("missing sleep runtime v10 fails closed without legacy fallback", SleepCandidateTests.MissingV10FramesFailClosedWithoutLegacyFallback),
+    ("patrol walk v1 approved manifest frames and gate are valid", PatrolWalkCandidateTests.ManifestFramesAndGateAreValid),
+    ("patrol walk v1 uses autonomous allowlist and isolated developer preview", PatrolWalkCandidateTests.ApprovedGaitUsesAutonomousAllowlistAndDeveloperPreviewStaysIsolated),
     ("autonomous allowlist excludes command-only jump and spin", AutonomousAllowlistExcludesCommandOnlyActions),
-    ("autonomous daily candidates are indexed and remain gated", AutonomousDailyCandidatesAreIndexedAndRemainGated),
+    ("approved autonomous daily transitions are indexed and gated", ApprovedAutonomousDailyTransitionsAreIndexedAndGated),
     ("developer autonomous daily candidate can request playback", DeveloperAutonomousDailyCandidateCanRequestPlayback),
     ("command action candidates are indexed and validated", CommandActionCandidatesAreIndexed),
     ("behavior agent command mock assets are indexed and gated", BehaviorAgentCommandMockAssetsAreIndexedAndGated),
@@ -877,7 +884,7 @@ static void DeveloperLifecycleCandidateCanRequestPlayback()
     Assert(request.Motion.BehaviorId == LifecycleCandidateBehaviorIds.StandIdleMicroloop, "full lifecycle exit did not enter stand microloop");
 }
 
-static void AutonomousDailyCandidatesAreIndexedAndRemainGated()
+static void ApprovedAutonomousDailyTransitionsAreIndexedAndGated()
 {
     var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
     var manifestPath = Path.Combine(output, "WukongAssets", "action-batches", AutonomousDailyCandidateBehaviorIds.AssetBatch, "manifest.json");
@@ -885,11 +892,18 @@ static void AutonomousDailyCandidatesAreIndexedAndRemainGated()
 
     using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
     var root = manifest.RootElement;
-    Assert(root.GetProperty("asset_stage").GetString() == "runtime_candidate_owner_visual_qa_pending", "autonomous daily asset stage changed");
+    Assert(root.GetProperty("asset_stage").GetString() == "runtime-approved", "autonomous daily approved asset stage changed");
     Assert(root.GetProperty("autonomous_semantics_owner_approved").GetBoolean(), "posture-transition semantics must remain owner-approved");
-    Assert(!root.GetProperty("runtime_approved").GetBoolean(), "autonomous daily batch must remain runtime locked");
-    Assert(!root.GetProperty("runtime_use").GetBoolean(), "autonomous daily batch must keep runtime_use=false");
-    Assert(!root.GetProperty("may_enter_autonomous_pool_by_default").GetBoolean(), "autonomous daily batch must not enter autonomous pool by default");
+    Assert(root.GetProperty("visual_approved").GetBoolean(), "autonomous daily visual approval missing");
+    Assert(root.GetProperty("runtime_validation").GetString() == "passed_windows_renderer_qa", "autonomous daily Windows validation missing");
+    Assert(root.GetProperty("runtime_approved").GetBoolean(), "autonomous daily runtime approval missing");
+    Assert(root.GetProperty("runtime_use").GetBoolean(), "autonomous daily runtime use was disabled");
+    Assert(root.GetProperty("production_asset").GetBoolean(), "autonomous daily production status missing");
+    Assert(!root.GetProperty("prototype_use").GetBoolean(), "autonomous daily actions must not use prototype mode");
+    Assert(root.GetProperty("autonomous_binding_enabled").GetBoolean(), "autonomous daily binding missing");
+    Assert(root.GetProperty("may_enter_autonomous_pool_by_default").GetBoolean(), "autonomous daily batch is missing from the autonomous pool");
+    Assert(root.GetProperty("allowed_sources").EnumerateArray().Select(x => x.GetString()).SequenceEqual(new[] { "AutonomousTick", "DeveloperPreview" }),
+        "autonomous daily source policy changed");
     Assert(root.GetProperty("storage_policy").GetString() == "reference_only_no_duplicate_png", "autonomous daily assets must use reference-only storage");
     Assert(!Directory.EnumerateFiles(Path.GetDirectoryName(manifestPath)!, "*.png", SearchOption.AllDirectories).Any(), "autonomous daily candidate batch must not duplicate source PNGs");
 
@@ -908,8 +922,12 @@ static void AutonomousDailyCandidatesAreIndexedAndRemainGated()
         Assert(expected.TryGetValue(behaviorId, out var expectedFrames), $"unexpected autonomous daily behavior: {behaviorId}");
         Assert(action.GetProperty("source_motion_design_approved").GetBoolean(), "source motion design approval must be preserved");
         Assert(action.GetProperty("autonomous_semantics_owner_approved").GetBoolean(), "posture-transition semantics must remain owner-approved");
-        Assert(!action.GetProperty("runtime_approved").GetBoolean(), "daily action unexpectedly runtime approved");
-        Assert(!action.GetProperty("runtime_use").GetBoolean(), "daily action unexpectedly enabled for runtime");
+        Assert(action.GetProperty("visual_approved").GetBoolean(), "daily action visual approval missing");
+        Assert(action.GetProperty("runtime_validation").GetString() == "passed_windows_renderer_qa", "daily action Windows validation missing");
+        Assert(action.GetProperty("runtime_approved").GetBoolean(), "daily action runtime approval missing");
+        Assert(action.GetProperty("runtime_use").GetBoolean(), "daily action runtime use was disabled");
+        Assert(action.GetProperty("production_asset").GetBoolean(), "daily action production status missing");
+        Assert(action.GetProperty("autonomous_binding_enabled").GetBoolean(), "daily action autonomous binding missing");
         Assert(action.GetProperty("frame_count").GetInt32() == expectedFrames, $"frame count changed for {behaviorId}");
         var binding = action.GetProperty("source_binding");
         var sourceBatch = binding.GetProperty("asset_batch").GetString();
@@ -925,43 +943,41 @@ static void AutonomousDailyCandidatesAreIndexedAndRemainGated()
     var candidates = catalog.Motions.Where(x => x.AssetBatch == AutonomousDailyCandidateBehaviorIds.AssetBatch).ToArray();
     Assert(candidates.Length == expected.Count, "autonomous daily candidates were not indexed for review");
     Assert(candidates.Sum(x => x.FrameCount) == 31, "autonomous daily review set must contain 31 referenced frames");
-    Assert(candidates.All(x => x.Category == "自主日常候选"), "daily candidates must use the isolated review category");
-    Assert(candidates.All(x => !x.RuntimeEnabled && !x.PrototypeUse), "daily candidates must remain outside normal and prototype runtime gates");
-    Assert(candidates.All(x => x.Disposition == "待视觉验收"), "daily candidate cards must display visual-review disposition");
-    Assert(candidates.All(x => x.CandidateProfile == "runtime_candidate_owner_visual_qa_pending"), "daily candidate stage was not preserved");
+    Assert(candidates.All(x => x.Category == "自主日常"), "approved daily transitions must use the autonomous daily category");
+    Assert(candidates.All(x => x.RuntimeEnabled && x.RuntimeApproved && x.AutonomousBindingEnabled && !x.PrototypeUse), "daily transition runtime gate is incomplete");
+    Assert(candidates.All(x => x.Disposition == "已启用"), "daily cards must display enabled disposition");
+    Assert(candidates.All(x => x.CandidateProfile == "runtime-approved"), "daily approved stage was not preserved");
     Assert(candidates.All(x => x.VisualScale is > 0.91 and < 0.93), "daily candidates must inherit the approved 0.92 visual scale");
     Assert(candidates.All(x => x.Phases.Single().FrameDurationsMs?.Count == x.FrameCount), "daily candidate per-frame durations were not loaded");
     Assert(candidates.All(x => !x.FirstFrame.Contains(AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase)), "daily candidates must resolve source frames instead of duplicate PNGs");
     Assert(candidates.All(x => x.Description.Contains("no duplicate PNG", StringComparison.Ordinal)), "daily candidate cards must disclose shared source binding");
     Assert(candidates.All(x => x.BehaviorId is not "wk.daily.playful_hop" and not "wk.daily.playful_spin"), "owner-rejected playful command reuse must not remain in autonomous daily review");
+    Assert(candidates.All(x => DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(x.BehaviorId)), "approved daily transition is missing from autonomous allowlist");
 }
 
 static void DeveloperAutonomousDailyCandidateCanRequestPlayback()
 {
     var runtime = new DesktopRuntimeHost();
-    Assert(runtime.AutonomousDailyCandidateMotions.Count == 4, "runtime review list must expose four autonomous posture-transition candidates");
+    Assert(runtime.AutonomousDailyCandidateMotions.Count(x => x.AssetBatch == AutonomousDailyCandidateBehaviorIds.AssetBatch) == 4,
+        "runtime review list must preserve four autonomous posture-transition candidates");
+    Assert(runtime.AutonomousDailyCandidateMotions.Any(x => x.BehaviorId == ProneHeadCandidateBehaviorIds.HeadLowerTurnV4),
+        "runtime review list must expose the prone head v4 candidate");
 
     PetMotionRequest? request = null;
     runtime.MotionRequested += (_, item) => request = item;
+    var postureBeforePreview = runtime.CurrentStablePosture;
     var result = runtime.SubmitDeveloperCandidateMotionAsync(AutonomousDailyCandidateBehaviorIds.StandToSit).GetAwaiter().GetResult();
     Assert(result == PetActionResult.Accepted, "developer autonomous daily review was not accepted");
     Assert(request is not null, "developer autonomous daily review did not request playback");
     Assert(request!.Motion.BehaviorId == AutonomousDailyCandidateBehaviorIds.StandToSit, "wrong daily candidate requested");
     Assert(request.ExecutionMode == BehaviorExecutionMode.DeveloperPreview, "daily candidate must use the developer-only gate");
-    Assert(!request.Motion.RuntimeEnabled, "developer review must not change the runtime gate");
+    Assert(request.Motion.RuntimeEnabled, "approved transition must retain its runtime gate in developer preview");
     Assert(request.Motion.Phases.Single().Frames.Count == 10, "stand-to-sit review frame count changed");
     Assert(request.Motion.HasVariableFrameDurations, "daily candidate per-frame timings were not preserved");
 
     runtime.CompleteMotion(AutonomousDailyCandidateBehaviorIds.StandToSit, "review");
-    Assert(runtime.CurrentStablePosture == StablePosture.Sit, "stand-to-sit review must settle to sit");
-    Assert(request.Motion.BehaviorId == LifecycleCandidateBehaviorIds.SitIdleMicroloop, "daily review did not return to approved stable sit microloop");
-
-    typeof(DesktopRuntimeHost)
-        .GetField("_nextAutonomousDecisionAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
-        .SetValue(runtime, DateTimeOffset.MinValue);
-    request = null;
-    runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
-    Assert(request is null || request.Motion.AssetBatch != AutonomousDailyCandidateBehaviorIds.AssetBatch, "runtime autonomous tick selected an owner-unapproved daily candidate");
+    Assert(runtime.CurrentStablePosture == postureBeforePreview, "developer preview wrote the production posture");
+    Assert(request.Motion.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop, "daily preview did not return to the existing production posture idle");
 }
 
 static void CommandActionCandidatesAreIndexed()
@@ -1758,7 +1774,10 @@ static void ControlPanelExposesMagicSpecialsTab()
             Assert(panel.FindName("AutonomousDailyAssetsPanel") is ScrollViewer, "autonomous daily review panel missing");
             var dailyList = panel.FindName("AutonomousDailyAssetList") as ItemsControl;
             Assert(dailyList is not null, "autonomous daily review list missing");
-            Assert(dailyList!.Items.Count == 4, "autonomous daily review list must display four posture-transition candidates");
+            Assert(dailyList!.Items.OfType<PlayableMotion>().Count(x => x.AssetBatch == AutonomousDailyCandidateBehaviorIds.AssetBatch) == 4,
+                "autonomous daily review list must preserve four posture-transition candidates");
+            Assert(dailyList.Items.OfType<PlayableMotion>().Any(x => x.BehaviorId == ProneHeadCandidateBehaviorIds.HeadLowerTurnV4),
+                "autonomous daily review list must display the prone head v4 candidate");
             var interactionReview = panel.FindName("InteractionReviewAssetList") as ItemsControl;
             Assert(interactionReview is not null && interactionReview.Items.Count == 0, "deprecated touch assets must be hidden by default");
             var expiredFilter = panel.FindName("ShowDeprecatedAssetsCheckBox") as CheckBox;
@@ -2028,6 +2047,12 @@ static void AutonomousAllowlistExcludesCommandOnlyActions()
     Assert(!DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(MockCommandActionIds.Jump), "runtime autonomous allowlist contains owner jump");
     Assert(!DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(MockCommandActionIds.Spin), "runtime autonomous allowlist contains owner spin");
     Assert(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(LifecycleCandidateBehaviorIds.StandIdleMicroloop), "approved stand microloop is missing from autonomous allowlist");
+    Assert(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(AutonomousDailyCandidateBehaviorIds.StandToSit), "approved stand-to-sit transition is missing from autonomous allowlist");
+    Assert(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(AutonomousDailyCandidateBehaviorIds.SitToProne), "approved sit-to-prone transition is missing from autonomous allowlist");
+    Assert(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(AutonomousDailyCandidateBehaviorIds.ProneToSit), "approved prone-to-sit transition is missing from autonomous allowlist");
+    Assert(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(AutonomousDailyCandidateBehaviorIds.SitToStand), "approved sit-to-stand transition is missing from autonomous allowlist");
+    Assert(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(ProneHeadCandidateBehaviorIds.HeadLowerTurnV4), "approved prone head microevent is missing from autonomous allowlist");
+    Assert(PatrolWalkCandidateBehaviorIds.All.All(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed), "approved patrol gait is missing from autonomous allowlist");
 
     foreach (var command in new[] { "跳", "转圈" })
     {

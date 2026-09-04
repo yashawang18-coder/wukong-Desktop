@@ -15,15 +15,19 @@ class AutonomousDailyV1Tests(unittest.TestCase):
     def setUpClass(cls):
         cls.manifest = json.loads((BATCH / "manifest.json").read_text(encoding="utf-8"))
 
-    def test_owner_approved_posture_transitions_remain_runtime_gated_for_visual_review(self):
+    def test_owner_approved_posture_transitions_are_runtime_enabled(self):
         manifest = self.manifest
-        self.assertEqual(manifest["asset_stage"], "runtime_candidate_owner_visual_qa_pending")
+        self.assertEqual(manifest["asset_stage"], "runtime-approved")
         self.assertTrue(manifest["autonomous_semantics_owner_approved"])
-        self.assertFalse(manifest["visual_approved"])
-        self.assertEqual(manifest["runtime_validation"], "pending_owner_windows_renderer_qa")
-        self.assertFalse(manifest["runtime_approved"])
-        self.assertFalse(manifest["runtime_use"])
-        self.assertFalse(manifest["may_enter_autonomous_pool_by_default"])
+        self.assertTrue(manifest["visual_approved"])
+        self.assertEqual(manifest["runtime_validation"], "passed_windows_renderer_qa")
+        self.assertTrue(manifest["runtime_approved"])
+        self.assertTrue(manifest["runtime_use"])
+        self.assertTrue(manifest["production_asset"])
+        self.assertFalse(manifest["prototype_use"])
+        self.assertTrue(manifest["autonomous_binding_enabled"])
+        self.assertTrue(manifest["may_enter_autonomous_pool_by_default"])
+        self.assertEqual(["AutonomousTick", "DeveloperPreview"], manifest["allowed_sources"])
 
     def test_expected_daily_action_inventory(self):
         expected = {
@@ -34,7 +38,10 @@ class AutonomousDailyV1Tests(unittest.TestCase):
         }
         actual = {action["behavior_id"]: action["frame_count"] for action in self.manifest["actions"]}
         self.assertEqual(actual, expected)
-        self.assertTrue(all(not action["runtime_use"] for action in self.manifest["actions"]))
+        self.assertTrue(all(action["visual_approved"] for action in self.manifest["actions"]))
+        self.assertTrue(all(action["runtime_validation"] == "passed_windows_renderer_qa" for action in self.manifest["actions"]))
+        self.assertTrue(all(action["runtime_approved"] and action["runtime_use"] for action in self.manifest["actions"]))
+        self.assertTrue(all(action["production_asset"] and action["autonomous_binding_enabled"] for action in self.manifest["actions"]))
         self.assertTrue(all(action["autonomous_semantics_owner_approved"] for action in self.manifest["actions"]))
         self.assertNotIn("wk.daily.playful_hop", actual)
         self.assertNotIn("wk.daily.playful_spin", actual)

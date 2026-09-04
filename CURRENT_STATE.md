@@ -1,3 +1,21 @@
+## Owner-approved autonomous posture, prone-head, and patrol actions - 2026-09-05
+
+- The owner completed Windows renderer QA and explicitly approved seven runtime entries: `wk.daily.stand_to_sit`, `wk.daily.sit_to_prone`, `wk.daily.prone_to_sit`, `wk.daily.sit_to_stand`, `wk.candidate.daily.prone_head_lower_turn_v4`, `wk.candidate.autonomous.patrol_walk_left_v1`, and `wk.candidate.autonomous.patrol_walk_right_v1`.
+- These entries now record `visual_approved=true`, `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, `prototype_use=false`, and `autonomous_binding_enabled=true`. Their permitted sources are `AutonomousTick` and `DeveloperPreview` only.
+- The four posture transitions continue to reference immutable approved command/lifecycle ranges. No PNG was duplicated, edited, resized, recolored, or re-hashed during approval.
+- Prone-head V4 remains a closed 44-frame microevent. `current_runtime_prone_anchor_exact=false` remains an audit fact; approval is explicitly scoped to `non_front_prone_owner_validated`, and the forward-prone profile cannot select it.
+- Patrol walk contains the existing 24 byte-preserved frames and runs for two gait cycles as a low-frequency standing autonomous action. `window_motion_enabled=false` remains unchanged because desktop translation was not included in this approval.
+- Jump, spin, command-only actions, magic, car ride, and the pending sleep v10 package remain outside this autonomous allowlist. The earlier pending-review entries below are historical and are superseded only for the seven IDs listed here.
+
+## Autonomous patrol-walk v1 local review candidate - 2026-09-04
+
+- Imported `WK-AUTONOMOUS-PATROL-WALK-v1-candidate.zip` as `assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/`; source ZIP SHA-256 is `a96ff60c48c0fe79e8c7a20d1d62b1658eebc8175e959b70d6b81f40c4f958ed`.
+- The batch contains 24 byte-preserved 1024 x 1024 RGBA PNGs: 12 left-facing gait frames and 12 exact horizontal-mirror right-facing frames. Each direction loops at 110 ms per frame for a 1320 ms review cycle.
+- Offline decode, alpha-edge, file-size, source SHA, manifest SHA, unique-path, review-GIF timing, and left/right mirror checks pass.
+- Current state is developer-only local review: `owner_preview_approved=false`, `visual_approved=false`, `runtime_validation=pending_owner_windows_renderer_qa`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, `prototype_use=false`, `developer_preview=true`, and `autonomous_binding_enabled=false`.
+- `wk.candidate.autonomous.patrol_walk_left_v1` and `wk.candidate.autonomous.patrol_walk_right_v1` are discoverable only in the existing developer autonomous-candidate page through `BehaviorRequestSource.DeveloperForced` plus `BehaviorExecutionMode.DeveloperPreview`.
+- The review build intentionally plays the gait in place. Window translation, stand/walk transitions, Normal routing, and autonomous scheduling remain disabled until owner Windows renderer review and a separate movement-policy decision.
+
 ## Car-road gaze v12 owner rejection - 2026-08-30
 
 - Owner review rejected WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v9 because frames 3-15 contained visible head/neck composite discontinuities, duplicate ear geometry, detached chin fragments, and full-frame reuse under unrelated wheel-phase labels. Its PNG and generation evidence remain byte-unchanged, while every playback gate remains closed.
@@ -236,6 +254,71 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
 - Car ride startup records request-pipeline, scale calculation, first-frame decode, and first-visible timings. The first frame is shown before motion starts; only startup/current-direction frames are prefetched through the existing bounded 36-frame frozen bitmap cache.
 - Accio Broom uses the pet's current monitor work area and a larger safe route targeting 20%-28% horizontal and 24%-32% vertical travel before returning near its start point. The developer panel reports measured pixel travel.
 - Magic effects capture the pre-effect user scale, action-local scale, opacity, position, ground anchor, posture, and work area. Recovery restores display scale and anchor without writing alpha-bound-derived values into the global scale.
+
+## 2026-09-01 prone head-lower and head-turn v4 review candidate
+
+- Imported 24 unchanged source PNGs from the owner's local
+  `prone-v4-candidate-review/prone-v4-candidate` package into
+  `WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4`.
+- The package contains 12 head-lower frames and 12 head-turn frames. All are
+  1024 x 1024 RGBA, have transparent canvas edges, non-empty alpha, and a
+  common y=770 ground baseline.
+- The internal low-head handoff is byte-identical:
+  `0d8f1d4b86720d1e15aee644f6a450596f025de5b55f4e697a4cb64d39b70bf2`.
+- The desktop review plan is a closed 44-reference microevent:
+  `head-lower forward -> head-turn forward -> head-turn reverse -> head-lower reverse`.
+  It returns to the imported high-head start frame instead of holding the
+  side-looking terminal frame.
+- The imported high-head carrier is not byte-identical to the current P2,
+  V3R1, or forward-prone V4 runtime anchors. Integration therefore records a
+  pending bridge review rather than claiming seamless runtime continuity.
+- Current state is `visual_approved=false`,
+  `runtime_validation=pending_owner_windows_renderer_qa`,
+  `runtime_approved=false`, `runtime_use=false`,
+  `production_asset=false`, `prototype_use=true`, and
+  `autonomous_binding_enabled=false`.
+- The action is available only through the existing isolated
+  `DeveloperPreview` BehaviorRequest path in the autonomous-daily review
+  panel. It is not in Normal, the autonomous allowlist, owner commands,
+  dialogue/model routing, fallback, or startup autoplay.
+- Repository stage: local uncommitted Windows review candidate.
+
+## 2026-09-05 sleep runtime v10 local review candidate
+
+- Replaced the local, uncommitted v5 preview with
+  `WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10`, imported only from
+  `wukong-sleep-runtime-final-transparent-v10.zip`. The measured source ZIP
+  SHA-256 is `174350b0aaa7d01a6639d8ce189fb7a12d3541e5dc5ce4460b1461d8f0d1c701`.
+- The source archive contains exactly 48 original 1024 x 1024 RGBA PNGs in
+  eight groups: a 16-frame main lifecycle, an independent 8-frame
+  prone-to-side roll, and six independent 4-frame breathing loops. Every PNG
+  is copied byte-for-byte; no frame is generated, re-encoded, recolored,
+  resized, cropped, filtered, or repaired during import.
+- Unlike v5, v10 does not contain the front-three-quarter-side or right-rear
+  breathing groups. Those eight old frames are not retained, substituted, or
+  registered. Stable behavior IDs are preserved only for the eight supplied
+  semantic sequences.
+- The ZIP contains PNGs only and provides no README, manifest, timing report,
+  GIF, or checksum list. Repository-side SHA and integrity records are generated
+  from the immutable ZIP. Developer preview timing retains the existing sleep
+  semantic values and is explicitly recorded as repository preview metadata,
+  not source-provided fact.
+- Automated import checks pass for ZIP integrity, exact inventory, PNG decode,
+  RGBA mode, 1024 x 1024 canvas, non-empty Alpha, transparent canvas edges,
+  unique paths, byte counts, and SHA-256. This does not constitute owner visual
+  approval or Windows transparent-renderer approval.
+- Current state is `owner_preview_approved=false`, `visual_approved=false`,
+  `runtime_validation=pending_owner_windows_renderer_qa`,
+  `runtime_approved=false`, `runtime_use=false`, `production_asset=false`,
+  `prototype_use=false`, and `autonomous_binding_enabled=false`.
+- The eight actions are available only through the existing isolated
+  `DeveloperPreview` BehaviorRequest path. They remain absent from Normal,
+  AutonomousTick, dialogue/model routing, owner commands, fallback, and startup.
+- The main lifecycle already contains its roll; the independent roll is not
+  appended. Incompatible camera views are not hard-cut. No approved wake or
+  interrupt-exit sequence exists, and legacy sleep pixels are not a fallback.
+- Repository stage: feature-branch runtime candidate; owner Windows animation
+  visual QA is pending and no approval is implied by branch publication.
 
 ## Next implementation target
 

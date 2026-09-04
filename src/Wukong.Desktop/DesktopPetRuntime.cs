@@ -384,38 +384,6 @@ public sealed class DesktopMotionCatalog
                 endPose: "stand.neutral.right_front",
                 disposition: "已过期"),
             Motion(
-                Phase15BehaviorIds.SideSleepBreath,
-                "Side sleep breathing",
-                "Autonomous",
-                "left-side-lying",
-                260,
-                true,
-                root,
-                "actions/WK-CORE-SLEEP-BREATH-v2/approved-keyframes/v1",
-                loop: true,
-                runtimeEnabled: false,
-                status: "已过期：旧标准柴犬基础素材，仅保留动作参考",
-                missing: "superseded visual identity / fall_asleep / wake_up / interrupt_exit",
-                startPose: "sleep.side.right",
-                endPose: "sleep.side.right",
-                disposition: "已过期"),
-            Motion(
-                Phase15BehaviorIds.EnterSleep,
-                "Enter sleep",
-                "Autonomous",
-                "left-side-lying",
-                260,
-                true,
-                root,
-                "actions/WK-CORE-SLEEP-BREATH-v2/approved-keyframes/v1",
-                loop: false,
-                runtimeEnabled: false,
-                status: "已过期：旧标准柴犬基础素材，仅保留动作参考",
-                missing: "superseded visual identity / fall_asleep / wake_up / interrupt_exit",
-                startPose: "sleep.side.right",
-                endPose: "sleep.side.right",
-                disposition: "已过期"),
-            Motion(
                 Phase15BehaviorIds.SafeStand,
                 "Prone to stand",
                 "Owner interaction",
@@ -505,6 +473,9 @@ public sealed class DesktopMotionCatalog
         var magicCandidates = LoadMagicCandidates(root).ToArray();
         var lifecycleCandidates = LoadLifecycleCandidates(root).ToArray();
         var lifecycleReviewCandidates = LoadLifecycleReviewCandidates(root).ToArray();
+        var proneHeadCandidates = LoadProneHeadCandidates(root).ToArray();
+        var sleepCandidates = LoadSleepCandidates(root).ToArray();
+        var patrolWalkCandidates = LoadPatrolWalkCandidates(root).ToArray();
         var carRideCandidates = LoadCarRideCandidates(root, carRideRoadGazeReviewEnabled).ToArray();
         var commandMocks = LoadCommandMotionMocks(root).ToArray();
         var autonomousDailyCandidates = LoadAutonomousDailyCandidates(root, lifecycleCandidates.Concat(commandMocks)).ToArray();
@@ -512,10 +483,10 @@ public sealed class DesktopMotionCatalog
             .FirstOrDefault(x => x.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop && x.RuntimeEnabled)?.FirstFrame
             ?? motions.FirstOrDefault(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle)?.FirstFrame
             ?? string.Empty;
-        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; lifecycle_review_candidates={lifecycleReviewCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; car_ride_road_gaze_review={carRideRoadGazeReviewEnabled}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch}/runtime-review-manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V4AssetBatch}/runtime-review-manifest.json,action-batches/{SideProneFrontBehaviorIds.AssetBatch}/manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.RoadGazeAssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; lifecycle_review_candidates={lifecycleReviewCandidates.Length}; prone_head_candidates={proneHeadCandidates.Length}; sleep_candidates={sleepCandidates.Length}; patrol_walk_candidates={patrolWalkCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; car_ride_road_gaze_review={carRideRoadGazeReviewEnabled}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch}/runtime-review-manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V4AssetBatch}/runtime-review-manifest.json,action-batches/{ProneHeadCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{SleepCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{PatrolWalkCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{SideProneFrontBehaviorIds.AssetBatch}/manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.RoadGazeAssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
         BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
         return new DesktopMotionCatalog(
-            motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(lifecycleReviewCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks),
+            motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(lifecycleReviewCandidates).Concat(proneHeadCandidates).Concat(sleepCandidates).Concat(patrolWalkCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks),
             summary,
             carRideRoadGazeReviewEnabled);
     }
@@ -900,6 +871,536 @@ public sealed class DesktopMotionCatalog
         }
     }
 
+    private static IEnumerable<PlayableMotion> LoadProneHeadCandidates(string root)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", ProneHeadCandidateBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("prone_head_candidate_manifest_missing");
+            yield break;
+        }
+
+        ProneHeadCandidateBatchManifest? manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<ProneHeadCandidateBatchManifest>(
+                File.ReadAllText(manifestPath),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Prone head candidate manifest parse failed", ex);
+            yield break;
+        }
+
+        var batchErrors = new List<string>();
+        if (manifest is null ||
+            !string.Equals(manifest.BatchId, ProneHeadCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal) ||
+            !string.Equals(manifest.AssetId, ProneHeadCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal))
+        {
+            BootstrapLog.WriteRaw("prone_head_candidate_identity_invalid");
+            yield break;
+        }
+
+        if (!manifest.VisualApproved ||
+            !manifest.RuntimeApproved ||
+            !manifest.RuntimeUse ||
+            !manifest.ProductionAsset ||
+            manifest.PrototypeUse ||
+            !manifest.DeveloperPreview ||
+            !manifest.AutonomousBindingEnabled ||
+            !string.Equals(manifest.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal))
+            batchErrors.Add("approved_gate_invalid");
+        if (manifest.CurrentRuntimeProneAnchorExact)
+            batchErrors.Add("unverified_runtime_anchor_claim");
+        if (!string.Equals(manifest.ApprovedRuntimeProfile, "non_front_prone_owner_validated", StringComparison.Ordinal))
+            batchErrors.Add("approved_runtime_profile_invalid");
+        if (manifest.AllowedSources is null ||
+            manifest.AllowedSources.Count != 2 ||
+            !manifest.AllowedSources.Contains("AutonomousTick", StringComparer.Ordinal) ||
+            !manifest.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
+            batchErrors.Add("source_policy_invalid");
+        if (manifest.Actions is null || manifest.Actions.Count != 1)
+            batchErrors.Add("approved_action_count_invalid");
+
+        var inventory = new Dictionary<string, ProneHeadCandidateInventoryFrame>(StringComparer.OrdinalIgnoreCase);
+        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        foreach (var item in manifest.FrameInventory ?? Array.Empty<ProneHeadCandidateInventoryFrame>())
+        {
+            if (string.IsNullOrWhiteSpace(item.Path) ||
+                Path.IsPathRooted(item.Path) ||
+                item.Path.Split('/', StringSplitOptions.RemoveEmptyEntries).Contains("..", StringComparer.Ordinal))
+            {
+                batchErrors.Add($"unsafe_path:{item.Path}");
+                continue;
+            }
+            if (!inventory.TryAdd(item.Path, item))
+            {
+                batchErrors.Add($"duplicate_inventory:{item.Path}");
+                continue;
+            }
+            if (item.Width != 1024 || item.Height != 1024 || !string.Equals(item.Mode, "RGBA", StringComparison.Ordinal))
+                batchErrors.Add($"frame_contract:{item.Path}");
+
+            var path = Path.Combine(batchRoot, item.Path.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(path))
+            {
+                batchErrors.Add($"missing:{item.Path}");
+                continue;
+            }
+            if (new FileInfo(path).Length != item.Bytes)
+                batchErrors.Add($"bytes:{item.Path}");
+            if (!string.Equals(Sha256(path), item.Sha256, StringComparison.OrdinalIgnoreCase))
+                batchErrors.Add($"sha256:{item.Path}");
+        }
+
+        if (inventory.Count != 24)
+            batchErrors.Add($"inventory_count:{inventory.Count}/24");
+        if (!inventory.TryGetValue("frames/head-lower/frame-011.png", out var lowerHandoff) ||
+            !inventory.TryGetValue("frames/head-turn/frame-001.png", out var turnHandoff) ||
+            !string.Equals(lowerHandoff.Sha256, turnHandoff.Sha256, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(lowerHandoff.Sha256, manifest.InternalHandoffSha256, StringComparison.OrdinalIgnoreCase))
+            batchErrors.Add("internal_handoff_mismatch");
+
+        if (batchErrors.Count > 0)
+        {
+            BootstrapLog.WriteRaw($"prone_head_candidate_invalid batch={manifest.BatchId} errors={string.Join(",", batchErrors)}");
+            yield break;
+        }
+
+        foreach (var action in manifest.Actions ?? Array.Empty<ProneHeadCandidateActionManifest>())
+        {
+            var errors = new List<string>();
+            if (!string.Equals(action.BehaviorId, ProneHeadCandidateBehaviorIds.HeadLowerTurnV4, StringComparison.Ordinal))
+                errors.Add("behavior_id_invalid");
+            if (!action.VisualApproved ||
+                !action.RuntimeApproved ||
+                !action.RuntimeUse ||
+                !action.ProductionAsset ||
+                action.PrototypeUse ||
+                !action.DeveloperPreview ||
+                !action.AutonomousBindingEnabled ||
+                !string.Equals(action.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal))
+                errors.Add("action_gate_invalid");
+            if (action.AllowedSources is null ||
+                action.AllowedSources.Count != 2 ||
+                !action.AllowedSources.Contains("AutonomousTick", StringComparer.Ordinal) ||
+                !action.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
+                errors.Add("action_source_policy_invalid");
+
+            var phases = new List<MotionPhase>();
+            foreach (var phase in action.Phases ?? Array.Empty<ProneHeadCandidatePhaseManifest>())
+            {
+                var frames = new List<string>();
+                var durations = new List<int>();
+                foreach (var frame in phase.Frames ?? Array.Empty<ProneHeadCandidatePhaseFrameManifest>())
+                {
+                    if (!inventory.ContainsKey(frame.Path))
+                    {
+                        errors.Add($"unregistered_frame:{frame.Path}");
+                        continue;
+                    }
+                    var path = Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar));
+                    frames.Add(path);
+                    durations.Add(frame.DurationMs);
+                }
+                if (frames.Count == 0 || durations.Any(x => x <= 0))
+                    errors.Add($"phase_invalid:{phase.Name}");
+                phases.Add(new MotionPhase(phase.Name, frames, phase.Loop, durations));
+            }
+
+            if (phases.Sum(x => x.Frames.Count) != action.FrameCount)
+                errors.Add($"action_frame_count:{phases.Sum(x => x.Frames.Count)}/{action.FrameCount}");
+            var first = phases.SelectMany(x => x.Frames).FirstOrDefault();
+            var last = phases.SelectMany(x => x.Frames).LastOrDefault();
+            if (first is null || last is null ||
+                !string.Equals(Sha256(first), Sha256(last), StringComparison.OrdinalIgnoreCase))
+                errors.Add("closed_sequence_anchor_mismatch");
+
+            if (errors.Count > 0)
+            {
+                BootstrapLog.WriteRaw($"prone_head_candidate_invalid behavior={action.BehaviorId} errors={string.Join(",", errors)}");
+                continue;
+            }
+
+            yield return new PlayableMotion(
+                action.BehaviorId,
+                action.DisplayName,
+                "自主日常",
+                action.Direction,
+                action.FrameDurationMs,
+                action.Interruptible,
+                phases,
+                batchRoot,
+                RuntimeEnabled: true,
+                Status: "Windows 渲染验收通过：兼容趴姿自主动作已启用",
+                MissingContent: "Byte-exact current runtime prone anchor is not claimed; forward-prone profile remains incompatible.",
+                StartPose: action.FromPose,
+                EndPose: action.ToPose,
+                StyleGroup: "wukong-prone-head-microevent-v4-candidate",
+                Disposition: "已启用",
+                PrototypeUse: false,
+                AssetBatch: manifest.BatchId,
+                Description: $"{action.Description} Internal low-head handoff is exact; owner Windows renderer QA permits autonomous use from the compatible non-front prone profile only.",
+                CandidateProfile: manifest.CandidateProfile,
+                VisualScale: ApprovedPetVisualScale,
+                VisualApproved: true,
+                RuntimeApproved: true,
+                AutonomousBindingEnabled: true);
+        }
+    }
+
+    private static IEnumerable<PlayableMotion> LoadSleepCandidates(string root)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", SleepCandidateBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("sleep_candidate_manifest_missing");
+            yield break;
+        }
+
+        SleepCandidateBatchManifest? manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<SleepCandidateBatchManifest>(
+                File.ReadAllText(manifestPath),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Sleep candidate manifest parse failed", ex);
+            yield break;
+        }
+
+        if (manifest is null ||
+            !string.Equals(manifest.BatchId, SleepCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal) ||
+            !string.Equals(manifest.AssetId, SleepCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal))
+        {
+            BootstrapLog.WriteRaw("sleep_candidate_identity_invalid");
+            yield break;
+        }
+
+        var batchErrors = new List<string>();
+        if (manifest.OwnerPreviewApproved ||
+            manifest.VisualApproved ||
+            manifest.RuntimeApproved ||
+            manifest.RuntimeUse ||
+            manifest.ProductionAsset ||
+            manifest.PrototypeUse ||
+            !manifest.DeveloperPreview ||
+            manifest.AutonomousBindingEnabled ||
+            !string.Equals(manifest.RuntimeValidation, "pending_owner_windows_renderer_qa", StringComparison.Ordinal))
+            batchErrors.Add("candidate_gate_invalid");
+        if (manifest.SourceFrameCount != 48 || manifest.RuntimeFrameCount != 48 || manifest.SequenceCount != 8)
+            batchErrors.Add("candidate_inventory_contract_invalid");
+        if (manifest.RuntimeRenderScale <= 0)
+            batchErrors.Add("runtime_render_scale_invalid");
+        if (manifest.AllowedSources is null ||
+            manifest.AllowedSources.Count != 1 ||
+            !manifest.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
+            batchErrors.Add("source_policy_invalid");
+
+        var inventory = new Dictionary<string, ProneHeadCandidateInventoryFrame>(StringComparer.OrdinalIgnoreCase);
+        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        foreach (var item in manifest.FrameInventory ?? Array.Empty<ProneHeadCandidateInventoryFrame>())
+        {
+            if (string.IsNullOrWhiteSpace(item.Path) ||
+                Path.IsPathRooted(item.Path) ||
+                item.Path.Split('/', StringSplitOptions.RemoveEmptyEntries).Contains("..", StringComparer.Ordinal))
+            {
+                batchErrors.Add($"unsafe_path:{item.Path}");
+                continue;
+            }
+            if (!inventory.TryAdd(item.Path, item))
+            {
+                batchErrors.Add($"duplicate_inventory:{item.Path}");
+                continue;
+            }
+            if (item.Width != 1024 || item.Height != 1024 || !string.Equals(item.Mode, "RGBA", StringComparison.Ordinal))
+                batchErrors.Add($"frame_contract:{item.Path}");
+
+            var path = Path.Combine(batchRoot, item.Path.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(path))
+            {
+                batchErrors.Add($"missing:{item.Path}");
+                continue;
+            }
+            if (new FileInfo(path).Length != item.Bytes)
+                batchErrors.Add($"bytes:{item.Path}");
+            if (!string.Equals(Sha256(path), item.Sha256, StringComparison.OrdinalIgnoreCase))
+                batchErrors.Add($"sha256:{item.Path}");
+        }
+
+        if (inventory.Count != 48)
+            batchErrors.Add($"inventory_count:{inventory.Count}/48");
+        var actions = manifest.Actions ?? Array.Empty<SleepCandidateActionManifest>();
+        if (actions.Count != 8)
+            batchErrors.Add($"action_count:{actions.Count}/8");
+        if (batchErrors.Count > 0)
+        {
+            BootstrapLog.WriteRaw($"sleep_candidate_invalid batch={manifest.BatchId} errors={string.Join(",", batchErrors)}");
+            yield break;
+        }
+
+        foreach (var action in actions)
+        {
+            var errors = new List<string>();
+            if (!SleepCandidateBehaviorIds.All.Contains(action.BehaviorId))
+                errors.Add("behavior_id_invalid");
+            if (action.OwnerPreviewApproved ||
+                action.VisualApproved ||
+                action.RuntimeApproved ||
+                action.RuntimeUse ||
+                action.ProductionAsset ||
+                action.PrototypeUse ||
+                !action.DeveloperPreview ||
+                action.AutonomousBindingEnabled ||
+                !string.Equals(action.RuntimeValidation, "pending_owner_windows_renderer_qa", StringComparison.Ordinal))
+                errors.Add("action_gate_invalid");
+            if (action.AllowedSources is null ||
+                action.AllowedSources.Count != 1 ||
+                !action.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
+                errors.Add("action_source_policy_invalid");
+
+            var phases = new List<MotionPhase>();
+            foreach (var phase in action.Phases ?? Array.Empty<SleepCandidatePhaseManifest>())
+            {
+                var frames = new List<string>();
+                var durations = new List<int>();
+                foreach (var frame in phase.Frames ?? Array.Empty<CommandActionFrameManifest>())
+                {
+                    if (!inventory.TryGetValue(frame.Path, out var inventoryFrame))
+                    {
+                        errors.Add($"unregistered_frame:{frame.Path}");
+                        continue;
+                    }
+                    if (frame.Bytes != inventoryFrame.Bytes ||
+                        !string.Equals(frame.Sha256, inventoryFrame.Sha256, StringComparison.OrdinalIgnoreCase))
+                        errors.Add($"frame_metadata_mismatch:{frame.Path}");
+                    var path = Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar));
+                    frames.Add(path);
+                    durations.Add(frame.DurationMs.GetValueOrDefault(action.FrameDurationMs));
+                }
+                if (frames.Count != phase.FrameCount || frames.Count == 0 || durations.Any(x => x <= 0))
+                    errors.Add($"phase_invalid:{phase.Name}:{frames.Count}/{phase.FrameCount}");
+                if (phase.Loop != action.Loop)
+                    errors.Add($"loop_contract_invalid:{phase.Name}");
+                phases.Add(new MotionPhase(phase.Name, frames, phase.Loop, durations));
+            }
+
+            if (phases.Count != 1 || phases.Sum(x => x.Frames.Count) != action.FrameCount)
+                errors.Add($"action_frame_count:{phases.Sum(x => x.Frames.Count)}/{action.FrameCount}");
+            if (phases.Sum(x => x.DurationTotalMs(action.FrameDurationMs)) != action.TotalDurationMs)
+                errors.Add("action_duration_total_invalid");
+            if (errors.Count > 0)
+            {
+                BootstrapLog.WriteRaw($"sleep_candidate_invalid behavior={action.BehaviorId} errors={string.Join(",", errors)}");
+                continue;
+            }
+
+            yield return new PlayableMotion(
+                action.BehaviorId,
+                action.DisplayName,
+                "自主睡眠候选",
+                action.Direction,
+                action.FrameDurationMs,
+                action.Interruptible,
+                phases,
+                batchRoot,
+                RuntimeEnabled: false,
+                Status: "v10 待主人 Windows 渲染验收",
+                MissingContent: "Windows transparent-renderer QA / compatible runtime bridge / approved wake and interrupt-exit / runtime approval",
+                StartPose: action.FromPose,
+                EndPose: action.ToPose,
+                StyleGroup: "wukong-sleep-runtime-final-v10-candidate",
+                Disposition: "仅开发者候审预览",
+                PrototypeUse: false,
+                AssetBatch: manifest.BatchId,
+                Description: $"{action.Description} entry_policy={action.EntryPolicy}; source={manifest.SourceZip}; owner_preview_approved=false; visual_approved=false; runtime_use=false.",
+                CandidateProfile: manifest.CandidateProfile,
+                VisualScale: ApprovedPetVisualScale,
+                RenderScaleOverride: manifest.RuntimeRenderScale,
+                VisualApproved: false,
+                RuntimeApproved: false,
+                AutonomousBindingEnabled: false);
+        }
+    }
+
+    private static IEnumerable<PlayableMotion> LoadPatrolWalkCandidates(string root)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", PatrolWalkCandidateBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("patrol_walk_candidate_manifest_missing");
+            yield break;
+        }
+
+        PatrolWalkCandidateBatchManifest? manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<PatrolWalkCandidateBatchManifest>(
+                File.ReadAllText(manifestPath),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Patrol walk candidate manifest parse failed", ex);
+            yield break;
+        }
+
+        if (manifest is null ||
+            !string.Equals(manifest.BatchId, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal) ||
+            !string.Equals(manifest.AssetId, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal))
+        {
+            BootstrapLog.WriteRaw("patrol_walk_candidate_identity_invalid");
+            yield break;
+        }
+
+        var batchErrors = new List<string>();
+        if (!manifest.OwnerPreviewApproved ||
+            !manifest.VisualApproved ||
+            !manifest.RuntimeApproved ||
+            !manifest.RuntimeUse ||
+            !manifest.ProductionAsset ||
+            manifest.PrototypeUse ||
+            !manifest.DeveloperPreview ||
+            !manifest.AutonomousBindingEnabled ||
+            manifest.WindowMotionEnabled ||
+            !string.Equals(manifest.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal))
+            batchErrors.Add("approved_gate_invalid");
+        if (manifest.SourceFrameCount != 24 || manifest.RuntimeFrameCount != 24 || manifest.SequenceCount != 2)
+            batchErrors.Add("candidate_inventory_contract_invalid");
+        if (manifest.RuntimeRenderScale <= 0)
+            batchErrors.Add("runtime_render_scale_invalid");
+        if (manifest.AllowedSources is null ||
+            manifest.AllowedSources.Count != 2 ||
+            !manifest.AllowedSources.Contains("AutonomousTick", StringComparer.Ordinal) ||
+            !manifest.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
+            batchErrors.Add("source_policy_invalid");
+
+        var inventory = new Dictionary<string, ProneHeadCandidateInventoryFrame>(StringComparer.OrdinalIgnoreCase);
+        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        foreach (var item in manifest.FrameInventory ?? Array.Empty<ProneHeadCandidateInventoryFrame>())
+        {
+            if (string.IsNullOrWhiteSpace(item.Path) ||
+                Path.IsPathRooted(item.Path) ||
+                item.Path.Split('/', StringSplitOptions.RemoveEmptyEntries).Contains("..", StringComparer.Ordinal))
+            {
+                batchErrors.Add($"unsafe_path:{item.Path}");
+                continue;
+            }
+            if (!inventory.TryAdd(item.Path, item))
+            {
+                batchErrors.Add($"duplicate_inventory:{item.Path}");
+                continue;
+            }
+            if (item.Width != 1024 || item.Height != 1024 || !string.Equals(item.Mode, "RGBA", StringComparison.Ordinal))
+                batchErrors.Add($"frame_contract:{item.Path}");
+
+            var path = Path.Combine(batchRoot, item.Path.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(path))
+            {
+                batchErrors.Add($"missing:{item.Path}");
+                continue;
+            }
+            if (new FileInfo(path).Length != item.Bytes)
+                batchErrors.Add($"bytes:{item.Path}");
+            if (!string.Equals(Sha256(path), item.Sha256, StringComparison.OrdinalIgnoreCase))
+                batchErrors.Add($"sha256:{item.Path}");
+        }
+
+        if (inventory.Count != 24)
+            batchErrors.Add($"inventory_count:{inventory.Count}/24");
+        var actions = manifest.Actions ?? Array.Empty<PatrolWalkCandidateActionManifest>();
+        if (actions.Count != 2)
+            batchErrors.Add($"action_count:{actions.Count}/2");
+        if (batchErrors.Count > 0)
+        {
+            BootstrapLog.WriteRaw($"patrol_walk_candidate_invalid batch={manifest.BatchId} errors={string.Join(",", batchErrors)}");
+            yield break;
+        }
+
+        foreach (var action in actions)
+        {
+            var errors = new List<string>();
+            if (!PatrolWalkCandidateBehaviorIds.All.Contains(action.BehaviorId))
+                errors.Add("behavior_id_invalid");
+            if (!action.VisualApproved ||
+                !action.RuntimeApproved ||
+                !action.RuntimeUse ||
+                !action.ProductionAsset ||
+                action.PrototypeUse ||
+                !action.DeveloperPreview ||
+                !action.AutonomousBindingEnabled ||
+                !string.Equals(action.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal))
+                errors.Add("action_gate_invalid");
+            if (action.AllowedSources is null ||
+                action.AllowedSources.Count != 2 ||
+                !action.AllowedSources.Contains("AutonomousTick", StringComparer.Ordinal) ||
+                !action.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
+                errors.Add("action_source_policy_invalid");
+
+            var phases = new List<MotionPhase>();
+            foreach (var phase in action.Phases ?? Array.Empty<SleepCandidatePhaseManifest>())
+            {
+                var frames = new List<string>();
+                var durations = new List<int>();
+                foreach (var frame in phase.Frames ?? Array.Empty<CommandActionFrameManifest>())
+                {
+                    if (!inventory.TryGetValue(frame.Path, out var inventoryFrame))
+                    {
+                        errors.Add($"unregistered_frame:{frame.Path}");
+                        continue;
+                    }
+                    if (frame.Bytes != inventoryFrame.Bytes ||
+                        !string.Equals(frame.Sha256, inventoryFrame.Sha256, StringComparison.OrdinalIgnoreCase))
+                        errors.Add($"frame_metadata_mismatch:{frame.Path}");
+                    frames.Add(Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar)));
+                    durations.Add(frame.DurationMs.GetValueOrDefault(action.FrameDurationMs));
+                }
+                if (!phase.Loop || frames.Count != phase.FrameCount || frames.Count == 0 || durations.Any(x => x <= 0))
+                    errors.Add($"phase_invalid:{phase.Name}:{frames.Count}/{phase.FrameCount}");
+                phases.Add(new MotionPhase(phase.Name, frames, phase.Loop, durations));
+            }
+
+            if (!action.Loop || phases.Count != 1 || phases.Sum(x => x.Frames.Count) != action.FrameCount)
+                errors.Add($"action_frame_count:{phases.Sum(x => x.Frames.Count)}/{action.FrameCount}");
+            if (phases.Sum(x => x.DurationTotalMs(action.FrameDurationMs)) != action.TotalDurationMs)
+                errors.Add("action_duration_total_invalid");
+            if (errors.Count > 0)
+            {
+                BootstrapLog.WriteRaw($"patrol_walk_candidate_invalid behavior={action.BehaviorId} errors={string.Join(",", errors)}");
+                continue;
+            }
+
+            yield return new PlayableMotion(
+                action.BehaviorId,
+                action.DisplayName,
+                "Autonomous review candidate",
+                action.Direction,
+                action.FrameDurationMs,
+                action.Interruptible,
+                phases,
+                batchRoot,
+                RuntimeEnabled: true,
+                Status: "Windows renderer QA passed; low-frequency in-place autonomous gait enabled",
+                MissingContent: "Window translation remains disabled and requires separate motion QA.",
+                StartPose: action.FromPose,
+                EndPose: action.ToPose,
+                StyleGroup: "wukong-autonomous-patrol-walk-v1-candidate",
+                Disposition: "已启用",
+                PrototypeUse: false,
+                AssetBatch: manifest.BatchId,
+                Description: $"{action.Description} source={manifest.SourcePackage}; runtime_use=true; window_motion=false.",
+                CandidateProfile: manifest.CandidateProfile,
+                VisualScale: ApprovedPetVisualScale,
+                RenderScaleOverride: manifest.RuntimeRenderScale,
+                VisualApproved: true,
+                RuntimeApproved: true,
+                AutonomousBindingEnabled: true);
+        }
+    }
+
     private static IEnumerable<PlayableMotion> LoadLifecycleReviewCandidates(string root)
     {
         foreach (var assetBatch in LifecycleReviewCandidateBehaviorIds.AssetBatches)
@@ -1188,16 +1689,25 @@ public sealed class DesktopMotionCatalog
         if (manifest?.Actions is null)
             yield break;
 
-        var batchGateClosed =
+        var batchGateOpen =
             string.Equals(manifest.BatchId, AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal) &&
-            string.Equals(manifest.AssetStage, "runtime_candidate_owner_visual_qa_pending", StringComparison.Ordinal) &&
+            string.Equals(manifest.AssetStage, "runtime-approved", StringComparison.Ordinal) &&
             manifest.AutonomousSemanticsOwnerApproved &&
-            !manifest.RuntimeApproved &&
-            !manifest.RuntimeUse &&
-            !manifest.MayEnterAutonomousPoolByDefault;
-        if (!batchGateClosed)
+            manifest.ProductionAsset &&
+            manifest.VisualApproved &&
+            string.Equals(manifest.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal) &&
+            manifest.RuntimeApproved &&
+            manifest.RuntimeUse &&
+            !manifest.PrototypeUse &&
+            manifest.DeveloperPreview &&
+            manifest.AutonomousBindingEnabled &&
+            manifest.MayEnterAutonomousPoolByDefault &&
+            manifest.AllowedSources is { Count: 2 } &&
+            manifest.AllowedSources.Contains("AutonomousTick", StringComparer.Ordinal) &&
+            manifest.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal);
+        if (!batchGateOpen)
         {
-            BootstrapLog.WriteRaw("autonomous_daily_candidate_invalid errors=batch_gate_must_remain_closed");
+            BootstrapLog.WriteRaw("autonomous_daily_candidate_invalid errors=batch_gate_not_approved");
             yield break;
         }
 
@@ -1211,8 +1721,19 @@ public sealed class DesktopMotionCatalog
                 errors.Add("daily_namespace_required");
             if (!action.SourceMotionDesignApproved)
                 errors.Add("source_motion_design_not_approved");
-            if (!action.AutonomousSemanticsOwnerApproved || action.RuntimeApproved || action.RuntimeUse)
-                errors.Add("action_gate_must_remain_closed");
+            if (!action.AutonomousSemanticsOwnerApproved ||
+                !action.VisualApproved ||
+                !string.Equals(action.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal) ||
+                !action.RuntimeApproved ||
+                !action.RuntimeUse ||
+                !action.ProductionAsset ||
+                action.PrototypeUse ||
+                !action.DeveloperPreview ||
+                !action.AutonomousBindingEnabled ||
+                action.AllowedSources is not { Count: 2 } ||
+                !action.AllowedSources.Contains("AutonomousTick", StringComparer.Ordinal) ||
+                !action.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
+                errors.Add("action_gate_not_approved");
 
             var binding = action.SourceBinding;
             if (binding is null)
@@ -1282,24 +1803,27 @@ public sealed class DesktopMotionCatalog
             yield return new PlayableMotion(
                 action.BehaviorId,
                 action.DisplayName,
-                "自主日常候选",
+                "自主日常",
                 $"{action.FromPosture} -> {action.ToPosture}",
                 durations.Count > 0 ? durations[0] : 120,
                 Interruptible: true,
                 new[] { new MotionPhase("review", frames, action.Loop, durations) },
                 sourceRoot,
-                RuntimeEnabled: false,
-                Status: "候审已启用：等待主人 Windows 视觉验收",
-                MissingContent: "owner Windows renderer QA / runtime approval",
+                RuntimeEnabled: true,
+                Status: "Windows 渲染验收通过：低频自主姿态过渡已启用",
+                MissingContent: string.Empty,
                 StartPose: action.FromPosture,
                 EndPose: action.ToPosture,
                 StyleGroup: "wukong-light-malt-gold-autonomous-daily-v1",
-                Disposition: "待视觉验收",
+                Disposition: "已启用",
                 PrototypeUse: false,
                 AssetBatch: manifest.BatchId,
-                Description: $"{action.DailyRole}; shared immutable reference to approved light-malt-gold source frames; no duplicate PNG; never selected by the autonomous pool while runtime_use=false.",
+                Description: $"{action.DailyRole}; shared immutable reference to approved light-malt-gold source frames; no duplicate PNG; enabled for low-frequency autonomous posture transitions.",
                 CandidateProfile: manifest.AssetStage,
-                VisualScale: ApprovedPetVisualScale);
+                VisualScale: ApprovedPetVisualScale,
+                VisualApproved: true,
+                RuntimeApproved: true,
+                AutonomousBindingEnabled: true);
         }
     }
 
@@ -1703,8 +2227,6 @@ public static class Phase15BehaviorIds
     public const string ProneBreath = "wk.phase15.prone_breath";
     public const string ProneIdleV3Candidate = "wk.phase15.prone_idle_v3_candidate";
     public const string LookAround = "wk.phase15.look_around";
-    public const string SideSleepBreath = "wk.phase15.side_sleep_breath";
-    public const string EnterSleep = "wk.phase15.enter_sleep";
     public const string SafeStand = "wk.phase15.safe_stand";
     public const string StrokeEnjoy = "wk.phase15.stroke_enjoy";
     public const string ProneTouch = "wk.interaction.prone_touch";
@@ -1755,6 +2277,50 @@ public static class SideProneFrontBehaviorIds
 {
     public const string AssetBatch = "WK-AUTONOMOUS-SIDE-PRONE-FRONT-PRODUCTION-v5";
     public const string ObserveV5 = "wk.candidate.lifecycle.side_prone_front_observe_v5";
+}
+
+public static class ProneHeadCandidateBehaviorIds
+{
+    public const string AssetBatch = "WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4";
+    public const string HeadLowerTurnV4 = "wk.candidate.daily.prone_head_lower_turn_v4";
+}
+
+public static class SleepCandidateBehaviorIds
+{
+    public const string AssetBatch = "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10";
+    public const string MainLifecycle = "wk.candidate.sleep.main_lifecycle_v2";
+    public const string ProneToSideRoll = "wk.candidate.sleep.prone_to_side_roll_v2";
+    public const string SprawledFrontBreath = "wk.candidate.sleep.sprawled_front_breath_v2";
+    public const string SprawledLeftSideBreath = "wk.candidate.sleep.sprawled_left_side_breath_v2";
+    public const string SprawledRightSideBreath = "wk.candidate.sleep.sprawled_right_side_breath_v2";
+    public const string CompactProneBreath = "wk.candidate.sleep.compact_prone_breath_v2";
+    public const string CurledSideBreath = "wk.candidate.sleep.curled_side_breath_v2";
+    public const string TopDownProneBreath = "wk.candidate.sleep.top_down_prone_breath_v2";
+
+    public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
+    {
+        MainLifecycle,
+        ProneToSideRoll,
+        SprawledFrontBreath,
+        SprawledLeftSideBreath,
+        SprawledRightSideBreath,
+        CompactProneBreath,
+        CurledSideBreath,
+        TopDownProneBreath
+    };
+}
+
+public static class PatrolWalkCandidateBehaviorIds
+{
+    public const string AssetBatch = "WK-AUTONOMOUS-PATROL-WALK-v1-candidate";
+    public const string WalkLeft = "wk.candidate.autonomous.patrol_walk_left_v1";
+    public const string WalkRight = "wk.candidate.autonomous.patrol_walk_right_v1";
+
+    public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
+    {
+        WalkLeft,
+        WalkRight
+    };
 }
 
 public static class AutonomousDailyCandidateBehaviorIds
@@ -1938,12 +2504,175 @@ public sealed record SideProneFrontProductionManifest(
     [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
     [property: JsonPropertyName("phases")] IReadOnlyList<LifecycleCandidatePhaseManifest> Phases);
 
+public sealed record ProneHeadCandidateBatchManifest(
+    [property: JsonPropertyName("batch_id")] string BatchId,
+    [property: JsonPropertyName("asset_id")] string AssetId,
+    [property: JsonPropertyName("candidate_profile")] string CandidateProfile,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("developer_preview")] bool DeveloperPreview,
+    [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
+    [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
+    [property: JsonPropertyName("internal_handoff_sha256")] string InternalHandoffSha256,
+    [property: JsonPropertyName("current_runtime_prone_anchor_exact")] bool CurrentRuntimeProneAnchorExact,
+    [property: JsonPropertyName("approved_runtime_profile")] string ApprovedRuntimeProfile,
+    [property: JsonPropertyName("frame_inventory")] IReadOnlyList<ProneHeadCandidateInventoryFrame> FrameInventory,
+    [property: JsonPropertyName("actions")] IReadOnlyList<ProneHeadCandidateActionManifest> Actions);
+
+public sealed record ProneHeadCandidateInventoryFrame(
+    [property: JsonPropertyName("path")] string Path,
+    [property: JsonPropertyName("width")] int Width,
+    [property: JsonPropertyName("height")] int Height,
+    [property: JsonPropertyName("mode")] string Mode,
+    [property: JsonPropertyName("bytes")] long Bytes,
+    [property: JsonPropertyName("sha256")] string Sha256);
+
+public sealed record ProneHeadCandidateActionManifest(
+    [property: JsonPropertyName("behavior_id")] string BehaviorId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("description")] string Description,
+    [property: JsonPropertyName("from_pose")] string FromPose,
+    [property: JsonPropertyName("to_pose")] string ToPose,
+    [property: JsonPropertyName("direction")] string Direction,
+    [property: JsonPropertyName("frame_count")] int FrameCount,
+    [property: JsonPropertyName("frame_duration_ms")] int FrameDurationMs,
+    [property: JsonPropertyName("interruptible")] bool Interruptible,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("developer_preview")] bool DeveloperPreview,
+    [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
+    [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
+    [property: JsonPropertyName("phases")] IReadOnlyList<ProneHeadCandidatePhaseManifest> Phases);
+
+public sealed record ProneHeadCandidatePhaseManifest(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("loop")] bool Loop,
+    [property: JsonPropertyName("frames")] IReadOnlyList<ProneHeadCandidatePhaseFrameManifest> Frames);
+
+public sealed record ProneHeadCandidatePhaseFrameManifest(
+    [property: JsonPropertyName("path")] string Path,
+    [property: JsonPropertyName("duration_ms")] int DurationMs);
+
+public sealed record SleepCandidateBatchManifest(
+    [property: JsonPropertyName("batch_id")] string BatchId,
+    [property: JsonPropertyName("asset_id")] string AssetId,
+    [property: JsonPropertyName("candidate_profile")] string CandidateProfile,
+    [property: JsonPropertyName("source_zip")] string SourceZip,
+    [property: JsonPropertyName("source_frame_count")] int SourceFrameCount,
+    [property: JsonPropertyName("runtime_frame_count")] int RuntimeFrameCount,
+    [property: JsonPropertyName("sequence_count")] int SequenceCount,
+    [property: JsonPropertyName("owner_preview_approved")] bool OwnerPreviewApproved,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("developer_preview")] bool DeveloperPreview,
+    [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
+    [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
+    [property: JsonPropertyName("runtime_render_scale")] double RuntimeRenderScale,
+    [property: JsonPropertyName("frame_inventory")] IReadOnlyList<ProneHeadCandidateInventoryFrame> FrameInventory,
+    [property: JsonPropertyName("actions")] IReadOnlyList<SleepCandidateActionManifest> Actions);
+
+public sealed record SleepCandidateActionManifest(
+    [property: JsonPropertyName("behavior_id")] string BehaviorId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("description")] string Description,
+    [property: JsonPropertyName("from_pose")] string FromPose,
+    [property: JsonPropertyName("to_pose")] string ToPose,
+    [property: JsonPropertyName("direction")] string Direction,
+    [property: JsonPropertyName("entry_policy")] string EntryPolicy,
+    [property: JsonPropertyName("frame_count")] int FrameCount,
+    [property: JsonPropertyName("total_duration_ms")] int TotalDurationMs,
+    [property: JsonPropertyName("frame_duration_ms")] int FrameDurationMs,
+    [property: JsonPropertyName("interruptible")] bool Interruptible,
+    [property: JsonPropertyName("loop")] bool Loop,
+    [property: JsonPropertyName("owner_preview_approved")] bool OwnerPreviewApproved,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("developer_preview")] bool DeveloperPreview,
+    [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
+    [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
+    [property: JsonPropertyName("phases")] IReadOnlyList<SleepCandidatePhaseManifest> Phases);
+
+public sealed record SleepCandidatePhaseManifest(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("loop")] bool Loop,
+    [property: JsonPropertyName("frame_count")] int FrameCount,
+    [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames);
+
+public sealed record PatrolWalkCandidateBatchManifest(
+    [property: JsonPropertyName("batch_id")] string BatchId,
+    [property: JsonPropertyName("asset_id")] string AssetId,
+    [property: JsonPropertyName("candidate_profile")] string CandidateProfile,
+    [property: JsonPropertyName("source_package")] string SourcePackage,
+    [property: JsonPropertyName("source_frame_count")] int SourceFrameCount,
+    [property: JsonPropertyName("runtime_frame_count")] int RuntimeFrameCount,
+    [property: JsonPropertyName("sequence_count")] int SequenceCount,
+    [property: JsonPropertyName("owner_preview_approved")] bool OwnerPreviewApproved,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("developer_preview")] bool DeveloperPreview,
+    [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
+    [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
+    [property: JsonPropertyName("runtime_render_scale")] double RuntimeRenderScale,
+    [property: JsonPropertyName("window_motion_enabled")] bool WindowMotionEnabled,
+    [property: JsonPropertyName("frame_inventory")] IReadOnlyList<ProneHeadCandidateInventoryFrame> FrameInventory,
+    [property: JsonPropertyName("actions")] IReadOnlyList<PatrolWalkCandidateActionManifest> Actions);
+
+public sealed record PatrolWalkCandidateActionManifest(
+    [property: JsonPropertyName("behavior_id")] string BehaviorId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("description")] string Description,
+    [property: JsonPropertyName("from_pose")] string FromPose,
+    [property: JsonPropertyName("to_pose")] string ToPose,
+    [property: JsonPropertyName("direction")] string Direction,
+    [property: JsonPropertyName("frame_count")] int FrameCount,
+    [property: JsonPropertyName("total_duration_ms")] int TotalDurationMs,
+    [property: JsonPropertyName("frame_duration_ms")] int FrameDurationMs,
+    [property: JsonPropertyName("interruptible")] bool Interruptible,
+    [property: JsonPropertyName("loop")] bool Loop,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("developer_preview")] bool DeveloperPreview,
+    [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
+    [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
+    [property: JsonPropertyName("phases")] IReadOnlyList<SleepCandidatePhaseManifest> Phases);
+
 public sealed record AutonomousDailyCandidateBatchManifest(
     [property: JsonPropertyName("batch_id")] string BatchId,
     [property: JsonPropertyName("asset_stage")] string AssetStage,
     [property: JsonPropertyName("autonomous_semantics_owner_approved")] bool AutonomousSemanticsOwnerApproved,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
     [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
     [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("developer_preview")] bool DeveloperPreview,
+    [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
+    [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
     [property: JsonPropertyName("may_enter_autonomous_pool_by_default")] bool MayEnterAutonomousPoolByDefault,
     [property: JsonPropertyName("actions")] IReadOnlyList<AutonomousDailyCandidateActionManifest> Actions);
 
@@ -1957,8 +2686,15 @@ public sealed record AutonomousDailyCandidateActionManifest(
     [property: JsonPropertyName("loop")] bool Loop,
     [property: JsonPropertyName("source_motion_design_approved")] bool SourceMotionDesignApproved,
     [property: JsonPropertyName("autonomous_semantics_owner_approved")] bool AutonomousSemanticsOwnerApproved,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
     [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
     [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("developer_preview")] bool DeveloperPreview,
+    [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
+    [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
     [property: JsonPropertyName("source_binding")] AutonomousDailySourceBindingManifest? SourceBinding);
 
 public sealed record AutonomousDailySourceBindingManifest(
@@ -2223,7 +2959,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             LifecycleReviewCandidateBehaviorIds.StandIdleV3R1,
             LifecycleReviewCandidateBehaviorIds.SitIdleV3R1,
             LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
-            LifecycleReviewCandidateBehaviorIds.FrontProneLickV4
+            LifecycleReviewCandidateBehaviorIds.FrontProneLickV4,
+            AutonomousDailyCandidateBehaviorIds.StandToSit,
+            AutonomousDailyCandidateBehaviorIds.SitToProne,
+            AutonomousDailyCandidateBehaviorIds.ProneToSit,
+            AutonomousDailyCandidateBehaviorIds.SitToStand,
+            ProneHeadCandidateBehaviorIds.HeadLowerTurnV4,
+            PatrolWalkCandidateBehaviorIds.WalkLeft,
+            PatrolWalkCandidateBehaviorIds.WalkRight
         };
     private readonly DesktopMotionCatalog _catalog;
     private readonly PetrifiedCoinAssets? _coinAssets;
@@ -2231,6 +2974,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private readonly Func<DateTimeOffset> _now;
     private readonly Random _random = new(1508);
     private PlayableMotion? _currentMotion;
+    private BehaviorExecutionMode _currentExecutionMode = BehaviorExecutionMode.Normal;
     private readonly BehaviorAgentMockEngine _behaviorAgent = new();
     private readonly InteractionDecisionService _interactionDecisions = new();
     private readonly InitiativeSpeechDecisionService _initiativeSpeechDecisions = new();
@@ -2298,7 +3042,11 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         .OrderBy(x => x.BehaviorId)
         .ToArray();
     public IReadOnlyList<PlayableMotion> AutonomousDailyCandidateMotions => _catalog.Motions
-        .Where(x => string.Equals(x.AssetBatch, AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        .Where(x =>
+            string.Equals(x.AssetBatch, AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(x.AssetBatch, ProneHeadCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(x.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(x.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
         .OrderBy(x => x.BehaviorId)
         .ToArray();
     public IReadOnlyList<PlayableMotion> CarRideCandidateMotions => _catalog.Motions
@@ -2919,6 +3667,12 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         if (completedMotion is not null &&
             string.Equals(completedMotion.AssetBatch, AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
         {
+            if (_currentExecutionMode != BehaviorExecutionMode.Normal)
+            {
+                Trace("autonomous_daily_preview_completed", $"{behaviorId} phase={phase} state_write=false");
+                StartStablePostureIdle(_agentState.CurrentPosture, $"autonomous_daily_preview_complete:{behaviorId}");
+                return;
+            }
             var posture = StablePostureFromPose(completedMotion.EndPose, _agentState.CurrentPosture);
             _agentState = _agentState with
             {
@@ -2927,9 +3681,61 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                 IsBusy = false,
                 ActiveActionId = null
             };
-            Trace("autonomous_daily_candidate_completed", $"{behaviorId} phase={phase} posture={posture} review_only=true");
+            Trace("autonomous_daily_completed", $"{behaviorId} phase={phase} posture={posture} runtime_approved=true");
             RaiseMetrics();
             StartStablePostureIdle(posture, $"autonomous_daily_candidate_complete:{behaviorId}");
+            return;
+        }
+
+        if (completedMotion is not null &&
+            string.Equals(completedMotion.AssetBatch, ProneHeadCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        {
+            if (_currentExecutionMode != BehaviorExecutionMode.Normal)
+            {
+                Trace("prone_head_preview_completed", $"{behaviorId} phase={phase} state_write=false");
+                StartStablePostureIdle(_agentState.CurrentPosture, $"prone_head_preview_complete:{behaviorId}");
+                return;
+            }
+            _agentState = _agentState with
+            {
+                CurrentPosture = StablePosture.Prone,
+                LastActionId = behaviorId,
+                IsBusy = false,
+                ActiveActionId = null
+            };
+            Trace("prone_head_microevent_completed", $"{behaviorId} phase={phase} posture=Prone runtime_approved=true profile=non_front_prone");
+            RaiseMetrics();
+            StartStablePostureIdle(StablePosture.Prone, $"prone_head_microevent_complete:{behaviorId}");
+            return;
+        }
+
+        if (completedMotion is not null &&
+            string.Equals(completedMotion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        {
+            Trace("sleep_candidate_completed", $"{behaviorId} phase={phase} review_only=true state_write=false memory_write=false");
+            StartStablePostureIdle(_agentState.CurrentPosture, $"sleep_candidate_complete:{behaviorId}");
+            return;
+        }
+
+        if (completedMotion is not null &&
+            string.Equals(completedMotion.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        {
+            if (_currentExecutionMode != BehaviorExecutionMode.Normal)
+            {
+                Trace("patrol_walk_preview_completed", $"{behaviorId} phase={phase} state_write=false window_motion=false");
+                StartStablePostureIdle(_agentState.CurrentPosture, $"patrol_walk_preview_complete:{behaviorId}");
+                return;
+            }
+            _agentState = _agentState with
+            {
+                CurrentPosture = StablePosture.Stand,
+                LastActionId = behaviorId,
+                IsBusy = false,
+                ActiveActionId = null
+            };
+            Trace("patrol_walk_completed", $"{behaviorId} phase={phase} posture=Stand runtime_approved=true window_motion=false");
+            RaiseMetrics();
+            StartStablePostureIdle(StablePosture.Stand, $"patrol_walk_complete:{behaviorId}");
             return;
         }
 
@@ -3088,6 +3894,12 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         if (source == BehaviorRequestSource.AutonomousTick &&
             behaviorId is LifecycleCandidateBehaviorIds.LivelyDailyP2 or LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1)
             loopCycles = ChooseAutonomousProneLoopCycles(_random);
+        if (source == BehaviorRequestSource.AutonomousTick &&
+            motion.AssetBatch is AutonomousDailyCandidateBehaviorIds.AssetBatch or ProneHeadCandidateBehaviorIds.AssetBatch)
+            loopCycles = 1;
+        if (source == BehaviorRequestSource.AutonomousTick &&
+            string.Equals(motion.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+            loopCycles = 2;
         if (source == BehaviorRequestSource.AutonomousTick && !stableIdle)
         {
             _agentState = _agentState with
@@ -3191,6 +4003,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     {
         _currentBehaviorId = motion.BehaviorId;
         _currentMotion = motion;
+        _currentExecutionMode = executionMode;
         _currentStartedAt = _now();
         _currentInterruptible = motion.Interruptible;
         _lastAccepted[motion.BehaviorId] = _currentStartedAt;
@@ -3286,12 +4099,24 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                     0.12 + Comfort * 0.07 + (1 - _agentState.Arousal) * 0.04 + (workQuiet ? 0.03 : 0.01), "autonomous:brief_approved_v3r1_stand_microloop");
                 if (elapsed >= TimeSpan.FromSeconds(8) && Energy >= 0.18 && Stress < 0.85)
                 {
+                    AddIfEnabled(candidates, AutonomousDailyCandidateBehaviorIds.StandToSit,
+                        0.42 + Comfort * 0.18 + (1 - Energy) * 0.14 + (workQuiet ? 0.08 : 0.02),
+                        "autonomous:approved_stand_to_sit_transition");
                     AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.LivelyDailyP2,
                         0.94 + Comfort * 0.38 + (1 - Energy) * 0.24 + Curiosity * 0.16 + _agentState.Boredom * 0.12 + Mood * 0.08 - Stress * 0.18 + (workQuiet ? 0.12 : 0.04),
                         "autonomous:prefer_long_prone_rest_lifecycle");
                     AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1,
                         0.78 + Comfort * 0.32 + (1 - Energy) * 0.20 + Curiosity * 0.12 + _agentState.Boredom * 0.10 + Mood * 0.06 - Stress * 0.16 + (workQuiet ? 0.10 : 0.03),
                         "autonomous:prefer_approved_v3r1_long_prone_rest");
+                    if (Energy >= 0.35 && Stress < 0.65)
+                    {
+                        AddIfEnabled(candidates, PatrolWalkCandidateBehaviorIds.WalkLeft,
+                            0.08 + _agentState.Boredom * 0.08 + Curiosity * 0.05,
+                            "autonomous:low_frequency_in_place_patrol_left");
+                        AddIfEnabled(candidates, PatrolWalkCandidateBehaviorIds.WalkRight,
+                            0.08 + _agentState.Boredom * 0.08 + Curiosity * 0.05,
+                            "autonomous:low_frequency_in_place_patrol_right");
+                    }
                 }
                 break;
             case StablePosture.Sit:
@@ -3299,6 +4124,15 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                     0.82 + Comfort * 0.12 + (workQuiet ? 0.14 : 0.03), "autonomous:stable_sit_microloop");
                 AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.SitIdleV3R1,
                     0.72 + Comfort * 0.10 + (workQuiet ? 0.12 : 0.03), "autonomous:approved_v3r1_sit_microloop");
+                if (elapsed >= TimeSpan.FromSeconds(10))
+                {
+                    AddIfEnabled(candidates, AutonomousDailyCandidateBehaviorIds.SitToProne,
+                        0.58 + Comfort * 0.18 + (1 - Energy) * 0.16 + (workQuiet ? 0.10 : 0.03),
+                        "autonomous:approved_sit_to_prone_transition");
+                    AddIfEnabled(candidates, AutonomousDailyCandidateBehaviorIds.SitToStand,
+                        0.10 + Energy * 0.08 + _agentState.Arousal * 0.04,
+                        "autonomous:low_frequency_sit_to_stand_transition");
+                }
                 break;
             default:
                 if (_frontProneProfileActive)
@@ -3315,6 +4149,16 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                 {
                     AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
                         0.86 + Comfort * 0.14 + (workQuiet ? 0.16 : 0.04), "autonomous:stable_prone_microloop");
+                    if (elapsed >= TimeSpan.FromSeconds(12) &&
+                        IsProneHeadAutonomousProfileAllowed(_agentState.CurrentPosture, _frontProneProfileActive))
+                    {
+                        AddIfEnabled(candidates, ProneHeadCandidateBehaviorIds.HeadLowerTurnV4,
+                            0.12 + Curiosity * 0.08 + Mood * 0.03,
+                            "autonomous:approved_prone_head_lower_turn_microevent");
+                        AddIfEnabled(candidates, AutonomousDailyCandidateBehaviorIds.ProneToSit,
+                            0.07 + Energy * 0.05 + _agentState.Arousal * 0.03,
+                            "autonomous:low_frequency_prone_to_sit_transition");
+                    }
                 }
                 break;
         }
@@ -3379,6 +4223,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public static bool IsAutonomousRuntimeBehaviorAllowed(string behaviorId) =>
         AutonomousRuntimeAllowlist.Contains(behaviorId);
+
+    public static bool IsProneHeadAutonomousProfileAllowed(StablePosture posture, bool frontProneProfileActive) =>
+        posture == StablePosture.Prone && !frontProneProfileActive;
 
     private void UpdateDecision(PetActionResult result, string source, string reasonCode, string userFacing)
     {

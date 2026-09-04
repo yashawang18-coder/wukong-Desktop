@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "asset_id": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
+  "asset_version": 10,
+  "asset_stage": "runtime-candidate",
+  "source_package": "wukong-sleep-runtime-final-transparent-v10.zip",
+  "source_zip_sha256": "174350b0aaa7d01a6639d8ce189fb7a12d3541e5dc5ce4460b1461d8f0d1c701",
+  "source_frame_count": 48,
+  "runtime_frame_count": 48,
+  "sequence_count": 8,
+  "source_png_byte_identity": true,
+  "owner_preview_approved": false,
+  "owner_material_visual_confirmed": false,
+  "visual_approved": false,
+  "automated_validation": "passed_import_integrity",
+  "runtime_validation": "pending_owner_windows_renderer_qa",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": false,
+  "normal_runtime_available": false,
+  "allowed_sources": [
+    "DeveloperPreview"
+  ],
+  "runtime_render_scale": 0.92,
+  "current_runtime_prone_bridge": {
+    "runtime_anchor_path": "assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2/frames/microloops/prone-idle/01.png",
+    "runtime_anchor_sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44",
+    "runtime_alpha_bbox": [
+      110,
+      418,
+      922,
+      931
+    ],
+    "candidate_f01_alpha_bbox": [
+      42,
+      302,
+      998,
+      857
+    ],
+    "candidate_f01_bytes_preserved": true,
+    "runtime_render_scale": 0.92,
+    "scaled_visible_height_px": 510.6,
+    "runtime_visible_height_px": 513,
+    "windows_transition_review": "pending"
+  },
+  "runtime_frame_format": "1024x1024 RGBA PNG copied byte-for-byte from the supplied v10 ZIP",
+  "missing_content": [
+    "approved wake exit",
+    "approved interrupt exit",
+    "Windows transparent-renderer continuity approval"
+  ],
+  "notes": "v10 replaces the local unapproved v5 preview. Only the eight supplied sequences are registered."
+}

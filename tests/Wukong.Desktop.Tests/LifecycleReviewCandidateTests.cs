@@ -144,9 +144,13 @@ internal static class LifecycleReviewCandidateTests
         Assert(selected.Contains(LifecycleReviewCandidateBehaviorIds.StandIdleV3R1) ||
                selected.Contains(LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1),
             "approved V3R1 material never entered the autonomous pool");
+        Assert(selected.Contains(AutonomousDailyCandidateBehaviorIds.StandToSit) ||
+               selected.Overlaps(PatrolWalkCandidateBehaviorIds.All),
+            "newly approved daily transition or patrol gait never entered deterministic autonomous sampling");
         Assert(!DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(MockCommandActionIds.Jump), "jump entered the autonomous allowlist");
         Assert(!DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(MockCommandActionIds.Spin), "spin entered the autonomous allowlist");
         Assert(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1), "V3R1 lifecycle is missing from the autonomous allowlist");
+        Assert(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(ProneHeadCandidateBehaviorIds.HeadLowerTurnV4), "prone head V4 is missing from the autonomous allowlist");
     }
 
     public static void ForwardProneProfileRequiresMatchingApprovedAnchor()

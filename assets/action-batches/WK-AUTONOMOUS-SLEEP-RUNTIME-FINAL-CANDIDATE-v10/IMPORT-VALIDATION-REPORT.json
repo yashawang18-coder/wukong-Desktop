@@ -1,0 +1,37 @@
+{
+  "generated_at_utc": "2026-09-04T21:19:58.249283+00:00",
+  "source_zip": "wukong-sleep-runtime-final-transparent-v10.zip",
+  "source_zip_sha256": "174350b0aaa7d01a6639d8ce189fb7a12d3541e5dc5ce4460b1461d8f0d1c701",
+  "zip_integrity": "passed",
+  "source_frame_count": 48,
+  "runtime_frame_count": 48,
+  "sequence_count": 8,
+  "all_png_decode": true,
+  "all_png_1024_rgba": true,
+  "all_frames_have_transparency": true,
+  "all_canvas_edges_transparent": true,
+  "maximum_possible_blue_carrier_pixels": 19,
+  "source_png_byte_identity": true,
+  "runtime_prone_anchor_comparison": {
+    "runtime_anchor_path": "assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2/frames/microloops/prone-idle/01.png",
+    "runtime_anchor_sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44",
+    "runtime_alpha_bbox": [
+      110,
+      418,
+      922,
+      931
+    ],
+    "candidate_f01_alpha_bbox": [
+      42,
+      302,
+      998,
+      857
+    ],
+    "candidate_f01_bytes_preserved": true,
+    "runtime_render_scale": 0.92,
+    "scaled_visible_height_px": 510.6,
+    "runtime_visible_height_px": 513,
+    "windows_transition_review": "pending"
+  },
+  "windows_renderer_qa": "pending"
+}
