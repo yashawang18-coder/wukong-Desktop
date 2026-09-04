@@ -1,0 +1,17 @@
+{
+  "batch_id": "WK-AUTONOMOUS-SIDE-PRONE-FRONT-PRODUCTION-v5",
+  "status": "production_candidate_owner_visual_review_pending",
+  "asset_stage": "production_candidate_owner_visual_review_pending",
+  "runtime_validation": "pending_owner_visual_review_and_windows_renderer_ci",
+  "visual_approved": false,
+  "owner_runtime_enable_requested": true,
+  "owner_runtime_enable_request_date": "2026-08-26",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
+  "prototype_use": false,
+  "autonomous_binding_enabled": false,
+  "bridge_policy": "V3R1 intro -> bridge-to-front -> forward-observe loop -> bridge-to-legacy -> V3R1 exit; no hard splice",
+  "source_package_manifest": "manifest.json",
+  "source_freeze_manifest": "SHA256SUMS"
+}

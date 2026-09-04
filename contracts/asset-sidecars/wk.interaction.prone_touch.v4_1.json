@@ -9,13 +9,22 @@
   "from_pose": "prone.awake.left_front",
   "to_pose": "prone.awake.left_front",
   "review": {
-    "status": "runtime-candidate",
-    "owner_preview_approved": true,
-    "renderer_qa": "pending"
+    "status": "deprecated",
+    "deprecated": true,
+    "deprecated_reason": "owner_rejected_and_removed_from_use_2026_08_26",
+    "owner_preview_approved": false,
+    "renderer_qa": "failed_owner_rejected"
   },
   "runtime_policy": {
     "runtime_use": false,
-    "reference_use": "visual_candidate"
+    "runtime_approved": false,
+    "production_asset": false,
+    "autonomous_binding_enabled": false,
+    "command_binding_enabled": false,
+    "fallback_eligible": false,
+    "appearance_reference_usable": false,
+    "motion_reference_usable": false,
+    "reference_use": "deprecated_only"
   },
   "anchors": {
     "ground_anchor": "ground_y_861",
@@ -26,6 +35,6 @@
     "hd_pixel_source": true,
     "loop_preview_approved": true,
     "renderer_scale_verified": false,
-    "known_blockers": ["Windows transparent desktop renderer QA pending"]
+    "known_blockers": ["owner rejected and removed from use on 2026-08-26"]
   }
 }

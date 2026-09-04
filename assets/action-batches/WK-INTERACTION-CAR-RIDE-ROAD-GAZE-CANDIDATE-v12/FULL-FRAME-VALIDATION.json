@@ -1,0 +1,703 @@
+{
+  "asset_id": "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v12",
+  "validation_time": "2026-08-30",
+  "generation_strategy": "full_scene_generation_no_local_composite",
+  "runtime_frame_count": 36,
+  "unique_full_scene_master_count": 8,
+  "review_png_count": 4,
+  "review_gif_count": 4,
+  "all_runtime_frames_decode": true,
+  "all_runtime_frames_1024_rgba": true,
+  "all_runtime_frames_have_transparent_corners": true,
+  "whole_frame_only_normalization": true,
+  "head_or_body_region_composite_used": false,
+  "normal_runtime_gate_closed": true,
+  "owner_visual_qa": "pending",
+  "windows_transparent_renderer_qa": "pending",
+  "frames": [
+    {
+      "path": "frames/road-gaze-left/frame-001.png",
+      "master": "neutral",
+      "duration_ms": 90,
+      "sha256": "c6b900fdefd574f3fcd21fc1e1c10354a4a0a23dd6d8cf08373768863040f880",
+      "bytes": 510987,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        284,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-002.png",
+      "master": "neutral",
+      "duration_ms": 90,
+      "sha256": "c6b900fdefd574f3fcd21fc1e1c10354a4a0a23dd6d8cf08373768863040f880",
+      "bytes": 510987,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        284,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-003.png",
+      "master": "slight",
+      "duration_ms": 100,
+      "sha256": "bb1b931b27c3faedbd1157c03485db969fbbc084892776da65140d4bf617f0c2",
+      "bytes": 516061,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        283,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-004.png",
+      "master": "slight",
+      "duration_ms": 100,
+      "sha256": "bb1b931b27c3faedbd1157c03485db969fbbc084892776da65140d4bf617f0c2",
+      "bytes": 516061,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        283,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-005.png",
+      "master": "medium",
+      "duration_ms": 110,
+      "sha256": "8e094de668b8828cf1b27ed71b3d5c3986c5b8d838f85dab89a185f64d7667a6",
+      "bytes": 509868,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        282,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-006.png",
+      "master": "medium",
+      "duration_ms": 110,
+      "sha256": "8e094de668b8828cf1b27ed71b3d5c3986c5b8d838f85dab89a185f64d7667a6",
+      "bytes": 509868,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        282,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-007.png",
+      "master": "strong",
+      "duration_ms": 160,
+      "sha256": "73034440bf71cb92f16a4a7e1eb34454b78fb4c659899aa963cee6226e4b769a",
+      "bytes": 523256,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        239,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-008.png",
+      "master": "strong",
+      "duration_ms": 160,
+      "sha256": "73034440bf71cb92f16a4a7e1eb34454b78fb4c659899aa963cee6226e4b769a",
+      "bytes": 523256,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        239,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-009.png",
+      "master": "strong",
+      "duration_ms": 160,
+      "sha256": "73034440bf71cb92f16a4a7e1eb34454b78fb4c659899aa963cee6226e4b769a",
+      "bytes": 523256,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        239,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-010.png",
+      "master": "strong",
+      "duration_ms": 160,
+      "sha256": "73034440bf71cb92f16a4a7e1eb34454b78fb4c659899aa963cee6226e4b769a",
+      "bytes": 523256,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        239,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-011.png",
+      "master": "medium",
+      "duration_ms": 110,
+      "sha256": "8e094de668b8828cf1b27ed71b3d5c3986c5b8d838f85dab89a185f64d7667a6",
+      "bytes": 509868,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        282,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-012.png",
+      "master": "medium",
+      "duration_ms": 110,
+      "sha256": "8e094de668b8828cf1b27ed71b3d5c3986c5b8d838f85dab89a185f64d7667a6",
+      "bytes": 509868,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        282,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-013.png",
+      "master": "slight",
+      "duration_ms": 100,
+      "sha256": "bb1b931b27c3faedbd1157c03485db969fbbc084892776da65140d4bf617f0c2",
+      "bytes": 516061,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        283,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-014.png",
+      "master": "slight",
+      "duration_ms": 100,
+      "sha256": "bb1b931b27c3faedbd1157c03485db969fbbc084892776da65140d4bf617f0c2",
+      "bytes": 516061,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        283,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-015.png",
+      "master": "slight",
+      "duration_ms": 100,
+      "sha256": "bb1b931b27c3faedbd1157c03485db969fbbc084892776da65140d4bf617f0c2",
+      "bytes": 516061,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        283,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-016.png",
+      "master": "neutral",
+      "duration_ms": 90,
+      "sha256": "c6b900fdefd574f3fcd21fc1e1c10354a4a0a23dd6d8cf08373768863040f880",
+      "bytes": 510987,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        284,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-017.png",
+      "master": "neutral",
+      "duration_ms": 90,
+      "sha256": "c6b900fdefd574f3fcd21fc1e1c10354a4a0a23dd6d8cf08373768863040f880",
+      "bytes": 510987,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        284,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-left/frame-018.png",
+      "master": "neutral",
+      "duration_ms": 90,
+      "sha256": "c6b900fdefd574f3fcd21fc1e1c10354a4a0a23dd6d8cf08373768863040f880",
+      "bytes": 510987,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        284,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-001.png",
+      "master": "neutral",
+      "duration_ms": 90,
+      "sha256": "5ee750a4378d8cd2b5dff823d0c33dd3936e3a09246eb1026c60f0aaefd519c4",
+      "bytes": 520254,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        280,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-002.png",
+      "master": "neutral",
+      "duration_ms": 90,
+      "sha256": "5ee750a4378d8cd2b5dff823d0c33dd3936e3a09246eb1026c60f0aaefd519c4",
+      "bytes": 520254,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        280,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-003.png",
+      "master": "slight",
+      "duration_ms": 100,
+      "sha256": "fba7626846429887b73bb946ec3021ce6e5e2d7558a314c4be7ed8d8b42eda11",
+      "bytes": 510650,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        273,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-004.png",
+      "master": "slight",
+      "duration_ms": 100,
+      "sha256": "fba7626846429887b73bb946ec3021ce6e5e2d7558a314c4be7ed8d8b42eda11",
+      "bytes": 510650,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        273,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-005.png",
+      "master": "medium",
+      "duration_ms": 110,
+      "sha256": "82040af1df51a9226189ec4e372e50bd2915a7189b937710568a6ec18efb5f08",
+      "bytes": 512922,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        263,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-006.png",
+      "master": "medium",
+      "duration_ms": 110,
+      "sha256": "82040af1df51a9226189ec4e372e50bd2915a7189b937710568a6ec18efb5f08",
+      "bytes": 512922,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        263,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-007.png",
+      "master": "strong",
+      "duration_ms": 160,
+      "sha256": "3f627ebe821171c8d77ff1d11d4ef6e0c88f059eb8ad5e0700aaf9ec3733489f",
+      "bytes": 522827,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        265,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-008.png",
+      "master": "strong",
+      "duration_ms": 160,
+      "sha256": "3f627ebe821171c8d77ff1d11d4ef6e0c88f059eb8ad5e0700aaf9ec3733489f",
+      "bytes": 522827,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        265,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-009.png",
+      "master": "strong",
+      "duration_ms": 160,
+      "sha256": "3f627ebe821171c8d77ff1d11d4ef6e0c88f059eb8ad5e0700aaf9ec3733489f",
+      "bytes": 522827,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        265,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-010.png",
+      "master": "strong",
+      "duration_ms": 160,
+      "sha256": "3f627ebe821171c8d77ff1d11d4ef6e0c88f059eb8ad5e0700aaf9ec3733489f",
+      "bytes": 522827,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        265,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-011.png",
+      "master": "medium",
+      "duration_ms": 110,
+      "sha256": "82040af1df51a9226189ec4e372e50bd2915a7189b937710568a6ec18efb5f08",
+      "bytes": 512922,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        263,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-012.png",
+      "master": "medium",
+      "duration_ms": 110,
+      "sha256": "82040af1df51a9226189ec4e372e50bd2915a7189b937710568a6ec18efb5f08",
+      "bytes": 512922,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        263,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-013.png",
+      "master": "slight",
+      "duration_ms": 100,
+      "sha256": "fba7626846429887b73bb946ec3021ce6e5e2d7558a314c4be7ed8d8b42eda11",
+      "bytes": 510650,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        273,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-014.png",
+      "master": "slight",
+      "duration_ms": 100,
+      "sha256": "fba7626846429887b73bb946ec3021ce6e5e2d7558a314c4be7ed8d8b42eda11",
+      "bytes": 510650,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        273,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-015.png",
+      "master": "slight",
+      "duration_ms": 100,
+      "sha256": "fba7626846429887b73bb946ec3021ce6e5e2d7558a314c4be7ed8d8b42eda11",
+      "bytes": 510650,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        273,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-016.png",
+      "master": "neutral",
+      "duration_ms": 90,
+      "sha256": "5ee750a4378d8cd2b5dff823d0c33dd3936e3a09246eb1026c60f0aaefd519c4",
+      "bytes": 520254,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        280,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-017.png",
+      "master": "neutral",
+      "duration_ms": 90,
+      "sha256": "5ee750a4378d8cd2b5dff823d0c33dd3936e3a09246eb1026c60f0aaefd519c4",
+      "bytes": 520254,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        280,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    },
+    {
+      "path": "frames/road-gaze-right/frame-018.png",
+      "master": "neutral",
+      "duration_ms": 90,
+      "sha256": "5ee750a4378d8cd2b5dff823d0c33dd3936e3a09246eb1026c60f0aaefd519c4",
+      "bytes": 520254,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        280,
+        977,
+        900
+      ],
+      "transparent_corners": true
+    }
+  ]
+}

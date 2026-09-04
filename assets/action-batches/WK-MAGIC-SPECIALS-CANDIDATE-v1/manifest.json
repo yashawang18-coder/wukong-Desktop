@@ -1,0 +1,1373 @@
+{
+  "schema_version": 1,
+  "batch_id": "WK-MAGIC-SPECIALS-CANDIDATE-v1",
+  "identity_profile": "wukong-magic-v8-candidate",
+  "status": "runtime-candidate",
+  "runtime_validation": "pending",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "prototype_use": true,
+  "production_asset": false,
+  "notes": [
+    "OwnerContextMenu and ControlPanel may use PrototypePreview only.",
+    "Coin pointer interaction is allowed only while the owner-started petrification preview is active.",
+    "Windows transparent-renderer QA is still required before production runtime use.",
+    "Scourgify remains mock artwork; all other actions use the reviewed local candidate packages."
+  ],
+  "broom_directional_flight": {
+    "down": [
+      {
+        "path": "accio_broom/flight/flight-down/frame-001.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "86def50d9108d573246b2020fee544fb0c0791bd9d6aa8e1c6fa6c5573caaea5",
+        "bytes": 374349
+      },
+      {
+        "path": "accio_broom/flight/flight-down/frame-002.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "03231f4f52589659c4b1ffbdeeb9438aa53634f181679b55e63301eaaa39d085",
+        "bytes": 371271
+      },
+      {
+        "path": "accio_broom/flight/flight-down/frame-003.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "e7db28a6139cdc04244c0644fb10d383d6221e8ec2f4f0803563cbbcbd4e792b",
+        "bytes": 371042
+      },
+      {
+        "path": "accio_broom/flight/flight-down/frame-004.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "464881ce4c489b122742f90472aabda900f3b7440b486a25765602a3fef48128",
+        "bytes": 369900
+      },
+      {
+        "path": "accio_broom/flight/flight-down/frame-005.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "86def50d9108d573246b2020fee544fb0c0791bd9d6aa8e1c6fa6c5573caaea5",
+        "bytes": 374349
+      },
+      {
+        "path": "accio_broom/flight/flight-down/frame-006.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "ddd2128c4276af552b13fbbfa00dd3122930a888c59940607c55e49e99de919d",
+        "bytes": 369633
+      },
+      {
+        "path": "accio_broom/flight/flight-down/frame-007.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "04822ed34ea93c5bb52ccd31e4fc4c0a2fc1811f7a9acb3b3a027cf984abe9ea",
+        "bytes": 370506
+      },
+      {
+        "path": "accio_broom/flight/flight-down/frame-008.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "fb675a089b311c58d084f778e790d90e0389b2a45e2f58a29ae344aab3e4c71f",
+        "bytes": 371177
+      }
+    ],
+    "down-left": [
+      {
+        "path": "accio_broom/flight/flight-down-left/frame-001.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "f2b9caaca45d74a680251aad94daa315d236182d0da919613ed6e87a3d1d0d17",
+        "bytes": 505875
+      },
+      {
+        "path": "accio_broom/flight/flight-down-left/frame-002.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "e5eb1231c643fd9aa32e3e5e3e3eb6736e8cf88bb57caf947f41b958580c2a95",
+        "bytes": 498616
+      },
+      {
+        "path": "accio_broom/flight/flight-down-left/frame-003.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "278ee31307fac76edf25bfb72ab941dd9dfe58bb4d2e9989eb828fcc7ab95616",
+        "bytes": 498695
+      },
+      {
+        "path": "accio_broom/flight/flight-down-left/frame-004.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "61a5bc791064857c33425e1afeb07cf0d657a39c2970db2e4a7dd95889c612d2",
+        "bytes": 498218
+      },
+      {
+        "path": "accio_broom/flight/flight-down-left/frame-005.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "f2b9caaca45d74a680251aad94daa315d236182d0da919613ed6e87a3d1d0d17",
+        "bytes": 505875
+      },
+      {
+        "path": "accio_broom/flight/flight-down-left/frame-006.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "3eb787ab00abceb19eb47bb0290d3ab61ab8ee5c75600dc1ee8ecbb11509bb70",
+        "bytes": 497724
+      },
+      {
+        "path": "accio_broom/flight/flight-down-left/frame-007.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "78e67e5467be74faebb491577ff62c50e36af90c8ceb2332850d2fd7e2d89298",
+        "bytes": 497383
+      },
+      {
+        "path": "accio_broom/flight/flight-down-left/frame-008.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "8b1204acdae62008bfa13de7b925c3b27f5c292798dad90e16efaf7098dcd6d5",
+        "bytes": 497388
+      }
+    ],
+    "down-right": [
+      {
+        "path": "accio_broom/flight/flight-down-right/frame-001.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "948e19d440b999d0d16435b6d38e8bb76046494276a753f83e94ee4eeec978bc",
+        "bytes": 513828
+      },
+      {
+        "path": "accio_broom/flight/flight-down-right/frame-002.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "45290f6d14e0108bccd40858c027ae9ab59ac464c0019c9f5a1d7b9499ec4998",
+        "bytes": 505428
+      },
+      {
+        "path": "accio_broom/flight/flight-down-right/frame-003.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "ed123db546541462167a1eb0f744d3a7f7c63a2e5c5f7b9e1ddaf4a798d140e1",
+        "bytes": 506084
+      },
+      {
+        "path": "accio_broom/flight/flight-down-right/frame-004.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "6944783b08fd26afc48232cef15ea02ce1d40b3b6d4669be5c29edb63a476c09",
+        "bytes": 505916
+      },
+      {
+        "path": "accio_broom/flight/flight-down-right/frame-005.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "948e19d440b999d0d16435b6d38e8bb76046494276a753f83e94ee4eeec978bc",
+        "bytes": 513828
+      },
+      {
+        "path": "accio_broom/flight/flight-down-right/frame-006.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "f4184925be7af8d13ef1280f03344b5a5bddf1b22c70ac524a9e02edd46f7de7",
+        "bytes": 506408
+      },
+      {
+        "path": "accio_broom/flight/flight-down-right/frame-007.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "bdb7e258e18b924384aa52c9d6f39019ae212ce5d600bf8eb6bc4249eed525ae",
+        "bytes": 506524
+      },
+      {
+        "path": "accio_broom/flight/flight-down-right/frame-008.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "b44765f70f9c586c898d4da376e7c777cecca38c00904bb4fb96975f4a1bf6ac",
+        "bytes": 506357
+      }
+    ],
+    "left": [
+      {
+        "path": "accio_broom/flight/flight-left/frame-001.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "b8f159d24e13b849cab58a3c8bd9d6e806d5c40891a48ca76d0b477b42f8fd62",
+        "bytes": 642179
+      },
+      {
+        "path": "accio_broom/flight/flight-left/frame-002.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "7fdd1d93882b65a9228c1594f6bceb70c76b9add2eeae8c5c4228e25fc7c3b90",
+        "bytes": 636224
+      },
+      {
+        "path": "accio_broom/flight/flight-left/frame-003.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "3b5b0d68cc9ca5f56c58d3452928fe4d7bfe9263ed81b9d5f49e6f06649bd9e7",
+        "bytes": 635068
+      },
+      {
+        "path": "accio_broom/flight/flight-left/frame-004.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "5f656d3884578b70e6368898d6c8dedaee300df5301edcb84967cae1bec50447",
+        "bytes": 632957
+      },
+      {
+        "path": "accio_broom/flight/flight-left/frame-005.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "b8f159d24e13b849cab58a3c8bd9d6e806d5c40891a48ca76d0b477b42f8fd62",
+        "bytes": 642179
+      },
+      {
+        "path": "accio_broom/flight/flight-left/frame-006.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "a4043e66a7a9d764262a90d439c5e35947afa4350f51de4c2cc50cda4fbbe7c5",
+        "bytes": 632903
+      },
+      {
+        "path": "accio_broom/flight/flight-left/frame-007.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "27209d8f091c3943bcec9fc0ee6a71a8425132d41e329ed150d93a380384050e",
+        "bytes": 635142
+      },
+      {
+        "path": "accio_broom/flight/flight-left/frame-008.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "0e378d8c70d39341225ca78c71e13f83b4ba59e5192ec6dd604e68155fd8f9b0",
+        "bytes": 635994
+      }
+    ],
+    "right": [
+      {
+        "path": "accio_broom/flight/flight-right/frame-001.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "d2e115ddba97dce8dbd4c83537c094e637563edea5cb11b367a21551bc4f2fa6",
+        "bytes": 643334
+      },
+      {
+        "path": "accio_broom/flight/flight-right/frame-002.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "0183369698da118c4accc12ad71b5d0d02bd856566b4f25f1808db0c50c3e17e",
+        "bytes": 637911
+      },
+      {
+        "path": "accio_broom/flight/flight-right/frame-003.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "0035f95704aa05c647b5d93019ece2272fb4d75a6244c601ac92d51bb3cb50f7",
+        "bytes": 636704
+      },
+      {
+        "path": "accio_broom/flight/flight-right/frame-004.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "60900e930afb553980c9e7f16984de744f96df08f8e2c006087b75431b72cdb3",
+        "bytes": 634452
+      },
+      {
+        "path": "accio_broom/flight/flight-right/frame-005.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "d2e115ddba97dce8dbd4c83537c094e637563edea5cb11b367a21551bc4f2fa6",
+        "bytes": 643334
+      },
+      {
+        "path": "accio_broom/flight/flight-right/frame-006.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "a031c2670c766697153a210a703142b983bef4e7b7fec59b209c7c0512b8cd48",
+        "bytes": 634780
+      },
+      {
+        "path": "accio_broom/flight/flight-right/frame-007.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "3fd39028088e4521cfa81a070f000d845863c5fd64ac91c0d5bcc2b97b0bb3d5",
+        "bytes": 637035
+      },
+      {
+        "path": "accio_broom/flight/flight-right/frame-008.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "dafe4a0dd72785b9d09f2f5d42a2f40acf914c758f40864cea3476036be39540",
+        "bytes": 638111
+      }
+    ],
+    "up": [
+      {
+        "path": "accio_broom/flight/flight-up/frame-001.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "403d229e41c9d442f48c9261103cb3df43f51eacafcef8be97ca7f4189e39791",
+        "bytes": 370858
+      },
+      {
+        "path": "accio_broom/flight/flight-up/frame-002.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "06c07052c723c046121391f77317c2c5b5b99904009302f045f485fe31951d56",
+        "bytes": 369057
+      },
+      {
+        "path": "accio_broom/flight/flight-up/frame-003.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "62c81ec5f5f21622973cef360ef045954962c325cdaa38ef12e011fd54867fa5",
+        "bytes": 368403
+      },
+      {
+        "path": "accio_broom/flight/flight-up/frame-004.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "34cfc4d1b5e8dbdf3f60a04f52f207a0c80ae532b7407ef4b3e1e863e9b226c5",
+        "bytes": 367654
+      },
+      {
+        "path": "accio_broom/flight/flight-up/frame-005.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "403d229e41c9d442f48c9261103cb3df43f51eacafcef8be97ca7f4189e39791",
+        "bytes": 370858
+      },
+      {
+        "path": "accio_broom/flight/flight-up/frame-006.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "f3764fabfc9a5e502cad30be00f5b00dd910c121b541247705a91714ec6cfecb",
+        "bytes": 367924
+      },
+      {
+        "path": "accio_broom/flight/flight-up/frame-007.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "2efdee49fedbbaf2ffcaf768cd9d5228d8a8fc1cc32892b7707a48ad178a0c5f",
+        "bytes": 368424
+      },
+      {
+        "path": "accio_broom/flight/flight-up/frame-008.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "a5fe371a1c58bd70bc3dc9440801751b20efd7d10f59be636f79c25fd1350ba1",
+        "bytes": 369356
+      }
+    ],
+    "up-left": [
+      {
+        "path": "accio_broom/flight/flight-up-left/frame-001.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "40b87a0c26003bab26b297ee44f6d995e5acaf77c55e94da1dd4d640eeb3af78",
+        "bytes": 559819
+      },
+      {
+        "path": "accio_broom/flight/flight-up-left/frame-002.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "1ee5b17c28e5b823930c068c22a26db1b2dfbf9a4338f3a83b6e858ef66b9e03",
+        "bytes": 552677
+      },
+      {
+        "path": "accio_broom/flight/flight-up-left/frame-003.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "4730bb25a7c5acf2b3a98ab3aaf47cdfa3273d0ca8dc7f841855dba8a241819d",
+        "bytes": 552615
+      },
+      {
+        "path": "accio_broom/flight/flight-up-left/frame-004.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "3ccb815633c53723b9ccd7239534b0530587bc68aa6c4bd98e7a6b5c2a14ab10",
+        "bytes": 552588
+      },
+      {
+        "path": "accio_broom/flight/flight-up-left/frame-005.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "40b87a0c26003bab26b297ee44f6d995e5acaf77c55e94da1dd4d640eeb3af78",
+        "bytes": 559819
+      },
+      {
+        "path": "accio_broom/flight/flight-up-left/frame-006.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "a69332d18a5873d4684aac54b35cf857e903b57c27e9bcb7498dd7ba652036f2",
+        "bytes": 553592
+      },
+      {
+        "path": "accio_broom/flight/flight-up-left/frame-007.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "ef772fea8a66dbfede448008b45ccf2855d9e24589372dd38a44a4d7d7f88b9f",
+        "bytes": 553462
+      },
+      {
+        "path": "accio_broom/flight/flight-up-left/frame-008.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "1e12052793dfb4a2d1586c16e3ee58ba4e391944467afca08a018c770dff99ba",
+        "bytes": 552928
+      }
+    ],
+    "up-right": [
+      {
+        "path": "accio_broom/flight/flight-up-right/frame-001.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "7931e57cbbe889df13d528787291c2279fd58706dd08d48c1c86f9cf3b2942e0",
+        "bytes": 557893
+      },
+      {
+        "path": "accio_broom/flight/flight-up-right/frame-002.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "d7152c1a79793f5067f2ca2966ff3638f8b9bd87dee36e647631affdac704497",
+        "bytes": 550984
+      },
+      {
+        "path": "accio_broom/flight/flight-up-right/frame-003.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "fee05d45f8752d72cd8727856642942e806a4574307da9f3cd77b6ca31f1f92d",
+        "bytes": 551421
+      },
+      {
+        "path": "accio_broom/flight/flight-up-right/frame-004.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "a45a4714a604f34cb508a14682ba42b95d81d67a8bd512d45cebbb0a760fd1ec",
+        "bytes": 551350
+      },
+      {
+        "path": "accio_broom/flight/flight-up-right/frame-005.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "7931e57cbbe889df13d528787291c2279fd58706dd08d48c1c86f9cf3b2942e0",
+        "bytes": 557893
+      },
+      {
+        "path": "accio_broom/flight/flight-up-right/frame-006.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "815f2ba6356c6b09b9c740f696b0e9b2410ccecfdea7615fbb668963a0b4ec12",
+        "bytes": 550770
+      },
+      {
+        "path": "accio_broom/flight/flight-up-right/frame-007.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "e4c21406c288e1ba2a2ec520f2b98b8d4bbf7c3c220c72e37253df0400e279d4",
+        "bytes": 550823
+      },
+      {
+        "path": "accio_broom/flight/flight-up-right/frame-008.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "85b51dbc4d9c916f16d75cedf876bb3f13eb1a5eea6cdac5eb62f89467474b0a",
+        "bytes": 550948
+      }
+    ]
+  },
+  "coin_manifest": "coin-manifest.json",
+  "actions": [
+    {
+      "behavior_id": "wk.magic.accio_broom",
+      "action_id": "wk.magic.accio_broom",
+      "display_name": "Accio Broom",
+      "description": "Reviewed 1024px broom takeoff, right-flight loop, and seated landing candidate.",
+      "source_folder": "accio_broom",
+      "frame_count": 24,
+      "frame_duration_ms": 115,
+      "total_duration_ms": 2760,
+      "from_pose": "prone.awake.left_front",
+      "to_pose": "prone.awake.left_front",
+      "direction": "left_front",
+      "interruptible": true,
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "prototype_use": true,
+      "production_asset": false,
+      "effect": "BroomFlight",
+      "interrupt_exit_strategy": "cancel_restore_idle",
+      "phases": [
+        {
+          "name": "intro",
+          "loop": false,
+          "frame_count": 8,
+          "frames": [
+            {
+              "path": "accio_broom/takeoff/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "46331d94bde6580f2b200d87545d832394acfb37225780fddad824e4d4db240b",
+              "bytes": 496576
+            },
+            {
+              "path": "accio_broom/takeoff/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "da0c5f13b854460c66fcabecf052a8170547282a9172bb619e1a1c1127a53ed5",
+              "bytes": 570631
+            },
+            {
+              "path": "accio_broom/takeoff/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "f0f1a1ff564e577dc30375c83218d6725ba72f84adb8c8bf3af3c2b607ec08aa",
+              "bytes": 557911
+            },
+            {
+              "path": "accio_broom/takeoff/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8abecca7f363006bf6f3c171b96c9303d9d5c044dfc5e7eb66813d91ac2adde6",
+              "bytes": 620274
+            },
+            {
+              "path": "accio_broom/takeoff/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1a475e0bc41b315d4db82b1355e90a69465bffd0b5310e4b180ef2ccfaab7d0e",
+              "bytes": 487944
+            },
+            {
+              "path": "accio_broom/takeoff/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "12a7973b0e22d074a68b04a25e1c2b37d5683970360c4f3b11f80d4a7ca5c9b6",
+              "bytes": 479044
+            },
+            {
+              "path": "accio_broom/takeoff/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2084000bf048ad447bc0ca927da8a883daf29b9fe1d91f41ded7a6112ff1b8a1",
+              "bytes": 643518
+            },
+            {
+              "path": "accio_broom/takeoff/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "b8f159d24e13b849cab58a3c8bd9d6e806d5c40891a48ca76d0b477b42f8fd62",
+              "bytes": 642179
+            }
+          ]
+        },
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 8,
+          "frames": [
+            {
+              "path": "accio_broom/flight/flight-right/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "d2e115ddba97dce8dbd4c83537c094e637563edea5cb11b367a21551bc4f2fa6",
+              "bytes": 643334
+            },
+            {
+              "path": "accio_broom/flight/flight-right/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "0183369698da118c4accc12ad71b5d0d02bd856566b4f25f1808db0c50c3e17e",
+              "bytes": 637911
+            },
+            {
+              "path": "accio_broom/flight/flight-right/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "0035f95704aa05c647b5d93019ece2272fb4d75a6244c601ac92d51bb3cb50f7",
+              "bytes": 636704
+            },
+            {
+              "path": "accio_broom/flight/flight-right/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "60900e930afb553980c9e7f16984de744f96df08f8e2c006087b75431b72cdb3",
+              "bytes": 634452
+            },
+            {
+              "path": "accio_broom/flight/flight-right/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "d2e115ddba97dce8dbd4c83537c094e637563edea5cb11b367a21551bc4f2fa6",
+              "bytes": 643334
+            },
+            {
+              "path": "accio_broom/flight/flight-right/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a031c2670c766697153a210a703142b983bef4e7b7fec59b209c7c0512b8cd48",
+              "bytes": 634780
+            },
+            {
+              "path": "accio_broom/flight/flight-right/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "3fd39028088e4521cfa81a070f000d845863c5fd64ac91c0d5bcc2b97b0bb3d5",
+              "bytes": 637035
+            },
+            {
+              "path": "accio_broom/flight/flight-right/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "dafe4a0dd72785b9d09f2f5d42a2f40acf914c758f40864cea3476036be39540",
+              "bytes": 638111
+            }
+          ]
+        },
+        {
+          "name": "exit",
+          "loop": false,
+          "frame_count": 8,
+          "frames": [
+            {
+              "path": "accio_broom/landing/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "b8f159d24e13b849cab58a3c8bd9d6e806d5c40891a48ca76d0b477b42f8fd62",
+              "bytes": 642179
+            },
+            {
+              "path": "accio_broom/landing/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "596b37bdd8d5013f933515b01137ce790a0810f665b754b5943da74a782410bc",
+              "bytes": 633606
+            },
+            {
+              "path": "accio_broom/landing/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1a8932b6260373dbd64c58581bf3503698dd59b58bd4d9a7cb1fff6636d36f7a",
+              "bytes": 479053
+            },
+            {
+              "path": "accio_broom/landing/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1a475e0bc41b315d4db82b1355e90a69465bffd0b5310e4b180ef2ccfaab7d0e",
+              "bytes": 487944
+            },
+            {
+              "path": "accio_broom/landing/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "b7b60d2af1ebc179d9aebf8c3fd57ec8c0f0f4c3beed20e6da2d43a5a6e6b0da",
+              "bytes": 638220
+            },
+            {
+              "path": "accio_broom/landing/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c8e8b07859e74398e9fd404536aa67628e637aeaba649d232afff4df5b11bf11",
+              "bytes": 549299
+            },
+            {
+              "path": "accio_broom/landing/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a43aa942ed9d20ab781a65d4f116930bdc8e8b88ff19ddd74c224e3fbcce5ab4",
+              "bytes": 571482
+            },
+            {
+              "path": "accio_broom/landing/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "46331d94bde6580f2b200d87545d832394acfb37225780fddad824e4d4db240b",
+              "bytes": 496576
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.magic.apparate",
+      "action_id": "wk.magic.apparate",
+      "display_name": "Apparate",
+      "description": "Reviewed 1024px disappear, relocation cut, and appear candidate.",
+      "source_folder": "apparate",
+      "frame_count": 29,
+      "frame_duration_ms": 83,
+      "total_duration_ms": 2407,
+      "from_pose": "prone.awake.left_front",
+      "to_pose": "prone.awake.left_front",
+      "direction": "left_front",
+      "interruptible": true,
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "prototype_use": true,
+      "production_asset": false,
+      "effect": "Apparate",
+      "interrupt_exit_strategy": "cancel_restore_idle",
+      "phases": [
+        {
+          "name": "intro",
+          "loop": false,
+          "frame_count": 14,
+          "frames": [
+            {
+              "path": "apparate/disappear/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "0e8c5b88b72c461b0bf3fcc441545a578d370237856b2db96212f9921ddf8b82",
+              "bytes": 513748
+            },
+            {
+              "path": "apparate/disappear/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "ef9cdf99e11c95c47bd86a6415154f5203d0e54470c6d94a5455c4602e5728cf",
+              "bytes": 627456
+            },
+            {
+              "path": "apparate/disappear/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "24123fb688d5249184f62828f976671dc28c2bf8ae74cff1d6419c4c8ce2e32c",
+              "bytes": 684052
+            },
+            {
+              "path": "apparate/disappear/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "e18fe447e439696964516f31946cec36c3163e0724bc5b1a406be2603a50799d",
+              "bytes": 715268
+            },
+            {
+              "path": "apparate/disappear/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "29e6398e8cb2b8bdd2f3f8cb8bd433a115604aa0a4e9c1b01e97ee00a2af02ea",
+              "bytes": 729008
+            },
+            {
+              "path": "apparate/disappear/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "6b2cefecf945556478e3cb1042324152c520879dd83d4ad7f14d14d79bbe8e8b",
+              "bytes": 733887
+            },
+            {
+              "path": "apparate/disappear/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1197f0e9000a40ab3d41d02f3c2d1249baefb400459358818181b7afd32049b0",
+              "bytes": 713856
+            },
+            {
+              "path": "apparate/disappear/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c3bb241c5f116dba335692c7faa7df5704555d968fdf07826db3a2c304bc7031",
+              "bytes": 647678
+            },
+            {
+              "path": "apparate/disappear/frame-009.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "71954e14fe5250e72490655171c65404ffb56f54b717a268fb40600530e261a9",
+              "bytes": 585487
+            },
+            {
+              "path": "apparate/disappear/frame-010.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "5f55b6ed3e28ee9b3bfe4c96092f4e5f679ab88b828401ed799b6846545c5da4",
+              "bytes": 551100
+            },
+            {
+              "path": "apparate/disappear/frame-011.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "900aec4a472c9670ddd138d1acb775b380c82c1012f91ebbdbffe1b8afd68e8a",
+              "bytes": 527047
+            },
+            {
+              "path": "apparate/disappear/frame-012.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "380b1849b49e463935557f041cc8f2397974364d1914e2a8e34a5c0b72d53e8f",
+              "bytes": 244087
+            },
+            {
+              "path": "apparate/disappear/frame-013.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "d7d134ad9f2fb057999e60cb8c0e3daddf5f1480ccc4f7a5725199fbd09b53b2",
+              "bytes": 168391
+            },
+            {
+              "path": "apparate/disappear/frame-014.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "59141e9a74fea7b8e5ccee9078846a0efaaab2e3628f0fd0f6c472b4c1ca8322",
+              "bytes": 4144
+            }
+          ]
+        },
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 1,
+          "frames": [
+            {
+              "path": "apparate/invisible/frame-001-relocation-cut.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "59141e9a74fea7b8e5ccee9078846a0efaaab2e3628f0fd0f6c472b4c1ca8322",
+              "bytes": 4144
+            }
+          ]
+        },
+        {
+          "name": "exit",
+          "loop": false,
+          "frame_count": 14,
+          "frames": [
+            {
+              "path": "apparate/appear/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "ac3d53bd17d98b7e8d91695cca710d06ef2aeb91fd2a20d2365da6839489cc45",
+              "bytes": 61603
+            },
+            {
+              "path": "apparate/appear/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "240984a81552302a8ddc31ac7d4739186553a2e4527ac5b56546ce3d5490e300",
+              "bytes": 183045
+            },
+            {
+              "path": "apparate/appear/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "fd5a2de145ec1c1e6d51a7af655a239573a51c4b591c50c834af3ca5d1ff797c",
+              "bytes": 263349
+            },
+            {
+              "path": "apparate/appear/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2418c02d8dbbaa69b56d86564e14bf04f0d136bf68de4bf174ae483e085eaaf0",
+              "bytes": 502214
+            },
+            {
+              "path": "apparate/appear/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89a3d166a4ca8b36d2116ef6c663a23cfe02825eb084e6b92a13c99c0e13eb30",
+              "bytes": 542330
+            },
+            {
+              "path": "apparate/appear/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2d6a5aae50afe09af805df8b61441355eae0e83372ed3405b24271bee543a474",
+              "bytes": 566301
+            },
+            {
+              "path": "apparate/appear/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "10a4845ca3023c678d2fb296f73cadc1bda52dc3fc3c71757e171eba877c6e95",
+              "bytes": 595745
+            },
+            {
+              "path": "apparate/appear/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a45b62485b038ffb6be7d9725c86f2d0f7d86dbedb25b08cddbd7ec3e4418931",
+              "bytes": 631055
+            },
+            {
+              "path": "apparate/appear/frame-009.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "57acaeb487aafa3f930a98e9d9b71a180512a8d864b18bc2da5e24efd690a339",
+              "bytes": 690216
+            },
+            {
+              "path": "apparate/appear/frame-010.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "e30b997b7ff820e68a73140d8ce6ab53aaa0767d645eb4e3fd57b17beca5e950",
+              "bytes": 692702
+            },
+            {
+              "path": "apparate/appear/frame-011.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2d38706b12b46ce7bb23a4f260c5a34e178a8c474b492de433c7a987cc38ce0b",
+              "bytes": 665243
+            },
+            {
+              "path": "apparate/appear/frame-012.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "7e14cf9fea3e53b1be7512e921dea0a4dabf766119f694074e6ddb674a93b45f",
+              "bytes": 623393
+            },
+            {
+              "path": "apparate/appear/frame-013.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "430699651c69c912fa1ce87092aa5a376318360148ef40e77440743843393791",
+              "bytes": 571991
+            },
+            {
+              "path": "apparate/appear/frame-014.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "0e8c5b88b72c461b0bf3fcc441545a578d370237856b2db96212f9921ddf8b82",
+              "bytes": 513748
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.magic.petrificus_totalus",
+      "action_id": "wk.magic.petrificus_totalus",
+      "display_name": "Petrificus Totalus",
+      "description": "Reviewed 1024px living-to-stone transition followed by the vivid interactive coin hold.",
+      "source_folder": "petrificus",
+      "frame_count": 18,
+      "frame_duration_ms": 95,
+      "total_duration_ms": 1710,
+      "from_pose": "prone.awake.left_front",
+      "to_pose": "prone.awake.left_front",
+      "direction": "left_front",
+      "interruptible": false,
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "prototype_use": true,
+      "production_asset": false,
+      "effect": "Petrify",
+      "interrupt_exit_strategy": "cancel_restore_idle",
+      "phases": [
+        {
+          "name": "intro",
+          "loop": false,
+          "visual_scale": 0.92,
+          "frame_count": 17,
+          "frames": [
+            {
+              "path": "petrificus/petrify/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "0e8c5b88b72c461b0bf3fcc441545a578d370237856b2db96212f9921ddf8b82",
+              "bytes": 513748
+            },
+            {
+              "path": "petrificus/petrify/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "7f30317527e6e992267785fee5c309f0a2177f8686cced4fa1622f5d193335e6",
+              "bytes": 536331
+            },
+            {
+              "path": "petrificus/petrify/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "287eef24c6f7c0b909988debd150a12c8a5da3a10d8468fb3784883c2e4a1511",
+              "bytes": 548040
+            },
+            {
+              "path": "petrificus/petrify/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "ccab23ff54029e5a3d1355df2e907f26ac0d5df0e59564ee53beec47217ade37",
+              "bytes": 573601
+            },
+            {
+              "path": "petrificus/petrify/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "b54843579cc4c8063028ec125f8ece1649025e227c8cd3c636ebc3a2e84c07a5",
+              "bytes": 573981
+            },
+            {
+              "path": "petrificus/petrify/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1925ab443377ee91b578a32bbba503ae41f853264ed03de0499acfc6914f069a",
+              "bytes": 574039
+            },
+            {
+              "path": "petrificus/petrify/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "6d7fcbe7458cca54a1054829baa6ef298b38faf2470e32bb07873e938d392222",
+              "bytes": 561592
+            },
+            {
+              "path": "petrificus/petrify/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "08907a27c96621d4c3b86eb0f0a2dbf60be348e5ae92f8e6d6ebfd65bccdb65d",
+              "bytes": 567069
+            },
+            {
+              "path": "petrificus/petrify/frame-009.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "24be72ae958067b7f85415268c7e6e490c53020671aa74cc28f9f26100585b3c",
+              "bytes": 567168
+            },
+            {
+              "path": "petrificus/petrify/frame-010.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "e06469be8eb88a146544c6ce00bbea280da0d7a2221ae36398fbbbd26ca59b6f",
+              "bytes": 564955
+            },
+            {
+              "path": "petrificus/petrify/frame-011.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2d2ca8cacede69e98948569e0a0208f0aefc475896b9604a19ef3866564565df",
+              "bytes": 560123
+            },
+            {
+              "path": "petrificus/petrify/frame-012.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2e826895a83de1a059042c8242dd0ecc9270dca050e87288d6ab632d56f92abb",
+              "bytes": 580241
+            },
+            {
+              "path": "petrificus/petrify/frame-013.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "5504182221629c08a450d7dd1d9d8391049cae7abc062100601b62d3e636fcc3",
+              "bytes": 599055
+            },
+            {
+              "path": "petrificus/petrify/frame-014.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "3334315487d35b6c7a380c033d799cbb887d3ea846e4b459d08d6356b0d5e8d1",
+              "bytes": 583534
+            },
+            {
+              "path": "petrificus/petrify/frame-015.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "afcdeb9540c22c508e08c9cc03ae7215a59439a1a3b34d29676ad055d0c80889",
+              "bytes": 559803
+            },
+            {
+              "path": "petrificus/petrify/frame-016.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "0b6d65a2b672a393104f5e09ed47dfe24edcb61fb55ddabb99c291ed31e42535",
+              "bytes": 564262
+            },
+            {
+              "path": "petrificus/petrify/frame-017.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "f222f02a2990a049c827636d91a9365ee9ce912fac6142847ee7e1ed00e2283e",
+              "bytes": 578102
+            }
+          ]
+        },
+        {
+          "name": "loop",
+          "loop": true,
+          "visual_scale": 0.6666666667,
+          "frame_count": 1,
+          "frames": [
+            {
+              "path": "petrificus_coin/front/state-01-vivid.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "56fb85c1bde2478bb133a9f449adf1065d3f557bdbb44d5571c180f149089b2e",
+              "bytes": 1514473
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.magic.petrificus_release",
+      "action_id": "wk.magic.petrificus_release",
+      "display_name": "Finite Incantatem",
+      "description": "Reviewed 1024px reverse stone-to-living release candidate.",
+      "source_folder": "petrificus",
+      "frame_count": 17,
+      "frame_duration_ms": 95,
+      "total_duration_ms": 1615,
+      "from_pose": "prone.awake.left_front",
+      "to_pose": "prone.awake.left_front",
+      "direction": "left_front",
+      "interruptible": true,
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "prototype_use": true,
+      "production_asset": false,
+      "effect": "PetrifyRelease",
+      "interrupt_exit_strategy": "cancel_restore_idle",
+      "phases": [
+        {
+          "name": "exit",
+          "loop": false,
+          "frame_count": 17,
+          "frames": [
+            {
+              "path": "petrificus/restore/frame-001.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "f222f02a2990a049c827636d91a9365ee9ce912fac6142847ee7e1ed00e2283e",
+              "bytes": 578102
+            },
+            {
+              "path": "petrificus/restore/frame-002.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "0b6d65a2b672a393104f5e09ed47dfe24edcb61fb55ddabb99c291ed31e42535",
+              "bytes": 564262
+            },
+            {
+              "path": "petrificus/restore/frame-003.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "afcdeb9540c22c508e08c9cc03ae7215a59439a1a3b34d29676ad055d0c80889",
+              "bytes": 559803
+            },
+            {
+              "path": "petrificus/restore/frame-004.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "3334315487d35b6c7a380c033d799cbb887d3ea846e4b459d08d6356b0d5e8d1",
+              "bytes": 583534
+            },
+            {
+              "path": "petrificus/restore/frame-005.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "5504182221629c08a450d7dd1d9d8391049cae7abc062100601b62d3e636fcc3",
+              "bytes": 599055
+            },
+            {
+              "path": "petrificus/restore/frame-006.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2e826895a83de1a059042c8242dd0ecc9270dca050e87288d6ab632d56f92abb",
+              "bytes": 580241
+            },
+            {
+              "path": "petrificus/restore/frame-007.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2d2ca8cacede69e98948569e0a0208f0aefc475896b9604a19ef3866564565df",
+              "bytes": 560123
+            },
+            {
+              "path": "petrificus/restore/frame-008.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "e06469be8eb88a146544c6ce00bbea280da0d7a2221ae36398fbbbd26ca59b6f",
+              "bytes": 564955
+            },
+            {
+              "path": "petrificus/restore/frame-009.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "24be72ae958067b7f85415268c7e6e490c53020671aa74cc28f9f26100585b3c",
+              "bytes": 567168
+            },
+            {
+              "path": "petrificus/restore/frame-010.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "08907a27c96621d4c3b86eb0f0a2dbf60be348e5ae92f8e6d6ebfd65bccdb65d",
+              "bytes": 567069
+            },
+            {
+              "path": "petrificus/restore/frame-011.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "6d7fcbe7458cca54a1054829baa6ef298b38faf2470e32bb07873e938d392222",
+              "bytes": 561592
+            },
+            {
+              "path": "petrificus/restore/frame-012.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1925ab443377ee91b578a32bbba503ae41f853264ed03de0499acfc6914f069a",
+              "bytes": 574039
+            },
+            {
+              "path": "petrificus/restore/frame-013.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "b54843579cc4c8063028ec125f8ece1649025e227c8cd3c636ebc3a2e84c07a5",
+              "bytes": 573981
+            },
+            {
+              "path": "petrificus/restore/frame-014.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "ccab23ff54029e5a3d1355df2e907f26ac0d5df0e59564ee53beec47217ade37",
+              "bytes": 573601
+            },
+            {
+              "path": "petrificus/restore/frame-015.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "287eef24c6f7c0b909988debd150a12c8a5da3a10d8468fb3784883c2e4a1511",
+              "bytes": 548040
+            },
+            {
+              "path": "petrificus/restore/frame-016.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "7f30317527e6e992267785fee5c309f0a2177f8686cced4fa1622f5d193335e6",
+              "bytes": 536331
+            },
+            {
+              "path": "petrificus/restore/frame-017.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "0e8c5b88b72c461b0bf3fcc441545a578d370237856b2db96212f9921ddf8b82",
+              "bytes": 513748
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.magic.scourgify",
+      "action_id": "wk.magic.scourgify",
+      "display_name": "Scourgify",
+      "description": "Existing code-drawn Scourgify placeholder retained until reviewed artwork is available.",
+      "source_folder": "scourgify",
+      "frame_count": 12,
+      "frame_duration_ms": 90,
+      "total_duration_ms": 1080,
+      "from_pose": "prone.awake.left_front",
+      "to_pose": "prone.awake.left_front",
+      "direction": "left_front",
+      "interruptible": true,
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "prototype_use": true,
+      "production_asset": false,
+      "effect": "Scourgify",
+      "interrupt_exit_strategy": "cancel_restore_idle",
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 12,
+          "frames": [
+            {
+              "path": "scourgify/frame-001.png",
+              "width": 256,
+              "height": 256,
+              "sha256": "58fbbafb126fcbde65613baaa6abb2bf1455ca81dba8bb0cd3f8ea4832e064ed",
+              "bytes": 5619
+            },
+            {
+              "path": "scourgify/frame-002.png",
+              "width": 256,
+              "height": 256,
+              "sha256": "e42d4ed241eb643043a09ff05c063d9f76185c2a81d5b64acda5fa7d535c217d",
+              "bytes": 5597
+            },
+            {
+              "path": "scourgify/frame-003.png",
+              "width": 256,
+              "height": 256,
+              "sha256": "11aa976f309d3ee3a3ebdab830bf027e071e3e16f9873fe8524dec47291c1ff4",
+              "bytes": 5689
+            },
+            {
+              "path": "scourgify/frame-004.png",
+              "width": 256,
+              "height": 256,
+              "sha256": "d3d7b75add4f98443d0bea6977fe9761d95314321ac2d7a286d9c52bfe7556d4",
+              "bytes": 5660
+            },
+            {
+              "path": "scourgify/frame-005.png",
+              "width": 256,
+              "height": 256,
+              "sha256": "b543c3ec9443d4f15efd8f07ef327081890bc49016d967739704e3b91c8d0ec1",
+              "bytes": 5626
+            },
+            {
+              "path": "scourgify/frame-006.png",
+              "width": 256,
+              "height": 256,
+              "sha256": "2b53a224b9d5e2d41f35236cb95d8743dd5e8b41304ed6a7c9ce15d09a7c0090",
+              "bytes": 5545
+            },
+            {
+              "path": "scourgify/frame-007.png",
+              "width": 256,
+              "height": 256,
+              "sha256": "bd47663813152416dbe9021ea2b9ee33ff0a45dffad37d0aee7695475e520746",
+              "bytes": 5658
+            },
+            {
+              "path": "scourgify/frame-008.png",
+              "width": 256,
+              "height": 256,
+              "sha256": "a0b220b46725584f5087d5e579ef0dfef197bdbab5ad565a66e16dead614d267",
+              "bytes": 5651
+            },
+            {
+              "path": "scourgify/frame-009.png",
+              "width": 256,
+              "height": 256,
+              "sha256": "28e08a00c6ad7fbe272f311f39704bc95f8f52f39720f170be0c51df5690d44d",
+              "bytes": 5549
+            },
+            {
+              "path": "scourgify/frame-010.png",
+              "width": 256,
+              "height": 256,
+              "sha256": "121803c39eba881b51c0e20e35a151f17348abd9f58c261038776a64e92b6f6a",
+              "bytes": 5538
+            },
+            {
+              "path": "scourgify/frame-011.png",
+              "width": 256,
+              "height": 256,
+              "sha256": "ce2bd2d20e9859d535a7a939f225ccee94b2296527b8fee16a96eb4ab09c4be3",
+              "bytes": 5683
+            },
+            {
+              "path": "scourgify/frame-012.png",
+              "width": 256,
+              "height": 256,
+              "sha256": "b910d8be0768cfdb340eceac70111f5250aec15a09560879366ccab3f9a666ec",
+              "bytes": 5662
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

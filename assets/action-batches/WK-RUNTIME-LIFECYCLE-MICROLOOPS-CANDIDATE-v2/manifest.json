@@ -1,0 +1,723 @@
+{
+  "batch_id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
+  "source_packages": [
+    {
+      "id": "wukong-lively-daily-approved-candidate-v1",
+      "sha256": "3f1ad85d4ebe02a075b8d06809b77ee82eb0a8c989ff1d9d827ed82431a60d3b"
+    },
+    {
+      "id": "wukong-lifecycle-microloops-candidate-v2.1-recovered",
+      "sha256": "aeb2cde556ace1cfe98ca069077be3fcfc3e3d907199e3d5bbb75297b3bd2f64"
+    }
+  ],
+  "category": "self_directed_daily_candidate",
+  "candidate_profile": "developer_lifecycle_microloops_v2",
+  "runtime_validation": "passed_windows_renderer_qa",
+  "runtime_approved": true,
+  "runtime_use": true,
+  "production_asset": false,
+  "developer_candidate_profile_only": true,
+  "may_enter_command_pool": false,
+  "may_enter_context_menu": false,
+  "may_enter_autonomous_pool_by_default": true,
+  "notes": [
+    "Self-directed daily lifecycle candidate only; not wk.command.*, not training, not right-click user action.",
+    "Stable duplicate SHA anchors are referenced from one canonical runtime copy where used by lifecycle phases.",
+    "Forward package records no runtime timing validation; intro/exit timings here are candidate initial values for Windows acceptance.",
+    "Microloop timings are copied from the recovered v2.1 manifest."
+  ],
+  "actions": [
+    {
+      "behavior_id": "wk.candidate.lifecycle.lively_daily_p2",
+      "display_name": "Lively daily intro to prone candidate",
+      "description": "14-state stand/walk/lookback/sit/prone intro with prone idle loop and safe exit back to stand.",
+      "source_folder": "frames",
+      "frame_duration_ms": 180,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "candidate_profile": "developer_lifecycle_microloops_v2",
+      "from_pose": "stand.neutral.left_front",
+      "to_pose": "prone.awake.left_front",
+      "direction": "left-front",
+      "interruptible": true,
+      "phases": [
+        {
+          "name": "intro",
+          "loop": false,
+          "frame_count": 14,
+          "frames": [
+            {
+              "path": "frames/intro/01-stable-stand.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "14d2373ecefcd9938999f953bac2dcc6af05e91443c514608e7e6ccb88bcd1c3",
+              "bytes": 355825,
+              "duration_ms": 520
+            },
+            {
+              "path": "frames/intro/02-first-step.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "50b55d517a5ade4fc424609e251a89b30995140bb2d69b7976dcccb43551160f",
+              "bytes": 328267,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/intro/03-walking.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "0d234edf6864518b4a487172610af9fed2577a5ac8b9d922fa020c82672d26c5",
+              "bytes": 345956,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/intro/04-notice.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "13d7c4801f48d0dd6f67270bcf68a6c08213945e0a57b1ec3603a988dac04cdf",
+              "bytes": 322659,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/intro/05-turn-head.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "508ee8efb50b6645cd8650d3188ed6fa3a3034e2906e08e2e0844b5629c2d545",
+              "bytes": 344055,
+              "duration_ms": 300
+            },
+            {
+              "path": "frames/intro/06-lookback-collect-step.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "e28171247597fbd6394d110acd1fab8b2294cd4faa29ad9c1f0f71963571e3b4",
+              "bytes": 327325,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/intro/07-lookback-to-sit-early.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "8209f6fc1e181c278879b0097464e4b7d7d0bc38078ad8731890f3f6198e51c8",
+              "bytes": 394834,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/intro/08-lookback-to-sit-late.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "9678cd21a3845b4095e302851830cd319ccc064a28d95df3979cb5beb290cd0c",
+              "bytes": 433963,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/intro/09-oblique-sit.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "aad1aac97ad8b1505337095c6f5514b9f5683b1d6059510b97c7a442b616a82b",
+              "bytes": 364490,
+              "duration_ms": 280
+            },
+            {
+              "path": "frames/intro/10-stable-sit.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "add27f3b4836c99860c54742846e316c96e8b14e046fed0783fa8668b8dfb6ce",
+              "bytes": 330280,
+              "duration_ms": 460
+            },
+            {
+              "path": "frames/intro/11-sit-to-prone-early.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "347ef2a556ea4c8533e5ebab76f631388540c0e398d7fa0b1d5483033d47afd2",
+              "bytes": 492065,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/intro/12-sit-to-prone-late.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "214f933a988a428ad833f2049c88bd9b5cf0e1d23bb2ccb9ab8d04de15d0b3f0",
+              "bytes": 480602,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/intro/13-relaxed-prone-open-mouth.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "71bd58ab524186210fc638f023ad495dd5f458f04d87cda8b34f15e54461000a",
+              "bytes": 307137,
+              "duration_ms": 360
+            },
+            {
+              "path": "frames/intro/14-stable-prone.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "106483d70c6513a821a186a6f70e2d217acfb4ada8377656e226e4b361668d88",
+              "bytes": 316952,
+              "duration_ms": 600
+            }
+          ]
+        },
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 6,
+          "frames": [
+            {
+              "path": "frames/microloops/prone-idle/01.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44",
+              "bytes": 393853,
+              "duration_ms": 2800
+            },
+            {
+              "path": "frames/microloops/prone-idle/02.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "a61cb42ad580274974f6280a7155461fa25699e8cc47fb9974c1e3e00db4f7f8",
+              "bytes": 396653,
+              "duration_ms": 320
+            },
+            {
+              "path": "frames/microloops/prone-idle/03.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "0f22865f3fced20560aa3a5d50eb34dfa79acf1d57315771cc9e8949eca361e4",
+              "bytes": 393279,
+              "duration_ms": 320
+            },
+            {
+              "path": "frames/microloops/prone-idle/04.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "65f63ae53aa436117d3f07813fe44f644e2d01f6131484827b0bc2d46f9c0612",
+              "bytes": 395871,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/prone-idle/05.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "75f95772a50dc686568214c987b761c6f1f26fc1526e246d84c2850af4e24a18",
+              "bytes": 395938,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/microloops/prone-idle/01.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44",
+              "bytes": 393853,
+              "duration_ms": 5000
+            }
+          ]
+        },
+        {
+          "name": "exit",
+          "loop": false,
+          "frame_count": 8,
+          "frames": [
+            {
+              "path": "frames/intro/14-stable-prone.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "106483d70c6513a821a186a6f70e2d217acfb4ada8377656e226e4b361668d88",
+              "bytes": 316952,
+              "duration_ms": 420
+            },
+            {
+              "path": "frames/intro/12-sit-to-prone-late.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "214f933a988a428ad833f2049c88bd9b5cf0e1d23bb2ccb9ab8d04de15d0b3f0",
+              "bytes": 480602,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/intro/11-sit-to-prone-early.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "347ef2a556ea4c8533e5ebab76f631388540c0e398d7fa0b1d5483033d47afd2",
+              "bytes": 492065,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/intro/10-stable-sit.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "add27f3b4836c99860c54742846e316c96e8b14e046fed0783fa8668b8dfb6ce",
+              "bytes": 330280,
+              "duration_ms": 460
+            },
+            {
+              "path": "frames/exit/05-weight-forward.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "3d77b2e8c16196093cb25db872089cc62f3dd2ade6cdb332d60c13075ce6bf3d",
+              "bytes": 516350,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/exit/06-hindquarters-half-rise.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "8edfea5a8b06a8440715713809ce419a6a31fee153de22d968d1b59c10363934",
+              "bytes": 533938,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/exit/07-near-standing.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "7090841fff1b38f6924829fda6a9a9c6232f8f3ed76c082e2d4b3180b47fccdc",
+              "bytes": 506531,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/intro/01-stable-stand.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "14d2373ecefcd9938999f953bac2dcc6af05e91443c514608e7e6ccb88bcd1c3",
+              "bytes": 355825,
+              "duration_ms": 520
+            }
+          ]
+        },
+        {
+          "name": "interrupt_exit",
+          "loop": false,
+          "frame_count": 8,
+          "frames": [
+            {
+              "path": "frames/intro/14-stable-prone.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "106483d70c6513a821a186a6f70e2d217acfb4ada8377656e226e4b361668d88",
+              "bytes": 316952,
+              "duration_ms": 420
+            },
+            {
+              "path": "frames/intro/12-sit-to-prone-late.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "214f933a988a428ad833f2049c88bd9b5cf0e1d23bb2ccb9ab8d04de15d0b3f0",
+              "bytes": 480602,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/intro/11-sit-to-prone-early.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "347ef2a556ea4c8533e5ebab76f631388540c0e398d7fa0b1d5483033d47afd2",
+              "bytes": 492065,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/intro/10-stable-sit.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "add27f3b4836c99860c54742846e316c96e8b14e046fed0783fa8668b8dfb6ce",
+              "bytes": 330280,
+              "duration_ms": 460
+            },
+            {
+              "path": "frames/exit/05-weight-forward.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "3d77b2e8c16196093cb25db872089cc62f3dd2ade6cdb332d60c13075ce6bf3d",
+              "bytes": 516350,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/exit/06-hindquarters-half-rise.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "8edfea5a8b06a8440715713809ce419a6a31fee153de22d968d1b59c10363934",
+              "bytes": 533938,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/exit/07-near-standing.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "7090841fff1b38f6924829fda6a9a9c6232f8f3ed76c082e2d4b3180b47fccdc",
+              "bytes": 506531,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/intro/01-stable-stand.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "14d2373ecefcd9938999f953bac2dcc6af05e91443c514608e7e6ccb88bcd1c3",
+              "bytes": 355825,
+              "duration_ms": 520
+            }
+          ]
+        },
+        {
+          "name": "fallback",
+          "loop": false,
+          "frame_count": 1,
+          "frames": [
+            {
+              "path": "frames/intro/01-stable-stand.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "14d2373ecefcd9938999f953bac2dcc6af05e91443c514608e7e6ccb88bcd1c3",
+              "bytes": 355825,
+              "duration_ms": 520
+            }
+          ]
+        }
+      ],
+      "interrupt_exit_routes": {
+        "from_intro_before_sit": [
+          "frames/intro/10-stable-sit.png",
+          "frames/exit/05-weight-forward.png",
+          "frames/exit/06-hindquarters-half-rise.png",
+          "frames/exit/07-near-standing.png",
+          "frames/intro/01-stable-stand.png"
+        ],
+        "from_intro_after_sit": [
+          "frames/intro/14-stable-prone.png",
+          "frames/intro/12-sit-to-prone-late.png",
+          "frames/intro/11-sit-to-prone-early.png",
+          "frames/intro/10-stable-sit.png",
+          "frames/exit/05-weight-forward.png",
+          "frames/exit/06-hindquarters-half-rise.png",
+          "frames/exit/07-near-standing.png",
+          "frames/intro/01-stable-stand.png"
+        ],
+        "from_loop_prone": [
+          "frames/intro/14-stable-prone.png",
+          "frames/intro/12-sit-to-prone-late.png",
+          "frames/intro/11-sit-to-prone-early.png",
+          "frames/intro/10-stable-sit.png",
+          "frames/exit/05-weight-forward.png",
+          "frames/exit/06-hindquarters-half-rise.png",
+          "frames/exit/07-near-standing.png",
+          "frames/intro/01-stable-stand.png"
+        ],
+        "from_exit": [
+          "frames/intro/14-stable-prone.png",
+          "frames/intro/12-sit-to-prone-late.png",
+          "frames/intro/11-sit-to-prone-early.png",
+          "frames/intro/10-stable-sit.png",
+          "frames/exit/05-weight-forward.png",
+          "frames/exit/06-hindquarters-half-rise.png",
+          "frames/exit/07-near-standing.png",
+          "frames/intro/01-stable-stand.png"
+        ],
+        "fallback": [
+          "frames/intro/01-stable-stand.png"
+        ]
+      },
+      "visual_approved": true,
+      "art_candidate": false,
+      "autonomous_mapping": "low_frequency_lively_daily"
+    },
+    {
+      "behavior_id": "wk.candidate.lifecycle.stand_idle_microloop",
+      "display_name": "Stand idle microloop candidate",
+      "description": "Low-frequency candidate microloop for developer lifecycle profile.",
+      "source_folder": "frames/microloops",
+      "frame_duration_ms": 180,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "candidate_profile": "developer_lifecycle_microloops_v2",
+      "from_pose": "stand.neutral.left_front",
+      "to_pose": "stand.neutral.left_front",
+      "direction": "left-front",
+      "interruptible": true,
+      "cycle_ms": 7240,
+      "max_slow_blinks_per_cycle": 1,
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 6,
+          "frames": [
+            {
+              "path": "frames/microloops/stand-idle/01.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "77be067001a7de36f6fe436f73ab05735b9a827612746dba52e43e9d8bc07758",
+              "bytes": 479979,
+              "duration_ms": 2400
+            },
+            {
+              "path": "frames/microloops/stand-idle/02.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "bf81c9252d66c0d4e1a54f44f665e2269a260e2cea53c479981d5a339221b57a",
+              "bytes": 475925,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/stand-idle/03.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "68126b0fcdb7e0db3250bd0b4a1465db2fbcf535c6e049f6a40652b282063e72",
+              "bytes": 477567,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/microloops/stand-idle/04.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "315c967f447baa7074e6662c7a662698becbd8ff8b3136ea3da6f8800fb298ec",
+              "bytes": 479511,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/stand-idle/05.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "89aea07ffd0695e13d9f493e43d095cf393f46fbd476fd436d2b972c16e0ce99",
+              "bytes": 479839,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/stand-idle/01.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "77be067001a7de36f6fe436f73ab05735b9a827612746dba52e43e9d8bc07758",
+              "bytes": 479979,
+              "duration_ms": 4000
+            }
+          ]
+        }
+      ],
+      "visual_approved": true,
+      "art_candidate": false,
+      "autonomous_mapping": "stable_stand_only"
+    },
+    {
+      "behavior_id": "wk.candidate.lifecycle.sit_idle_microloop",
+      "display_name": "Sit idle microloop candidate",
+      "description": "Low-frequency candidate microloop for developer lifecycle profile.",
+      "source_folder": "frames/microloops",
+      "frame_duration_ms": 180,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "candidate_profile": "developer_lifecycle_microloops_v2",
+      "from_pose": "sit.neutral.left_front",
+      "to_pose": "sit.neutral.left_front",
+      "direction": "left-front",
+      "interruptible": true,
+      "cycle_ms": 7680,
+      "max_slow_blinks_per_cycle": 1,
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 6,
+          "frames": [
+            {
+              "path": "frames/microloops/sit-idle/01.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "a077213ae8a4012c83fd3b2c4373ab9fd026f3ecaa88ea5d65d230d220a4ac95",
+              "bytes": 425388,
+              "duration_ms": 2600
+            },
+            {
+              "path": "frames/microloops/sit-idle/02.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "f79641f772959c10678fc99d568e743a472b09f4555f5e995a18535d8f1e18c6",
+              "bytes": 423833,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/microloops/sit-idle/03.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "4523c8ba00751382980c1e01f9a0f52bc2c806a6543e239c8669aa94c75d2090",
+              "bytes": 422014,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/sit-idle/04.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "e813187eec75ba5b154d0d674c85c123dec4ab98fb5915a261a428e48098cbb4",
+              "bytes": 427428,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/microloops/sit-idle/05.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "d62c1e70314e4aebaab52fa822cad0532182abe2b724ad399bac2f5c5518f5dc",
+              "bytes": 428591,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/sit-idle/01.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "a077213ae8a4012c83fd3b2c4373ab9fd026f3ecaa88ea5d65d230d220a4ac95",
+              "bytes": 425388,
+              "duration_ms": 4200
+            }
+          ]
+        }
+      ],
+      "visual_approved": true,
+      "art_candidate": false,
+      "autonomous_mapping": "stable_sit_only"
+    },
+    {
+      "behavior_id": "wk.candidate.lifecycle.prone_idle_microloop",
+      "display_name": "Prone idle microloop candidate",
+      "description": "Low-frequency candidate microloop for developer lifecycle profile.",
+      "source_folder": "frames/microloops",
+      "frame_duration_ms": 180,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "candidate_profile": "developer_lifecycle_microloops_v2",
+      "from_pose": "prone.awake.left_front",
+      "to_pose": "prone.awake.left_front",
+      "direction": "left-front",
+      "interruptible": true,
+      "cycle_ms": 8900,
+      "max_slow_blinks_per_cycle": 1,
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 6,
+          "frames": [
+            {
+              "path": "frames/microloops/prone-idle/01.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44",
+              "bytes": 393853,
+              "duration_ms": 2800
+            },
+            {
+              "path": "frames/microloops/prone-idle/02.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "a61cb42ad580274974f6280a7155461fa25699e8cc47fb9974c1e3e00db4f7f8",
+              "bytes": 396653,
+              "duration_ms": 320
+            },
+            {
+              "path": "frames/microloops/prone-idle/03.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "0f22865f3fced20560aa3a5d50eb34dfa79acf1d57315771cc9e8949eca361e4",
+              "bytes": 393279,
+              "duration_ms": 320
+            },
+            {
+              "path": "frames/microloops/prone-idle/04.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "65f63ae53aa436117d3f07813fe44f644e2d01f6131484827b0bc2d46f9c0612",
+              "bytes": 395871,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/microloops/prone-idle/05.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "75f95772a50dc686568214c987b761c6f1f26fc1526e246d84c2850af4e24a18",
+              "bytes": 395938,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/microloops/prone-idle/01.png",
+              "width": 1024,
+              "height": 1024,
+              "mode": "RGBA",
+              "sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44",
+              "bytes": 393853,
+              "duration_ms": 5000
+            }
+          ]
+        }
+      ],
+      "visual_approved": true,
+      "art_candidate": false,
+      "autonomous_mapping": "stable_prone_only"
+    }
+  ],
+  "visual_approved": true,
+  "art_candidate": false,
+  "windows_renderer_qa": {
+    "date": "2026-08-15",
+    "result": "passed",
+    "reviewer": "owner_manual",
+    "notes": [
+      "Full lifecycle playback, exit, and interrupt passed manual Windows transparent-window acceptance.",
+      "stand-idle, sit-idle, and prone-idle six-frame loops passed manual visual acceptance.",
+      "No visible foot jitter, transparent edge artifact, or y=930/y=932 baseline artifact was observed.",
+      "Strict non-zero alpha audit remains recorded separately; approved PNG files were not edited."
+    ]
+  }
+}

@@ -3,12 +3,16 @@
   "contract_id": "wk.interaction.prone_touch.v4.1",
   "behavior_id": "wk.interaction.prone_touch",
   "asset_ref": "wk.interaction.prone_touch.v4.1",
-  "contract_status": "candidate",
+  "contract_status": "deprecated",
+  "deprecated": true,
+  "deprecated_reason": "owner_rejected_and_removed_from_use_2026_08_26",
+  "fallback_eligible": false,
   "runtime_gate": {
-    "runtime_validation": "pending",
+    "runtime_validation": "failed_owner_rejected",
     "runtime_approved": false,
     "runtime_use": false,
-    "must_not_register_until_all_gates_pass": true
+    "must_not_register_until_all_gates_pass": true,
+    "permanently_removed_from_use": true
   },
   "entry_conditions": [
     "pet is in prone idle",

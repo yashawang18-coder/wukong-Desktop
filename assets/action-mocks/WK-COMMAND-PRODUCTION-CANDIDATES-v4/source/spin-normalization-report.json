@@ -1,0 +1,716 @@
+{
+  "status": "production_candidate_owner_qa_pending",
+  "canvas": [
+    1024,
+    1024
+  ],
+  "format": "RGBA PNG",
+  "target_front_head_width_px": 224.0,
+  "approved_subject_height_px": 700,
+  "production_body_axis_x": 512,
+  "target_ground_baseline_y": 900,
+  "scale_policy": "All final frames share the approved 700 px standing height; raw generation composition is deterministically normalized before placement.",
+  "color_target_orange_mean_rgb": [
+    201.622,
+    151.631,
+    101.831
+  ],
+  "color_calibration_scope": "orange coat pixels only; cream white, eyes, nose, mouth, tongue, paws and paw pads excluded",
+  "background_pipeline": "generated on blue; deterministic chroma-key extraction and blue-spill removal; no subject regeneration during transparency conversion",
+  "orientation_sequence": [
+    "front",
+    "turn-start",
+    "front-three-quarter",
+    "oblique",
+    "first-side",
+    "rear-three-quarter",
+    "rear-dominant",
+    "near-back",
+    "back",
+    "opposite-rear-three-quarter",
+    "opposite-side",
+    "opposite-front-three-quarter",
+    "front-return",
+    "near-front",
+    "settle",
+    "front-anchor"
+  ],
+  "motion": {
+    "frame_count": 16,
+    "durations_ms": [
+      550,
+      180,
+      160,
+      160,
+      160,
+      160,
+      160,
+      160,
+      160,
+      160,
+      160,
+      170,
+      190,
+      220,
+      260,
+      800
+    ],
+    "total_duration_ms": 3810,
+    "loop": 0,
+    "source_authority": "approved-spin-motion-preview-v2.gif"
+  },
+  "checks": {
+    "frame_count_16": true,
+    "all_1024_rgba": true,
+    "frame_1_equals_frame_16": true,
+    "uniform_final_physical_scale_700px": true,
+    "all_baselines_y_900": true,
+    "rotation_axis_x_approximately_512": true,
+    "no_subject_edge_contact": true,
+    "single_rotation_direction": true,
+    "owner_visual_approval": false,
+    "runtime_approved": false
+  },
+  "frames": [
+    {
+      "frame": 1,
+      "source": "sit_production_candidate_v2/frames/frame-001.png",
+      "role": "approved stable-standing anchor",
+      "source_to_production_scale": 1.0,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 512.0,
+      "placed_xy": [
+        177,
+        201
+      ],
+      "bbox": [
+        177,
+        201,
+        847,
+        901
+      ],
+      "baseline_y": 900,
+      "source_bbox": [
+        177,
+        200,
+        847,
+        900
+      ],
+      "orange_mean_before": [
+        201.622,
+        151.631,
+        101.831
+      ],
+      "applied_rgb_delta": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "orange_mean_after": [
+        201.622,
+        151.631,
+        101.831
+      ]
+    },
+    {
+      "frame": 2,
+      "source": "work/spin_production_v3/raw/frame-002.png",
+      "source_bbox": [
+        491,
+        185,
+        1099,
+        856
+      ],
+      "role": "head and gaze initiate turn; paws stable",
+      "source_to_production_scale": 1.04321908,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 512.0,
+      "placed_xy": [
+        195,
+        201
+      ],
+      "bbox": [
+        195,
+        201,
+        829,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        207.582,
+        151.194,
+        96.319
+      ],
+      "applied_rgb_delta": [
+        -5.96,
+        0.437,
+        5.512
+      ],
+      "orange_mean_after": [
+        201.17,
+        149.157,
+        97.774
+      ]
+    },
+    {
+      "frame": 3,
+      "source": "work/spin_production_v3/raw/frame-003.png",
+      "source_bbox": [
+        472,
+        173,
+        1076,
+        858
+      ],
+      "role": "near-direction forepaw step; shoulders lead pelvis",
+      "source_to_production_scale": 1.02189781,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 512.5,
+      "placed_xy": [
+        204,
+        201
+      ],
+      "bbox": [
+        204,
+        201,
+        821,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        212.008,
+        150.561,
+        91.663
+      ],
+      "applied_rgb_delta": [
+        -10.386,
+        1.07,
+        10.168
+      ],
+      "orange_mean_after": [
+        200.232,
+        147.841,
+        95.313
+      ]
+    },
+    {
+      "frame": 4,
+      "source": "work/spin_production_v3/raw/frame-004.png",
+      "source_bbox": [
+        247,
+        252,
+        1028,
+        1064
+      ],
+      "role": "first clear oblique orientation",
+      "source_to_production_scale": 0.86206897,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 512.5,
+      "placed_xy": [
+        176,
+        201
+      ],
+      "bbox": [
+        176,
+        201,
+        849,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        218.052,
+        163.266,
+        107.714
+      ],
+      "applied_rgb_delta": [
+        -16.43,
+        -11.635,
+        -5.883
+      ],
+      "orange_mean_after": [
+        201.309,
+        150.306,
+        99.509
+      ]
+    },
+    {
+      "frame": 5,
+      "source": "work/spin_production_v3/raw/frame-005.png",
+      "source_bbox": [
+        268,
+        283,
+        1017,
+        888
+      ],
+      "role": "hind-paw step; approaching first side",
+      "source_to_production_scale": 1.15702479,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 511.5,
+      "placed_xy": [
+        78,
+        201
+      ],
+      "bbox": [
+        78,
+        201,
+        945,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        210.333,
+        149.345,
+        91.997
+      ],
+      "applied_rgb_delta": [
+        -8.711,
+        2.286,
+        9.834
+      ],
+      "orange_mean_after": [
+        201.09,
+        148.573,
+        95.985
+      ]
+    },
+    {
+      "frame": 6,
+      "source": "work/spin_production_v3/raw/frame-006.png",
+      "source_bbox": [
+        573,
+        119,
+        1228,
+        775
+      ],
+      "role": "first side to rear-three-quarter",
+      "source_to_production_scale": 1.06707317,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 511.5,
+      "placed_xy": [
+        162,
+        201
+      ],
+      "bbox": [
+        162,
+        201,
+        861,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        211.532,
+        153.989,
+        99.094
+      ],
+      "applied_rgb_delta": [
+        -9.91,
+        -2.358,
+        2.737
+      ],
+      "orange_mean_after": [
+        201.244,
+        149.632,
+        98.797
+      ]
+    },
+    {
+      "frame": 7,
+      "source": "work/spin_production_v3/raw/frame-007.png",
+      "source_bbox": [
+        219,
+        160,
+        1022,
+        1080
+      ],
+      "role": "rear becomes dominant",
+      "source_to_production_scale": 0.76086957,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 511.5,
+      "placed_xy": [
+        206,
+        201
+      ],
+      "bbox": [
+        206,
+        201,
+        817,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        209.233,
+        147.217,
+        88.458
+      ],
+      "applied_rgb_delta": [
+        -7.611,
+        4.414,
+        13.373
+      ],
+      "orange_mean_after": [
+        201.284,
+        148.048,
+        95.447
+      ]
+    },
+    {
+      "frame": 8,
+      "source": "work/spin_production_v3/raw/frame-008.png",
+      "source_bbox": [
+        709,
+        83,
+        1074,
+        822
+      ],
+      "role": "near-back alternating support",
+      "source_to_production_scale": 0.94722598,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 512.0,
+      "placed_xy": [
+        339,
+        201
+      ],
+      "bbox": [
+        339,
+        201,
+        685,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        210.002,
+        152.12,
+        98.364
+      ],
+      "applied_rgb_delta": [
+        -8.38,
+        -0.489,
+        3.467
+      ],
+      "orange_mean_after": [
+        200.798,
+        148.444,
+        96.534
+      ]
+    },
+    {
+      "frame": 9,
+      "source": "work/spin_production_v3/raw/frame-009.png",
+      "source_bbox": [
+        424,
+        205,
+        875,
+        1061
+      ],
+      "role": "complete or closest back view",
+      "source_to_production_scale": 0.81775701,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 512.5,
+      "placed_xy": [
+        328,
+        201
+      ],
+      "bbox": [
+        328,
+        201,
+        697,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        214.098,
+        158.103,
+        98.364
+      ],
+      "applied_rgb_delta": [
+        -12.476,
+        -6.472,
+        3.467
+      ],
+      "orange_mean_after": [
+        200.972,
+        146.866,
+        92.894
+      ]
+    },
+    {
+      "frame": 10,
+      "source": "work/spin_production_v3/raw/frame-010.png",
+      "source_bbox": [
+        429,
+        172,
+        1130,
+        900
+      ],
+      "role": "opposite rear-three-quarter; same direction",
+      "source_to_production_scale": 0.96153846,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 512.0,
+      "placed_xy": [
+        175,
+        201
+      ],
+      "bbox": [
+        175,
+        201,
+        849,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        217.091,
+        151.588,
+        88.38
+      ],
+      "applied_rgb_delta": [
+        -15.469,
+        0.043,
+        13.451
+      ],
+      "orange_mean_after": [
+        200.494,
+        146.127,
+        91.419
+      ]
+    },
+    {
+      "frame": 11,
+      "source": "work/spin_production_v3/raw/frame-011.png",
+      "source_bbox": [
+        252,
+        193,
+        1174,
+        874
+      ],
+      "role": "true opposite side",
+      "source_to_production_scale": 1.02790015,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 512.0,
+      "placed_xy": [
+        38,
+        201
+      ],
+      "bbox": [
+        38,
+        201,
+        986,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        221.177,
+        159.539,
+        100.355
+      ],
+      "applied_rgb_delta": [
+        -18.0,
+        -7.908,
+        1.476
+      ],
+      "orange_mean_after": [
+        203.722,
+        148.093,
+        94.209
+      ]
+    },
+    {
+      "frame": 12,
+      "source": "work/spin_production_v3/raw/frame-012.png",
+      "source_bbox": [
+        336,
+        269,
+        896,
+        1037
+      ],
+      "role": "opposite front-three-quarter",
+      "source_to_production_scale": 0.91145833,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 512.0,
+      "placed_xy": [
+        257,
+        201
+      ],
+      "bbox": [
+        257,
+        201,
+        767,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        228.37,
+        170.954,
+        110.542
+      ],
+      "applied_rgb_delta": [
+        -18.0,
+        -14.0,
+        -8.0
+      ],
+      "orange_mean_after": [
+        211.08,
+        156.566,
+        100.928
+      ]
+    },
+    {
+      "frame": 13,
+      "source": "work/spin_production_v3/raw/frame-013.png",
+      "source_bbox": [
+        415,
+        249,
+        842,
+        1058
+      ],
+      "role": "head and chest return toward front",
+      "source_to_production_scale": 0.86526576,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 512.5,
+      "placed_xy": [
+        328,
+        201
+      ],
+      "bbox": [
+        328,
+        201,
+        697,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        213.722,
+        161.617,
+        108.215
+      ],
+      "applied_rgb_delta": [
+        -12.1,
+        -9.986,
+        -6.384
+      ],
+      "orange_mean_after": [
+        201.11,
+        151.644,
+        100.857
+      ]
+    },
+    {
+      "frame": 14,
+      "source": "work/spin_production_v3/raw/frame-014.png",
+      "source_bbox": [
+        381,
+        264,
+        796,
+        1051
+      ],
+      "role": "near-front with residual inertia",
+      "source_to_production_scale": 0.88945362,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 512.5,
+      "placed_xy": [
+        328,
+        201
+      ],
+      "bbox": [
+        328,
+        201,
+        697,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        218.73,
+        171.408,
+        122.855
+      ],
+      "applied_rgb_delta": [
+        -17.108,
+        -14.0,
+        -8.0
+      ],
+      "orange_mean_after": [
+        201.443,
+        156.533,
+        112.32
+      ]
+    },
+    {
+      "frame": 15,
+      "source": "work/spin_production_v3/raw/frame-015.png",
+      "source_bbox": [
+        583,
+        129,
+        1188,
+        787
+      ],
+      "role": "final step and centered balance",
+      "source_to_production_scale": 1.06382979,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 512.0,
+      "placed_xy": [
+        190,
+        201
+      ],
+      "bbox": [
+        190,
+        201,
+        834,
+        901
+      ],
+      "baseline_y": 900,
+      "orange_mean_before": [
+        210.249,
+        152.633,
+        96.292
+      ],
+      "applied_rgb_delta": [
+        -8.627,
+        -1.002,
+        5.539
+      ],
+      "orange_mean_after": [
+        201.087,
+        148.985,
+        98.164
+      ]
+    },
+    {
+      "frame": 16,
+      "source": "sit_production_candidate_v2/frames/frame-001.png",
+      "role": "same approved stable-standing anchor as frame 1",
+      "source_to_production_scale": 1.0,
+      "production_subject_height_px": 700,
+      "production_bbox_center_x": 512.0,
+      "placed_xy": [
+        177,
+        201
+      ],
+      "bbox": [
+        177,
+        201,
+        847,
+        901
+      ],
+      "baseline_y": 900,
+      "source_bbox": [
+        177,
+        200,
+        847,
+        900
+      ],
+      "orange_mean_before": [
+        201.622,
+        151.631,
+        101.831
+      ],
+      "applied_rgb_delta": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "orange_mean_after": [
+        201.622,
+        151.631,
+        101.831
+      ]
+    }
+  ]
+}

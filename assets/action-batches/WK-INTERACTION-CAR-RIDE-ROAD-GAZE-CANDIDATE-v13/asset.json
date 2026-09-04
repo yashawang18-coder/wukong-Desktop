@@ -1,0 +1,16 @@
+{
+  "asset_id": "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v13",
+  "parent_asset": "WK-INTERACTION-CAR-RIDE-CANDIDATE-v8",
+  "status": "runtime_candidate_owner_visual_qa_pending",
+  "runtime_validation": "pending_owner_windows_renderer_qa",
+  "visual_approved": false,
+  "owner_runtime_enable_requested": false,
+  "runtime_approved": false,
+  "runtime_use": false,
+  "prototype_use": true,
+  "production_asset": false,
+  "developer_preview": true,
+  "whole_scene_generation": true,
+  "selected_master_count": 8,
+  "runtime_frame_count": 36
+}

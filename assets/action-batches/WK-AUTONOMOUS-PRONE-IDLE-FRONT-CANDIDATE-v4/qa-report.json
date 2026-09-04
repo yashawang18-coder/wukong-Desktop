@@ -1,0 +1,12 @@
+{
+  "canvas": "1024x1024 RGBA",
+  "frame_count": 24,
+  "anchor_sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+  "f01_f12_exact": true,
+  "alpha": "source frames preserve approved RGBA alpha",
+  "baseline": "approved source baseline y=900 convention",
+  "head_scale": "no geometric scaling; source pixels reused",
+  "color": "no recoloring; approved source pixels reused",
+  "identity_drift_risk": "minimized by zero generative redraw",
+  "qa_status": "owner review required for motion cadence before runtime integration"
+}

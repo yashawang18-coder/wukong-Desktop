@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "batch_id": "WK-AUTONOMOUS-SIDE-PRONE-FRONT-CANDIDATE-v1",
+  "status": "production_candidate_owner_qa_pending",
+  "runtime_validation": "pending_owner_visual_and_windows_renderer_qa",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
+  "autonomous_binding_enabled": false,
+  "bridge_policy": "rear-look-to-front and front-to-rear bridges are not yet approved; no hard splice",
+  "source_policy": {
+    "body": "exact V3R1 legacy side-prone loop frames",
+    "head": "approved V4 front-prone calm frames",
+    "legacy_red_assets": "forbidden",
+    "runtime_mirror_used": false
+  },
+  "actions": [
+    {
+      "action_id": "wk.candidate.lifecycle.side_prone_front_calm_v1",
+      "frame_count": 12,
+      "total_duration_ms": 7260,
+      "loop": true,
+      "runtime_approved": false,
+      "runtime_use": false,
+      "frames": [
+        {
+          "frame": 1,
+          "path": "frames/side-prone-front-calm/frame-001.png",
+          "duration_ms": 1300,
+          "bytes": 476699,
+          "sha256": "859366b36210dd5db5cd2d158c13b069ee365e7294c72348e593cd74c6cd3a5f"
+        },
+        {
+          "frame": 2,
+          "path": "frames/side-prone-front-calm/frame-002.png",
+          "duration_ms": 800,
+          "bytes": 476699,
+          "sha256": "859366b36210dd5db5cd2d158c13b069ee365e7294c72348e593cd74c6cd3a5f"
+        },
+        {
+          "frame": 3,
+          "path": "frames/side-prone-front-calm/frame-003.png",
+          "duration_ms": 320,
+          "bytes": 484356,
+          "sha256": "f10bdea6d7fc7bb57da919c653e775f381c9492678d5112a2e0a192b9dd50f24"
+        },
+        {
+          "frame": 4,
+          "path": "frames/side-prone-front-calm/frame-004.png",
+          "duration_ms": 320,
+          "bytes": 478892,
+          "sha256": "5e1598313c5f5d84ec88569a1430a2f890db40114b3018b93b02a0674946346b"
+        },
+        {
+          "frame": 5,
+          "path": "frames/side-prone-front-calm/frame-005.png",
+          "duration_ms": 220,
+          "bytes": 479178,
+          "sha256": "0df0b3d987367764e0c187730425df42e8efa007f8da8631db64b274b5c18483"
+        },
+        {
+          "frame": 6,
+          "path": "frames/side-prone-front-calm/frame-006.png",
+          "duration_ms": 240,
+          "bytes": 483582,
+          "sha256": "12d6b24d091c12e85ab5a0620a93db15cd0fe82814b621c6a2181786b1077805"
+        },
+        {
+          "frame": 7,
+          "path": "frames/side-prone-front-calm/frame-007.png",
+          "duration_ms": 220,
+          "bytes": 480373,
+          "sha256": "ae1bbf1379b8d08d68b3dab6922df27b2fa78b6b5ab88fa1daf8f98922222453"
+        },
+        {
+          "frame": 8,
+          "path": "frames/side-prone-front-calm/frame-008.png",
+          "duration_ms": 320,
+          "bytes": 478892,
+          "sha256": "5e1598313c5f5d84ec88569a1430a2f890db40114b3018b93b02a0674946346b"
+        },
+        {
+          "frame": 9,
+          "path": "frames/side-prone-front-calm/frame-009.png",
+          "duration_ms": 320,
+          "bytes": 483198,
+          "sha256": "8ce0b893071565d5b920753bcf187ae2ccb072ca29602884239e0279e0103eb1"
+        },
+        {
+          "frame": 10,
+          "path": "frames/side-prone-front-calm/frame-010.png",
+          "duration_ms": 700,
+          "bytes": 476699,
+          "sha256": "859366b36210dd5db5cd2d158c13b069ee365e7294c72348e593cd74c6cd3a5f"
+        },
+        {
+          "frame": 11,
+          "path": "frames/side-prone-front-calm/frame-011.png",
+          "duration_ms": 1000,
+          "bytes": 476699,
+          "sha256": "859366b36210dd5db5cd2d158c13b069ee365e7294c72348e593cd74c6cd3a5f"
+        },
+        {
+          "frame": 12,
+          "path": "frames/side-prone-front-calm/frame-012.png",
+          "duration_ms": 1500,
+          "bytes": 476699,
+          "sha256": "859366b36210dd5db5cd2d158c13b069ee365e7294c72348e593cd74c6cd3a5f"
+        }
+      ]
+    }
+  ]
+}

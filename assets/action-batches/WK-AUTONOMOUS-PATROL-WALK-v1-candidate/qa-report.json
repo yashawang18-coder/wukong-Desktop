@@ -1,0 +1,110 @@
+{
+  "status": "production_candidate_owner_qa_pending",
+  "frame_count_left": 12,
+  "frame_count_right": 12,
+  "canvas": "1024x1024 RGBA",
+  "right_generation": "deterministic horizontal mirror of corresponding left frame",
+  "all_mirror_pixel_equal": true,
+  "frames": [
+    {
+      "frame": 1,
+      "left_sha256": "db36f1cbff0e5b0bbda22cbc069c50ef1abc8133aacde9cf6408264be2ee4da7",
+      "right_sha256": "f2d2b1d6da60de4a56594ec5d8f475f7036bcc106eaee731ff3f493b34f37587",
+      "mirror_pixel_equal": true,
+      "left_alpha_nonzero": 190909,
+      "right_alpha_nonzero": 190909
+    },
+    {
+      "frame": 2,
+      "left_sha256": "85f4e2529ff8985c2e71144277f84341aac2b37e5cedc8c9581a4375870e59e1",
+      "right_sha256": "f1ae4b5e96c9d3f4d9d5b07b9fcbf3d1e3cc95bdab3eccff820ceba07d8b9bb8",
+      "mirror_pixel_equal": true,
+      "left_alpha_nonzero": 193679,
+      "right_alpha_nonzero": 193679
+    },
+    {
+      "frame": 3,
+      "left_sha256": "0bfe7bffba3774a754f6e5fea9e48723b34b836aeb03f0aa064d3bf25abdf183",
+      "right_sha256": "b31018d0fc5928978fc74fbfa175ca774c7a87d88ad27e560e6bcafc2a9239f9",
+      "mirror_pixel_equal": true,
+      "left_alpha_nonzero": 196333,
+      "right_alpha_nonzero": 196333
+    },
+    {
+      "frame": 4,
+      "left_sha256": "fa79f2b18610d8a981726ee5b8dbb70d231799d1064547f44efe638692987882",
+      "right_sha256": "d030bee1c3ace9505ceb8fc1b57bc370483cdc3ff61f138715b2b1f1b68f6729",
+      "mirror_pixel_equal": true,
+      "left_alpha_nonzero": 196468,
+      "right_alpha_nonzero": 196468
+    },
+    {
+      "frame": 5,
+      "left_sha256": "adfbce2c71a9b2de9af9a9eb005951c2ab52275a611dc5184cf52330e756f6bd",
+      "right_sha256": "de6e71bebd8c0516f082182ebdb46a16100cbbaf960b2493d2b75f0e249b3b4c",
+      "mirror_pixel_equal": true,
+      "left_alpha_nonzero": 205259,
+      "right_alpha_nonzero": 205259
+    },
+    {
+      "frame": 6,
+      "left_sha256": "2ff4fa32ce6eb0d02a2890fa7e2c498540b07ea7c519aeca0d664c38f63e2fe1",
+      "right_sha256": "dbd4a3689ebcf082203dc72ab4ca3633f814d3a5caf8566eb77d30a6991dada7",
+      "mirror_pixel_equal": true,
+      "left_alpha_nonzero": 202687,
+      "right_alpha_nonzero": 202687
+    },
+    {
+      "frame": 7,
+      "left_sha256": "d1bfbbff46111154f7a260e2133888e64407d71138c4abe8f43d6bfcac76c313",
+      "right_sha256": "3d22f36aefab57b3a24a5c995b37de1a5967f2c32b3f43ad4691547795dd31fe",
+      "mirror_pixel_equal": true,
+      "left_alpha_nonzero": 190756,
+      "right_alpha_nonzero": 190756
+    },
+    {
+      "frame": 8,
+      "left_sha256": "ce4b48f99eaca5b8727a8a7f785818fe0cb802ebecd5a2d586ca499b88501302",
+      "right_sha256": "477b242ed526bc391b30b111f09c31aca78fac1d7cdc44fbe38a644793162df7",
+      "mirror_pixel_equal": true,
+      "left_alpha_nonzero": 200820,
+      "right_alpha_nonzero": 200820
+    },
+    {
+      "frame": 9,
+      "left_sha256": "3779411b83e652d00dcb3c1be0578ab92ebf8c56327a49aa844e85927bb6459f",
+      "right_sha256": "990b378af0647060f2524a8dc54f92525b75225451984cf97c7ca0dd2324aad5",
+      "mirror_pixel_equal": true,
+      "left_alpha_nonzero": 200303,
+      "right_alpha_nonzero": 200303
+    },
+    {
+      "frame": 10,
+      "left_sha256": "8f7d31a76211b4cb4440d532a381df486cd8b6a1b942e844319693aea7c32a7a",
+      "right_sha256": "988f3069631afa3f6b2b30ca2a289c12b4bc24429292c3a736a831ea46adbf95",
+      "mirror_pixel_equal": true,
+      "left_alpha_nonzero": 189719,
+      "right_alpha_nonzero": 189719
+    },
+    {
+      "frame": 11,
+      "left_sha256": "e4c27f3199bd33bfab263844946d3e3beffeaecb5c358ab752796c46996ef07b",
+      "right_sha256": "bc2f1facd6ac8a8d4f45ecf95b31786538aa818fd822ae3e4fa35406f88a9287",
+      "mirror_pixel_equal": true,
+      "left_alpha_nonzero": 204430,
+      "right_alpha_nonzero": 204430
+    },
+    {
+      "frame": 12,
+      "left_sha256": "434a86e1627cb35af87a19d332cbea018d1adcc95bacd7e0c231ee4ef31bf4ab",
+      "right_sha256": "b4dd7ada11cf8a3b4cd724ba5736c63ee94edaf36050066ab792ac9be6dc730a",
+      "mirror_pixel_equal": true,
+      "left_alpha_nonzero": 203366,
+      "right_alpha_nonzero": 203366
+    }
+  ],
+  "limitations": [
+    "Frames were deterministically extracted from the owner-approved checkerboard motion sheet.",
+    "Runtime integration, commit, push and Windows visual QA have not been performed."
+  ]
+}

@@ -1,0 +1,382 @@
+{
+  "schema_version": 2,
+  "asset_id": "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v11",
+  "parent_asset": "WK-INTERACTION-CAR-RIDE-CANDIDATE-v8",
+  "supersedes": "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v10",
+  "status": "superseded_owner_visual_qa_failed",
+  "runtime_validation": "failed_owner_visual_qa",
+  "visual_approved": false,
+  "owner_runtime_enable_requested": false,
+  "runtime_approved": false,
+  "runtime_use": false,
+  "prototype_use": false,
+  "production_asset": false,
+  "behavior_id": "wk.interaction.car_ride",
+  "extension_role": "optional_side_cruise_road_gaze",
+  "canvas": {
+    "width": 1024,
+    "height": 1024,
+    "format": "PNG",
+    "mode": "RGBA",
+    "wheel_baseline_y": 900
+  },
+  "trigger_contract": {
+    "eligible_directions": [
+      "left",
+      "right"
+    ],
+    "min_segment_ms": 1800,
+    "max_events_per_ride": 2,
+    "cooldown_ms": [
+      6000,
+      12000
+    ],
+    "forbidden_during": [
+      "turn",
+      "brake",
+      "offscreen_exit",
+      "offscreen_reentry"
+    ],
+    "wheel_phase_multiple": 6
+  },
+  "pixel_policy": {
+    "car_and_wheel_frames": "exact approved v8 direction pixels for the matching declared wheel slot",
+    "exact_v8_region": "all pixels y >= 650",
+    "rebuilt_region": "v10 coherent head and neck with deterministic vertical registration and a fixed neck root",
+    "runtime_mirror_used": false,
+    "crossfade_used": false,
+    "motion_blur_used": false,
+    "runtime_interpolation_used": false,
+    "head_vertical_registration": {
+      "warp_top_y": 210,
+      "full_shift_until_y": 420,
+      "fixed_neck_root_y": 484,
+      "left_pose_shift_px": {
+        "a": -16,
+        "b": 0,
+        "c": -11,
+        "d": -19,
+        "e": 18
+      },
+      "right_pose_shift_px": {
+        "a": -4,
+        "b": -20,
+        "c": 1,
+        "d": 30,
+        "e": -15
+      }
+    }
+  },
+  "review": {
+    "owner_visual_qa": "failed_head_motion_and_composite_strategy",
+    "windows_transparent_renderer_qa": "failed_owner_visual_review",
+    "light_dark_contact_sheets": 4,
+    "animated_previews": 4
+  },
+  "sequences": {
+    "road-gaze/right": [
+      {
+        "path": "frames/road-gaze-right/frame-001.png",
+        "duration_ms": 90,
+        "bytes": 452180,
+        "sha256": "1ba0962f74f76beebe3724be99158c21274606543a83464da860fb4b715e2be7",
+        "wheel_phase": 1,
+        "head_pose": "original"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-002.png",
+        "duration_ms": 90,
+        "bytes": 452193,
+        "sha256": "e8e6cd5f06c133faabaa9a7c227b7dd34f0dc955fc0872ada67a61f140e60678",
+        "wheel_phase": 2,
+        "head_pose": "original"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-003.png",
+        "duration_ms": 90,
+        "bytes": 453123,
+        "sha256": "8a09b9dd16a9709c22332eeeea967ce8fe35d2a5cb874eda3d0bab3239c40dc9",
+        "wheel_phase": 3,
+        "head_pose": "turn_25"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-004.png",
+        "duration_ms": 90,
+        "bytes": 450894,
+        "sha256": "acdc70113e67daa4b54be442bb099c26954df8d8d579e4c8cd45e1ab0fc358d1",
+        "wheel_phase": 4,
+        "head_pose": "turn_40"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-005.png",
+        "duration_ms": 90,
+        "bytes": 453655,
+        "sha256": "8dff3bc742b09368dcb0f504243789e9fdf053d5c381afc90d7b39a48c5f68bd",
+        "wheel_phase": 5,
+        "head_pose": "turn_55"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-006.png",
+        "duration_ms": 90,
+        "bytes": 449898,
+        "sha256": "bb6fddc671fa1fe7f6f00a5924669032b148c5fdecdb8cbcff08e666dfd32cc9",
+        "wheel_phase": 6,
+        "head_pose": "road_profile_open"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-007.png",
+        "duration_ms": 90,
+        "bytes": 449898,
+        "sha256": "bb6fddc671fa1fe7f6f00a5924669032b148c5fdecdb8cbcff08e666dfd32cc9",
+        "wheel_phase": 1,
+        "head_pose": "road_profile_open"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-008.png",
+        "duration_ms": 90,
+        "bytes": 451429,
+        "sha256": "88991034c7916f51352e962b4ff0d1cdb61f5f882531ccd7f8b509e5fff16230",
+        "wheel_phase": 2,
+        "head_pose": "road_profile_happy"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-009.png",
+        "duration_ms": 90,
+        "bytes": 451429,
+        "sha256": "88991034c7916f51352e962b4ff0d1cdb61f5f882531ccd7f8b509e5fff16230",
+        "wheel_phase": 3,
+        "head_pose": "road_profile_happy"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-010.png",
+        "duration_ms": 90,
+        "bytes": 449898,
+        "sha256": "bb6fddc671fa1fe7f6f00a5924669032b148c5fdecdb8cbcff08e666dfd32cc9",
+        "wheel_phase": 4,
+        "head_pose": "road_profile_open"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-011.png",
+        "duration_ms": 90,
+        "bytes": 453655,
+        "sha256": "8dff3bc742b09368dcb0f504243789e9fdf053d5c381afc90d7b39a48c5f68bd",
+        "wheel_phase": 5,
+        "head_pose": "turn_55"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-012.png",
+        "duration_ms": 90,
+        "bytes": 449898,
+        "sha256": "bb6fddc671fa1fe7f6f00a5924669032b148c5fdecdb8cbcff08e666dfd32cc9",
+        "wheel_phase": 6,
+        "head_pose": "road_profile_open"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-013.png",
+        "duration_ms": 90,
+        "bytes": 450894,
+        "sha256": "acdc70113e67daa4b54be442bb099c26954df8d8d579e4c8cd45e1ab0fc358d1",
+        "wheel_phase": 1,
+        "head_pose": "turn_40"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-014.png",
+        "duration_ms": 90,
+        "bytes": 453123,
+        "sha256": "8a09b9dd16a9709c22332eeeea967ce8fe35d2a5cb874eda3d0bab3239c40dc9",
+        "wheel_phase": 2,
+        "head_pose": "turn_25"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-015.png",
+        "duration_ms": 90,
+        "bytes": 453123,
+        "sha256": "8a09b9dd16a9709c22332eeeea967ce8fe35d2a5cb874eda3d0bab3239c40dc9",
+        "wheel_phase": 3,
+        "head_pose": "turn_25"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-016.png",
+        "duration_ms": 90,
+        "bytes": 452180,
+        "sha256": "1ba0962f74f76beebe3724be99158c21274606543a83464da860fb4b715e2be7",
+        "wheel_phase": 4,
+        "head_pose": "original"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-017.png",
+        "duration_ms": 90,
+        "bytes": 452181,
+        "sha256": "a256a50fb609420c99cf44b4fcc08003f420a3fa540f7accd0df5017226fe5cd",
+        "wheel_phase": 5,
+        "head_pose": "original"
+      },
+      {
+        "path": "frames/road-gaze-right/frame-018.png",
+        "duration_ms": 90,
+        "bytes": 452180,
+        "sha256": "1ba0962f74f76beebe3724be99158c21274606543a83464da860fb4b715e2be7",
+        "wheel_phase": 6,
+        "head_pose": "original"
+      }
+    ],
+    "road-gaze/left": [
+      {
+        "path": "frames/road-gaze-left/frame-001.png",
+        "duration_ms": 90,
+        "bytes": 452055,
+        "sha256": "14fd29a73e47ab855a3380807a86b5a3d05844b5835b19012e0e4131dd5608b5",
+        "wheel_phase": 1,
+        "head_pose": "original"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-002.png",
+        "duration_ms": 90,
+        "bytes": 452049,
+        "sha256": "a2922039d7ca231a7778010ffd0ae67090b52d13142ad564604e0eb16fd4b062",
+        "wheel_phase": 2,
+        "head_pose": "original"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-003.png",
+        "duration_ms": 90,
+        "bytes": 448224,
+        "sha256": "016d8e1d64feecaadfb5dec348085f420108b17fd72e77ad77be9c9dad342386",
+        "wheel_phase": 3,
+        "head_pose": "turn_25"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-004.png",
+        "duration_ms": 90,
+        "bytes": 451335,
+        "sha256": "7669ba364475d0795a8f38bc96c2ee6f88e97953adf39da8f26806a64d249d0f",
+        "wheel_phase": 4,
+        "head_pose": "turn_40"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-005.png",
+        "duration_ms": 90,
+        "bytes": 446060,
+        "sha256": "4779b204c1a4f8dcadd125530cc83791435f6396aca2a667f1817c0131887f93",
+        "wheel_phase": 5,
+        "head_pose": "turn_55"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-006.png",
+        "duration_ms": 90,
+        "bytes": 453127,
+        "sha256": "a813558598cc047acce57db6c331cbd43ee360b06ade89d99371fa9562db8844",
+        "wheel_phase": 6,
+        "head_pose": "road_profile_open"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-007.png",
+        "duration_ms": 90,
+        "bytes": 453127,
+        "sha256": "a813558598cc047acce57db6c331cbd43ee360b06ade89d99371fa9562db8844",
+        "wheel_phase": 1,
+        "head_pose": "road_profile_open"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-008.png",
+        "duration_ms": 90,
+        "bytes": 449407,
+        "sha256": "92d3797acabba878c7761d1f2de98fee2fec729c056d058bf216df449cc98d2a",
+        "wheel_phase": 2,
+        "head_pose": "road_profile_happy"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-009.png",
+        "duration_ms": 90,
+        "bytes": 449407,
+        "sha256": "92d3797acabba878c7761d1f2de98fee2fec729c056d058bf216df449cc98d2a",
+        "wheel_phase": 3,
+        "head_pose": "road_profile_happy"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-010.png",
+        "duration_ms": 90,
+        "bytes": 453127,
+        "sha256": "a813558598cc047acce57db6c331cbd43ee360b06ade89d99371fa9562db8844",
+        "wheel_phase": 4,
+        "head_pose": "road_profile_open"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-011.png",
+        "duration_ms": 90,
+        "bytes": 446060,
+        "sha256": "4779b204c1a4f8dcadd125530cc83791435f6396aca2a667f1817c0131887f93",
+        "wheel_phase": 5,
+        "head_pose": "turn_55"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-012.png",
+        "duration_ms": 90,
+        "bytes": 453127,
+        "sha256": "a813558598cc047acce57db6c331cbd43ee360b06ade89d99371fa9562db8844",
+        "wheel_phase": 6,
+        "head_pose": "road_profile_open"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-013.png",
+        "duration_ms": 90,
+        "bytes": 451335,
+        "sha256": "7669ba364475d0795a8f38bc96c2ee6f88e97953adf39da8f26806a64d249d0f",
+        "wheel_phase": 1,
+        "head_pose": "turn_40"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-014.png",
+        "duration_ms": 90,
+        "bytes": 448224,
+        "sha256": "016d8e1d64feecaadfb5dec348085f420108b17fd72e77ad77be9c9dad342386",
+        "wheel_phase": 2,
+        "head_pose": "turn_25"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-015.png",
+        "duration_ms": 90,
+        "bytes": 448224,
+        "sha256": "016d8e1d64feecaadfb5dec348085f420108b17fd72e77ad77be9c9dad342386",
+        "wheel_phase": 3,
+        "head_pose": "turn_25"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-016.png",
+        "duration_ms": 90,
+        "bytes": 452055,
+        "sha256": "14fd29a73e47ab855a3380807a86b5a3d05844b5835b19012e0e4131dd5608b5",
+        "wheel_phase": 4,
+        "head_pose": "original"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-017.png",
+        "duration_ms": 90,
+        "bytes": 452059,
+        "sha256": "e6993506e09c2bb1dae4a8a8f34c52190a31c61cc91cb4a27f49e31abe15d86c",
+        "wheel_phase": 5,
+        "head_pose": "original"
+      },
+      {
+        "path": "frames/road-gaze-left/frame-018.png",
+        "duration_ms": 90,
+        "bytes": 452055,
+        "sha256": "14fd29a73e47ab855a3380807a86b5a3d05844b5835b19012e0e4131dd5608b5",
+        "wheel_phase": 6,
+        "head_pose": "original"
+      }
+    ]
+  },
+  "repair_scope": [
+    "head_neck_composite_discontinuity",
+    "duplicate_ears",
+    "detached_chin_fragment",
+    "wheel_phase_reuse",
+    "head_vertical_anchor_jitter"
+  ],
+  "superseded_by": "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v12",
+  "rejected_reason": [
+    "owner_rejected_head_only_rebuild_and_composite_strategy",
+    "head_motion_still_visually_unstable"
+  ]
+}

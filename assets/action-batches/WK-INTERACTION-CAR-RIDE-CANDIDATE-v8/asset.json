@@ -1,0 +1,92 @@
+{
+    "asset_id":  "WK-INTERACTION-CAR-RIDE-CANDIDATE-v8",
+    "parent_asset":  "WK-INTERACTION-CAR-RIDE-CANDIDATE-v7",
+    "status":  "runtime-approved",
+    "revision":  "complete-start-brake-adjacent-turn-transitions",
+    "canvas":  {
+                   "width":  1024,
+                   "height":  1024,
+                   "format":  "PNG",
+                   "color_mode":  "RGBA",
+                   "normal_subject_height_px":  605,
+                   "transition_subject_height_range_px":  [
+                                                              599,
+                                                              607
+                                                          ],
+                   "wheel_baseline_y":  900
+               },
+    "directions":  [
+                       "right",
+                       "front-right",
+                       "front",
+                       "front-left",
+                       "left",
+                       "rear-left",
+                       "rear",
+                       "rear-right"
+                   ],
+    "direction_frames_per_state":  6,
+    "expressions":  [
+                        "head-tilt",
+                        "happy-squint",
+                        "side-glance",
+                        "curious-gaze",
+                        "knowing-look"
+                    ],
+    "expression_frames_per_state":  6,
+    "transitions":  {
+                        "frame_duration_ms":  90,
+                        "start":  {
+                                      "states":  8,
+                                      "frames_per_state":  6,
+                                      "total_frames":  48
+                                  },
+                        "brake":  {
+                                      "states":  8,
+                                      "frames_per_state":  6,
+                                      "total_frames":  48
+                                  },
+                        "turn":  {
+                                     "adjacent_midpoint_masters":  8,
+                                     "directed_sequences":  16,
+                                     "frames_per_sequence":  3,
+                                     "total_frames":  48,
+                                     "direction_ring":  [
+                                                            "right",
+                                                            "front-right",
+                                                            "front",
+                                                            "front-left",
+                                                            "left",
+                                                            "rear-left",
+                                                            "rear",
+                                                            "rear-right"
+                                                        ]
+                                 }
+                    },
+    "quality_gate":  {
+                         "whole_subject_frames":  true,
+                         "local_upper_body_composite":  false,
+                         "crossfade":  false,
+                         "ghosting":  false,
+                         "motion_blur":  false,
+                         "checkerboard_baked_into_png":  false,
+                         "green_spill":  false,
+                         "directions_and_expressions_unchanged_from_v7":  true,
+                         "boarding_or_exit_assets_included":  false
+                     },
+    "runtime_policy":  {
+                           "visual_approved":  true,
+                           "windows_owner_visual_qa":  "passed",
+                           "windows_owner_visual_qa_date":  "2026-08-16",
+                           "runtime_validation":  "passed_windows_renderer_qa",
+                           "runtime_approved":  true,
+                           "runtime_use":  true,
+                           "prototype_use":  false,
+                           "production_asset":  true,
+                           "approved_scope":  "manual_owner_play_menu_car_ride_only",
+                           "autonomous_tick_allowed":  false,
+                           "dialogue_allowed":  false,
+                           "model_route_allowed":  false,
+                           "command_allowed":  false
+                       }
+}

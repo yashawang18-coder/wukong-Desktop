@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "batch_id": "WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4",
+  "asset_id": "WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4",
+  "candidate_profile": "autonomous_prone_head_microevent_v4_approved",
+  "owner_preview_approved": true,
+  "visual_approved": true,
+  "runtime_validation": "passed_windows_renderer_qa",
+  "runtime_approved": true,
+  "runtime_use": true,
+  "production_asset": true,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": true,
+  "allowed_sources": ["AutonomousTick", "DeveloperPreview"],
+  "internal_handoff_sha256": "0d8f1d4b86720d1e15aee644f6a450596f025de5b55f4e697a4cb64d39b70bf2",
+  "current_runtime_prone_anchor_exact": false,
+  "approved_runtime_profile": "non_front_prone_owner_validated",
+  "frame_inventory": [
+    {"path":"frames/head-lower/frame-001.png","width":1024,"height":1024,"mode":"RGBA","bytes":511761,"sha256":"254b75d53f355be23b4bd8258f62465441e8dbac6d45943bd0f9a9e2ca64df04"},
+    {"path":"frames/head-lower/frame-002.png","width":1024,"height":1024,"mode":"RGBA","bytes":511761,"sha256":"254b75d53f355be23b4bd8258f62465441e8dbac6d45943bd0f9a9e2ca64df04"},
+    {"path":"frames/head-lower/frame-003.png","width":1024,"height":1024,"mode":"RGBA","bytes":469421,"sha256":"baf8e7d2e2524b590ead0db1b9bca09b3efdd8da781b24c51e0dadbcdbf98afc"},
+    {"path":"frames/head-lower/frame-004.png","width":1024,"height":1024,"mode":"RGBA","bytes":469421,"sha256":"baf8e7d2e2524b590ead0db1b9bca09b3efdd8da781b24c51e0dadbcdbf98afc"},
+    {"path":"frames/head-lower/frame-005.png","width":1024,"height":1024,"mode":"RGBA","bytes":457298,"sha256":"a145516ee32509f6c481b18b993a6a2f68650743b24556c379f9b6c162c5442e"},
+    {"path":"frames/head-lower/frame-006.png","width":1024,"height":1024,"mode":"RGBA","bytes":457298,"sha256":"a145516ee32509f6c481b18b993a6a2f68650743b24556c379f9b6c162c5442e"},
+    {"path":"frames/head-lower/frame-007.png","width":1024,"height":1024,"mode":"RGBA","bytes":477118,"sha256":"4e95b776004e9a1646419a68eae082a23676b9fe9d104ba975d890584b30d79c"},
+    {"path":"frames/head-lower/frame-008.png","width":1024,"height":1024,"mode":"RGBA","bytes":477118,"sha256":"4e95b776004e9a1646419a68eae082a23676b9fe9d104ba975d890584b30d79c"},
+    {"path":"frames/head-lower/frame-009.png","width":1024,"height":1024,"mode":"RGBA","bytes":469100,"sha256":"563a929716d0aa8c6f023e1625a6fa0a1c1208697dc2c9a1b8e7c0e04c68228f"},
+    {"path":"frames/head-lower/frame-010.png","width":1024,"height":1024,"mode":"RGBA","bytes":469100,"sha256":"563a929716d0aa8c6f023e1625a6fa0a1c1208697dc2c9a1b8e7c0e04c68228f"},
+    {"path":"frames/head-lower/frame-011.png","width":1024,"height":1024,"mode":"RGBA","bytes":476347,"sha256":"0d8f1d4b86720d1e15aee644f6a450596f025de5b55f4e697a4cb64d39b70bf2"},
+    {"path":"frames/head-lower/frame-012.png","width":1024,"height":1024,"mode":"RGBA","bytes":476347,"sha256":"0d8f1d4b86720d1e15aee644f6a450596f025de5b55f4e697a4cb64d39b70bf2"},
+    {"path":"frames/head-turn/frame-001.png","width":1024,"height":1024,"mode":"RGBA","bytes":476347,"sha256":"0d8f1d4b86720d1e15aee644f6a450596f025de5b55f4e697a4cb64d39b70bf2"},
+    {"path":"frames/head-turn/frame-002.png","width":1024,"height":1024,"mode":"RGBA","bytes":476347,"sha256":"0d8f1d4b86720d1e15aee644f6a450596f025de5b55f4e697a4cb64d39b70bf2"},
+    {"path":"frames/head-turn/frame-003.png","width":1024,"height":1024,"mode":"RGBA","bytes":406142,"sha256":"72704bde607a1518658e927078228891cff6ff63ee97515dde7e33e44d4b5910"},
+    {"path":"frames/head-turn/frame-004.png","width":1024,"height":1024,"mode":"RGBA","bytes":406142,"sha256":"72704bde607a1518658e927078228891cff6ff63ee97515dde7e33e44d4b5910"},
+    {"path":"frames/head-turn/frame-005.png","width":1024,"height":1024,"mode":"RGBA","bytes":416191,"sha256":"91d2a1103920c10c6235bdbdb0b54394fb01cb0ca098789f8e014df7882b5952"},
+    {"path":"frames/head-turn/frame-006.png","width":1024,"height":1024,"mode":"RGBA","bytes":416191,"sha256":"91d2a1103920c10c6235bdbdb0b54394fb01cb0ca098789f8e014df7882b5952"},
+    {"path":"frames/head-turn/frame-007.png","width":1024,"height":1024,"mode":"RGBA","bytes":417569,"sha256":"56552078bf957c7677dd9a6106dedead0753e54d5236aae9779cb351419bae5d"},
+    {"path":"frames/head-turn/frame-008.png","width":1024,"height":1024,"mode":"RGBA","bytes":417569,"sha256":"56552078bf957c7677dd9a6106dedead0753e54d5236aae9779cb351419bae5d"},
+    {"path":"frames/head-turn/frame-009.png","width":1024,"height":1024,"mode":"RGBA","bytes":413585,"sha256":"d6133d0d518de0c28c86c3f5c3eedd44753d0dc040d031b53756945cdc6d503c"},
+    {"path":"frames/head-turn/frame-010.png","width":1024,"height":1024,"mode":"RGBA","bytes":413585,"sha256":"d6133d0d518de0c28c86c3f5c3eedd44753d0dc040d031b53756945cdc6d503c"},
+    {"path":"frames/head-turn/frame-011.png","width":1024,"height":1024,"mode":"RGBA","bytes":416893,"sha256":"b082d3c400f921b58d742be51cad5f9b07536fa0136a929fd761bf109f19ff70"},
+    {"path":"frames/head-turn/frame-012.png","width":1024,"height":1024,"mode":"RGBA","bytes":416893,"sha256":"b082d3c400f921b58d742be51cad5f9b07536fa0136a929fd761bf109f19ff70"}
+  ],
+  "actions": [
+    {
+      "behavior_id": "wk.candidate.daily.prone_head_lower_turn_v4",
+      "display_name": "趴姿低头转头 v4",
+      "description": "One-shot closed prone microevent: lower head, turn aside, return to low-head anchor, then raise head.",
+      "from_pose": "prone.awake.diagonal.high_head.candidate_v4",
+      "to_pose": "prone.awake.diagonal.high_head.candidate_v4",
+      "direction": "front-left-to-left-and-back",
+      "frame_count": 44,
+      "frame_duration_ms": 150,
+      "interruptible": true,
+      "visual_approved": true,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "production_asset": true,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": true,
+      "allowed_sources": ["AutonomousTick", "DeveloperPreview"],
+      "phases": [
+        {"name":"intro","loop":false,"frames":[
+          {"path":"frames/head-lower/frame-001.png","duration_ms":150},{"path":"frames/head-lower/frame-002.png","duration_ms":150},{"path":"frames/head-lower/frame-003.png","duration_ms":150},{"path":"frames/head-lower/frame-004.png","duration_ms":150},{"path":"frames/head-lower/frame-005.png","duration_ms":150},{"path":"frames/head-lower/frame-006.png","duration_ms":150},{"path":"frames/head-lower/frame-007.png","duration_ms":150},{"path":"frames/head-lower/frame-008.png","duration_ms":150},{"path":"frames/head-lower/frame-009.png","duration_ms":150},{"path":"frames/head-lower/frame-010.png","duration_ms":150},{"path":"frames/head-lower/frame-011.png","duration_ms":350},{"path":"frames/head-lower/frame-012.png","duration_ms":350}
+        ]},
+        {"name":"action","loop":false,"frames":[
+          {"path":"frames/head-turn/frame-001.png","duration_ms":150},{"path":"frames/head-turn/frame-002.png","duration_ms":150},{"path":"frames/head-turn/frame-003.png","duration_ms":150},{"path":"frames/head-turn/frame-004.png","duration_ms":150},{"path":"frames/head-turn/frame-005.png","duration_ms":150},{"path":"frames/head-turn/frame-006.png","duration_ms":150},{"path":"frames/head-turn/frame-007.png","duration_ms":150},{"path":"frames/head-turn/frame-008.png","duration_ms":150},{"path":"frames/head-turn/frame-009.png","duration_ms":150},{"path":"frames/head-turn/frame-010.png","duration_ms":150},{"path":"frames/head-turn/frame-011.png","duration_ms":350},{"path":"frames/head-turn/frame-012.png","duration_ms":350},
+          {"path":"frames/head-turn/frame-010.png","duration_ms":150},{"path":"frames/head-turn/frame-009.png","duration_ms":150},{"path":"frames/head-turn/frame-008.png","duration_ms":150},{"path":"frames/head-turn/frame-007.png","duration_ms":150},{"path":"frames/head-turn/frame-006.png","duration_ms":150},{"path":"frames/head-turn/frame-005.png","duration_ms":150},{"path":"frames/head-turn/frame-004.png","duration_ms":150},{"path":"frames/head-turn/frame-003.png","duration_ms":150},{"path":"frames/head-turn/frame-002.png","duration_ms":350},{"path":"frames/head-turn/frame-001.png","duration_ms":350}
+        ]},
+        {"name":"exit","loop":false,"frames":[
+          {"path":"frames/head-lower/frame-010.png","duration_ms":150},{"path":"frames/head-lower/frame-009.png","duration_ms":150},{"path":"frames/head-lower/frame-008.png","duration_ms":150},{"path":"frames/head-lower/frame-007.png","duration_ms":150},{"path":"frames/head-lower/frame-006.png","duration_ms":150},{"path":"frames/head-lower/frame-005.png","duration_ms":150},{"path":"frames/head-lower/frame-004.png","duration_ms":150},{"path":"frames/head-lower/frame-003.png","duration_ms":150},{"path":"frames/head-lower/frame-002.png","duration_ms":350},{"path":"frames/head-lower/frame-001.png","duration_ms":350}
+        ]}
+      ]
+    }
+  ]
+}

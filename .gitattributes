@@ -1,0 +1,12 @@
+* text=auto eol=lf
+
+*.png binary
+*.gif binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.zip binary
+
+# Preserve the frozen approved package bytes across Windows checkouts.
+assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED/** -text
+assets/action-batches/WK-AUTONOMOUS-PRONE-IDLE-FRONT-CANDIDATE-v4/** -text

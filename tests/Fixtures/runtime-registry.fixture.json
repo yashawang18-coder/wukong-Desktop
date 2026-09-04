@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "registry_version": 1,
+  "bindings": [
+    {
+      "behavior_id": "wk.interaction.prone_touch",
+      "asset_id": "fixture.prone_touch",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "fallback_behavior_id": "wk.core.prone_idle",
+      "normal_path": ["Intro", "Loop", "Exit"],
+      "interrupt_path": ["InterruptExit", "Fallback"]
+    },
+    {
+      "behavior_id": "wk.core.prone_idle",
+      "asset_id": "fixture.prone_idle",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "normal_path": ["Loop"],
+      "interrupt_path": ["Fallback"]
+    }
+  ]
+}

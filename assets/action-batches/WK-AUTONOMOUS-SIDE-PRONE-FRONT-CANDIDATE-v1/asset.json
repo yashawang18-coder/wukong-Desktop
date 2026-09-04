@@ -1,0 +1,10 @@
+{
+  "batch_id": "WK-AUTONOMOUS-SIDE-PRONE-FRONT-CANDIDATE-v1",
+  "status": "production_candidate_owner_qa_pending",
+  "runtime_validation": "pending_owner_visual_and_windows_renderer_qa",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
+  "autonomous_binding_enabled": false,
+  "bridge_policy": "rear-look-to-front and front-to-rear bridges are not yet approved; no hard splice"
+}

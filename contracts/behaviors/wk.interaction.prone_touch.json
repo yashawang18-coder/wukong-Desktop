@@ -2,7 +2,12 @@
   "schema_version": 1,
   "behavior_id": "wk.interaction.prone_touch",
   "phase": "P0",
-  "availability": "blocked_pending_renderer_qa",
+  "availability": "deprecated_owner_rejected",
+  "deprecated": true,
+  "deprecated_reason": "owner_rejected_and_removed_from_use_2026_08_26",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "fallback_eligible": false,
   "eligibility": {
     "allowed_poses": ["prone.awake.left_front"],
     "equipment": ["none"]

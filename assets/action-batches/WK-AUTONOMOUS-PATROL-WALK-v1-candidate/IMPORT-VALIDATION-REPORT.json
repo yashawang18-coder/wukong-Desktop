@@ -1,0 +1,17 @@
+{
+  "source_zip": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate.zip",
+  "source_zip_sha256": "a96ff60c48c0fe79e8c7a20d1d62b1658eebc8175e959b70d6b81f40c4f958ed",
+  "source_file_count": 34,
+  "runtime_png_count": 24,
+  "sequences": 2,
+  "sha_report_match": true,
+  "exact_mirror_pairs": 12,
+  "canvas": "1024x1024 RGBA",
+  "transparent_edges": true,
+  "baseline_y_values": [
+    890,
+    892,
+    894
+  ],
+  "result": "passed_offline_import_validation"
+}

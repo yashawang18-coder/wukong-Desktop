@@ -1,0 +1,1740 @@
+{
+  "schema_version": 1,
+  "asset_id": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
+  "asset_version": 10,
+  "asset_stage": "runtime-candidate",
+  "source_package": "wukong-sleep-runtime-final-transparent-v10.zip",
+  "source_zip_sha256": "174350b0aaa7d01a6639d8ce189fb7a12d3541e5dc5ce4460b1461d8f0d1c701",
+  "source_frame_count": 48,
+  "runtime_frame_count": 48,
+  "sequence_count": 8,
+  "source_png_byte_identity": true,
+  "owner_preview_approved": false,
+  "owner_material_visual_confirmed": false,
+  "visual_approved": false,
+  "automated_validation": "passed_import_integrity",
+  "runtime_validation": "pending_owner_windows_renderer_qa",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": false,
+  "normal_runtime_available": false,
+  "allowed_sources": [
+    "DeveloperPreview"
+  ],
+  "runtime_render_scale": 0.92,
+  "current_runtime_prone_bridge": {
+    "runtime_anchor_path": "assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2/frames/microloops/prone-idle/01.png",
+    "runtime_anchor_sha256": "607aee29a311ab45e47df774d1d60efb2d6d8e6ee79f6ba0bb64db80b4c44f44",
+    "runtime_alpha_bbox": [
+      110,
+      418,
+      922,
+      931
+    ],
+    "candidate_f01_alpha_bbox": [
+      42,
+      302,
+      998,
+      857
+    ],
+    "candidate_f01_bytes_preserved": true,
+    "runtime_render_scale": 0.92,
+    "scaled_visible_height_px": 510.6,
+    "runtime_visible_height_px": 513,
+    "windows_transition_review": "pending"
+  },
+  "batch_id": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
+  "candidate_profile": "sleep-runtime-final-v10-owner-review-pending",
+  "visual_approval_scope": "not yet approved; v10 source frames are awaiting owner Windows review",
+  "timing_source": "existing stable sleep preview semantics; source v10 ZIP contains PNG files only",
+  "sequence_rules": {
+    "main_lifecycle_includes_roll": true,
+    "append_prone_to_side_roll_after_main": false,
+    "each_sleep_entry_selects_one_compatible_view": true,
+    "special_view_loops_require_compatible_pose_or_offscreen_reentry": true,
+    "hard_cut_between_incompatible_views": false,
+    "reverse_main_as_wake": false,
+    "approved_wake_sequence_available": false,
+    "missing_wake_result": "Deferred_or_MissingAsset",
+    "legacy_sleep_visual_fallback_allowed": false
+  },
+  "frame_inventory": [
+    {
+      "path": "frames/01-main-sleep-lifecycle/F01.png",
+      "source_entry": "01-main-sleep-lifecycle/F01.png",
+      "source_sha256": "b81f36ea611c1f98a1d43cacf216bebd34ebc44fe9ca540f12cf0a582aec169b",
+      "bytes": 483547,
+      "sha256": "b81f36ea611c1f98a1d43cacf216bebd34ebc44fe9ca540f12cf0a582aec169b",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        42,
+        302,
+        998,
+        857
+      ],
+      "visible_width": 956,
+      "visible_height": 555,
+      "visible_center_x": 519.5,
+      "visible_center_y": 579.0,
+      "ground_baseline_y": 856,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F02.png",
+      "source_entry": "01-main-sleep-lifecycle/F02.png",
+      "source_sha256": "b0fbe44514649a7f677d318b26df25d72846db399d74d601271e1a2211ec967f",
+      "bytes": 462960,
+      "sha256": "b0fbe44514649a7f677d318b26df25d72846db399d74d601271e1a2211ec967f",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        43,
+        422,
+        990,
+        867
+      ],
+      "visible_width": 947,
+      "visible_height": 445,
+      "visible_center_x": 516.0,
+      "visible_center_y": 644.0,
+      "ground_baseline_y": 866,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F03.png",
+      "source_entry": "01-main-sleep-lifecycle/F03.png",
+      "source_sha256": "b05655e6e1c26c6d4edda000e9bbf34fcea413efe991faa6091bdac6733e16bf",
+      "bytes": 462273,
+      "sha256": "b05655e6e1c26c6d4edda000e9bbf34fcea413efe991faa6091bdac6733e16bf",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        42,
+        427,
+        983,
+        886
+      ],
+      "visible_width": 941,
+      "visible_height": 459,
+      "visible_center_x": 512.0,
+      "visible_center_y": 656.0,
+      "ground_baseline_y": 885,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F04.png",
+      "source_entry": "01-main-sleep-lifecycle/F04.png",
+      "source_sha256": "5acbe751c142f7ebcc834a6061756234558100f33bf207a1190ca5fed81a3fb1",
+      "bytes": 456806,
+      "sha256": "5acbe751c142f7ebcc834a6061756234558100f33bf207a1190ca5fed81a3fb1",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        37,
+        448,
+        980,
+        897
+      ],
+      "visible_width": 943,
+      "visible_height": 449,
+      "visible_center_x": 508.0,
+      "visible_center_y": 672.0,
+      "ground_baseline_y": 896,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F05.png",
+      "source_entry": "01-main-sleep-lifecycle/F05.png",
+      "source_sha256": "e5f8d2cb4c1f7b569c20adfcb5cd20aeb74ef48ed4b66a5261bc108dcc172f57",
+      "bytes": 440352,
+      "sha256": "e5f8d2cb4c1f7b569c20adfcb5cd20aeb74ef48ed4b66a5261bc108dcc172f57",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        61,
+        450,
+        987,
+        890
+      ],
+      "visible_width": 926,
+      "visible_height": 440,
+      "visible_center_x": 523.5,
+      "visible_center_y": 669.5,
+      "ground_baseline_y": 889,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F06.png",
+      "source_entry": "01-main-sleep-lifecycle/F06.png",
+      "source_sha256": "26ccbfbe3ceb8e5bde901c952910665d20f9ec270dceaae637d4513bd6d17c5b",
+      "bytes": 424555,
+      "sha256": "26ccbfbe3ceb8e5bde901c952910665d20f9ec270dceaae637d4513bd6d17c5b",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        70,
+        421,
+        990,
+        854
+      ],
+      "visible_width": 920,
+      "visible_height": 433,
+      "visible_center_x": 529.5,
+      "visible_center_y": 637.0,
+      "ground_baseline_y": 853,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F07.png",
+      "source_entry": "01-main-sleep-lifecycle/F07.png",
+      "source_sha256": "1eb640e82a6b2535a8cba0d7115a742af54e90923485131556862378c17bcc3b",
+      "bytes": 423522,
+      "sha256": "1eb640e82a6b2535a8cba0d7115a742af54e90923485131556862378c17bcc3b",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        72,
+        420,
+        985,
+        858
+      ],
+      "visible_width": 913,
+      "visible_height": 438,
+      "visible_center_x": 528.0,
+      "visible_center_y": 638.5,
+      "ground_baseline_y": 857,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F08.png",
+      "source_entry": "01-main-sleep-lifecycle/F08.png",
+      "source_sha256": "263f25cc73774c0c3691f63f574ad85452df282efbce1a36611a2984af2b5fa2",
+      "bytes": 401236,
+      "sha256": "263f25cc73774c0c3691f63f574ad85452df282efbce1a36611a2984af2b5fa2",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        50,
+        433,
+        971,
+        842
+      ],
+      "visible_width": 921,
+      "visible_height": 409,
+      "visible_center_x": 510.0,
+      "visible_center_y": 637.0,
+      "ground_baseline_y": 841,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F09.png",
+      "source_entry": "01-main-sleep-lifecycle/F09.png",
+      "source_sha256": "f0a5c6d4c6395fd96afa4fd3667453da9dac7d09e4aec852190378fc769c76bd",
+      "bytes": 375647,
+      "sha256": "f0a5c6d4c6395fd96afa4fd3667453da9dac7d09e4aec852190378fc769c76bd",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        68,
+        436,
+        949,
+        812
+      ],
+      "visible_width": 881,
+      "visible_height": 376,
+      "visible_center_x": 508.0,
+      "visible_center_y": 623.5,
+      "ground_baseline_y": 811,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F10.png",
+      "source_entry": "01-main-sleep-lifecycle/F10.png",
+      "source_sha256": "672b82d97113ad1d5a6af446960270b6d32534cc8e8254d5711fa7e595af3f5a",
+      "bytes": 377224,
+      "sha256": "672b82d97113ad1d5a6af446960270b6d32534cc8e8254d5711fa7e595af3f5a",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        54,
+        441,
+        951,
+        815
+      ],
+      "visible_width": 897,
+      "visible_height": 374,
+      "visible_center_x": 502.0,
+      "visible_center_y": 627.5,
+      "ground_baseline_y": 814,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F11.png",
+      "source_entry": "01-main-sleep-lifecycle/F11.png",
+      "source_sha256": "fe41696a227b22b3b994e29732d28b7bfb8e305a631580eaac95c3bc7ed9dae2",
+      "bytes": 379744,
+      "sha256": "fe41696a227b22b3b994e29732d28b7bfb8e305a631580eaac95c3bc7ed9dae2",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        51,
+        453,
+        963,
+        826
+      ],
+      "visible_width": 912,
+      "visible_height": 373,
+      "visible_center_x": 506.5,
+      "visible_center_y": 639.0,
+      "ground_baseline_y": 825,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F12.png",
+      "source_entry": "01-main-sleep-lifecycle/F12.png",
+      "source_sha256": "a59ba31b1644457fa8ca83a7bd1541e436d4769b29b35af3d4eac7fbcdd1eb8f",
+      "bytes": 384585,
+      "sha256": "a59ba31b1644457fa8ca83a7bd1541e436d4769b29b35af3d4eac7fbcdd1eb8f",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        39,
+        468,
+        974,
+        840
+      ],
+      "visible_width": 935,
+      "visible_height": 372,
+      "visible_center_x": 506.0,
+      "visible_center_y": 653.5,
+      "ground_baseline_y": 839,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F13.png",
+      "source_entry": "01-main-sleep-lifecycle/F13.png",
+      "source_sha256": "cf5f2a9640b8ce543bc6a6a6e4502ad80258a012edf42e0565289730604026bf",
+      "bytes": 376356,
+      "sha256": "cf5f2a9640b8ce543bc6a6a6e4502ad80258a012edf42e0565289730604026bf",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        59,
+        440,
+        983,
+        815
+      ],
+      "visible_width": 924,
+      "visible_height": 375,
+      "visible_center_x": 520.5,
+      "visible_center_y": 627.0,
+      "ground_baseline_y": 814,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F14.png",
+      "source_entry": "01-main-sleep-lifecycle/F14.png",
+      "source_sha256": "f40205146af84070b723633ec354bbc6ea2c93f80bc1bed9c2b2d5da8944f729",
+      "bytes": 359544,
+      "sha256": "f40205146af84070b723633ec354bbc6ea2c93f80bc1bed9c2b2d5da8944f729",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        40,
+        433,
+        974,
+        802
+      ],
+      "visible_width": 934,
+      "visible_height": 369,
+      "visible_center_x": 506.5,
+      "visible_center_y": 617.0,
+      "ground_baseline_y": 801,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F15.png",
+      "source_entry": "01-main-sleep-lifecycle/F15.png",
+      "source_sha256": "114b5446258a57e4c932902d3767c0e3982ca3428c817c2b26b592975d385b34",
+      "bytes": 368844,
+      "sha256": "114b5446258a57e4c932902d3767c0e3982ca3428c817c2b26b592975d385b34",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        42,
+        454,
+        995,
+        809
+      ],
+      "visible_width": 953,
+      "visible_height": 355,
+      "visible_center_x": 518.0,
+      "visible_center_y": 631.0,
+      "ground_baseline_y": 808,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/01-main-sleep-lifecycle/F16.png",
+      "source_entry": "01-main-sleep-lifecycle/F16.png",
+      "source_sha256": "20cdcd485e0be7e66370298b7eb0a857ef218076d3a108917d0c2d7aaee8837e",
+      "bytes": 367445,
+      "sha256": "20cdcd485e0be7e66370298b7eb0a857ef218076d3a108917d0c2d7aaee8837e",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        29,
+        458,
+        996,
+        821
+      ],
+      "visible_width": 967,
+      "visible_height": 363,
+      "visible_center_x": 512.0,
+      "visible_center_y": 639.0,
+      "ground_baseline_y": 820,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/02-prone-to-side-roll/F01.png",
+      "source_entry": "02-prone-to-side-roll/F01.png",
+      "source_sha256": "707537e58a8760837b637d223e9d85013d3ef4f33391440e45c0c3973bf9ab10",
+      "bytes": 449504,
+      "sha256": "707537e58a8760837b637d223e9d85013d3ef4f33391440e45c0c3973bf9ab10",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        49,
+        415,
+        979,
+        859
+      ],
+      "visible_width": 930,
+      "visible_height": 444,
+      "visible_center_x": 513.5,
+      "visible_center_y": 636.5,
+      "ground_baseline_y": 858,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/02-prone-to-side-roll/F02.png",
+      "source_entry": "02-prone-to-side-roll/F02.png",
+      "source_sha256": "ce186ad93a3db84083775c008c7709f2b722afc9e282f338e904b5b34c560746",
+      "bytes": 446863,
+      "sha256": "ce186ad93a3db84083775c008c7709f2b722afc9e282f338e904b5b34c560746",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        51,
+        418,
+        983,
+        859
+      ],
+      "visible_width": 932,
+      "visible_height": 441,
+      "visible_center_x": 516.5,
+      "visible_center_y": 638.0,
+      "ground_baseline_y": 858,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/02-prone-to-side-roll/F03.png",
+      "source_entry": "02-prone-to-side-roll/F03.png",
+      "source_sha256": "b584a4bf1419fe65687f39eaf015e9f6454f0851389d2fc986cdf35b7672228a",
+      "bytes": 442829,
+      "sha256": "b584a4bf1419fe65687f39eaf015e9f6454f0851389d2fc986cdf35b7672228a",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        48,
+        425,
+        980,
+        858
+      ],
+      "visible_width": 932,
+      "visible_height": 433,
+      "visible_center_x": 513.5,
+      "visible_center_y": 641.0,
+      "ground_baseline_y": 857,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/02-prone-to-side-roll/F04.png",
+      "source_entry": "02-prone-to-side-roll/F04.png",
+      "source_sha256": "de40313d861af13f9204172c7eb177602b9085ab2c51076d2ad93b796bb09523",
+      "bytes": 414206,
+      "sha256": "de40313d861af13f9204172c7eb177602b9085ab2c51076d2ad93b796bb09523",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        50,
+        464,
+        982,
+        852
+      ],
+      "visible_width": 932,
+      "visible_height": 388,
+      "visible_center_x": 515.5,
+      "visible_center_y": 657.5,
+      "ground_baseline_y": 851,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/02-prone-to-side-roll/F05.png",
+      "source_entry": "02-prone-to-side-roll/F05.png",
+      "source_sha256": "82425f33f2d6571d32aa73ca53b3e667b74c8027db1ff0c2b178eadcec989af3",
+      "bytes": 401774,
+      "sha256": "82425f33f2d6571d32aa73ca53b3e667b74c8027db1ff0c2b178eadcec989af3",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        50,
+        442,
+        969,
+        812
+      ],
+      "visible_width": 919,
+      "visible_height": 370,
+      "visible_center_x": 509.0,
+      "visible_center_y": 626.5,
+      "ground_baseline_y": 811,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/02-prone-to-side-roll/F06.png",
+      "source_entry": "02-prone-to-side-roll/F06.png",
+      "source_sha256": "313ebe5a4ca27bb67cb57a79de02e1a712a6262e2c183147e33b513265d6abd4",
+      "bytes": 407274,
+      "sha256": "313ebe5a4ca27bb67cb57a79de02e1a712a6262e2c183147e33b513265d6abd4",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        48,
+        435,
+        972,
+        806
+      ],
+      "visible_width": 924,
+      "visible_height": 371,
+      "visible_center_x": 509.5,
+      "visible_center_y": 620.0,
+      "ground_baseline_y": 805,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/02-prone-to-side-roll/F07.png",
+      "source_entry": "02-prone-to-side-roll/F07.png",
+      "source_sha256": "e24a378f61146e07b4744a19e18a06a76fc819e1c84b1cee105abda7d001fee1",
+      "bytes": 403743,
+      "sha256": "e24a378f61146e07b4744a19e18a06a76fc819e1c84b1cee105abda7d001fee1",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        46,
+        442,
+        974,
+        809
+      ],
+      "visible_width": 928,
+      "visible_height": 367,
+      "visible_center_x": 509.5,
+      "visible_center_y": 625.0,
+      "ground_baseline_y": 808,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/02-prone-to-side-roll/F08.png",
+      "source_entry": "02-prone-to-side-roll/F08.png",
+      "source_sha256": "2b30d775b5dd38d4221e292a226201475a94cb6ad49e70e974b3906d2070b415",
+      "bytes": 387329,
+      "sha256": "2b30d775b5dd38d4221e292a226201475a94cb6ad49e70e974b3906d2070b415",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        468,
+        974,
+        831
+      ],
+      "visible_width": 927,
+      "visible_height": 363,
+      "visible_center_x": 510.0,
+      "visible_center_y": 649.0,
+      "ground_baseline_y": 830,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/03-sprawled-front-breath/F01.png",
+      "source_entry": "03-sprawled-front-breath/F01.png",
+      "source_sha256": "a4935960f0279d29f3b24457b08382ebe0fa095d84baf298441d3199d007e9eb",
+      "bytes": 389403,
+      "sha256": "a4935960f0279d29f3b24457b08382ebe0fa095d84baf298441d3199d007e9eb",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        98,
+        317,
+        928,
+        841
+      ],
+      "visible_width": 830,
+      "visible_height": 524,
+      "visible_center_x": 512.5,
+      "visible_center_y": 578.5,
+      "ground_baseline_y": 840,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 19
+    },
+    {
+      "path": "frames/03-sprawled-front-breath/F02.png",
+      "source_entry": "03-sprawled-front-breath/F02.png",
+      "source_sha256": "e6027a6afef699bc69efe125a4f62ccf897279ddcc37eff0c4176ac5822926a8",
+      "bytes": 390119,
+      "sha256": "e6027a6afef699bc69efe125a4f62ccf897279ddcc37eff0c4176ac5822926a8",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        98,
+        316,
+        928,
+        841
+      ],
+      "visible_width": 830,
+      "visible_height": 525,
+      "visible_center_x": 512.5,
+      "visible_center_y": 578.0,
+      "ground_baseline_y": 840,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 6
+    },
+    {
+      "path": "frames/03-sprawled-front-breath/F03.png",
+      "source_entry": "03-sprawled-front-breath/F03.png",
+      "source_sha256": "f79bf6b18f006bde1999ee847221926a0074f5d5137b8978b8c843fb7cd11b50",
+      "bytes": 390335,
+      "sha256": "f79bf6b18f006bde1999ee847221926a0074f5d5137b8978b8c843fb7cd11b50",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        98,
+        315,
+        928,
+        841
+      ],
+      "visible_width": 830,
+      "visible_height": 526,
+      "visible_center_x": 512.5,
+      "visible_center_y": 577.5,
+      "ground_baseline_y": 840,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 14
+    },
+    {
+      "path": "frames/03-sprawled-front-breath/F04.png",
+      "source_entry": "03-sprawled-front-breath/F04.png",
+      "source_sha256": "6333fbf28d9d1723200ecb0ae971b1b5bd23f700a1a72fab4f9cd2a5811b695b",
+      "bytes": 389374,
+      "sha256": "6333fbf28d9d1723200ecb0ae971b1b5bd23f700a1a72fab4f9cd2a5811b695b",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        98,
+        316,
+        928,
+        841
+      ],
+      "visible_width": 830,
+      "visible_height": 525,
+      "visible_center_x": 512.5,
+      "visible_center_y": 578.0,
+      "ground_baseline_y": 840,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 17
+    },
+    {
+      "path": "frames/04-sprawled-left-side-breath/F01.png",
+      "source_entry": "04-sprawled-left-side-breath/F01.png",
+      "source_sha256": "e30b97c6a5c913107fe0383bc93f503ffb6542900024d1fc14c96a32078ee808",
+      "bytes": 362016,
+      "sha256": "e30b97c6a5c913107fe0383bc93f503ffb6542900024d1fc14c96a32078ee808",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        33,
+        483,
+        991,
+        841
+      ],
+      "visible_width": 958,
+      "visible_height": 358,
+      "visible_center_x": 511.5,
+      "visible_center_y": 661.5,
+      "ground_baseline_y": 840,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/04-sprawled-left-side-breath/F02.png",
+      "source_entry": "04-sprawled-left-side-breath/F02.png",
+      "source_sha256": "76f98a2ef2b3464963b3373c5bfcaf67a0c396f7d426d76d6e5c3a2df335d7b1",
+      "bytes": 362281,
+      "sha256": "76f98a2ef2b3464963b3373c5bfcaf67a0c396f7d426d76d6e5c3a2df335d7b1",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        33,
+        488,
+        993,
+        842
+      ],
+      "visible_width": 960,
+      "visible_height": 354,
+      "visible_center_x": 512.5,
+      "visible_center_y": 664.5,
+      "ground_baseline_y": 841,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/04-sprawled-left-side-breath/F03.png",
+      "source_entry": "04-sprawled-left-side-breath/F03.png",
+      "source_sha256": "4c96e17b6ab8c3b66bdb22c4e57c7230a8ec874788bbc4ce308c2a80cc56e2da",
+      "bytes": 360515,
+      "sha256": "4c96e17b6ab8c3b66bdb22c4e57c7230a8ec874788bbc4ce308c2a80cc56e2da",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        32,
+        485,
+        994,
+        841
+      ],
+      "visible_width": 962,
+      "visible_height": 356,
+      "visible_center_x": 512.5,
+      "visible_center_y": 662.5,
+      "ground_baseline_y": 840,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/04-sprawled-left-side-breath/F04.png",
+      "source_entry": "04-sprawled-left-side-breath/F04.png",
+      "source_sha256": "4ce89570cd88e0b92e044a7d8961d1e881a9633cac08e7bfe6b978719c94c369",
+      "bytes": 359406,
+      "sha256": "4ce89570cd88e0b92e044a7d8961d1e881a9633cac08e7bfe6b978719c94c369",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        34,
+        487,
+        991,
+        841
+      ],
+      "visible_width": 957,
+      "visible_height": 354,
+      "visible_center_x": 512.0,
+      "visible_center_y": 663.5,
+      "ground_baseline_y": 840,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/05-sprawled-right-side-breath/F01.png",
+      "source_entry": "05-sprawled-right-side-breath/F01.png",
+      "source_sha256": "b171b3dfd2fde10500893cbadca228fe4fdd35e4f94c4dc4967dfebd218e4dea",
+      "bytes": 557694,
+      "sha256": "b171b3dfd2fde10500893cbadca228fe4fdd35e4f94c4dc4967dfebd218e4dea",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        456,
+        977,
+        840
+      ],
+      "visible_width": 930,
+      "visible_height": 384,
+      "visible_center_x": 511.5,
+      "visible_center_y": 647.5,
+      "ground_baseline_y": 839,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/05-sprawled-right-side-breath/F02.png",
+      "source_entry": "05-sprawled-right-side-breath/F02.png",
+      "source_sha256": "98f656f411cc9f938d4750992bdb070fd70e1b506ff186651c7467ff7a98524f",
+      "bytes": 527944,
+      "sha256": "98f656f411cc9f938d4750992bdb070fd70e1b506ff186651c7467ff7a98524f",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        455,
+        977,
+        840
+      ],
+      "visible_width": 930,
+      "visible_height": 385,
+      "visible_center_x": 511.5,
+      "visible_center_y": 647.0,
+      "ground_baseline_y": 839,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/05-sprawled-right-side-breath/F03.png",
+      "source_entry": "05-sprawled-right-side-breath/F03.png",
+      "source_sha256": "e64a8e61e671a6a41e5664c1d9f71b290f6b397ccff5fa458a91a9cb729ced3c",
+      "bytes": 528565,
+      "sha256": "e64a8e61e671a6a41e5664c1d9f71b290f6b397ccff5fa458a91a9cb729ced3c",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        454,
+        977,
+        840
+      ],
+      "visible_width": 930,
+      "visible_height": 386,
+      "visible_center_x": 511.5,
+      "visible_center_y": 646.5,
+      "ground_baseline_y": 839,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/05-sprawled-right-side-breath/F04.png",
+      "source_entry": "05-sprawled-right-side-breath/F04.png",
+      "source_sha256": "8809aab1256ea73614207278808e2076a340eed979aa7c13958df29bafd06f29",
+      "bytes": 527647,
+      "sha256": "8809aab1256ea73614207278808e2076a340eed979aa7c13958df29bafd06f29",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        47,
+        455,
+        977,
+        840
+      ],
+      "visible_width": 930,
+      "visible_height": 385,
+      "visible_center_x": 511.5,
+      "visible_center_y": 647.0,
+      "ground_baseline_y": 839,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/06-compact-prone-breath/F01.png",
+      "source_entry": "06-compact-prone-breath/F01.png",
+      "source_sha256": "b465a2c6fc98060ce5e08d03bee7bfc1966ceb8a48215a44446482555ebb08d1",
+      "bytes": 568497,
+      "sha256": "b465a2c6fc98060ce5e08d03bee7bfc1966ceb8a48215a44446482555ebb08d1",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        143,
+        415,
+        881,
+        840
+      ],
+      "visible_width": 738,
+      "visible_height": 425,
+      "visible_center_x": 511.5,
+      "visible_center_y": 627.0,
+      "ground_baseline_y": 839,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/06-compact-prone-breath/F02.png",
+      "source_entry": "06-compact-prone-breath/F02.png",
+      "source_sha256": "746042c7ea3ef90b6ba8e9647382078f647cf146ae66ff15996c21a0b441b7c2",
+      "bytes": 534790,
+      "sha256": "746042c7ea3ef90b6ba8e9647382078f647cf146ae66ff15996c21a0b441b7c2",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        143,
+        414,
+        881,
+        840
+      ],
+      "visible_width": 738,
+      "visible_height": 426,
+      "visible_center_x": 511.5,
+      "visible_center_y": 626.5,
+      "ground_baseline_y": 839,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/06-compact-prone-breath/F03.png",
+      "source_entry": "06-compact-prone-breath/F03.png",
+      "source_sha256": "fd77959a12d6ce65d5a13b9f2f34d309942b138f10dd082800f5a7e29e745a94",
+      "bytes": 536274,
+      "sha256": "fd77959a12d6ce65d5a13b9f2f34d309942b138f10dd082800f5a7e29e745a94",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        143,
+        414,
+        881,
+        840
+      ],
+      "visible_width": 738,
+      "visible_height": 426,
+      "visible_center_x": 511.5,
+      "visible_center_y": 626.5,
+      "ground_baseline_y": 839,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/06-compact-prone-breath/F04.png",
+      "source_entry": "06-compact-prone-breath/F04.png",
+      "source_sha256": "0fd076a55f4e1a0a615d6800f5b6f934f2cdb23adfd63ed8429432c12533a9b4",
+      "bytes": 533422,
+      "sha256": "0fd076a55f4e1a0a615d6800f5b6f934f2cdb23adfd63ed8429432c12533a9b4",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        143,
+        414,
+        881,
+        840
+      ],
+      "visible_width": 738,
+      "visible_height": 426,
+      "visible_center_x": 511.5,
+      "visible_center_y": 626.5,
+      "ground_baseline_y": 839,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/07-curled-side-breath/F01.png",
+      "source_entry": "07-curled-side-breath/F01.png",
+      "source_sha256": "cbafb496e043454d5057e435158d6418dc64e852916f2148ad29219552182de7",
+      "bytes": 567611,
+      "sha256": "cbafb496e043454d5057e435158d6418dc64e852916f2148ad29219552182de7",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        106,
+        486,
+        918,
+        840
+      ],
+      "visible_width": 812,
+      "visible_height": 354,
+      "visible_center_x": 511.5,
+      "visible_center_y": 662.5,
+      "ground_baseline_y": 839,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/07-curled-side-breath/F02.png",
+      "source_entry": "07-curled-side-breath/F02.png",
+      "source_sha256": "02099865c7a8ad5a555c10cb01b8ce2416df76ecff4122c19352254d6941075e",
+      "bytes": 537216,
+      "sha256": "02099865c7a8ad5a555c10cb01b8ce2416df76ecff4122c19352254d6941075e",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        106,
+        485,
+        918,
+        840
+      ],
+      "visible_width": 812,
+      "visible_height": 355,
+      "visible_center_x": 511.5,
+      "visible_center_y": 662.0,
+      "ground_baseline_y": 839,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/07-curled-side-breath/F03.png",
+      "source_entry": "07-curled-side-breath/F03.png",
+      "source_sha256": "09e22f6ce17431814ad48435a5703ef84f7b67c39dfec873b29f1bfa397606ca",
+      "bytes": 538702,
+      "sha256": "09e22f6ce17431814ad48435a5703ef84f7b67c39dfec873b29f1bfa397606ca",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        106,
+        485,
+        918,
+        840
+      ],
+      "visible_width": 812,
+      "visible_height": 355,
+      "visible_center_x": 511.5,
+      "visible_center_y": 662.0,
+      "ground_baseline_y": 839,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/07-curled-side-breath/F04.png",
+      "source_entry": "07-curled-side-breath/F04.png",
+      "source_sha256": "c966134fe00e942d9becc3744d73372777e331ab363c16e0a32736b1c2778739",
+      "bytes": 538162,
+      "sha256": "c966134fe00e942d9becc3744d73372777e331ab363c16e0a32736b1c2778739",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        106,
+        485,
+        918,
+        840
+      ],
+      "visible_width": 812,
+      "visible_height": 355,
+      "visible_center_x": 511.5,
+      "visible_center_y": 662.0,
+      "ground_baseline_y": 839,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/08-top-down-prone-breath/F01.png",
+      "source_entry": "08-top-down-prone-breath/F01.png",
+      "source_sha256": "d118191a189723a9fe8540eb5b5b1c4b73a455409b46e91aec50755866f44826",
+      "bytes": 545666,
+      "sha256": "d118191a189723a9fe8540eb5b5b1c4b73a455409b46e91aec50755866f44826",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        154,
+        156,
+        870,
+        869
+      ],
+      "visible_width": 716,
+      "visible_height": 713,
+      "visible_center_x": 511.5,
+      "visible_center_y": 512.0,
+      "ground_baseline_y": 868,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/08-top-down-prone-breath/F02.png",
+      "source_entry": "08-top-down-prone-breath/F02.png",
+      "source_sha256": "ac8d323316521c16077a0d1bb68a9b8676cacf2debedaaff0f288620b15ee9c6",
+      "bytes": 519491,
+      "sha256": "ac8d323316521c16077a0d1bb68a9b8676cacf2debedaaff0f288620b15ee9c6",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        154,
+        155,
+        870,
+        869
+      ],
+      "visible_width": 716,
+      "visible_height": 714,
+      "visible_center_x": 511.5,
+      "visible_center_y": 511.5,
+      "ground_baseline_y": 868,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/08-top-down-prone-breath/F03.png",
+      "source_entry": "08-top-down-prone-breath/F03.png",
+      "source_sha256": "fc538d1cf82e1162b810d619f32dd230e7e62b2a40e9c742a91fe038dbf59214",
+      "bytes": 519044,
+      "sha256": "fc538d1cf82e1162b810d619f32dd230e7e62b2a40e9c742a91fe038dbf59214",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        154,
+        155,
+        870,
+        869
+      ],
+      "visible_width": 716,
+      "visible_height": 714,
+      "visible_center_x": 511.5,
+      "visible_center_y": 511.5,
+      "ground_baseline_y": 868,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    },
+    {
+      "path": "frames/08-top-down-prone-breath/F04.png",
+      "source_entry": "08-top-down-prone-breath/F04.png",
+      "source_sha256": "5abc302c54ba25bfae70e37558f719ed04bd55ceb29e8cbc03fb5aeae05f79d8",
+      "bytes": 518352,
+      "sha256": "5abc302c54ba25bfae70e37558f719ed04bd55ceb29e8cbc03fb5aeae05f79d8",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        154,
+        155,
+        870,
+        869
+      ],
+      "visible_width": 716,
+      "visible_height": 714,
+      "visible_center_x": 511.5,
+      "visible_center_y": 511.5,
+      "ground_baseline_y": 868,
+      "canvas_edges_transparent": true,
+      "possible_blue_carrier_pixels": 0
+    }
+  ],
+  "actions": [
+    {
+      "behavior_id": "wk.candidate.sleep.main_lifecycle_v2",
+      "asset_version": 10,
+      "display_name": "Sleep lifecycle v10 review",
+      "description": "Byte-preserved v10 transparent PNGs for isolated Windows renderer review.",
+      "from_pose": "prone.awake.left_front",
+      "to_pose": "sleep.side.stable",
+      "direction": "front-prone-to-side-sleep",
+      "entry_policy": "developer review only; current runtime prone bridge requires Windows QA",
+      "frame_count": 16,
+      "total_duration_ms": 5000,
+      "interruptible": true,
+      "loop": false,
+      "owner_preview_approved": false,
+      "visual_approved": false,
+      "runtime_validation": "pending_owner_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "intro",
+          "loop": false,
+          "frame_count": 16,
+          "frames": [
+            {
+              "path": "frames/01-main-sleep-lifecycle/F01.png",
+              "duration_ms": 260,
+              "bytes": 483547,
+              "sha256": "b81f36ea611c1f98a1d43cacf216bebd34ebc44fe9ca540f12cf0a582aec169b"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F02.png",
+              "duration_ms": 260,
+              "bytes": 462960,
+              "sha256": "b0fbe44514649a7f677d318b26df25d72846db399d74d601271e1a2211ec967f"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F03.png",
+              "duration_ms": 260,
+              "bytes": 462273,
+              "sha256": "b05655e6e1c26c6d4edda000e9bbf34fcea413efe991faa6091bdac6733e16bf"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F04.png",
+              "duration_ms": 260,
+              "bytes": 456806,
+              "sha256": "5acbe751c142f7ebcc834a6061756234558100f33bf207a1190ca5fed81a3fb1"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F05.png",
+              "duration_ms": 260,
+              "bytes": 440352,
+              "sha256": "e5f8d2cb4c1f7b569c20adfcb5cd20aeb74ef48ed4b66a5261bc108dcc172f57"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F06.png",
+              "duration_ms": 260,
+              "bytes": 424555,
+              "sha256": "26ccbfbe3ceb8e5bde901c952910665d20f9ec270dceaae637d4513bd6d17c5b"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F07.png",
+              "duration_ms": 260,
+              "bytes": 423522,
+              "sha256": "1eb640e82a6b2535a8cba0d7115a742af54e90923485131556862378c17bcc3b"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F08.png",
+              "duration_ms": 260,
+              "bytes": 401236,
+              "sha256": "263f25cc73774c0c3691f63f574ad85452df282efbce1a36611a2984af2b5fa2"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F09.png",
+              "duration_ms": 260,
+              "bytes": 375647,
+              "sha256": "f0a5c6d4c6395fd96afa4fd3667453da9dac7d09e4aec852190378fc769c76bd"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F10.png",
+              "duration_ms": 260,
+              "bytes": 377224,
+              "sha256": "672b82d97113ad1d5a6af446960270b6d32534cc8e8254d5711fa7e595af3f5a"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F11.png",
+              "duration_ms": 260,
+              "bytes": 379744,
+              "sha256": "fe41696a227b22b3b994e29732d28b7bfb8e305a631580eaac95c3bc7ed9dae2"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F12.png",
+              "duration_ms": 260,
+              "bytes": 384585,
+              "sha256": "a59ba31b1644457fa8ca83a7bd1541e436d4769b29b35af3d4eac7fbcdd1eb8f"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F13.png",
+              "duration_ms": 260,
+              "bytes": 376356,
+              "sha256": "cf5f2a9640b8ce543bc6a6a6e4502ad80258a012edf42e0565289730604026bf"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F14.png",
+              "duration_ms": 260,
+              "bytes": 359544,
+              "sha256": "f40205146af84070b723633ec354bbc6ea2c93f80bc1bed9c2b2d5da8944f729"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F15.png",
+              "duration_ms": 260,
+              "bytes": 368844,
+              "sha256": "114b5446258a57e4c932902d3767c0e3982ca3428c817c2b26b592975d385b34"
+            },
+            {
+              "path": "frames/01-main-sleep-lifecycle/F16.png",
+              "duration_ms": 1100,
+              "bytes": 367445,
+              "sha256": "20cdcd485e0be7e66370298b7eb0a857ef218076d3a108917d0c2d7aaee8837e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.sleep.prone_to_side_roll_v2",
+      "asset_version": 10,
+      "display_name": "Prone-to-side roll v10 review",
+      "description": "Byte-preserved v10 transparent PNGs for isolated Windows renderer review.",
+      "from_pose": "sleep.prone.low_head",
+      "to_pose": "sleep.side.stable",
+      "direction": "prone-to-side",
+      "entry_policy": "developer review only; never append after the complete main lifecycle",
+      "frame_count": 8,
+      "total_duration_ms": 2620,
+      "interruptible": true,
+      "loop": false,
+      "owner_preview_approved": false,
+      "visual_approved": false,
+      "runtime_validation": "pending_owner_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "intro",
+          "loop": false,
+          "frame_count": 8,
+          "frames": [
+            {
+              "path": "frames/02-prone-to-side-roll/F01.png",
+              "duration_ms": 260,
+              "bytes": 449504,
+              "sha256": "707537e58a8760837b637d223e9d85013d3ef4f33391440e45c0c3973bf9ab10"
+            },
+            {
+              "path": "frames/02-prone-to-side-roll/F02.png",
+              "duration_ms": 260,
+              "bytes": 446863,
+              "sha256": "ce186ad93a3db84083775c008c7709f2b722afc9e282f338e904b5b34c560746"
+            },
+            {
+              "path": "frames/02-prone-to-side-roll/F03.png",
+              "duration_ms": 260,
+              "bytes": 442829,
+              "sha256": "b584a4bf1419fe65687f39eaf015e9f6454f0851389d2fc986cdf35b7672228a"
+            },
+            {
+              "path": "frames/02-prone-to-side-roll/F04.png",
+              "duration_ms": 260,
+              "bytes": 414206,
+              "sha256": "de40313d861af13f9204172c7eb177602b9085ab2c51076d2ad93b796bb09523"
+            },
+            {
+              "path": "frames/02-prone-to-side-roll/F05.png",
+              "duration_ms": 260,
+              "bytes": 401774,
+              "sha256": "82425f33f2d6571d32aa73ca53b3e667b74c8027db1ff0c2b178eadcec989af3"
+            },
+            {
+              "path": "frames/02-prone-to-side-roll/F06.png",
+              "duration_ms": 260,
+              "bytes": 407274,
+              "sha256": "313ebe5a4ca27bb67cb57a79de02e1a712a6262e2c183147e33b513265d6abd4"
+            },
+            {
+              "path": "frames/02-prone-to-side-roll/F07.png",
+              "duration_ms": 260,
+              "bytes": 403743,
+              "sha256": "e24a378f61146e07b4744a19e18a06a76fc819e1c84b1cee105abda7d001fee1"
+            },
+            {
+              "path": "frames/02-prone-to-side-roll/F08.png",
+              "duration_ms": 800,
+              "bytes": 387329,
+              "sha256": "2b30d775b5dd38d4221e292a226201475a94cb6ad49e70e974b3906d2070b415"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.sleep.sprawled_front_breath_v2",
+      "asset_version": 10,
+      "display_name": "Sprawled front breathing v10 review",
+      "description": "Byte-preserved v10 transparent PNGs for isolated Windows renderer review.",
+      "from_pose": "sleep.prone.sprawled.front",
+      "to_pose": "sleep.prone.sprawled.front",
+      "direction": "front",
+      "entry_policy": "developer review only; compatible posture entry required",
+      "frame_count": 4,
+      "total_duration_ms": 2600,
+      "interruptible": true,
+      "loop": true,
+      "owner_preview_approved": false,
+      "visual_approved": false,
+      "runtime_validation": "pending_owner_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 4,
+          "frames": [
+            {
+              "path": "frames/03-sprawled-front-breath/F01.png",
+              "duration_ms": 650,
+              "bytes": 389403,
+              "sha256": "a4935960f0279d29f3b24457b08382ebe0fa095d84baf298441d3199d007e9eb"
+            },
+            {
+              "path": "frames/03-sprawled-front-breath/F02.png",
+              "duration_ms": 650,
+              "bytes": 390119,
+              "sha256": "e6027a6afef699bc69efe125a4f62ccf897279ddcc37eff0c4176ac5822926a8"
+            },
+            {
+              "path": "frames/03-sprawled-front-breath/F03.png",
+              "duration_ms": 650,
+              "bytes": 390335,
+              "sha256": "f79bf6b18f006bde1999ee847221926a0074f5d5137b8978b8c843fb7cd11b50"
+            },
+            {
+              "path": "frames/03-sprawled-front-breath/F04.png",
+              "duration_ms": 650,
+              "bytes": 389374,
+              "sha256": "6333fbf28d9d1723200ecb0ae971b1b5bd23f700a1a72fab4f9cd2a5811b695b"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.sleep.sprawled_left_side_breath_v2",
+      "asset_version": 10,
+      "display_name": "Sprawled left-side breathing v10 review",
+      "description": "Byte-preserved v10 transparent PNGs for isolated Windows renderer review.",
+      "from_pose": "sleep.side.sprawled.left",
+      "to_pose": "sleep.side.sprawled.left",
+      "direction": "left-side",
+      "entry_policy": "developer review only; compatible posture entry required",
+      "frame_count": 4,
+      "total_duration_ms": 2600,
+      "interruptible": true,
+      "loop": true,
+      "owner_preview_approved": false,
+      "visual_approved": false,
+      "runtime_validation": "pending_owner_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 4,
+          "frames": [
+            {
+              "path": "frames/04-sprawled-left-side-breath/F01.png",
+              "duration_ms": 650,
+              "bytes": 362016,
+              "sha256": "e30b97c6a5c913107fe0383bc93f503ffb6542900024d1fc14c96a32078ee808"
+            },
+            {
+              "path": "frames/04-sprawled-left-side-breath/F02.png",
+              "duration_ms": 650,
+              "bytes": 362281,
+              "sha256": "76f98a2ef2b3464963b3373c5bfcaf67a0c396f7d426d76d6e5c3a2df335d7b1"
+            },
+            {
+              "path": "frames/04-sprawled-left-side-breath/F03.png",
+              "duration_ms": 650,
+              "bytes": 360515,
+              "sha256": "4c96e17b6ab8c3b66bdb22c4e57c7230a8ec874788bbc4ce308c2a80cc56e2da"
+            },
+            {
+              "path": "frames/04-sprawled-left-side-breath/F04.png",
+              "duration_ms": 650,
+              "bytes": 359406,
+              "sha256": "4ce89570cd88e0b92e044a7d8961d1e881a9633cac08e7bfe6b978719c94c369"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.sleep.sprawled_right_side_breath_v2",
+      "asset_version": 10,
+      "display_name": "Sprawled right-side breathing v10 review",
+      "description": "Byte-preserved v10 transparent PNGs for isolated Windows renderer review.",
+      "from_pose": "sleep.side.sprawled.right",
+      "to_pose": "sleep.side.sprawled.right",
+      "direction": "right-side",
+      "entry_policy": "developer review only; compatible posture entry required",
+      "frame_count": 4,
+      "total_duration_ms": 2600,
+      "interruptible": true,
+      "loop": true,
+      "owner_preview_approved": false,
+      "visual_approved": false,
+      "runtime_validation": "pending_owner_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 4,
+          "frames": [
+            {
+              "path": "frames/05-sprawled-right-side-breath/F01.png",
+              "duration_ms": 650,
+              "bytes": 557694,
+              "sha256": "b171b3dfd2fde10500893cbadca228fe4fdd35e4f94c4dc4967dfebd218e4dea"
+            },
+            {
+              "path": "frames/05-sprawled-right-side-breath/F02.png",
+              "duration_ms": 650,
+              "bytes": 527944,
+              "sha256": "98f656f411cc9f938d4750992bdb070fd70e1b506ff186651c7467ff7a98524f"
+            },
+            {
+              "path": "frames/05-sprawled-right-side-breath/F03.png",
+              "duration_ms": 650,
+              "bytes": 528565,
+              "sha256": "e64a8e61e671a6a41e5664c1d9f71b290f6b397ccff5fa458a91a9cb729ced3c"
+            },
+            {
+              "path": "frames/05-sprawled-right-side-breath/F04.png",
+              "duration_ms": 650,
+              "bytes": 527647,
+              "sha256": "8809aab1256ea73614207278808e2076a340eed979aa7c13958df29bafd06f29"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.sleep.compact_prone_breath_v2",
+      "asset_version": 10,
+      "display_name": "Compact prone breathing v10 review",
+      "description": "Byte-preserved v10 transparent PNGs for isolated Windows renderer review.",
+      "from_pose": "sleep.prone.compact",
+      "to_pose": "sleep.prone.compact",
+      "direction": "front-three-quarter",
+      "entry_policy": "developer review only; compatible posture entry required",
+      "frame_count": 4,
+      "total_duration_ms": 2600,
+      "interruptible": true,
+      "loop": true,
+      "owner_preview_approved": false,
+      "visual_approved": false,
+      "runtime_validation": "pending_owner_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 4,
+          "frames": [
+            {
+              "path": "frames/06-compact-prone-breath/F01.png",
+              "duration_ms": 650,
+              "bytes": 568497,
+              "sha256": "b465a2c6fc98060ce5e08d03bee7bfc1966ceb8a48215a44446482555ebb08d1"
+            },
+            {
+              "path": "frames/06-compact-prone-breath/F02.png",
+              "duration_ms": 650,
+              "bytes": 534790,
+              "sha256": "746042c7ea3ef90b6ba8e9647382078f647cf146ae66ff15996c21a0b441b7c2"
+            },
+            {
+              "path": "frames/06-compact-prone-breath/F03.png",
+              "duration_ms": 650,
+              "bytes": 536274,
+              "sha256": "fd77959a12d6ce65d5a13b9f2f34d309942b138f10dd082800f5a7e29e745a94"
+            },
+            {
+              "path": "frames/06-compact-prone-breath/F04.png",
+              "duration_ms": 650,
+              "bytes": 533422,
+              "sha256": "0fd076a55f4e1a0a615d6800f5b6f934f2cdb23adfd63ed8429432c12533a9b4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.sleep.curled_side_breath_v2",
+      "asset_version": 10,
+      "display_name": "Curled side breathing v10 review",
+      "description": "Byte-preserved v10 transparent PNGs for isolated Windows renderer review.",
+      "from_pose": "sleep.side.curled",
+      "to_pose": "sleep.side.curled",
+      "direction": "side-curled",
+      "entry_policy": "developer review only; compatible posture entry required",
+      "frame_count": 4,
+      "total_duration_ms": 2600,
+      "interruptible": true,
+      "loop": true,
+      "owner_preview_approved": false,
+      "visual_approved": false,
+      "runtime_validation": "pending_owner_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 4,
+          "frames": [
+            {
+              "path": "frames/07-curled-side-breath/F01.png",
+              "duration_ms": 650,
+              "bytes": 567611,
+              "sha256": "cbafb496e043454d5057e435158d6418dc64e852916f2148ad29219552182de7"
+            },
+            {
+              "path": "frames/07-curled-side-breath/F02.png",
+              "duration_ms": 650,
+              "bytes": 537216,
+              "sha256": "02099865c7a8ad5a555c10cb01b8ce2416df76ecff4122c19352254d6941075e"
+            },
+            {
+              "path": "frames/07-curled-side-breath/F03.png",
+              "duration_ms": 650,
+              "bytes": 538702,
+              "sha256": "09e22f6ce17431814ad48435a5703ef84f7b67c39dfec873b29f1bfa397606ca"
+            },
+            {
+              "path": "frames/07-curled-side-breath/F04.png",
+              "duration_ms": 650,
+              "bytes": 538162,
+              "sha256": "c966134fe00e942d9becc3744d73372777e331ab363c16e0a32736b1c2778739"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.sleep.top_down_prone_breath_v2",
+      "asset_version": 10,
+      "display_name": "Top-down prone breathing v10 review",
+      "description": "Byte-preserved v10 transparent PNGs for isolated Windows renderer review.",
+      "from_pose": "sleep.prone.top_down",
+      "to_pose": "sleep.prone.top_down",
+      "direction": "top-down",
+      "entry_policy": "developer review only; runtime entry requires offscreen re-entry or an approved bridge",
+      "frame_count": 4,
+      "total_duration_ms": 2600,
+      "interruptible": true,
+      "loop": true,
+      "owner_preview_approved": false,
+      "visual_approved": false,
+      "runtime_validation": "pending_owner_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 4,
+          "frames": [
+            {
+              "path": "frames/08-top-down-prone-breath/F01.png",
+              "duration_ms": 650,
+              "bytes": 545666,
+              "sha256": "d118191a189723a9fe8540eb5b5b1c4b73a455409b46e91aec50755866f44826"
+            },
+            {
+              "path": "frames/08-top-down-prone-breath/F02.png",
+              "duration_ms": 650,
+              "bytes": 519491,
+              "sha256": "ac8d323316521c16077a0d1bb68a9b8676cacf2debedaaff0f288620b15ee9c6"
+            },
+            {
+              "path": "frames/08-top-down-prone-breath/F03.png",
+              "duration_ms": 650,
+              "bytes": 519044,
+              "sha256": "fc538d1cf82e1162b810d619f32dd230e7e62b2a40e9c742a91fe038dbf59214"
+            },
+            {
+              "path": "frames/08-top-down-prone-breath/F04.png",
+              "duration_ms": 650,
+              "bytes": 518352,
+              "sha256": "5abc302c54ba25bfae70e37558f719ed04bd55ceb29e8cbc03fb5aeae05f79d8"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

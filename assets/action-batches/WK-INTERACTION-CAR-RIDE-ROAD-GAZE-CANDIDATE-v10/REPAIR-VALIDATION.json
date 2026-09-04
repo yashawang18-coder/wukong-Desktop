@@ -1,0 +1,730 @@
+{
+  "asset_id": "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v10",
+  "validation_time": "2026-08-30",
+  "runtime_frame_count": 36,
+  "review_png_count": 4,
+  "review_gif_count": 4,
+  "all_runtime_frames_decode": true,
+  "all_runtime_frames_1024_rgba": true,
+  "all_runtime_frames_have_transparent_corners": true,
+  "all_runtime_frames_match_v8_y_650_to_1024": true,
+  "v8_declared_six_slot_visual_phase_groups": {
+    "left": [
+      [
+        1,
+        4,
+        6
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        5
+      ]
+    ],
+    "right": [
+      [
+        1,
+        4,
+        6
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        5
+      ]
+    ]
+  },
+  "normal_runtime_gate_closed": true,
+  "owner_visual_qa": "failed_head_vertical_anchor_jitter",
+  "windows_transparent_renderer_qa": "not_run",
+  "frames": [
+    {
+      "path": "frames/road-gaze-right/frame-001.png",
+      "sha256": "99baf9d21340161cfded8096d9fcce29ffb186f10af4578f536393c0c2870442",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        54,
+        296,
+        969,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 1
+    },
+    {
+      "path": "frames/road-gaze-right/frame-002.png",
+      "sha256": "1ee65c2390cc4ead2746049234602b9d1ad5b9a6a2a1239df98bbfcbb1c8c898",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        296,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 2
+    },
+    {
+      "path": "frames/road-gaze-right/frame-003.png",
+      "sha256": "0b39aa7e376e99eedd7f213786ec3db27b4bcb20442c4397cf2deb9ff056ddf5",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        297,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 3
+    },
+    {
+      "path": "frames/road-gaze-right/frame-004.png",
+      "sha256": "b5822cdd2bec37031b78f71ee749ae743c0ef17cc20713073726f53bb216572d",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        54,
+        314,
+        969,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 4
+    },
+    {
+      "path": "frames/road-gaze-right/frame-005.png",
+      "sha256": "acab802a1c73863a81a752b8504ea3ab929f610ac862d69418eb4d9f163e6744",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        53,
+        292,
+        968,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 5
+    },
+    {
+      "path": "frames/road-gaze-right/frame-006.png",
+      "sha256": "f5ee9fb43f31df4dca664d9db05766e9ee4bd69590ab657271b73f00e1713bcf",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        54,
+        264,
+        969,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 6
+    },
+    {
+      "path": "frames/road-gaze-right/frame-007.png",
+      "sha256": "f5ee9fb43f31df4dca664d9db05766e9ee4bd69590ab657271b73f00e1713bcf",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        54,
+        264,
+        969,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 1
+    },
+    {
+      "path": "frames/road-gaze-right/frame-008.png",
+      "sha256": "670b101b12fe42339a3525a50054f28ae488e6c33908451da41d91f8221d2fee",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        309,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 2
+    },
+    {
+      "path": "frames/road-gaze-right/frame-009.png",
+      "sha256": "670b101b12fe42339a3525a50054f28ae488e6c33908451da41d91f8221d2fee",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        309,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 3
+    },
+    {
+      "path": "frames/road-gaze-right/frame-010.png",
+      "sha256": "f5ee9fb43f31df4dca664d9db05766e9ee4bd69590ab657271b73f00e1713bcf",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        54,
+        264,
+        969,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 4
+    },
+    {
+      "path": "frames/road-gaze-right/frame-011.png",
+      "sha256": "acab802a1c73863a81a752b8504ea3ab929f610ac862d69418eb4d9f163e6744",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        53,
+        292,
+        968,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 5
+    },
+    {
+      "path": "frames/road-gaze-right/frame-012.png",
+      "sha256": "f5ee9fb43f31df4dca664d9db05766e9ee4bd69590ab657271b73f00e1713bcf",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        54,
+        264,
+        969,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 6
+    },
+    {
+      "path": "frames/road-gaze-right/frame-013.png",
+      "sha256": "b5822cdd2bec37031b78f71ee749ae743c0ef17cc20713073726f53bb216572d",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        54,
+        314,
+        969,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 1
+    },
+    {
+      "path": "frames/road-gaze-right/frame-014.png",
+      "sha256": "0b39aa7e376e99eedd7f213786ec3db27b4bcb20442c4397cf2deb9ff056ddf5",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        297,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 2
+    },
+    {
+      "path": "frames/road-gaze-right/frame-015.png",
+      "sha256": "0b39aa7e376e99eedd7f213786ec3db27b4bcb20442c4397cf2deb9ff056ddf5",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        297,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 3
+    },
+    {
+      "path": "frames/road-gaze-right/frame-016.png",
+      "sha256": "a2822764b04927ebb7ecabaa5f4abd161a47e73425537a2e764ae2b97a31f783",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        54,
+        296,
+        969,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 4
+    },
+    {
+      "path": "frames/road-gaze-right/frame-017.png",
+      "sha256": "8d4c76472617c2c090c9a040f6157226908bea29f59de27d2c5b026b26b6e8d8",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        53,
+        296,
+        968,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 5
+    },
+    {
+      "path": "frames/road-gaze-right/frame-018.png",
+      "sha256": "41c24afad87c3503342ba1786d1604f6fbe874cc142664d3cdd965a9e507ccb1",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        54,
+        296,
+        969,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "right",
+      "v8_declared_wheel_phase": 6
+    },
+    {
+      "path": "frames/road-gaze-left/frame-001.png",
+      "sha256": "6d9ef5bf1a3702f3528cdab398d8763df9d2fc5695a809fc41b756c28ac22445",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        296,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 1
+    },
+    {
+      "path": "frames/road-gaze-left/frame-002.png",
+      "sha256": "bc11b029277696e0812d3ffa1b51192187a8107eb834b8ebe00491794d7687ad",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        56,
+        296,
+        971,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 2
+    },
+    {
+      "path": "frames/road-gaze-left/frame-003.png",
+      "sha256": "d75e79fb891a71ee512422bcce737e3a140c96ff59839229e34a316fe0a1e446",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        56,
+        312,
+        971,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 3
+    },
+    {
+      "path": "frames/road-gaze-left/frame-004.png",
+      "sha256": "debf5689a7d4e77ce27e131e891ef0756919a6680fd208cf8b26fcdf88df1637",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        297,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 4
+    },
+    {
+      "path": "frames/road-gaze-left/frame-005.png",
+      "sha256": "9430200303411028e819c0cc84dd349875f49ecc7fdfa1875f3cba94e689a95e",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        54,
+        308,
+        969,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 5
+    },
+    {
+      "path": "frames/road-gaze-left/frame-006.png",
+      "sha256": "a1bee55edcd50c66f94d2242d01b507b300cc8548d31f7047031138cb1060b01",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        315,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 6
+    },
+    {
+      "path": "frames/road-gaze-left/frame-007.png",
+      "sha256": "a1bee55edcd50c66f94d2242d01b507b300cc8548d31f7047031138cb1060b01",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        315,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 1
+    },
+    {
+      "path": "frames/road-gaze-left/frame-008.png",
+      "sha256": "aec899fa1ff193162dbb2eb0a97f20fb397fce4ebc90282476e2c713c907253c",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        56,
+        279,
+        971,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 2
+    },
+    {
+      "path": "frames/road-gaze-left/frame-009.png",
+      "sha256": "aec899fa1ff193162dbb2eb0a97f20fb397fce4ebc90282476e2c713c907253c",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        56,
+        279,
+        971,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 3
+    },
+    {
+      "path": "frames/road-gaze-left/frame-010.png",
+      "sha256": "a1bee55edcd50c66f94d2242d01b507b300cc8548d31f7047031138cb1060b01",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        315,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 4
+    },
+    {
+      "path": "frames/road-gaze-left/frame-011.png",
+      "sha256": "9430200303411028e819c0cc84dd349875f49ecc7fdfa1875f3cba94e689a95e",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        54,
+        308,
+        969,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 5
+    },
+    {
+      "path": "frames/road-gaze-left/frame-012.png",
+      "sha256": "a1bee55edcd50c66f94d2242d01b507b300cc8548d31f7047031138cb1060b01",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        315,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 6
+    },
+    {
+      "path": "frames/road-gaze-left/frame-013.png",
+      "sha256": "debf5689a7d4e77ce27e131e891ef0756919a6680fd208cf8b26fcdf88df1637",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        297,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 1
+    },
+    {
+      "path": "frames/road-gaze-left/frame-014.png",
+      "sha256": "d75e79fb891a71ee512422bcce737e3a140c96ff59839229e34a316fe0a1e446",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        56,
+        312,
+        971,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 2
+    },
+    {
+      "path": "frames/road-gaze-left/frame-015.png",
+      "sha256": "d75e79fb891a71ee512422bcce737e3a140c96ff59839229e34a316fe0a1e446",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        56,
+        312,
+        971,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 3
+    },
+    {
+      "path": "frames/road-gaze-left/frame-016.png",
+      "sha256": "c147ed9583d11ca5b5ab709eee1960cedb54ad22d358139a124b51960a0da44c",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        296,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 4
+    },
+    {
+      "path": "frames/road-gaze-left/frame-017.png",
+      "sha256": "d18df60a06b92cbcb65a59f907e88641cb238676140b38f6988c9ed35fc3749f",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        54,
+        296,
+        969,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 5
+    },
+    {
+      "path": "frames/road-gaze-left/frame-018.png",
+      "sha256": "0b1976f67800375b08754640f2c939d2fc5726b298480f9a0255b8d0ddb581a9",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        55,
+        296,
+        970,
+        901
+      ],
+      "transparent_corners": true,
+      "matches_v8_pixels_y_650_to_1024": true,
+      "v8_direction": "left",
+      "v8_declared_wheel_phase": 6
+    }
+  ]
+}

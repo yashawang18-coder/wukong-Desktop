@@ -1,0 +1,20 @@
+{
+  "frame_count": 12,
+  "durations_ms": [
+    500,
+    190,
+    170,
+    130,
+    110,
+    200,
+    110,
+    130,
+    170,
+    200,
+    240,
+    750
+  ],
+  "total_duration_ms": 2900,
+  "loop": 0,
+  "source_authority": "approved-jump-motion-preview-v2.gif"
+}

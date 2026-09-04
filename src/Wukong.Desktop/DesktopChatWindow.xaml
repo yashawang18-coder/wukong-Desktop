@@ -1,0 +1,60 @@
+<Window x:Class="Wukong.Desktop.DesktopChatWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Wukong"
+        Width="420"
+        Height="54"
+        MinWidth="320"
+        MinHeight="54"
+        MaxHeight="54"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        Topmost="True"
+        ResizeMode="NoResize"
+        Style="{StaticResource UxWindow}"
+        KeyDown="Window_KeyDown">
+  <Border Background="{StaticResource CardBrush}"
+          BorderBrush="{StaticResource LineBrush}"
+          BorderThickness="1"
+          CornerRadius="10"
+          Padding="6"
+          Effect="{StaticResource PanelShadow}">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <TextBox x:Name="ChatInput"
+               Height="40"
+               Style="{StaticResource Field}"
+               AcceptsReturn="False"
+               TextWrapping="NoWrap"
+               PreviewKeyDown="ChatInput_PreviewKeyDown"
+               TextChanged="ChatInput_TextChanged" />
+      <Button x:Name="SendButton"
+              Grid.Column="1"
+              Width="62"
+              Height="40"
+              MinWidth="0"
+              MinHeight="40"
+              Margin="6,0,0,0"
+              Padding="8,0"
+              Content="发送"
+              Style="{StaticResource PrimaryButton}"
+              Click="Send_Click" />
+      <Button Grid.Column="2"
+              Width="62"
+              Height="40"
+              MinWidth="0"
+              MinHeight="40"
+              Margin="6,0,0,0"
+              Padding="8,0"
+              Content="收起"
+              Style="{StaticResource SecondaryButton}"
+              Click="Collapse_Click" />
+    </Grid>
+  </Border>
+</Window>

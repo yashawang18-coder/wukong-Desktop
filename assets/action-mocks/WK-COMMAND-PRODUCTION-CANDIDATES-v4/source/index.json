@@ -1,0 +1,98 @@
+{
+  "bundle": "wukong-eight-command-production-candidates-v4",
+  "status": "production_candidate_owner_qa_pending",
+  "action_count": 8,
+  "actions": [
+    {
+      "order": 1,
+      "action": "sit",
+      "name_zh": "坐",
+      "frame_count": 10,
+      "package": "packages/wukong-sit-production-candidate-v2.zip",
+      "package_sha256": "880323529e58705afc62ff5d46fdd9a19e772233e9a55c202601b65ba21b50a1",
+      "status": "production_candidate_owner_qa_pending",
+      "runtime_approved": false,
+      "source_note": "previous production candidate"
+    },
+    {
+      "order": 2,
+      "action": "down",
+      "name_zh": "卧",
+      "frame_count": 12,
+      "package": "packages/wukong-down-production-candidate-v3.zip",
+      "package_sha256": "9e5a760db4a54fea8bd6e329a9c128e5c29d0e1a8f37ec4240c065d597343d29",
+      "status": "production_candidate_owner_qa_pending",
+      "runtime_approved": false,
+      "source_note": "previous production candidate"
+    },
+    {
+      "order": 3,
+      "action": "paw-sit",
+      "name_zh": "坐姿握手",
+      "frame_count": 10,
+      "package": "packages/wukong-paw-sit-production-candidate-v3.zip",
+      "package_sha256": "92c0e9b4fb48eaeb6e69fb256dea5460c44782458c506b8c937e2935ceb3b378",
+      "status": "production_candidate_owner_qa_pending",
+      "runtime_approved": false,
+      "source_note": "previous production candidate"
+    },
+    {
+      "order": 4,
+      "action": "paw-prone",
+      "name_zh": "趴姿握手",
+      "frame_count": 10,
+      "package": "packages/wukong-paw-prone-production-candidate-v3.zip",
+      "package_sha256": "e7d110b8950d8d9aec5833f36ebc2b85dd201c0dc0ef22434963710e12f38cdc",
+      "status": "production_candidate_owner_qa_pending",
+      "runtime_approved": false,
+      "source_note": "previous production candidate"
+    },
+    {
+      "order": 5,
+      "action": "jump",
+      "name_zh": "跳",
+      "frame_count": 12,
+      "package": "packages/wukong-jump-production-candidate-v3.zip",
+      "package_sha256": "124e8be147637fe74d2ff7f8d0de006d39394ffe7998b4ede544382600dca1db",
+      "status": "production_candidate_owner_qa_pending",
+      "runtime_approved": false,
+      "source_note": "previous production candidate"
+    },
+    {
+      "order": 6,
+      "action": "spin",
+      "name_zh": "转圈",
+      "frame_count": 16,
+      "package": "packages/wukong-spin-production-candidate-v3.zip",
+      "package_sha256": "78917b0ed4097c68554ceee56a08b91751394dddd8b0e21d10db2d90b579183d",
+      "status": "production_candidate_owner_qa_pending",
+      "runtime_approved": false,
+      "source_note": "previous production candidate"
+    },
+    {
+      "order": 7,
+      "action": "eat-sit",
+      "name_zh": "坐着吃",
+      "frame_count": 12,
+      "package": "packages/wukong-eat-sit-production-candidate-v3.zip",
+      "package_sha256": "7c17c86918f0c4b12ecd8a9744bf7306ecab076599ea5c8d855dab45fd077164",
+      "status": "production_candidate_owner_qa_pending",
+      "runtime_approved": false,
+      "source_note": "previous production candidate"
+    },
+    {
+      "order": 8,
+      "action": "eat-prone",
+      "name_zh": "趴着吃",
+      "frame_count": 12,
+      "package": "packages/wukong-eat-prone-production-candidate-v4.zip",
+      "package_sha256": "3bf84b9223e9709c4f045610008eb710f304052a65b448ca837615d837084129",
+      "status": "production_candidate_owner_qa_pending",
+      "runtime_approved": false,
+      "source_note": "approved cute case promoted to usable v4 sequence"
+    }
+  ],
+  "repository_integrated": false,
+  "runtime_approved": false,
+  "eat_prone_selection": "v4 from previously approved cute realistic case; newly generated v3 excluded"
+}

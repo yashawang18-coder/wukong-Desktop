@@ -1,0 +1,574 @@
+{
+  "status": "production_candidate_owner_qa_pending",
+  "canvas": [
+    1024,
+    1024
+  ],
+  "format": "RGBA PNG",
+  "target_head_width_px": 224.0,
+  "target_head_center_x": 500.0,
+  "target_ground_baseline_y": 900,
+  "scale_policy": "Upright frames use the approved 224 px head scale. F03/F04 receive uniform whole-subject correction because steep head pitch makes the generic estimator include shoulder width; no non-uniform warp or body redraw is used.",
+  "head_trajectory_proxy_top_y": {
+    "1": 256,
+    "2": 289,
+    "3": 303,
+    "4": 359,
+    "5": 250,
+    "6": 247,
+    "7": 252,
+    "8": 217,
+    "9": 227,
+    "10": 209,
+    "11": 236,
+    "12": 256
+  },
+  "mouth_continuity": {
+    "1": "stable relaxed expression",
+    "2": "closed",
+    "3": "closed",
+    "4": "closed",
+    "5": "restrained chew 1",
+    "6": "restrained chew 2",
+    "7": "closed swallow",
+    "8": "closed",
+    "9": "almost closed",
+    "10": "closed",
+    "11": "one small tongue-tip lick",
+    "12": "stable relaxed expression"
+  },
+  "color_target_orange_mean_rgb": [
+    204.15,
+    157.936,
+    110.675
+  ],
+  "color_calibration_scope": "orange coat pixels only; cream white, eyes, nose, mouth, teeth, tongue, paws and paw pads excluded",
+  "background_pipeline": "generated on blue; deterministic chroma-key extraction and blue-spill removal; no subject regeneration during transparency conversion",
+  "motion": {
+    "frame_count": 12,
+    "durations_ms": [
+      550,
+      240,
+      230,
+      230,
+      230,
+      280,
+      240,
+      250,
+      250,
+      260,
+      320,
+      850
+    ],
+    "total_duration_ms": 3930,
+    "loop": 0,
+    "source_authority": "approved-eat-sit-motion-preview-v2.gif"
+  },
+  "checks": {
+    "frame_count_12": true,
+    "all_1024_rgba": true,
+    "frame_1_equals_frame_12": true,
+    "all_baselines_y_900": true,
+    "upright_head_width_target_224px": true,
+    "head_axis_x_approximately_500": true,
+    "deepest_head_down_is_frame_4": true,
+    "lick_only_designated_frame_11": true,
+    "no_subject_edge_contact": true,
+    "owner_visual_approval": false,
+    "runtime_approved": false
+  },
+  "frames": [
+    {
+      "frame": 1,
+      "source": "work/paw_sit_production_v3/paw_sit_production_candidate_v3/frames/frame-001.png",
+      "role": "approved stable-sitting anchor",
+      "bbox": [
+        388,
+        256,
+        887,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.5,
+      "head_top_y_proxy": 256,
+      "mouth_phase": "stable relaxed expression",
+      "orange_mean_before": [
+        204.15,
+        157.936,
+        110.675
+      ],
+      "applied_rgb_delta": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "orange_mean_after": [
+        204.15,
+        157.936,
+        110.675
+      ]
+    },
+    {
+      "frame": 2,
+      "source": "work/eat_sit_production_v3/raw/frame-002.png",
+      "role": "gaze down; minimal head dip",
+      "mouth_phase": "closed",
+      "head_top_y_proxy": 289,
+      "source_bbox": [
+        445,
+        298,
+        1102,
+        1151
+      ],
+      "scale": 0.717949,
+      "placed_xy": [
+        389,
+        289
+      ],
+      "bbox": [
+        389,
+        289,
+        861,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.0,
+      "low_head_uniform_scale_correction": 1.0,
+      "orange_mean_before": [
+        206.212,
+        155.657,
+        106.222
+      ],
+      "applied_rgb_delta": [
+        -2.062,
+        2.279,
+        4.453
+      ],
+      "orange_mean_after": [
+        203.014,
+        156.68,
+        108.551
+      ]
+    },
+    {
+      "frame": 3,
+      "source": "work/eat_sit_production_v3/raw/frame-003.png",
+      "role": "head lowers; neck flexes",
+      "mouth_phase": "closed",
+      "head_top_y_proxy": 303,
+      "source_bbox": [
+        347,
+        249,
+        984,
+        1094
+      ],
+      "scale": 0.622222,
+      "placed_xy": [
+        390,
+        375
+      ],
+      "bbox": [
+        376,
+        303,
+        826,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 254.18,
+      "head_center_x": 500.5,
+      "low_head_uniform_scale_correction": 1.136,
+      "orange_mean_before": [
+        205.313,
+        155.263,
+        106.146
+      ],
+      "applied_rgb_delta": [
+        -1.163,
+        2.673,
+        4.529
+      ],
+      "orange_mean_after": [
+        203.091,
+        156.406,
+        108.694
+      ]
+    },
+    {
+      "frame": 4,
+      "source": "work/eat_sit_production_v3/raw/frame-004.png",
+      "role": "deepest head-down point",
+      "mouth_phase": "closed",
+      "head_top_y_proxy": 359,
+      "source_bbox": [
+        329,
+        324,
+        1073,
+        1133
+      ],
+      "scale": 0.557131,
+      "placed_xy": [
+        370,
+        450
+      ],
+      "bbox": [
+        343,
+        359,
+        842,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 268.04,
+      "head_center_x": 500.0,
+      "low_head_uniform_scale_correction": 1.202,
+      "orange_mean_before": [
+        208.377,
+        153.052,
+        94.777
+      ],
+      "applied_rgb_delta": [
+        -4.227,
+        4.884,
+        15.898
+      ],
+      "orange_mean_after": [
+        203.768,
+        154.253,
+        103.725
+      ]
+    },
+    {
+      "frame": 5,
+      "source": "work/eat_sit_production_v3/raw/frame-005.png",
+      "role": "head rises; first tiny chew",
+      "mouth_phase": "restrained chew 1",
+      "head_top_y_proxy": 250,
+      "source_bbox": [
+        458,
+        287,
+        1100,
+        1124
+      ],
+      "scale": 0.777778,
+      "placed_xy": [
+        389,
+        250
+      ],
+      "bbox": [
+        389,
+        250,
+        888,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.0,
+      "low_head_uniform_scale_correction": 1.0,
+      "orange_mean_before": [
+        211.965,
+        161.02,
+        110.69
+      ],
+      "applied_rgb_delta": [
+        -7.815,
+        -3.084,
+        -0.015
+      ],
+      "orange_mean_after": [
+        204.377,
+        156.676,
+        108.471
+      ]
+    },
+    {
+      "frame": 6,
+      "source": "work/eat_sit_production_v3/raw/frame-006.png",
+      "role": "second tiny chew; slight side angle",
+      "mouth_phase": "restrained chew 2",
+      "head_top_y_proxy": 247,
+      "source_bbox": [
+        302,
+        182,
+        966,
+        1087
+      ],
+      "scale": 0.722581,
+      "placed_xy": [
+        292,
+        247
+      ],
+      "bbox": [
+        292,
+        247,
+        772,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 499.5,
+      "low_head_uniform_scale_correction": 1.0,
+      "orange_mean_before": [
+        210.643,
+        164.301,
+        118.0
+      ],
+      "applied_rgb_delta": [
+        -6.493,
+        -6.365,
+        -7.325
+      ],
+      "orange_mean_after": [
+        204.471,
+        158.695,
+        111.933
+      ]
+    },
+    {
+      "frame": 7,
+      "source": "work/eat_sit_production_v3/raw/frame-007.png",
+      "role": "jaw closes; subtle swallow",
+      "mouth_phase": "closed swallow",
+      "head_top_y_proxy": 252,
+      "source_bbox": [
+        399,
+        250,
+        1094,
+        1157
+      ],
+      "scale": 0.715655,
+      "placed_xy": [
+        387,
+        252
+      ],
+      "bbox": [
+        387,
+        252,
+        884,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.0,
+      "low_head_uniform_scale_correction": 1.0,
+      "orange_mean_before": [
+        209.047,
+        155.718,
+        102.941
+      ],
+      "applied_rgb_delta": [
+        -4.897,
+        2.218,
+        7.734
+      ],
+      "orange_mean_after": [
+        203.781,
+        155.686,
+        106.232
+      ]
+    },
+    {
+      "frame": 8,
+      "source": "work/eat_sit_production_v3/raw/frame-008.png",
+      "role": "head rising; mild side glance",
+      "mouth_phase": "closed",
+      "head_top_y_proxy": 217,
+      "source_bbox": [
+        460,
+        229,
+        1084,
+        1108
+      ],
+      "scale": 0.777778,
+      "placed_xy": [
+        381,
+        217
+      ],
+      "bbox": [
+        381,
+        217,
+        866,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.0,
+      "low_head_uniform_scale_correction": 1.0,
+      "orange_mean_before": [
+        214.085,
+        162.859,
+        112.151
+      ],
+      "applied_rgb_delta": [
+        -9.935,
+        -4.923,
+        -1.476
+      ],
+      "orange_mean_after": [
+        204.678,
+        157.364,
+        108.564
+      ]
+    },
+    {
+      "frame": 9,
+      "source": "work/eat_sit_production_v3/raw/frame-009.png",
+      "role": "head rises farther; chewing after-motion",
+      "mouth_phase": "almost closed",
+      "head_top_y_proxy": 227,
+      "source_bbox": [
+        467,
+        217,
+        1109,
+        1105
+      ],
+      "scale": 0.759322,
+      "placed_xy": [
+        372,
+        227
+      ],
+      "bbox": [
+        372,
+        227,
+        859,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 223.66,
+      "head_center_x": 499.5,
+      "low_head_uniform_scale_correction": 1.0,
+      "orange_mean_before": [
+        215.835,
+        161.653,
+        109.532
+      ],
+      "applied_rgb_delta": [
+        -11.685,
+        -3.717,
+        1.143
+      ],
+      "orange_mean_after": [
+        204.225,
+        156.021,
+        106.939
+      ]
+    },
+    {
+      "frame": 10,
+      "source": "work/eat_sit_production_v3/raw/frame-010.png",
+      "role": "near normal head position; final swallow",
+      "mouth_phase": "closed",
+      "head_top_y_proxy": 209,
+      "source_bbox": [
+        439,
+        242,
+        1095,
+        1128
+      ],
+      "scale": 0.780488,
+      "placed_xy": [
+        366,
+        209
+      ],
+      "bbox": [
+        366,
+        209,
+        878,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 499.5,
+      "low_head_uniform_scale_correction": 1.0,
+      "orange_mean_before": [
+        205.642,
+        155.641,
+        107.876
+      ],
+      "applied_rgb_delta": [
+        -1.492,
+        2.295,
+        2.799
+      ],
+      "orange_mean_after": [
+        203.764,
+        157.618,
+        109.733
+      ]
+    },
+    {
+      "frame": 11,
+      "source": "work/eat_sit_production_v3/raw/frame-011.png",
+      "role": "single brief lip/nose lick",
+      "mouth_phase": "one small tongue-tip lick",
+      "head_top_y_proxy": 236,
+      "source_bbox": [
+        443,
+        232,
+        1071,
+        1120
+      ],
+      "scale": 0.749164,
+      "placed_xy": [
+        378,
+        236
+      ],
+      "bbox": [
+        378,
+        236,
+        848,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.0,
+      "low_head_uniform_scale_correction": 1.0,
+      "orange_mean_before": [
+        209.754,
+        160.482,
+        110.401
+      ],
+      "applied_rgb_delta": [
+        -5.604,
+        -2.546,
+        0.274
+      ],
+      "orange_mean_after": [
+        203.831,
+        156.77,
+        108.791
+      ]
+    },
+    {
+      "frame": 12,
+      "source": "work/paw_sit_production_v3/paw_sit_production_candidate_v3/frames/frame-001.png",
+      "role": "same approved stable-sitting anchor as frame 1",
+      "bbox": [
+        388,
+        256,
+        887,
+        901
+      ],
+      "baseline_y": 900,
+      "measured_head_width_px": 224.0,
+      "head_center_x": 500.5,
+      "head_top_y_proxy": 256,
+      "mouth_phase": "stable relaxed expression",
+      "orange_mean_before": [
+        204.15,
+        157.936,
+        110.675
+      ],
+      "applied_rgb_delta": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "orange_mean_after": [
+        204.15,
+        157.936,
+        110.675
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "asset_id": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate",
+  "state": "owner_qa_pending",
+  "production_asset": false,
+  "runtime_use": false,
+  "sequences": {
+    "walk-left": {
+      "frames": 12,
+      "path": "frames/walk-left/frame-%03d.png",
+      "duration_ms": 110
+    },
+    "walk-right": {
+      "frames": 12,
+      "path": "frames/walk-right/frame-%03d.png",
+      "duration_ms": 110,
+      "mirror_of": "walk-left"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "asset_id": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED",
+  "asset_stage": "runtime_approved_autonomous_daily",
+  "source_package_manifest": "manifest.json",
+  "source_package_manifest_sha256": "c38da6481c85607fb5547649d6d10a9f649f12d64f076e94be10e89ad85c6f9b",
+  "source_freeze_manifest": "SHA256SUMS",
+  "source_freeze_verified": true,
+  "recovery_class": "v3R1_reconstructed_from_repository_v2_sources",
+  "visual_approved": true,
+  "runtime_validation": "passed_windows_renderer_qa",
+  "runtime_approved": true,
+  "runtime_use": true,
+  "production_asset": true,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": true,
+  "bridge_policy": "legacy_side_prone_only; no forward-prone splice without an approved bridge",
+  "v2_runtime_binding_unchanged": true
+}

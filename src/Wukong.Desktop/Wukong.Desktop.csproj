@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Wukong.Domain\Wukong.Domain.csproj" />
+    <ProjectReference Include="..\Wukong.Application\Wukong.Application.csproj" />
+    <ProjectReference Include="..\Wukong.Infrastructure\Wukong.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <StartupObject>Wukong.Desktop.Program</StartupObject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\assets\**\*.png"
+             Exclude="..\..\assets\actions\WK-CORE-SLEEP-BREATH-v2\**\*.png"
+             LinkBase="WukongAssets"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\assets\**\*.json"
+             Exclude="..\..\assets\actions\WK-CORE-SLEEP-BREATH-v2\**\*.json"
+             LinkBase="WukongAssets"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\assets\**\*.gif"
+             LinkBase="WukongAssets"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\assets\**\*.sha256"
+             LinkBase="WukongAssets"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\config\defaults\**\*"
+             LinkBase="WukongDefaults"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

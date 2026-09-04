@@ -1,0 +1,778 @@
+{
+  "schema_version": 1,
+  "batch_id": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate",
+  "asset_id": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate",
+  "asset_stage": "runtime-approved",
+  "candidate_profile": "autonomous-patrol-walk-v1-approved",
+  "source_package": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate.zip",
+  "source_zip_sha256": "a96ff60c48c0fe79e8c7a20d1d62b1658eebc8175e959b70d6b81f40c4f958ed",
+  "source_frame_count": 24,
+  "runtime_frame_count": 24,
+  "sequence_count": 2,
+  "source_png_byte_identity": true,
+  "owner_preview_approved": true,
+  "visual_approved": true,
+  "runtime_validation": "passed_windows_renderer_qa",
+  "runtime_approved": true,
+  "runtime_use": true,
+  "production_asset": true,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": true,
+  "normal_runtime_available": true,
+  "allowed_sources": [
+    "AutonomousTick",
+    "DeveloperPreview"
+  ],
+  "runtime_render_scale": 0.92,
+  "window_motion_enabled": false,
+  "mirror_policy": {
+    "walk_right_is_exact_horizontal_mirror": true,
+    "source_report_all_mirror_pixel_equal": true,
+    "runtime_mirroring_required": false
+  },
+  "frame_inventory": [
+    {
+      "path": "frames/walk-left/frame-001.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-001.png",
+      "source_sha256": "db36f1cbff0e5b0bbda22cbc069c50ef1abc8133aacde9cf6408264be2ee4da7",
+      "bytes": 345807,
+      "sha256": "db36f1cbff0e5b0bbda22cbc069c50ef1abc8133aacde9cf6408264be2ee4da7",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        163,
+        365,
+        858,
+        895
+      ],
+      "visible_width": 695,
+      "visible_height": 530,
+      "visible_center_x": 510.0,
+      "visible_center_y": 629.5,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-left/frame-002.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-002.png",
+      "source_sha256": "85f4e2529ff8985c2e71144277f84341aac2b37e5cedc8c9581a4375870e59e1",
+      "bytes": 352786,
+      "sha256": "85f4e2529ff8985c2e71144277f84341aac2b37e5cedc8c9581a4375870e59e1",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        157,
+        362,
+        867,
+        895
+      ],
+      "visible_width": 710,
+      "visible_height": 533,
+      "visible_center_x": 511.5,
+      "visible_center_y": 628.0,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-left/frame-003.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-003.png",
+      "source_sha256": "0bfe7bffba3774a754f6e5fea9e48723b34b836aeb03f0aa064d3bf25abdf183",
+      "bytes": 355984,
+      "sha256": "0bfe7bffba3774a754f6e5fea9e48723b34b836aeb03f0aa064d3bf25abdf183",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        135,
+        365,
+        889,
+        893
+      ],
+      "visible_width": 754,
+      "visible_height": 528,
+      "visible_center_x": 511.5,
+      "visible_center_y": 628.5,
+      "ground_baseline_y": 892,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-left/frame-004.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-004.png",
+      "source_sha256": "fa79f2b18610d8a981726ee5b8dbb70d231799d1064547f44efe638692987882",
+      "bytes": 362885,
+      "sha256": "fa79f2b18610d8a981726ee5b8dbb70d231799d1064547f44efe638692987882",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        140,
+        368,
+        884,
+        895
+      ],
+      "visible_width": 744,
+      "visible_height": 527,
+      "visible_center_x": 511.5,
+      "visible_center_y": 631.0,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-left/frame-005.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-005.png",
+      "source_sha256": "adfbce2c71a9b2de9af9a9eb005951c2ab52275a611dc5184cf52330e756f6bd",
+      "bytes": 368625,
+      "sha256": "adfbce2c71a9b2de9af9a9eb005951c2ab52275a611dc5184cf52330e756f6bd",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        122,
+        358,
+        902,
+        893
+      ],
+      "visible_width": 780,
+      "visible_height": 535,
+      "visible_center_x": 511.5,
+      "visible_center_y": 625.0,
+      "ground_baseline_y": 892,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-left/frame-006.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-006.png",
+      "source_sha256": "2ff4fa32ce6eb0d02a2890fa7e2c498540b07ea7c519aeca0d664c38f63e2fe1",
+      "bytes": 371213,
+      "sha256": "2ff4fa32ce6eb0d02a2890fa7e2c498540b07ea7c519aeca0d664c38f63e2fe1",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        124,
+        354,
+        899,
+        893
+      ],
+      "visible_width": 775,
+      "visible_height": 539,
+      "visible_center_x": 511.0,
+      "visible_center_y": 623.0,
+      "ground_baseline_y": 892,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-left/frame-007.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-007.png",
+      "source_sha256": "d1bfbbff46111154f7a260e2133888e64407d71138c4abe8f43d6bfcac76c313",
+      "bytes": 346432,
+      "sha256": "d1bfbbff46111154f7a260e2133888e64407d71138c4abe8f43d6bfcac76c313",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        166,
+        362,
+        857,
+        895
+      ],
+      "visible_width": 691,
+      "visible_height": 533,
+      "visible_center_x": 511.0,
+      "visible_center_y": 628.0,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-left/frame-008.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-008.png",
+      "source_sha256": "ce4b48f99eaca5b8727a8a7f785818fe0cb802ebecd5a2d586ca499b88501302",
+      "bytes": 362900,
+      "sha256": "ce4b48f99eaca5b8727a8a7f785818fe0cb802ebecd5a2d586ca499b88501302",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        153,
+        365,
+        867,
+        895
+      ],
+      "visible_width": 714,
+      "visible_height": 530,
+      "visible_center_x": 509.5,
+      "visible_center_y": 629.5,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-left/frame-009.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-009.png",
+      "source_sha256": "3779411b83e652d00dcb3c1be0578ab92ebf8c56327a49aa844e85927bb6459f",
+      "bytes": 362516,
+      "sha256": "3779411b83e652d00dcb3c1be0578ab92ebf8c56327a49aa844e85927bb6459f",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        147,
+        363,
+        876,
+        895
+      ],
+      "visible_width": 729,
+      "visible_height": 532,
+      "visible_center_x": 511.0,
+      "visible_center_y": 628.5,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-left/frame-010.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-010.png",
+      "source_sha256": "8f7d31a76211b4cb4440d532a381df486cd8b6a1b942e844319693aea7c32a7a",
+      "bytes": 343862,
+      "sha256": "8f7d31a76211b4cb4440d532a381df486cd8b6a1b942e844319693aea7c32a7a",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        161,
+        370,
+        858,
+        895
+      ],
+      "visible_width": 697,
+      "visible_height": 525,
+      "visible_center_x": 509.0,
+      "visible_center_y": 632.0,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-left/frame-011.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-011.png",
+      "source_sha256": "e4c27f3199bd33bfab263844946d3e3beffeaecb5c358ab752796c46996ef07b",
+      "bytes": 364783,
+      "sha256": "e4c27f3199bd33bfab263844946d3e3beffeaecb5c358ab752796c46996ef07b",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        153,
+        344,
+        870,
+        891
+      ],
+      "visible_width": 717,
+      "visible_height": 547,
+      "visible_center_x": 511.0,
+      "visible_center_y": 617.0,
+      "ground_baseline_y": 890,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-left/frame-012.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-012.png",
+      "source_sha256": "434a86e1627cb35af87a19d332cbea018d1adcc95bacd7e0c231ee4ef31bf4ab",
+      "bytes": 362262,
+      "sha256": "434a86e1627cb35af87a19d332cbea018d1adcc95bacd7e0c231ee4ef31bf4ab",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        159,
+        351,
+        863,
+        895
+      ],
+      "visible_width": 704,
+      "visible_height": 544,
+      "visible_center_x": 510.5,
+      "visible_center_y": 622.5,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-right/frame-001.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-001.png",
+      "source_sha256": "f2d2b1d6da60de4a56594ec5d8f475f7036bcc106eaee731ff3f493b34f37587",
+      "bytes": 345393,
+      "sha256": "f2d2b1d6da60de4a56594ec5d8f475f7036bcc106eaee731ff3f493b34f37587",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        166,
+        365,
+        861,
+        895
+      ],
+      "visible_width": 695,
+      "visible_height": 530,
+      "visible_center_x": 513.0,
+      "visible_center_y": 629.5,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-right/frame-002.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-002.png",
+      "source_sha256": "f1ae4b5e96c9d3f4d9d5b07b9fcbf3d1e3cc95bdab3eccff820ceba07d8b9bb8",
+      "bytes": 351983,
+      "sha256": "f1ae4b5e96c9d3f4d9d5b07b9fcbf3d1e3cc95bdab3eccff820ceba07d8b9bb8",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        157,
+        362,
+        867,
+        895
+      ],
+      "visible_width": 710,
+      "visible_height": 533,
+      "visible_center_x": 511.5,
+      "visible_center_y": 628.0,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-right/frame-003.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-003.png",
+      "source_sha256": "b31018d0fc5928978fc74fbfa175ca774c7a87d88ad27e560e6bcafc2a9239f9",
+      "bytes": 355719,
+      "sha256": "b31018d0fc5928978fc74fbfa175ca774c7a87d88ad27e560e6bcafc2a9239f9",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        135,
+        365,
+        889,
+        893
+      ],
+      "visible_width": 754,
+      "visible_height": 528,
+      "visible_center_x": 511.5,
+      "visible_center_y": 628.5,
+      "ground_baseline_y": 892,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-right/frame-004.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-004.png",
+      "source_sha256": "d030bee1c3ace9505ceb8fc1b57bc370483cdc3ff61f138715b2b1f1b68f6729",
+      "bytes": 362938,
+      "sha256": "d030bee1c3ace9505ceb8fc1b57bc370483cdc3ff61f138715b2b1f1b68f6729",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        140,
+        368,
+        884,
+        895
+      ],
+      "visible_width": 744,
+      "visible_height": 527,
+      "visible_center_x": 511.5,
+      "visible_center_y": 631.0,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-right/frame-005.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-005.png",
+      "source_sha256": "de6e71bebd8c0516f082182ebdb46a16100cbbaf960b2493d2b75f0e249b3b4c",
+      "bytes": 368275,
+      "sha256": "de6e71bebd8c0516f082182ebdb46a16100cbbaf960b2493d2b75f0e249b3b4c",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        122,
+        358,
+        902,
+        893
+      ],
+      "visible_width": 780,
+      "visible_height": 535,
+      "visible_center_x": 511.5,
+      "visible_center_y": 625.0,
+      "ground_baseline_y": 892,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-right/frame-006.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-006.png",
+      "source_sha256": "dbd4a3689ebcf082203dc72ab4ca3633f814d3a5caf8566eb77d30a6991dada7",
+      "bytes": 371167,
+      "sha256": "dbd4a3689ebcf082203dc72ab4ca3633f814d3a5caf8566eb77d30a6991dada7",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        125,
+        354,
+        900,
+        893
+      ],
+      "visible_width": 775,
+      "visible_height": 539,
+      "visible_center_x": 512.0,
+      "visible_center_y": 623.0,
+      "ground_baseline_y": 892,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-right/frame-007.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-007.png",
+      "source_sha256": "3d22f36aefab57b3a24a5c995b37de1a5967f2c32b3f43ad4691547795dd31fe",
+      "bytes": 346321,
+      "sha256": "3d22f36aefab57b3a24a5c995b37de1a5967f2c32b3f43ad4691547795dd31fe",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        167,
+        362,
+        858,
+        895
+      ],
+      "visible_width": 691,
+      "visible_height": 533,
+      "visible_center_x": 512.0,
+      "visible_center_y": 628.0,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-right/frame-008.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-008.png",
+      "source_sha256": "477b242ed526bc391b30b111f09c31aca78fac1d7cdc44fbe38a644793162df7",
+      "bytes": 363074,
+      "sha256": "477b242ed526bc391b30b111f09c31aca78fac1d7cdc44fbe38a644793162df7",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        157,
+        365,
+        871,
+        895
+      ],
+      "visible_width": 714,
+      "visible_height": 530,
+      "visible_center_x": 513.5,
+      "visible_center_y": 629.5,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-right/frame-009.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-009.png",
+      "source_sha256": "990b378af0647060f2524a8dc54f92525b75225451984cf97c7ca0dd2324aad5",
+      "bytes": 362052,
+      "sha256": "990b378af0647060f2524a8dc54f92525b75225451984cf97c7ca0dd2324aad5",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        148,
+        363,
+        877,
+        895
+      ],
+      "visible_width": 729,
+      "visible_height": 532,
+      "visible_center_x": 512.0,
+      "visible_center_y": 628.5,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-right/frame-010.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-010.png",
+      "source_sha256": "988f3069631afa3f6b2b30ca2a289c12b4bc24429292c3a736a831ea46adbf95",
+      "bytes": 343215,
+      "sha256": "988f3069631afa3f6b2b30ca2a289c12b4bc24429292c3a736a831ea46adbf95",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        166,
+        370,
+        863,
+        895
+      ],
+      "visible_width": 697,
+      "visible_height": 525,
+      "visible_center_x": 514.0,
+      "visible_center_y": 632.0,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-right/frame-011.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-011.png",
+      "source_sha256": "bc2f1facd6ac8a8d4f45ecf95b31786538aa818fd822ae3e4fa35406f88a9287",
+      "bytes": 364073,
+      "sha256": "bc2f1facd6ac8a8d4f45ecf95b31786538aa818fd822ae3e4fa35406f88a9287",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        154,
+        344,
+        871,
+        891
+      ],
+      "visible_width": 717,
+      "visible_height": 547,
+      "visible_center_x": 512.0,
+      "visible_center_y": 617.0,
+      "ground_baseline_y": 890,
+      "canvas_edges_transparent": true
+    },
+    {
+      "path": "frames/walk-right/frame-012.png",
+      "source_entry": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-012.png",
+      "source_sha256": "b4dd7ada11cf8a3b4cd724ba5736c63ee94edaf36050066ab792ac9be6dc730a",
+      "bytes": 361486,
+      "sha256": "b4dd7ada11cf8a3b4cd724ba5736c63ee94edaf36050066ab792ac9be6dc730a",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "alpha_bbox": [
+        161,
+        351,
+        865,
+        895
+      ],
+      "visible_width": 704,
+      "visible_height": 544,
+      "visible_center_x": 512.5,
+      "visible_center_y": 622.5,
+      "ground_baseline_y": 894,
+      "canvas_edges_transparent": true
+    }
+  ],
+  "actions": [
+    {
+      "behavior_id": "wk.candidate.autonomous.patrol_walk_left_v1",
+      "display_name": "日常走动（向左）",
+      "description": "Owner-approved in-place patrol gait loop. Desktop translation remains intentionally disabled.",
+      "from_pose": "stand.walk.left",
+      "to_pose": "stand.walk.left",
+      "direction": "left",
+      "frame_count": 12,
+      "total_duration_ms": 1320,
+      "frame_duration_ms": 110,
+      "interruptible": true,
+      "loop": true,
+      "visual_approved": true,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "production_asset": true,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": true,
+      "allowed_sources": [
+        "AutonomousTick",
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 12,
+          "frames": [
+            {
+              "path": "frames/walk-left/frame-001.png",
+              "duration_ms": 110,
+              "bytes": 345807,
+              "sha256": "db36f1cbff0e5b0bbda22cbc069c50ef1abc8133aacde9cf6408264be2ee4da7"
+            },
+            {
+              "path": "frames/walk-left/frame-002.png",
+              "duration_ms": 110,
+              "bytes": 352786,
+              "sha256": "85f4e2529ff8985c2e71144277f84341aac2b37e5cedc8c9581a4375870e59e1"
+            },
+            {
+              "path": "frames/walk-left/frame-003.png",
+              "duration_ms": 110,
+              "bytes": 355984,
+              "sha256": "0bfe7bffba3774a754f6e5fea9e48723b34b836aeb03f0aa064d3bf25abdf183"
+            },
+            {
+              "path": "frames/walk-left/frame-004.png",
+              "duration_ms": 110,
+              "bytes": 362885,
+              "sha256": "fa79f2b18610d8a981726ee5b8dbb70d231799d1064547f44efe638692987882"
+            },
+            {
+              "path": "frames/walk-left/frame-005.png",
+              "duration_ms": 110,
+              "bytes": 368625,
+              "sha256": "adfbce2c71a9b2de9af9a9eb005951c2ab52275a611dc5184cf52330e756f6bd"
+            },
+            {
+              "path": "frames/walk-left/frame-006.png",
+              "duration_ms": 110,
+              "bytes": 371213,
+              "sha256": "2ff4fa32ce6eb0d02a2890fa7e2c498540b07ea7c519aeca0d664c38f63e2fe1"
+            },
+            {
+              "path": "frames/walk-left/frame-007.png",
+              "duration_ms": 110,
+              "bytes": 346432,
+              "sha256": "d1bfbbff46111154f7a260e2133888e64407d71138c4abe8f43d6bfcac76c313"
+            },
+            {
+              "path": "frames/walk-left/frame-008.png",
+              "duration_ms": 110,
+              "bytes": 362900,
+              "sha256": "ce4b48f99eaca5b8727a8a7f785818fe0cb802ebecd5a2d586ca499b88501302"
+            },
+            {
+              "path": "frames/walk-left/frame-009.png",
+              "duration_ms": 110,
+              "bytes": 362516,
+              "sha256": "3779411b83e652d00dcb3c1be0578ab92ebf8c56327a49aa844e85927bb6459f"
+            },
+            {
+              "path": "frames/walk-left/frame-010.png",
+              "duration_ms": 110,
+              "bytes": 343862,
+              "sha256": "8f7d31a76211b4cb4440d532a381df486cd8b6a1b942e844319693aea7c32a7a"
+            },
+            {
+              "path": "frames/walk-left/frame-011.png",
+              "duration_ms": 110,
+              "bytes": 364783,
+              "sha256": "e4c27f3199bd33bfab263844946d3e3beffeaecb5c358ab752796c46996ef07b"
+            },
+            {
+              "path": "frames/walk-left/frame-012.png",
+              "duration_ms": 110,
+              "bytes": 362262,
+              "sha256": "434a86e1627cb35af87a19d332cbea018d1adcc95bacd7e0c231ee4ef31bf4ab"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.autonomous.patrol_walk_right_v1",
+      "display_name": "日常走动（向右）",
+      "description": "Owner-approved in-place patrol gait loop. Desktop translation remains intentionally disabled.",
+      "from_pose": "stand.walk.right",
+      "to_pose": "stand.walk.right",
+      "direction": "right",
+      "frame_count": 12,
+      "total_duration_ms": 1320,
+      "frame_duration_ms": 110,
+      "interruptible": true,
+      "loop": true,
+      "visual_approved": true,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "production_asset": true,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": true,
+      "allowed_sources": [
+        "AutonomousTick",
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 12,
+          "frames": [
+            {
+              "path": "frames/walk-right/frame-001.png",
+              "duration_ms": 110,
+              "bytes": 345393,
+              "sha256": "f2d2b1d6da60de4a56594ec5d8f475f7036bcc106eaee731ff3f493b34f37587"
+            },
+            {
+              "path": "frames/walk-right/frame-002.png",
+              "duration_ms": 110,
+              "bytes": 351983,
+              "sha256": "f1ae4b5e96c9d3f4d9d5b07b9fcbf3d1e3cc95bdab3eccff820ceba07d8b9bb8"
+            },
+            {
+              "path": "frames/walk-right/frame-003.png",
+              "duration_ms": 110,
+              "bytes": 355719,
+              "sha256": "b31018d0fc5928978fc74fbfa175ca774c7a87d88ad27e560e6bcafc2a9239f9"
+            },
+            {
+              "path": "frames/walk-right/frame-004.png",
+              "duration_ms": 110,
+              "bytes": 362938,
+              "sha256": "d030bee1c3ace9505ceb8fc1b57bc370483cdc3ff61f138715b2b1f1b68f6729"
+            },
+            {
+              "path": "frames/walk-right/frame-005.png",
+              "duration_ms": 110,
+              "bytes": 368275,
+              "sha256": "de6e71bebd8c0516f082182ebdb46a16100cbbaf960b2493d2b75f0e249b3b4c"
+            },
+            {
+              "path": "frames/walk-right/frame-006.png",
+              "duration_ms": 110,
+              "bytes": 371167,
+              "sha256": "dbd4a3689ebcf082203dc72ab4ca3633f814d3a5caf8566eb77d30a6991dada7"
+            },
+            {
+              "path": "frames/walk-right/frame-007.png",
+              "duration_ms": 110,
+              "bytes": 346321,
+              "sha256": "3d22f36aefab57b3a24a5c995b37de1a5967f2c32b3f43ad4691547795dd31fe"
+            },
+            {
+              "path": "frames/walk-right/frame-008.png",
+              "duration_ms": 110,
+              "bytes": 363074,
+              "sha256": "477b242ed526bc391b30b111f09c31aca78fac1d7cdc44fbe38a644793162df7"
+            },
+            {
+              "path": "frames/walk-right/frame-009.png",
+              "duration_ms": 110,
+              "bytes": 362052,
+              "sha256": "990b378af0647060f2524a8dc54f92525b75225451984cf97c7ca0dd2324aad5"
+            },
+            {
+              "path": "frames/walk-right/frame-010.png",
+              "duration_ms": 110,
+              "bytes": 343215,
+              "sha256": "988f3069631afa3f6b2b30ca2a289c12b4bc24429292c3a736a831ea46adbf95"
+            },
+            {
+              "path": "frames/walk-right/frame-011.png",
+              "duration_ms": 110,
+              "bytes": 364073,
+              "sha256": "bc2f1facd6ac8a8d4f45ecf95b31786538aa818fd822ae3e4fa35406f88a9287"
+            },
+            {
+              "path": "frames/walk-right/frame-012.png",
+              "duration_ms": 110,
+              "bytes": 361486,
+              "sha256": "b4dd7ada11cf8a3b4cd724ba5736c63ee94edaf36050066ab792ac9be6dc730a"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

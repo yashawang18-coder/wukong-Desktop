@@ -56,6 +56,26 @@ Owner preview approval must be represented separately from runtime approval. Unt
 
 New frames must be local motion deltas from approved anchors. Independent full-frame regeneration is prohibited because it causes identity drift.
 
+## Shared behavior bindings
+
+When a new behavior meaning uses an exact contiguous range from an existing approved motion, store a reference binding instead of copying PNG files. The binding must include the canonical source asset batch, behavior ID, phase, one-based start frame, frame count, and SHA-256 of the concatenated source frame bytes.
+
+- The source motion must be current, runtime-approved, and explicitly allowed for that binding domain.
+- The binding owns its own semantic and runtime gates; source approval never promotes the new behavior meaning automatically.
+- Missing sources, changed bytes, invalid ranges, expired sources, or disabled sources fail closed.
+- Timing is inherited from the exact source phase and range.
+- Duplicate PNG storage, implicit filename matching, pixel processing, and fallback to legacy/expired visuals are forbidden.
+
+## Horizontal-mirror derivatives
+
+Mirroring is a versioned pixel derivative, not an implicit fallback. A package is eligible only when its manifest explicitly declares `mirror_safe=true` and a repository audit confirms that the motion has no left/right paw meaning, asymmetric identity or curl-tail direction, directional prop/vehicle/effect, readable text, or already available native opposite-direction art.
+
+- Never modify an approved source package in place.
+- Prefer native opposite-direction frames whenever they exist.
+- Preserve provenance from source frame to derivative frame and regenerate byte/SHA-256 manifests.
+- Keep `runtime_approved=false` and `runtime_use=false` until the mirrored derivative receives separate owner visual and Windows renderer QA.
+- Treat missing or ambiguous mirror metadata as unsafe and generate no frames.
+
 ## Privacy and review rules
 
 - Do not commit real photographs of Wukong.

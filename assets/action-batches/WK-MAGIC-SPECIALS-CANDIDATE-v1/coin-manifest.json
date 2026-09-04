@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "asset_id": "WK-MAGIC-PETRIFY-COIN-v1-candidate",
+  "behavior_id": "wk.magic.petrificus_totalus",
+  "status": "candidate",
+  "canvas": {
+    "width": 1024,
+    "height": 1024,
+    "format": "png",
+    "color_mode": "rgba",
+    "transparent_background": true,
+    "shared_visible_bounds": {
+      "x": 62,
+      "y": 70,
+      "width": 900,
+      "height": 882
+    },
+    "anchor": {
+      "x": 512,
+      "y": 952,
+      "meaning": "bottom_center"
+    }
+  },
+  "states": [
+    {
+      "id": "vivid",
+      "front": "petrificus_coin/front/state-01-vivid.png",
+      "back": "petrificus_coin/back/state-01-vivid.png"
+    },
+    {
+      "id": "flat",
+      "front": "petrificus_coin/front/state-02-flat.png",
+      "back": "petrificus_coin/back/state-02-flat.png"
+    },
+    {
+      "id": "faded",
+      "front": "petrificus_coin/front/state-03-faded.png",
+      "back": "petrificus_coin/back/state-03-faded.png"
+    },
+    {
+      "id": "exhausted",
+      "front": "petrificus_coin/front/state-04-exhausted.png",
+      "back": "petrificus_coin/back/state-04-exhausted.png"
+    }
+  ],
+  "timing": {
+    "settle_to_flat_ms": 5000,
+    "fade_step_ms": 600000,
+    "exhausted_after_ms": 1200000,
+    "configurable": [
+      "settle_to_flat_ms",
+      "fade_step_ms",
+      "exhausted_after_ms"
+    ]
+  },
+  "state_machine": {
+    "initial": {
+      "side": "front",
+      "state": "vivid"
+    },
+    "settle": {
+      "after_ms": 800,
+      "from": "vivid",
+      "to": "flat",
+      "does_not_reset_inactivity_clock": true
+    },
+    "inactivity": [
+      {
+        "at_ms": 600000,
+        "to": "faded"
+      },
+      {
+        "at_ms": 1200000,
+        "to": "exhausted"
+      }
+    ],
+    "single_click": {
+      "side": "front",
+      "state": "vivid",
+      "reset_inactivity_clock": true,
+      "restart_settle_timer": true
+    },
+    "double_click_front": {
+      "side": "back",
+      "preserve_state": true,
+      "preserve_inactivity_clock": true
+    },
+    "double_click_back": {
+      "side": "front",
+      "state": "vivid",
+      "reset_inactivity_clock": true,
+      "restart_settle_timer": true
+    },
+    "click_disambiguation": {
+      "defer_single_click_until_system_double_click_timeout": true,
+      "cancel_pending_single_click_on_double_click": true
+    }
+  },
+  "flip": {
+    "front_to_back": {
+      "directories_by_state": {
+        "vivid": "petrificus_coin/flip/vivid/front-to-back",
+        "flat": "petrificus_coin/flip/flat/front-to-back",
+        "faded": "petrificus_coin/flip/faded/front-to-back",
+        "exhausted": "petrificus_coin/flip/exhausted/front-to-back"
+      },
+      "frames": 9,
+      "filename_pattern": "frame-{index:03d}.png",
+      "frame_duration_ms": 80,
+      "preserve_state_during_flip": true
+    },
+    "back_to_front": {
+      "strategy": "reverse_front_to_back",
+      "reset_to_vivid_on_complete": true
+    },
+    "swap_face_at_frame": 6,
+    "total_sequences": 4,
+    "total_frames": 36
+  },
+  "integration": {
+    "runtime_mode": "ordered_png_frames",
+    "execution_mode": "PrototypePreview",
+    "allowed_sources": [
+      "OwnerContextMenu",
+      "ControlPanel"
+    ],
+    "prototype_use": true,
+    "production_asset": false,
+    "fallback": "wk.core.prone_idle",
+    "renderer_qa": "pending",
+    "runtime_use": false
+  },
+  "revision_notes": [
+    {
+      "date": "2026-08-15",
+      "change": "Sharpened state-01-vivid and state-02-flat coin back edges to match the clear double pressed rim on later back states; preserved frosted coin face and paw mark; rebuilt vivid/flat flip frames, preview GIF, and coin checksums.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    },
+    {
+      "date": "2026-08-15",
+      "change": "Replaced state-01-vivid and state-02-flat coin fronts from the local V2.3 coin masters; generated matching gold-luster backs with clear double pressed rims and paw embossing; rebuilt vivid/flat flip frames, review preview GIF, and coin checksums while keeping runtime gates unchanged.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    },
+    {
+      "date": "2026-08-15",
+      "change": "Replaced state-01-vivid and state-02-flat coin backs from the local shared back master with large paw embossing and crisp coin rim; rebuilt vivid/flat flip frames, review preview GIF, and coin checksums while preserving the shared visible bounds and runtime gates.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    },
+    {
+      "date": "2026-08-21",
+      "change": "Repaired the pale cutout fringe on the first two colored coin fronts and vivid/flat flip sequences by recoloring only boundary RGB from inward gold-rim samples; original alpha masks, visible bounds, scale, source backups, and runtime gates remain unchanged.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    },
+    {
+      "date": "2026-08-21",
+      "change": "Removed the opaque white cutout edge from state-01-vivid coin back by applying the established transparent coin silhouette and inward gold-rim colors; preserved canvas size, visible bounds, internal coin artwork, and runtime gates.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    },
+    {
+      "id": "2026-08-24-shared-complete-edge-baseline",
+      "date": "2026-08-24",
+      "change": "Unified all eight coin faces on one complete anti-aliased outer contour, removed white/red/yellow cutout contamination from inward rim samples, zeroed transparent RGB, and rebuilt all 36 flip frames from the repaired face pairs. Interior coin artwork and runtime gates remain unchanged.",
+      "runtime_validation": "pending",
+      "runtime_approved": false,
+      "runtime_use": false
+    }
+  ],
+  "previews": [
+    {
+      "kind": "back-edge-fix-review",
+      "path": "petrificus_coin/previews/coin-back-edge-fix-preview.gif",
+      "frames": 4,
+      "frame_duration_ms": 700,
+      "sha256": "e49398727f2504ccd5187583ca13efb6dde600b71f54b89f77845a0608bc7916"
+    },
+    {
+      "kind": "front-master-v23-review",
+      "path": "petrificus_coin/previews/coin-front-master-v23-preview.gif",
+      "frames": 4,
+      "frame_duration_ms": 700,
+      "sha256": "34f7f8fd670b5f98ddb0065c697f3a09e186e474393c2cc57bc174e47a465218"
+    },
+    {
+      "kind": "back-master-v23-review",
+      "path": "petrificus_coin/previews/coin-back-master-v23-preview.gif",
+      "frames": 4,
+      "frame_duration_ms": 700,
+      "sha256": "b63ef5f7d8fa4ebdd609b2d4a99c4f18d1609f370d7bac3aa0fc946e0681dbd9"
+    },
+    {
+      "kind": "final-shared-edge-baseline-review",
+      "path": "petrificus_coin/previews/coin-edge-baseline-preview.gif",
+      "frames": 8,
+      "frame_duration_ms": 700,
+      "sha256": "4dd26c4a6cd5de3fbb0b964fedd6f1f533f2aa0f2d6d5acb6c4e8d476d47a980"
+    }
+  ],
+  "edge_baseline": {
+    "profile": "shared_complete_antialiased_ellipse_v1",
+    "visible_bounds": {
+      "x": 62,
+      "y": 70,
+      "width": 900,
+      "height": 882
+    },
+    "faces_share_exact_alpha": true,
+    "transparent_rgb_zeroed": true,
+    "flip_widths": [
+      900,
+      845,
+      672,
+      415,
+      112,
+      415,
+      672,
+      845,
+      900
+    ],
+    "repair_scope": "outer cutout band and deterministic flip derivation only"
+  }
+}
