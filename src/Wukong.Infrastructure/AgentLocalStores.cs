@@ -396,6 +396,7 @@ public sealed class MockRuntimeContextStateProvider : IRuntimeContextStateProvid
 {
     private readonly IDeveloperSession? _developerSession;
     private readonly Func<PetRuntimeStateSnapshot>? _liveRuntimeState;
+    private readonly Func<PetAgentDialogueProjection>? _liveAgentState;
     private readonly object _gate = new();
     private PersonalitySnapshot _personality = PersonalitySnapshot.Default;
     private RelationshipSnapshot _relationship = RelationshipSnapshot.Default;
@@ -404,10 +405,12 @@ public sealed class MockRuntimeContextStateProvider : IRuntimeContextStateProvid
 
     public MockRuntimeContextStateProvider(
         IDeveloperSession? developerSession = null,
-        Func<PetRuntimeStateSnapshot>? liveRuntimeState = null)
+        Func<PetRuntimeStateSnapshot>? liveRuntimeState = null,
+        Func<PetAgentDialogueProjection>? liveAgentState = null)
     {
         _developerSession = developerSession;
         _liveRuntimeState = liveRuntimeState;
+        _liveAgentState = liveAgentState;
     }
 
     public Task<(PersonalitySnapshot Personality, RelationshipSnapshot Relationship, PetRuntimeStateSnapshot RuntimeState)> GetStateAsync(
@@ -418,6 +421,14 @@ public sealed class MockRuntimeContextStateProvider : IRuntimeContextStateProvid
         {
             var activeDeveloperOverride = _hasDeveloperOverride &&
                                           (_developerSession is null || _developerSession.IsAuthenticated);
+            if (!activeDeveloperOverride && _liveAgentState is not null)
+            {
+                var projection = _liveAgentState();
+                return Task.FromResult((
+                    projection.Personality.Clamp(),
+                    projection.Relationship.Clamp(),
+                    projection.RuntimeState.Clamp()));
+            }
             var runtimeState = !activeDeveloperOverride && _liveRuntimeState is not null
                 ? _liveRuntimeState().Clamp()
                 : _runtimeState;

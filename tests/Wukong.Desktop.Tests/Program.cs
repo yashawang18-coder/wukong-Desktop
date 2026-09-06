@@ -37,6 +37,11 @@ var tests = new (string Name, Action Run)[]
     ("double click targets compact chat and initiative speech stays low frequency", DesktopChatAndInitiativeContract),
     ("main window pet scale changes image size", MainWindowPetScaleChangesImageSize),
     ("initial placement stays in work area", InitialPlacementStaysInWorkArea),
+    ("desktop canonical agent state drives dialogue projection", DesktopCanonicalAgentStateDrivesDialogue),
+    ("shadow decision observes but does not replace legacy selection", ShadowDecisionDoesNotReplaceLegacySelection),
+    ("resting rollout uses one authoritative agent request", RestingRolloutUsesSingleAgentRequest),
+    ("observing rollout changes authority only when enabled", ObservingRolloutChangesAuthorityOnlyWhenEnabled),
+    ("desktop reducer correlates lifecycle completion ids", DesktopReducerCorrelatesLifecycleCompletionIds),
     ("phase15 motion assets are copied and decodable", Phase15MotionAssetsAreCopiedAndDecodable),
     ("lifecycle microloop candidates are indexed and gated", LifecycleMicroloopCandidatesAreIndexedAndGated),
     ("developer lifecycle candidate can request playback", DeveloperLifecycleCandidateCanRequestPlayback),
@@ -873,6 +878,7 @@ static void DeveloperLifecycleCandidateCanRequestPlayback()
 
     var normal = runtime.SubmitOwnerCommandAsync("\u505c").GetAwaiter().GetResult();
     Assert(normal == PetActionResult.Interrupted, "stop path changed");
+    var postureBeforePreview = runtime.CurrentStablePosture;
 
     var result = runtime.SubmitDeveloperCandidateMotionAsync(LifecycleCandidateBehaviorIds.LivelyDailyP2).GetAwaiter().GetResult();
     Assert(result == PetActionResult.Accepted, "developer lifecycle candidate was not accepted");
@@ -883,8 +889,8 @@ static void DeveloperLifecycleCandidateCanRequestPlayback()
     runtime.RequestPetPixelSize(192);
     Assert(requestedSize == 192, "developer size switch did not emit 192px request");
     runtime.CompleteMotion(LifecycleCandidateBehaviorIds.LivelyDailyP2, "exit");
-    Assert(runtime.CurrentStablePosture == StablePosture.Stand, "full lifecycle exit must finish in stable stand");
-    Assert(request.Motion.BehaviorId == LifecycleCandidateBehaviorIds.StandIdleMicroloop, "full lifecycle exit did not enter stand microloop");
+    Assert(runtime.CurrentStablePosture == postureBeforePreview, "developer lifecycle preview wrote the production posture");
+    Assert(request.Motion.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop, "developer lifecycle preview did not return to the production posture idle");
 }
 
 static void ApprovedAutonomousDailyTransitionsAreIndexedAndGated()
@@ -1907,7 +1913,7 @@ static void ControlPanelTabButtonsShareVisualMetrics()
 
 static void ControlPanelCarRideCopyMatchesApprovedRuntimeState()
 {
-    var xamlPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Wukong.Desktop", "ControlPanelWindow.xaml"));
+    var xamlPath = Path.Combine(TestRepository.Root, "src", "Wukong.Desktop", "ControlPanelWindow.xaml");
     var xaml = File.ReadAllText(xamlPath);
     Assert(xaml.Contains("x:Name=\"PlayAssetsTabButton\"", StringComparison.Ordinal), "play asset tab missing");
     Assert(xaml.Contains("x:Name=\"PlayAssetList\"", StringComparison.Ordinal), "play asset list missing");
@@ -2417,7 +2423,6 @@ static void AutonomousTickCanRequestMotion()
     var hungerBeforeTick = runtime.Hunger;
     Assert(runtime.CurrentStablePosture == StablePosture.Stand, "default healthy runtime state should start in stable stand");
     Assert(requests.Last().Motion.BehaviorId == LifecycleCandidateBehaviorIds.StandIdleMicroloop, "startup is still hard-coded to prone idle");
-
     for (var seed = 1; seed <= 64 && requests.All(x =>
              x.Motion.BehaviorId != LifecycleCandidateBehaviorIds.LivelyDailyP2 &&
              x.Motion.BehaviorId != LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1); seed++)
@@ -2428,6 +2433,7 @@ static void AutonomousTickCanRequestMotion()
             RelationshipState.Default,
             seed);
         runtime.StartIdle("Startup");
+        now += TimeSpan.FromSeconds(30);
         typeof(DesktopRuntimeHost)
             .GetField("_currentStartedAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
             .SetValue(runtime, now - TimeSpan.FromSeconds(60));
@@ -2448,6 +2454,241 @@ static void AutonomousTickCanRequestMotion()
     Assert(standDelays.All(x => x >= TimeSpan.FromSeconds(8) && x < TimeSpan.FromSeconds(16)), "stand dwell left its brief scheduling window");
     Assert(proneDelays.All(x => x >= TimeSpan.FromSeconds(48) && x < TimeSpan.FromSeconds(77)), "prone dwell left its preferred long scheduling window");
     Assert(proneDelays.Average(x => x.TotalSeconds) >= standDelays.Average(x => x.TotalSeconds) * 4, "daily scheduling no longer prefers prone dwell over standing");
+}
+
+static void DesktopCanonicalAgentStateDrivesDialogue()
+{
+    var runtime = new DesktopRuntimeHost();
+    runtime.UpdateBehaviorAgentMock(
+        TemperamentProfile.Default with
+        {
+            Activity = 88,
+            Attachment = 22,
+            CommandCooperativeness = 91
+        },
+        PetRuntimeState.Default with
+        {
+            CurrentPosture = StablePosture.Sit,
+            MoodValence = 0.31,
+            Stress = 0.66,
+            Thirst = 0.73
+        },
+        RelationshipState.Default with { Trust = 0.39 },
+        81);
+
+    var projection = runtime.BuildDialogueProjection();
+
+    Assert(runtime.AgentStateSnapshot.Temperament.Activity == 88, "desktop did not retain the canonical temperament state");
+    Assert(Math.Abs(projection.Personality.Liveliness - 0.88) < 0.0001, "dialogue personality diverged from canonical temperament");
+    Assert(Math.Abs(projection.Relationship.Trust - 0.39) < 0.0001, "dialogue relationship diverged from canonical relationship");
+    Assert(projection.RuntimeState.CurrentPosture == "sit", "dialogue posture diverged from canonical runtime state");
+    Assert(Math.Abs(projection.RuntimeState.MoodValence - 0.31) < 0.0001, "dialogue mood diverged from canonical affect state");
+    Assert(Math.Abs(runtime.Thirst - 0.73) < 0.0001, "desktop did not expose thirst from the canonical runtime state");
+}
+
+static void ShadowDecisionDoesNotReplaceLegacySelection()
+{
+    var now = new DateTimeOffset(2026, 9, 6, 14, 0, 0, TimeSpan.Zero);
+    var runtime = new DesktopRuntimeHost(now: () => now, rolloutOptions: AutonomousAgentRolloutOptions.ShadowOnly);
+    runtime.UpdateBehaviorAgentMock(
+        TemperamentProfile.Default with { Activity = 95 },
+        PetRuntimeState.Default with
+        {
+            CurrentPosture = StablePosture.Stand,
+            Energy = 0.92,
+            Boredom = 0.88,
+            Stress = 0.05
+        },
+        RelationshipState.Default,
+        17);
+    runtime.StartIdle("Startup");
+
+    PetMotionRequest? legacyRequest = null;
+    runtime.MotionRequested += (_, item) => legacyRequest = item;
+    typeof(DesktopRuntimeHost)
+        .GetField("_currentStartedAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+        .SetValue(runtime, now - TimeSpan.FromSeconds(60));
+    typeof(DesktopRuntimeHost)
+        .GetField("_nextAutonomousDecisionAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+        .SetValue(runtime, now - TimeSpan.FromSeconds(1));
+
+    runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
+
+    Assert(runtime.LastShadowDecision is not null, "shadow decision did not run beside the legacy scheduler");
+    Assert(legacyRequest is not null, "legacy autonomous scheduler did not remain authoritative");
+    Assert(legacyRequest!.Motion.BehaviorId == runtime.CurrentBehaviorId, "shadow selection replaced the legacy motion request");
+    Assert(runtime.TraceLines.Any(line => line.Contains("authoritative=legacy", StringComparison.Ordinal)), "shadow comparison did not identify the authoritative scheduler");
+}
+
+static void RestingRolloutUsesSingleAgentRequest()
+{
+    var now = new DateTimeOffset(2026, 9, 6, 14, 20, 0, TimeSpan.Zero);
+    var runtime = new DesktopRuntimeHost(now: () => now);
+    runtime.UpdateBehaviorAgentMock(
+        TemperamentProfile.Default,
+        PetRuntimeState.Default with
+        {
+            CurrentPosture = StablePosture.Stand,
+            Energy = 0.58,
+            Boredom = 0.54,
+            Stress = 0.12
+        },
+        RelationshipState.Default,
+        29);
+    runtime.StartIdle("Startup");
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, item) => requests.Add(item);
+    ForceAutonomousTickDue(runtime, now);
+
+    runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
+
+    Assert(requests.Count <= 1, $"resting rollout submitted {requests.Count} motion requests");
+    Assert(runtime.AgentStateSnapshot.Episode.Kind == PetEpisodeKind.Resting, "resting rollout changed episode unexpectedly");
+    if (requests.Count == 1)
+    {
+        Assert(DesktopAutonomousEpisodeBindings.For(PetEpisodeKind.Resting)!.Contains(requests[0].Motion.BehaviorId),
+            "resting rollout selected an action outside its explicit binding");
+        Assert(requests[0].RequestId != Guid.Empty && requests[0].CorrelationId != Guid.Empty,
+            "authoritative request did not carry execution correlation ids");
+    }
+    Assert(runtime.TraceLines.Any(line => line.Contains("authoritative=agent", StringComparison.Ordinal)),
+        "resting rollout did not identify the new agent as authoritative");
+}
+
+static void ObservingRolloutChangesAuthorityOnlyWhenEnabled()
+{
+    var legacyNow = new DateTimeOffset(2026, 9, 6, 15, 0, 0, TimeSpan.Zero);
+    var legacyRuntime = CreateObservingRuntime(
+        () => legacyNow,
+        value => legacyNow = value,
+        AutonomousAgentRolloutOptions.RestingFirst);
+    PetMotionRequest? legacyRequest = null;
+    legacyRuntime.MotionRequested += (_, item) => legacyRequest = item;
+    ForceAutonomousTickDue(legacyRuntime, legacyNow);
+    legacyRuntime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
+    Assert(legacyRuntime.AgentStateSnapshot.Episode.Kind == PetEpisodeKind.Observing, "test did not enter observing episode");
+    Assert(legacyRequest is not null, "unpromoted observing episode stopped using the legacy scheduler");
+    Assert(legacyRuntime.TraceLines.Any(line => line.Contains("authoritative=legacy", StringComparison.Ordinal)),
+        "unpromoted observing episode changed authority");
+
+    var authoritativeOptions = new AutonomousAgentRolloutOptions(
+        ShadowEnabled: true,
+        new HashSet<PetEpisodeKind> { PetEpisodeKind.Resting, PetEpisodeKind.Observing },
+        LegacyFallbackOnInfrastructureFailure: false);
+    var agentNow = new DateTimeOffset(2026, 9, 6, 15, 0, 0, TimeSpan.Zero);
+    var agentRuntime = CreateObservingRuntime(() => agentNow, value => agentNow = value, authoritativeOptions);
+    var agentRequests = new List<PetMotionRequest>();
+    agentRuntime.MotionRequested += (_, item) => agentRequests.Add(item);
+    ForceAutonomousTickDue(agentRuntime, agentNow);
+    agentRuntime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
+    Assert(agentRuntime.AgentStateSnapshot.Episode.Kind == PetEpisodeKind.Observing, "authoritative test did not enter observing episode");
+    Assert(agentRequests.Count <= 1, "observing agent and legacy scheduler both submitted requests");
+    if (agentRequests.Count == 1)
+        Assert(DesktopAutonomousEpisodeBindings.For(PetEpisodeKind.Observing)!.Contains(agentRequests[0].Motion.BehaviorId),
+            "observing rollout selected an action outside its explicit binding");
+    Assert(agentRuntime.TraceLines.Any(line => line.Contains("authoritative=agent", StringComparison.Ordinal)),
+        "enabled observing rollout did not switch authority to the agent");
+}
+
+static void DesktopReducerCorrelatesLifecycleCompletionIds()
+{
+    var now = new DateTimeOffset(2026, 9, 6, 16, 0, 0, TimeSpan.Zero);
+    var runtime = new DesktopRuntimeHost(now: () => now);
+    runtime.UpdateBehaviorAgentMock(
+        TemperamentProfile.Default,
+        PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand, Energy = 0.64, Boredom = 0.58 },
+        RelationshipState.Default,
+        41);
+    runtime.StartIdle("Startup");
+    PetMotionRequest? request = null;
+    runtime.MotionRequested += (_, item) => request = item;
+    ForceAutonomousTickDue(runtime, now);
+    runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
+
+    Assert(request is { TracksAgentLifecycle: true }, "test did not select a reducer-owned finite resting behavior");
+    var reducerRequest = request!;
+    var active = runtime.AgentStateSnapshot.Runtime;
+    Assert(active.ActiveExecutionId == reducerRequest.RequestId && active.IsBusy, "reducer did not own the active execution");
+    runtime.CompleteMotion(Guid.NewGuid(), reducerRequest.Motion.BehaviorId, "exit");
+    Assert(runtime.AgentStateSnapshot.Runtime.ActiveExecutionId == reducerRequest.RequestId,
+        "stale completion cleared the active execution");
+
+    runtime.CompleteMotion(reducerRequest.RequestId, reducerRequest.Motion.BehaviorId, "exit");
+    var completed = runtime.AgentStateSnapshot;
+    Assert(completed.Runtime.ActiveExecutionId is null && !completed.Runtime.IsBusy,
+        "matching completion did not settle the reducer-owned execution");
+    var experienceCount = completed.RecentExperience.Count;
+    var energy = completed.Runtime.Energy;
+    runtime.CompleteMotion(reducerRequest.RequestId, reducerRequest.Motion.BehaviorId, "exit");
+    Assert(runtime.AgentStateSnapshot.RecentExperience.Count == experienceCount &&
+           Math.Abs(runtime.AgentStateSnapshot.Runtime.Energy - energy) < 0.000001,
+        "duplicate completion applied a second outcome");
+
+    var previewPosture = runtime.CurrentStablePosture;
+    var previewEnergy = runtime.Energy;
+    var preview = runtime.SubmitDeveloperCandidateMotionAsync(LifecycleCandidateBehaviorIds.LivelyDailyP2).GetAwaiter().GetResult();
+    Assert(preview == PetActionResult.Accepted, "developer lifecycle preview was not accepted");
+    runtime.CompleteMotion(LifecycleCandidateBehaviorIds.LivelyDailyP2, "exit");
+    Assert(runtime.CurrentStablePosture == previewPosture && Math.Abs(runtime.Energy - previewEnergy) < 0.000001,
+        "developer preview changed formal posture or energy");
+
+    var failureRuntime = new DesktopRuntimeHost(now: () => now);
+    failureRuntime.UpdateBehaviorAgentMock(
+        TemperamentProfile.Default,
+        PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand, Energy = 0.64, Boredom = 0.58 },
+        RelationshipState.Default,
+        41);
+    failureRuntime.StartIdle("Startup");
+    PetMotionRequest? failureRequest = null;
+    failureRuntime.MotionRequested += (_, item) => failureRequest = item;
+    ForceAutonomousTickDue(failureRuntime, now);
+    failureRuntime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
+    Assert(failureRequest is { TracksAgentLifecycle: true }, "failure test did not start a reducer-owned behavior");
+    var failedRequest = failureRequest!;
+    failureRuntime.FailMotion(failedRequest.RequestId, failedRequest.Motion.BehaviorId, "frame_decode_failed");
+    var failedState = failureRuntime.AgentStateSnapshot;
+    Assert(failedState.Runtime.ActiveExecutionId is null && !failedState.Runtime.IsBusy,
+        "failed motion retained the reducer execution lock");
+    var failedExperienceCount = failedState.RecentExperience.Count;
+    var failedEnergy = failedState.Runtime.Energy;
+    failureRuntime.FailMotion(failedRequest.RequestId, failedRequest.Motion.BehaviorId, "duplicate_failure");
+    Assert(failureRuntime.AgentStateSnapshot.RecentExperience.Count == failedExperienceCount &&
+           Math.Abs(failureRuntime.AgentStateSnapshot.Runtime.Energy - failedEnergy) < 0.000001,
+        "duplicate desktop failure applied a second outcome");
+}
+
+static DesktopRuntimeHost CreateObservingRuntime(
+    Func<DateTimeOffset> now,
+    Action<DateTimeOffset> setNow,
+    AutonomousAgentRolloutOptions options)
+{
+    var runtime = new DesktopRuntimeHost(now: now, rolloutOptions: options);
+    runtime.UpdateBehaviorAgentMock(
+        TemperamentProfile.Default,
+        PetRuntimeState.Default with
+        {
+            CurrentPosture = StablePosture.Prone,
+            CurrentPoseId = "prone.awake.left_front",
+            Curiosity = 0.94,
+            Focus = 0.76,
+            Energy = 0.62,
+            Stress = 0.10
+        },
+        RelationshipState.Default,
+        53);
+    runtime.StartIdle("Startup");
+    setNow(now() + TimeSpan.FromMinutes(2));
+    return runtime;
+}
+
+static void ForceAutonomousTickDue(DesktopRuntimeHost runtime, DateTimeOffset now)
+{
+    typeof(DesktopRuntimeHost)
+        .GetField("_currentStartedAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+        .SetValue(runtime, now - TimeSpan.FromSeconds(90));
+    typeof(DesktopRuntimeHost)
+        .GetField("_nextAutonomousDecisionAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+        .SetValue(runtime, now - TimeSpan.FromSeconds(1));
 }
 
 static void BootstrapLogRedactsAndDoesNotThrow()

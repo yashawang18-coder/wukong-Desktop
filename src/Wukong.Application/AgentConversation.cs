@@ -146,13 +146,13 @@ public sealed class AgentContextAssembler
         builder.AppendLine(EscapeData(snapshot.CustomPetPrompt));
         builder.AppendLine("</custom_pet_setting>");
         builder.AppendLine("<personality_readonly>");
-        builder.AppendLine($"liveliness={personality.Liveliness:0.00}; affection={personality.Affection:0.00}; sensitivity={personality.Sensitivity:0.00}; independence={personality.Independence:0.00}; mischievousness={personality.Mischievousness:0.00}");
+        builder.AppendLine($"liveliness={personality.Liveliness:0.00}; affection={personality.Affection:0.00}; sensitivity={personality.Sensitivity:0.00}; independence={personality.Independence:0.00}; mischievousness={personality.Mischievousness:0.00}; command_cooperativeness={personality.CommandCooperativeness:0.00}");
         builder.AppendLine("</personality_readonly>");
         builder.AppendLine("<relationship_readonly>");
         builder.AppendLine($"trust={relationship.Trust:0.00}; familiarity={relationship.Familiarity:0.00}; touch_acceptance={relationship.TouchAcceptance:0.00}; initiative_acceptance={relationship.InitiativeAcceptance:0.00}");
         builder.AppendLine("</relationship_readonly>");
         builder.AppendLine("<runtime_state_readonly>");
-        builder.AppendLine($"current_posture={EscapeData(state.CurrentPosture)}; current_action={EscapeData(state.CurrentAction)}; current_behavior={EscapeData(state.CurrentBehavior)}; mood_valence={state.MoodValence:0.00}; arousal={state.Arousal:0.00}; stress={state.Stress:0.00}; social_desire={state.SocialDesire:0.00}; play_desire={state.PlayDesire:0.00}; curiosity={state.Curiosity:0.00}; fatigue={state.Fatigue:0.00}; safety={state.Safety:0.00}");
+        builder.AppendLine($"current_posture={EscapeData(state.CurrentPosture)}; current_action={EscapeData(state.CurrentAction)}; current_behavior={EscapeData(state.CurrentBehavior)}; episode={EscapeData(state.Episode)}; busy={state.IsBusy}; mood_valence={state.MoodValence:0.00}; arousal={state.Arousal:0.00}; energy={state.Energy:0.00}; hunger={state.Hunger:0.00}; thirst={state.Thirst:0.00}; stress={state.Stress:0.00}; social_desire={state.SocialDesire:0.00}; play_desire={state.PlayDesire:0.00}; curiosity={state.Curiosity:0.00}; fatigue={state.Fatigue:0.00}; safety={state.Safety:0.00}");
         builder.AppendLine("constraint=Describe only the current posture and action above; do not infer posture from older conversation or memory.");
         builder.AppendLine("</runtime_state_readonly>");
         if (snapshot.ConfirmedLongTermMemories.Count > 0)

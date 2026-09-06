@@ -47,7 +47,9 @@ public sealed class DesktopAgentRuntime : IDisposable
     public IMockContextController MockContext { get; }
     public PortableDataLayout DataPaths { get; }
 
-    public static DesktopAgentRuntime CreateDefault(Func<PetRuntimeStateSnapshot>? liveRuntimeState = null)
+    public static DesktopAgentRuntime CreateDefault(
+        Func<PetRuntimeStateSnapshot>? liveRuntimeState = null,
+        Func<PetAgentDialogueProjection>? liveAgentState = null)
     {
         var dataPaths = PortableDataLayout.CreateDefault();
         var profileRoot = dataPaths.ProfileDirectory;
@@ -70,7 +72,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         var memory = new FileConversationMemoryStore(agentRoot);
         var developer = new DeveloperSession();
         var diagnostics = new DeveloperDiagnostics(developer);
-        var mockState = new MockRuntimeContextStateProvider(developer, liveRuntimeState);
+        var mockState = new MockRuntimeContextStateProvider(developer, liveRuntimeState, liveAgentState);
         var album = new AlbumMarkdownMemoryRetriever(() => ResolveAlbumRoot(dataPaths));
         var context = new LocalPetContextProvider(profiles, mockState, album, memory);
         var conversation = new ContextualConversationService(

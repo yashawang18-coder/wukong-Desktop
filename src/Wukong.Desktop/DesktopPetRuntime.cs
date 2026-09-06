@@ -3011,10 +3011,18 @@ public sealed record PetMotionRequest(
     int LoopCycles,
     BehaviorRequestSource Source = BehaviorRequestSource.OwnerUi,
     BehaviorExecutionMode ExecutionMode = BehaviorExecutionMode.Normal,
-    long RequestedAtTimestamp = 0);
+    long RequestedAtTimestamp = 0,
+    Guid RequestId = default,
+    Guid CorrelationId = default,
+    bool TracksAgentLifecycle = false);
 
 public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 {
+    private sealed record ActiveBehaviorExecution(
+        BehaviorRequest Request,
+        BehaviorOutcomeProfile Profile,
+        TimeSpan EstimatedDuration);
+
     private const string StableHoldPrefix = "wk.runtime.posture_hold.";
     private static readonly IReadOnlySet<string> AutonomousRuntimeAllowlist =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -3046,15 +3054,36 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private PlayableMotion? _currentMotion;
     private BehaviorExecutionMode _currentExecutionMode = BehaviorExecutionMode.Normal;
     private readonly BehaviorAgentMockEngine _behaviorAgent = new();
+    private readonly BehaviorDecisionEngine _shadowDecisionEngine = new();
+    private readonly PetStateReducer _stateReducer = new();
+    private readonly PetEpisodePolicy _episodePolicy = new();
+    private readonly DialogueStateProjector _dialogueStateProjector = new();
+    private readonly BehaviorCapabilityCatalog _behaviorCapabilities;
     private readonly InteractionDecisionService _interactionDecisions = new();
     private readonly InitiativeSpeechDecisionService _initiativeSpeechDecisions = new();
+    private readonly AutonomousAgentRolloutOptions _rolloutOptions;
     private readonly Dictionary<string, DateTimeOffset> _lastAccepted = new(StringComparer.OrdinalIgnoreCase);
     private readonly RollingFileLogStore _logs = RollingFileLogStore.CreateDefault();
-    private PetRuntimeState _agentState = PetRuntimeState.Default;
-    private RelationshipState _relationshipState = RelationshipState.Default;
-    private TemperamentProfile _temperament = TemperamentProfile.Default;
+    private PetAgentState _petAgentState = PetAgentState.CreateDefault(DateTimeOffset.UnixEpoch);
+    private PetRuntimeState _agentState
+    {
+        get => _petAgentState.Runtime;
+        set => _petAgentState = (_petAgentState with { Runtime = value.Clamp() }).Clamp();
+    }
+    private RelationshipState _relationshipState
+    {
+        get => _petAgentState.Relationship;
+        set => _petAgentState = (_petAgentState with { Relationship = value }).Clamp();
+    }
+    private TemperamentProfile _temperament
+    {
+        get => _petAgentState.Temperament;
+        set => _petAgentState = (_petAgentState with { Temperament = value }).Clamp();
+    }
     private PetDecision? _lastAgentDecision;
     private PetDecision? _pendingAgentDecision;
+    private BehaviorAgentDecision? _lastShadowDecision;
+    private string _lastShadowComparison = "not_evaluated";
     private int _decisionSeed = 1508;
     private int _autonomousDecisionCount;
     private long _pendingRequestTimestamp;
@@ -3067,14 +3096,21 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private DateTimeOffset? _coinActivityAt;
     private DateTimeOffset? _lastInitiativeSpeechAt;
     private BehaviorRequestSource _coinPreviewSource = BehaviorRequestSource.OwnerContextMenu;
-    private bool _frontProneProfileActive;
+    private ActiveBehaviorExecution? _activeReducerExecution;
+    private PetAgentState? _previewAgentStateSnapshot;
     private bool _patrolCanMoveLeft;
     private bool _patrolCanMoveRight;
 
-    public DesktopRuntimeHost(PetrifiedCoinOptions? coinOptions = null, Func<DateTimeOffset>? now = null)
+    public DesktopRuntimeHost(
+        PetrifiedCoinOptions? coinOptions = null,
+        Func<DateTimeOffset>? now = null,
+        AutonomousAgentRolloutOptions? rolloutOptions = null)
     {
         _now = now ?? (() => DateTimeOffset.Now);
+        _rolloutOptions = rolloutOptions ?? AutonomousAgentRolloutOptions.RestingFirst;
+        EnableBehaviorAgentShadow = _rolloutOptions.ShadowEnabled;
         _catalog = DesktopMotionCatalog.Load(AppContext.BaseDirectory);
+        _behaviorCapabilities = DesktopBehaviorCapabilityCatalog.Create(_catalog.Motions);
         try
         {
             _coinAssets = PetrifiedCoinAssets.Load(AppContext.BaseDirectory);
@@ -3089,8 +3125,18 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         CurrentBehaviorId = _catalog.RequiredIdle.BehaviorId;
         _currentBehaviorId = _catalog.RequiredIdle.BehaviorId;
         _currentStartedAt = _now();
+        _petAgentState = PetAgentState.CreateDefault(_currentStartedAt) with
+        {
+            Runtime = PetRuntimeState.Default with
+            {
+                CurrentPosture = StablePostureFromPose(_catalog.RequiredIdle.EndPose, StablePosture.Prone),
+                CurrentPoseId = _catalog.RequiredIdle.EndPose,
+                LastActionId = _catalog.RequiredIdle.BehaviorId,
+                CurrentPhase = "idle"
+            }
+        };
         _nextAutonomousDecisionAt = _currentStartedAt + ChooseAutonomousIdleDelay(_agentState.CurrentPosture, _random);
-        Trace("asset_catalog_loaded", $"{_catalog.LoadSummary}; motions={_catalog.Motions.Count}");
+        Trace("asset_catalog_loaded", $"{_catalog.LoadSummary}; motions={_catalog.Motions.Count}; capabilities={_behaviorCapabilities.Capabilities.Count}");
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -3134,7 +3180,11 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public PetrifiedCoinState? CurrentCoinState { get; private set; }
     public PetrifiedCoinSide? CurrentCoinSide { get; private set; }
     public bool EnableBehaviorAgentMock { get; private set; }
+    public bool EnableBehaviorAgentShadow { get; private set; }
+    public IReadOnlySet<PetEpisodeKind> AuthoritativeAgentEpisodes => _rolloutOptions.AuthoritativeEpisodes;
     public StablePosture CurrentStablePosture => _agentState.CurrentPosture;
+    public PetAgentState AgentStateSnapshot => _petAgentState.Clamp();
+    public BehaviorAgentDecision? LastShadowDecision => _lastShadowDecision;
     public string BehaviorAgentSnapshot => BuildBehaviorAgentSnapshot();
     public string BroomFlightMetrics { get; private set; } = "Not measured";
 
@@ -3158,6 +3208,37 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public double Stress => _agentState.Stress;
     public double Focus => _agentState.Focus;
     public double Comfort => _agentState.Comfort;
+    public double Thirst => _agentState.Thirst;
+    private bool FrontProneProfileActive =>
+        string.Equals(
+            PetPoseCompatibility.FamilyFor(_agentState.CurrentPoseId, _agentState.CurrentPosture),
+            "prone.front",
+            StringComparison.OrdinalIgnoreCase);
+
+    public PetAgentDialogueProjection BuildDialogueProjection()
+    {
+        var active = IsStableIdleBehavior(_currentBehaviorId) ? null : _currentBehaviorId;
+        var projectionState = _petAgentState with
+        {
+            Runtime = _agentState with
+            {
+                ActiveActionId = active,
+                CurrentPhase = CurrentPhase,
+                IsBusy = active is not null,
+                IsInterruptible = _currentInterruptible,
+                ActiveActionStartedAt = active is null ? null : _currentStartedAt
+            }
+        };
+        return _dialogueStateProjector.Project(projectionState);
+    }
+
+    public void SetBehaviorAgentShadowEnabled(bool enabled)
+    {
+        EnableBehaviorAgentShadow = enabled;
+        Trace("behavior_agent_shadow", enabled ? "enabled" : "disabled");
+        OnPropertyChanged(nameof(EnableBehaviorAgentShadow));
+        OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+    }
 
     public void SetBehaviorAgentMockEnabled(bool enabled)
     {
@@ -3169,14 +3250,42 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public void UpdateBehaviorAgentMock(TemperamentProfile temperament, PetRuntimeState state, RelationshipState relationship, int seed)
     {
-        _temperament = temperament;
-        _agentState = state.Clamp();
-        _relationshipState = relationship;
+        var now = _now();
+        var normalizedState = EnsurePoseMatchesPosture(state.Clamp());
+        _petAgentState = (_petAgentState with
+        {
+            Temperament = temperament,
+            Runtime = normalizedState,
+            Relationship = relationship,
+            Clock = _petAgentState.Clock with { LastUpdatedAt = now }
+        }).Clamp();
         _decisionSeed = seed;
         _autonomousDecisionCount = 0;
         Trace("behavior_agent_state", $"seed={seed} posture={_agentState.CurrentPosture} energy={_agentState.Energy:0.00} hunger={_agentState.Hunger:0.00} social={_agentState.SocialNeed:0.00} boredom={_agentState.Boredom:0.00} stress={_agentState.Stress:0.00}");
         OnPropertyChanged(nameof(CurrentStablePosture));
         OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+    }
+
+    private static PetRuntimeState EnsurePoseMatchesPosture(PetRuntimeState state)
+    {
+        var family = PetPoseCompatibility.FamilyFor(state.CurrentPoseId, state.CurrentPosture);
+        var compatible = state.CurrentPosture switch
+        {
+            StablePosture.Stand => family == "stand",
+            StablePosture.Sit => family == "sit",
+            _ => family.StartsWith("prone", StringComparison.Ordinal) || family == "sleep"
+        };
+        if (compatible)
+            return state;
+        return state with
+        {
+            CurrentPoseId = state.CurrentPosture switch
+            {
+                StablePosture.Stand => "stand.neutral.left_front",
+                StablePosture.Sit => "sit.neutral.left_front",
+                _ => "prone.awake.left_front"
+            }
+        };
     }
 
     public PetActionResult StartIdle(string source = "Startup")
@@ -3584,7 +3693,10 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public Task<PetActionResult> StopAsync(string reason = "stop")
     {
-        CompletePendingAgentDecision(completed: false, "owner_stop");
+        var restoredPreview = RestorePreviewAgentState("stop");
+        FinishReducerOwnedExecution(ExecutionStatus.Interrupted, EstimateCurrentCompletionRatio(), reason);
+        if (!restoredPreview)
+            CompletePendingAgentDecision(completed: false, "owner_stop");
         IsPetrified = false;
         ClearCoin();
         OnPropertyChanged(nameof(IsPetrified));
@@ -3603,8 +3715,79 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         if (now < _nextAutonomousDecisionAt || !IsStableIdleBehavior(_currentBehaviorId))
             return Task.CompletedTask;
 
-        var choice = ChooseAutonomousBehavior();
-        var result = SubmitBehavior(BehaviorRequestSource.AutonomousTick, choice.BehaviorId, choice.Reason, priority: -5);
+        var decisionOrdinal = _autonomousDecisionCount++;
+        var decisionSeed = CombineDecisionSeed(_decisionSeed, decisionOrdinal, (int)_agentState.CurrentPosture);
+        var authoritative = _rolloutOptions.IsAuthoritative(_petAgentState.Episode.Kind);
+        var episodeBindings = DesktopAutonomousEpisodeBindings.For(_petAgentState.Episode.Kind);
+        Exception? decisionFailure = null;
+        if (EnableBehaviorAgentShadow || authoritative)
+        {
+            try
+            {
+                _lastShadowDecision = _shadowDecisionEngine.Decide(
+                    _petAgentState,
+                    _behaviorCapabilities,
+                    new BehaviorDecisionInput(
+                        BehaviorRequestSource.AutonomousTick,
+                        now,
+                        _currentBehaviorId,
+                        _currentStartedAt,
+                        _currentInterruptible,
+                        _lastAccepted,
+                        _petAgentState.RecentExperience.Select(item => item.BehaviorId).ToArray(),
+                        decisionSeed,
+                        AllowInitiative: true,
+                        WindowMotionAvailable: _patrolCanMoveLeft || _patrolCanMoveRight,
+                        CandidateBehaviorIds: episodeBindings));
+            }
+            catch (Exception ex)
+            {
+                decisionFailure = ex;
+                _lastShadowDecision = null;
+                Trace("behavior_agent_decision_failed", $"episode={_petAgentState.Episode.Kind} error={ex.GetType().Name}");
+            }
+        }
+
+        // The legacy selector remains a side-effect-free comparison source during rollout.
+        var legacyChoice = ChooseAutonomousBehavior(decisionOrdinal);
+        if (_lastShadowDecision is not null)
+        {
+            _lastShadowComparison = string.Equals(
+                legacyChoice.BehaviorId,
+                _lastShadowDecision.SelectedBehaviorId,
+                StringComparison.OrdinalIgnoreCase)
+                ? "same"
+                : "different";
+            var selected = _lastShadowDecision.Candidates.FirstOrDefault(item => item.Selected);
+            var score = selected is null ? "n/a" : selected.FinalScore.ToString("0.000");
+            Trace("behavior_agent_shadow_decision",
+                $"legacy={legacyChoice.BehaviorId} agent={_lastShadowDecision.SelectedBehaviorId ?? "none"} comparison={_lastShadowComparison} episode={_lastShadowDecision.Episode} score={score} reason={_lastShadowDecision.ReasonCode} authoritative={(authoritative ? "agent" : "legacy")}");
+            OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+        }
+
+        PetActionResult result;
+        if (authoritative)
+        {
+            if (decisionFailure is not null || _lastShadowDecision is not { Disposition: RequestDisposition.Accepted, SelectedBehaviorId: not null })
+            {
+                result = PetActionResult.Deferred;
+                Trace("behavior_agent_authoritative_idle",
+                    $"episode={_petAgentState.Episode.Kind} reason={(decisionFailure is null ? _lastShadowDecision?.ReasonCode ?? "no_decision" : "infrastructure_failure")} legacy_fallback={_rolloutOptions.LegacyFallbackOnInfrastructureFailure}");
+            }
+            else
+            {
+                result = SubmitBehavior(
+                    BehaviorRequestSource.AutonomousTick,
+                    _lastShadowDecision.SelectedBehaviorId,
+                    $"agent:{_petAgentState.Episode.Kind}:{_lastShadowDecision.ReasonCode}",
+                    priority: -5);
+            }
+        }
+        else
+        {
+            result = SubmitBehavior(BehaviorRequestSource.AutonomousTick, legacyChoice.BehaviorId, legacyChoice.Reason, priority: -5);
+        }
+
         _nextAutonomousDecisionAt = now + (result == PetActionResult.Accepted
             ? ChooseAutonomousIdleDelay(_agentState.CurrentPosture, _random)
             : TimeSpan.FromSeconds(_random.Next(14, 25)));
@@ -3613,15 +3796,15 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     private void AdvanceRuntimeStateForAutonomousTick()
     {
-        _agentState = _agentState.Clamp() with
+        var now = _now();
+        _petAgentState = _stateReducer.Reduce(_petAgentState, new PetTimeAdvanced(now));
+        var episode = _episodePolicy.Evaluate(_petAgentState, now);
+        if (episode.Changed)
         {
-            Energy = Clamp01(_agentState.Energy - 0.015),
-            Hunger = Clamp01(_agentState.Hunger + 0.006),
-            SocialNeed = Clamp01(_agentState.SocialNeed + 0.004),
-            Boredom = Clamp01(_agentState.Boredom + 0.012),
-            Curiosity = Clamp01(_agentState.Curiosity + 0.018),
-            Comfort = Clamp01(_agentState.Comfort + 0.004)
-        };
+            _petAgentState = (_petAgentState with { Episode = episode.Episode }).Clamp();
+            Trace("behavior_agent_episode", string.Join(",", episode.ReasonCodes));
+            OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+        }
     }
 
     public async Task SubmitFakeModelMessageAsync(string text)
@@ -3653,6 +3836,11 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public void CompleteMotion(string behaviorId, string phase)
     {
+        CompleteMotion(_activeReducerExecution?.Request.RequestId ?? Guid.Empty, behaviorId, phase);
+    }
+
+    public void CompleteMotion(Guid executionId, string behaviorId, string phase)
+    {
         if (behaviorId == Phase15BehaviorIds.ProneIdle)
             return;
 
@@ -3666,13 +3854,31 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             return;
         }
 
+        if (_currentExecutionMode != BehaviorExecutionMode.Normal &&
+            string.Equals(_currentMotion?.BehaviorId, behaviorId, StringComparison.OrdinalIgnoreCase))
+        {
+            RestorePreviewAgentState($"complete:{behaviorId}");
+            Trace("behavior_preview_completed", $"behavior={behaviorId} execution={executionId} state_write=false");
+            StartStablePostureIdle(_agentState.CurrentPosture, $"preview_complete:{behaviorId}");
+            return;
+        }
+
         if (MockCommandActionIds.PrototypeWhitelist.Contains(behaviorId))
         {
             var completedRequestMotion = _currentMotion;
+            var postureBeforeCompletion = _agentState.CurrentPosture;
+            var poseBeforeCompletion = _agentState.CurrentPoseId;
             _currentInterruptible = true;
             CompletePendingAgentDecision(completed: true, $"motion_complete:{phase}");
-            _frontProneProfileActive = string.Equals(behaviorId, MockCommandActionIds.EatProne, StringComparison.OrdinalIgnoreCase) &&
-                _agentState.CurrentPosture == StablePosture.Prone;
+            _agentState = _agentState with
+            {
+                CurrentPoseId = ResolveCompletedPoseId(
+                    behaviorId,
+                    completedRequestMotion?.EndPose,
+                    postureBeforeCompletion,
+                    poseBeforeCompletion,
+                    _agentState.CurrentPosture)
+            };
             Trace("mock_motion_completed", $"{behaviorId} phase={phase} posture={_agentState.CurrentPosture}");
             OnPropertyChanged(nameof(BehaviorAgentSnapshot));
             StartCommandEndPoseHold(behaviorId, _agentState.CurrentPosture, $"command_complete:{behaviorId}", completedRequestMotion);
@@ -3680,6 +3886,38 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         }
 
         var completedMotion = _catalog.Find(behaviorId);
+        var outcomeProfile = DesktopBehaviorOutcomeProfiles.Find(behaviorId);
+        if (outcomeProfile is not null)
+        {
+            if (_activeReducerExecution is not null)
+            {
+                if (_activeReducerExecution.Request.RequestId != executionId ||
+                    !string.Equals(_activeReducerExecution.Profile.BehaviorId, behaviorId, StringComparison.OrdinalIgnoreCase))
+                {
+                    Trace("behavior_completion_ignored", $"behavior={behaviorId} execution={executionId} reason=stale_or_mismatched active={_activeReducerExecution.Request.RequestId}");
+                    return;
+                }
+
+                FinishReducerOwnedExecution(ExecutionStatus.Completed, 1, $"motion_complete:{phase}");
+                var settledPosture = _agentState.CurrentPosture;
+                Trace("behavior_reducer_completed", $"behavior={behaviorId} execution={executionId} posture={settledPosture} pose={_agentState.CurrentPoseId}");
+                RaiseMetrics();
+                StartStablePostureIdle(settledPosture, $"reducer_complete:{behaviorId}");
+                return;
+            }
+
+            if (_currentExecutionMode != BehaviorExecutionMode.Normal &&
+                string.Equals(_currentMotion?.BehaviorId, behaviorId, StringComparison.OrdinalIgnoreCase))
+            {
+                Trace("behavior_preview_completed", $"behavior={behaviorId} execution={executionId} state_write=false");
+                StartStablePostureIdle(_agentState.CurrentPosture, $"preview_complete:{behaviorId}");
+                return;
+            }
+
+            Trace("behavior_completion_ignored", $"behavior={behaviorId} execution={executionId} reason=duplicate_or_inactive");
+            return;
+        }
+
         if (completedMotion is not null &&
             string.Equals(completedMotion.AssetBatch, LifecycleCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
         {
@@ -3721,12 +3959,10 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             var posture = completedFullLifecycle
                 ? StablePosture.Stand
                 : StablePostureFromPose(completedMotion.EndPose, _agentState.CurrentPosture);
-            _frontProneProfileActive = posture == StablePosture.Prone &&
-                (string.Equals(completedMotion.BehaviorId, LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4, StringComparison.OrdinalIgnoreCase) ||
-                 string.Equals(completedMotion.BehaviorId, LifecycleReviewCandidateBehaviorIds.FrontProneLickV4, StringComparison.OrdinalIgnoreCase));
             _agentState = _agentState with
             {
                 CurrentPosture = posture,
+                CurrentPoseId = completedMotion.EndPose,
                 LastActionId = behaviorId,
                 RepeatedActionCount = string.Equals(_agentState.LastActionId, behaviorId, StringComparison.OrdinalIgnoreCase)
                     ? _agentState.RepeatedActionCount + 1
@@ -3737,7 +3973,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                 Boredom = Clamp01(_agentState.Boredom - (completedFullLifecycle ? 0.13 : 0.02)),
                 MoodValence = Clamp01(_agentState.MoodValence + (completedFullLifecycle ? 0.015 : 0.002))
             };
-            Trace("approved_lifecycle_motion_completed", $"{behaviorId} phase={phase} posture={posture} front_prone={_frontProneProfileActive}");
+            Trace("approved_lifecycle_motion_completed", $"{behaviorId} phase={phase} posture={posture} front_prone={FrontProneProfileActive}");
             RaiseMetrics();
             StartStablePostureIdle(posture, $"approved_lifecycle_complete:{behaviorId}");
             return;
@@ -3798,13 +4034,10 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                 return;
             }
 
-            _frontProneProfileActive = string.Equals(
-                behaviorId,
-                SleepCandidateBehaviorIds.SprawledFrontBreath,
-                StringComparison.OrdinalIgnoreCase);
             _agentState = _agentState with
             {
                 CurrentPosture = StablePosture.Prone,
+                CurrentPoseId = completedMotion.EndPose,
                 LastActionId = behaviorId,
                 RepeatedActionCount = string.Equals(_agentState.LastActionId, behaviorId, StringComparison.OrdinalIgnoreCase)
                     ? _agentState.RepeatedActionCount + 1
@@ -3816,7 +4049,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                 Comfort = Clamp01(_agentState.Comfort + 0.02),
                 Arousal = Clamp01(_agentState.Arousal - 0.025)
             };
-            Trace("sleep_runtime_completed", $"{behaviorId} phase={phase} posture=Prone runtime_approved=true front_prone={_frontProneProfileActive}");
+            Trace("sleep_runtime_completed", $"{behaviorId} phase={phase} posture=Prone runtime_approved=true front_prone={FrontProneProfileActive}");
             RaiseMetrics();
             StartStablePostureIdle(StablePosture.Prone, $"sleep_runtime_complete:{behaviorId}");
             return;
@@ -3857,13 +4090,29 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         RaiseMetrics();
     }
 
+    public void FailMotion(Guid executionId, string behaviorId, string reason)
+    {
+        if (_activeReducerExecution is null ||
+            _activeReducerExecution.Request.RequestId != executionId ||
+            !string.Equals(_activeReducerExecution.Profile.BehaviorId, behaviorId, StringComparison.OrdinalIgnoreCase))
+        {
+            Trace("behavior_failure_ignored", $"behavior={behaviorId} execution={executionId} reason=stale_or_inactive");
+            return;
+        }
+
+        FinishReducerOwnedExecution(ExecutionStatus.Failed, EstimateCurrentCompletionRatio(), reason);
+        Trace("behavior_reducer_failed", $"behavior={behaviorId} execution={executionId} reason={reason}");
+        RaiseMetrics();
+        StartStablePostureIdle(_agentState.CurrentPosture, $"reducer_failed:{behaviorId}");
+    }
+
     private void StartStablePostureIdle(StablePosture posture, string source, double? renderScaleOverride = null)
     {
         var preferred = posture switch
         {
             StablePosture.Stand => LifecycleCandidateBehaviorIds.StandIdleMicroloop,
             StablePosture.Sit => LifecycleCandidateBehaviorIds.SitIdleMicroloop,
-            StablePosture.Prone when _frontProneProfileActive => LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
+            StablePosture.Prone when FrontProneProfileActive => LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
             StablePosture.Prone => LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
             _ => Phase15BehaviorIds.ProneIdle
         };
@@ -3873,7 +4122,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             var playbackMotion = renderScaleOverride is > 0
                 ? motion with { RenderScaleOverride = renderScaleOverride }
                 : motion;
-            _agentState = _agentState with { CurrentPosture = posture, IsBusy = false, ActiveActionId = null };
+            _agentState = _agentState with
+            {
+                CurrentPosture = posture,
+                CurrentPoseId = playbackMotion.EndPose,
+                ActiveExecutionId = null,
+                IsBusy = false,
+                ActiveActionId = null
+            };
             _nextAutonomousDecisionAt = _now() + ChooseAutonomousIdleDelay(posture, _random);
             Accept(playbackMotion, BehaviorRequestSource.OwnerUi, BehaviorExecutionMode.Normal, source, returnToIdle: false, loopCycles: int.MaxValue);
             return;
@@ -3881,7 +4137,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
         var fallback = _catalog.RequiredIdle;
         var fallbackPosture = StablePostureFromPose(fallback.EndPose, StablePosture.Prone);
-        _agentState = _agentState with { CurrentPosture = fallbackPosture, IsBusy = false, ActiveActionId = null };
+        _agentState = _agentState with
+        {
+            CurrentPosture = fallbackPosture,
+            CurrentPoseId = fallback.EndPose,
+            ActiveExecutionId = null,
+            IsBusy = false,
+            ActiveActionId = null
+        };
         _nextAutonomousDecisionAt = _now() + ChooseAutonomousIdleDelay(fallbackPosture, _random);
         Accept(fallback, BehaviorRequestSource.OwnerUi, BehaviorExecutionMode.Normal, source, returnToIdle: false, loopCycles: int.MaxValue);
     }
@@ -3940,6 +4203,23 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         return fallback;
     }
 
+    private static string ResolveCompletedPoseId(
+        string behaviorId,
+        string? declaredEndPose,
+        StablePosture postureBeforeCompletion,
+        string poseBeforeCompletion,
+        StablePosture completedPosture)
+    {
+        if (string.Equals(behaviorId, MockCommandActionIds.EatProne, StringComparison.OrdinalIgnoreCase))
+            return "prone.awake.front";
+        if (!string.IsNullOrWhiteSpace(declaredEndPose) && declaredEndPose.Contains('.', StringComparison.Ordinal))
+            return declaredEndPose;
+        if (postureBeforeCompletion == completedPosture &&
+            PetPoseCompatibility.FamilyFor(poseBeforeCompletion, postureBeforeCompletion) != "unknown")
+            return poseBeforeCompletion;
+        return PetRuntimeState.DefaultPoseFor(completedPosture);
+    }
+
     private PetActionResult SubmitBehavior(
         BehaviorRequestSource source,
         string behaviorId,
@@ -3962,6 +4242,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         }
 
         var now = _now();
+        var behaviorRequest = BehaviorRequest.FromIntent(
+            source,
+            RuntimeModeFor(executionMode),
+            now,
+            new SemanticIntent(SemanticIntentKind.AutonomousRest, behaviorId, NaturalLanguage: trigger),
+            priority,
+            context: trigger,
+            seed: source == BehaviorRequestSource.AutonomousTick ? _decisionSeed : null);
         var ownerExplicit = source is BehaviorRequestSource.OwnerUi or BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel;
         if (behaviorId == CarRideBehaviorIds.CarRide && _currentBehaviorId == behaviorId)
         {
@@ -4008,7 +4296,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         if (source == BehaviorRequestSource.AutonomousTick &&
             string.Equals(motion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
             loopCycles = motion.Phases.Any(x => x.Loop) ? 3 : 1;
-        if (source == BehaviorRequestSource.AutonomousTick && !stableIdle)
+        if (source == BehaviorRequestSource.AutonomousTick &&
+            !stableIdle &&
+            !DesktopBehaviorOutcomeProfiles.ReducerOwnedBehaviorIds.Contains(behaviorId))
         {
             _agentState = _agentState with
             {
@@ -4016,7 +4306,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                 ActiveActionId = behaviorId
             };
         }
-        Accept(motion, source, executionMode, trigger, returnToIdle: !stableIdle && !keepPetrified, loopCycles: loopCycles);
+        Accept(
+            motion,
+            source,
+            executionMode,
+            trigger,
+            returnToIdle: !stableIdle && !keepPetrified,
+            loopCycles: loopCycles,
+            behaviorRequest: behaviorRequest);
         return PetActionResult.Accepted;
     }
 
@@ -4117,14 +4414,50 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         BehaviorExecutionMode executionMode,
         string reason,
         bool returnToIdle,
-        int loopCycles)
+        int loopCycles,
+        BehaviorRequest? behaviorRequest = null)
     {
+        behaviorRequest ??= BehaviorRequest.FromIntent(
+            source,
+            RuntimeModeFor(executionMode),
+            _now(),
+            new SemanticIntent(SemanticIntentKind.None, motion.BehaviorId, NaturalLanguage: reason),
+            context: reason);
+        var outcomeProfile = DesktopBehaviorOutcomeProfiles.Find(motion.BehaviorId);
+        var tracksAgentLifecycle = executionMode == BehaviorExecutionMode.Normal &&
+            outcomeProfile is not null &&
+            !IsStableIdleBehavior(motion.BehaviorId);
+        if (!IsStableIdleBehavior(motion.BehaviorId) &&
+            _activeReducerExecution is not null &&
+            _activeReducerExecution.Request.RequestId != behaviorRequest.RequestId)
+            FinishReducerOwnedExecution(ExecutionStatus.Interrupted, EstimateCurrentCompletionRatio(), $"preempted_by:{motion.BehaviorId}");
+        if (executionMode == BehaviorExecutionMode.Normal)
+            RestorePreviewAgentState($"normal_request:{motion.BehaviorId}");
+        else
+            _previewAgentStateSnapshot ??= _petAgentState;
+
         _currentBehaviorId = motion.BehaviorId;
         _currentMotion = motion;
         _currentExecutionMode = executionMode;
         _currentStartedAt = _now();
         _currentInterruptible = motion.Interruptible;
-        _lastAccepted[motion.BehaviorId] = _currentStartedAt;
+        if (executionMode == BehaviorExecutionMode.Normal)
+            _lastAccepted[motion.BehaviorId] = _currentStartedAt;
+        if (tracksAgentLifecycle)
+        {
+            _activeReducerExecution = new ActiveBehaviorExecution(
+                behaviorRequest,
+                outcomeProfile!,
+                EstimateMotionDuration(motion, loopCycles));
+            _petAgentState = _stateReducer.Reduce(_petAgentState, new PetBehaviorStarted(
+                _currentStartedAt,
+                behaviorRequest.RequestId,
+                motion.BehaviorId,
+                motion.Phases.FirstOrDefault()?.Name ?? "intro",
+                motion.Interruptible,
+                source,
+                executionMode));
+        }
         CurrentBehaviorId = motion.BehaviorId;
         CurrentAction = motion.DisplayName;
         LastTrigger = reason;
@@ -4144,13 +4477,97 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         }
         OnPropertyChanged(nameof(IsPetrified));
         UpdateDecision(PetActionResult.Accepted, source.ToString(), reason, executionMode == BehaviorExecutionMode.PrototypePreview ? "正在展示原型魔法" : "接受");
-        MotionRequested?.Invoke(this, new PetMotionRequest(motion, reason, returnToIdle, loopCycles, source, executionMode, _pendingRequestTimestamp));
-        Trace("motion_requested", $"{motion.BehaviorId} source={source} mode={executionMode} asset_batch={motion.AssetBatch} reason={reason}");
+        MotionRequested?.Invoke(this, new PetMotionRequest(
+            motion,
+            reason,
+            returnToIdle,
+            loopCycles,
+            source,
+            executionMode,
+            _pendingRequestTimestamp,
+            behaviorRequest.RequestId,
+            behaviorRequest.CorrelationId,
+            tracksAgentLifecycle));
+        Trace("motion_requested", $"{motion.BehaviorId} request={behaviorRequest.RequestId} source={source} mode={executionMode} asset_batch={motion.AssetBatch} reason={reason}");
         OnPropertyChanged(nameof(CurrentBehaviorId));
         OnPropertyChanged(nameof(CurrentAction));
         OnPropertyChanged(nameof(LastTrigger));
         OnPropertyChanged(nameof(LastError));
     }
+
+    private void FinishReducerOwnedExecution(
+        ExecutionStatus status,
+        double completionRatio,
+        string reasonCode)
+    {
+        var active = _activeReducerExecution;
+        if (active is null)
+            return;
+
+        _petAgentState = _stateReducer.Reduce(_petAgentState, new PetBehaviorFinished(
+            _now(),
+            active.Request.RequestId,
+            active.Profile.BehaviorId,
+            status,
+            completionRatio,
+            active.Profile.EndPosture,
+            active.Profile.EndPoseId,
+            active.Profile.StateEffects,
+            active.Profile.OwnerInteraction,
+            active.Profile.MemoryEligibility,
+            active.Profile.PartialEffectPolicy,
+            active.Request.Source,
+            BehaviorExecutionMode.Normal,
+            reasonCode));
+        if (_agentState.ActiveExecutionId is null)
+        {
+            _activeReducerExecution = null;
+            Trace("behavior_reducer_outcome",
+                $"behavior={active.Profile.BehaviorId} execution={active.Request.RequestId} status={status} completion={completionRatio:0.000} reason={reasonCode}");
+        }
+    }
+
+    private bool RestorePreviewAgentState(string reason)
+    {
+        if (_previewAgentStateSnapshot is null)
+            return false;
+
+        _petAgentState = _previewAgentStateSnapshot;
+        _previewAgentStateSnapshot = null;
+        Trace("behavior_preview_state_restored", $"reason={reason}");
+        OnPropertyChanged(nameof(CurrentStablePosture));
+        OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+        RaiseMetrics();
+        return true;
+    }
+
+    private double EstimateCurrentCompletionRatio()
+    {
+        var active = _activeReducerExecution;
+        if (active is null || active.EstimatedDuration <= TimeSpan.Zero)
+            return 0;
+        return Math.Clamp((_now() - _currentStartedAt).TotalMilliseconds / active.EstimatedDuration.TotalMilliseconds, 0, 1);
+    }
+
+    private static TimeSpan EstimateMotionDuration(PlayableMotion motion, int loopCycles)
+    {
+        long durationMs = 0;
+        foreach (var phase in motion.Phases)
+        {
+            var phaseDuration = phase.DurationTotalMs(motion.FrameDurationMs);
+            var cycles = phase.Loop ? Math.Max(1, loopCycles) : 1;
+            durationMs += (long)phaseDuration * cycles;
+        }
+        return TimeSpan.FromMilliseconds(Math.Max(1, durationMs));
+    }
+
+    private static RuntimeMode RuntimeModeFor(BehaviorExecutionMode executionMode) => executionMode switch
+    {
+        BehaviorExecutionMode.Normal => RuntimeMode.Production,
+        BehaviorExecutionMode.PrototypePreview => RuntimeMode.Preview,
+        BehaviorExecutionMode.DeveloperPreview => RuntimeMode.DeveloperForced,
+        _ => RuntimeMode.Production
+    };
 
     private bool CanInteractWithCoin(BehaviorRequestSource source)
     {
@@ -4202,7 +4619,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         OnPropertyChanged(nameof(CurrentCoinSide));
     }
 
-    private (string BehaviorId, string Reason) ChooseAutonomousBehavior()
+    private (string BehaviorId, string Reason) ChooseAutonomousBehavior(int decisionOrdinal)
     {
         var hour = _now().Hour;
         var workQuiet = hour is >= 9 and <= 18;
@@ -4255,7 +4672,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                 }
                 break;
             default:
-                if (_frontProneProfileActive)
+                if (FrontProneProfileActive)
                 {
                     AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
                         0.90 + Comfort * 0.14 + (workQuiet ? 0.16 : 0.04), "autonomous:approved_v4_front_prone_calm");
@@ -4267,7 +4684,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                     if (elapsed >= TimeSpan.FromSeconds(18) &&
                         Energy < 0.62 &&
                         Stress < 0.72 &&
-                        IsSleepAutonomousProfileAllowed(SleepCandidateBehaviorIds.SprawledFrontBreath, _agentState.CurrentPosture, _frontProneProfileActive))
+                        IsSleepAutonomousProfileAllowed(SleepCandidateBehaviorIds.SprawledFrontBreath, _agentState.CurrentPosture, FrontProneProfileActive))
                         AddIfEnabled(candidates, SleepCandidateBehaviorIds.SprawledFrontBreath,
                             0.06 + (1 - Energy) * 0.08 + Comfort * 0.04,
                             "autonomous:approved_front_sleep_breath_from_compatible_profile");
@@ -4277,7 +4694,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                     AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
                         0.86 + Comfort * 0.14 + (workQuiet ? 0.16 : 0.04), "autonomous:stable_prone_microloop");
                     if (elapsed >= TimeSpan.FromSeconds(12) &&
-                        IsProneHeadAutonomousProfileAllowed(_agentState.CurrentPosture, _frontProneProfileActive))
+                        IsProneHeadAutonomousProfileAllowed(_agentState.CurrentPosture, FrontProneProfileActive))
                     {
                         AddIfEnabled(candidates, ProneHeadCandidateBehaviorIds.HeadLowerTurnV4,
                             0.12 + Curiosity * 0.08 + Mood * 0.03,
@@ -4287,7 +4704,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                             "autonomous:low_frequency_prone_to_sit_transition");
                         if (Energy < 0.58 &&
                             Stress < 0.72 &&
-                            IsSleepAutonomousProfileAllowed(SleepCandidateBehaviorIds.MainLifecycle, _agentState.CurrentPosture, _frontProneProfileActive))
+                            IsSleepAutonomousProfileAllowed(SleepCandidateBehaviorIds.MainLifecycle, _agentState.CurrentPosture, FrontProneProfileActive))
                             AddIfEnabled(candidates, SleepCandidateBehaviorIds.MainLifecycle,
                                 0.07 + (1 - Energy) * 0.10 + Comfort * 0.04,
                                 "autonomous:approved_sleep_lifecycle_from_compatible_prone_profile");
@@ -4309,7 +4726,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         var total = adjusted.Sum(x => x.Score);
         var decisionRandom = new Random(CombineDecisionSeed(
             _decisionSeed,
-            _autonomousDecisionCount++,
+            decisionOrdinal,
             (int)_agentState.CurrentPosture));
         var draw = decisionRandom.NextDouble() * total;
         foreach (var candidate in adjusted)
@@ -4425,6 +4842,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         OnPropertyChanged(nameof(Stress));
         OnPropertyChanged(nameof(Focus));
         OnPropertyChanged(nameof(Comfort));
+        OnPropertyChanged(nameof(Thirst));
     }
 
     private static double Clamp01(double value) => Math.Clamp(value, 0, 1);
@@ -4434,7 +4852,10 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         var decision = _lastAgentDecision is null
             ? "none"
             : $"{_lastAgentDecision.SelectedActionId} {_lastAgentDecision.StartPosture}->{_lastAgentDecision.EndPosture} mood={_lastAgentDecision.MoodExpression} style={_lastAgentDecision.DialogueStyle}";
-        return $"enabled={EnableBehaviorAgentMock}; posture={_agentState.CurrentPosture}; energy={_agentState.Energy:0.00}; hunger={_agentState.Hunger:0.00}; social={_agentState.SocialNeed:0.00}; boredom={_agentState.Boredom:0.00}; stress={_agentState.Stress:0.00}; mood={_agentState.MoodValence:0.00}; arousal={_agentState.Arousal:0.00}; temperament=({_temperament.Activity},{_temperament.Attachment},{_temperament.Sensitivity},{_temperament.Independence},{_temperament.Mischief}); last_decision={decision}";
+        var shadow = _lastShadowDecision is null
+            ? "none"
+            : $"{_lastShadowDecision.SelectedBehaviorId ?? "none"}/{_lastShadowDecision.ReasonCode}/compare={_lastShadowComparison}";
+        return $"mock_enabled={EnableBehaviorAgentMock}; shadow_enabled={EnableBehaviorAgentShadow}; schema={_petAgentState.SchemaVersion}; episode={_petAgentState.Episode.Kind}; posture={_agentState.CurrentPosture}; energy={_agentState.Energy:0.00}; hunger={_agentState.Hunger:0.00}; thirst={_agentState.Thirst:0.00}; social={_agentState.SocialNeed:0.00}; boredom={_agentState.Boredom:0.00}; stress={_agentState.Stress:0.00}; mood={_agentState.MoodValence:0.00}; arousal={_agentState.Arousal:0.00}; temperament=({_temperament.Activity},{_temperament.Attachment},{_temperament.Sensitivity},{_temperament.Independence},{_temperament.Mischief}); command_cooperation={_temperament.CommandCooperativeness01:0.00}; last_decision={decision}; shadow={shadow}";
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>

@@ -96,6 +96,39 @@ The Behavior Agent developer switch may expose diagnostics and deterministic pre
 
 GitHub Actions validates pushes to `agent/**` in addition to `main`, pull requests, and manual dispatch so feature commits cannot silently bypass the Windows build.
 
+## 2026-09-06 - introduce the next Agent through a shadow capability pipeline
+
+Decision:
+
+- Keep one canonical `PetAgentState` and one elapsed-time `PetStateReducer` as the migration target for runtime state and lifecycle feedback.
+- Filter behaviors through a capability catalog before preference scoring. Asset availability, approval, source permission, posture, safe interruption, episode, dwell, and cooldown are hard gates.
+- Separate `ForcedByOwner`, `UsuallyCooperative`, `StateSensitive`, and `Autonomous` participation semantics. Forced owner behavior bypasses mood preference, never asset or safety gates; command refusal is reserved for explicit state exceptions.
+- Run the new deterministic episode and utility engine in shadow mode while the current approved autonomous selector remains authoritative.
+- Build dialogue context from the same canonical state; do not let model text infer a posture, action, need, or outcome from stale defaults or memory.
+
+Reason:
+
+The existing Desktop runtime, developer mock, and conversation context each held useful pieces of Agent behavior but did not share one complete state or one capability-first decision contract. Shadow rollout exposes score and gate differences without changing approved playback. It also keeps missing or unapproved assets out of the candidate set instead of allowing them to win and repeatedly defer.
+
+## 2026-09-06 - promote autonomous decisions by episode and correlate lifecycle outcomes
+
+Decision:
+
+- Use `AutonomousAgentRolloutOptions` to assign decision authority by episode. `Resting` is authoritative in the first batch; `Observing` is implemented but disabled by default until its separate Windows QA; remaining episodes stay on the legacy selector.
+- An authoritative episode never falls back to legacy randomness when its capability allowlist has no eligible action. It preserves the current compatible stable idle. The legacy result remains a side-effect-free DeveloperTrace comparison only.
+- Carry the originating `BehaviorRequest.RequestId` through the motion request and renderer callbacks. `PetStateReducer` accepts a terminal result only for the matching `ActiveExecutionId`; stale, duplicate, and late results are ignored and traced.
+- Track `CurrentPoseId` in addition to coarse Stand/Sit/Prone posture so front-prone and side-prone candidates cannot hard-cut solely because both are `Prone`.
+- Move behavior state effects behind explicit `BehaviorOutcomeProfile` entries and a temporary `ReducerOwnedBehaviorIds` migration boundary. A behavior is settled by either the reducer or its legacy completion branch, never both.
+- Keep Preview execution isolated from formal runtime state, relationship, memory, cooldown history, and recent experience. Stable idle loops are display state rather than repeated completed behaviors.
+
+Reason:
+
+Episode-level rollout makes Resting independently reversible while preserving behavior in Recovering, Exploring, and other unvalidated areas. Correlated lifecycle events prevent a cancelled or previous animation from committing posture and need changes after a newer action starts. Exact pose IDs close the visual compatibility gap that a three-value posture enum cannot represent.
+
+Rollback:
+
+Clear `AuthoritativeEpisodes` to restore shadow-only selection. This does not require reverting assets, manifests, menu routes, approval metadata, or the lifecycle safety contracts.
+
 ## Portable user data and shareable defaults - 2026-08-22
 
 Decision:

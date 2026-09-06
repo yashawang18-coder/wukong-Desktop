@@ -23,7 +23,8 @@ var tests = new (string Name, Func<Task> Run)[]
     ("portable data layout seeds defaults and migrates user files", PortableDataLayoutSeedsAndMigrates),
     ("conversation history file is removed after final clear", ConversationHistoryFileIsRemovedAfterFinalClear),
     ("mock context editing requires developer session", MockContextRequiresDeveloperSession),
-    ("live runtime context follows current posture action and mood", LiveRuntimeContextFollowsDesktopState)
+    ("live runtime context follows current posture action and mood", LiveRuntimeContextFollowsDesktopState),
+    ("canonical live projection replaces duplicate dialogue defaults", CanonicalLiveProjectionReplacesDefaults)
 };
 
 static Task PortableDataLayoutSeedsAndMigrates()
@@ -367,6 +368,21 @@ static async Task LiveRuntimeContextFollowsDesktopState()
     Assert((await provider.GetStateAsync()).RuntimeState.CurrentPosture == "prone", "authenticated developer override was ignored");
     session.SignOut();
     Assert((await provider.GetStateAsync()).RuntimeState.CurrentPosture == "sit", "signed-out developer override leaked into normal dialogue");
+}
+
+static async Task CanonicalLiveProjectionReplacesDefaults()
+{
+    var session = new DeveloperSession();
+    var live = new PetAgentDialogueProjection(
+        PersonalitySnapshot.Default with { Liveliness = 0.91 },
+        RelationshipSnapshot.Default with { Trust = 0.37 },
+        PetRuntimeStateSnapshot.Default with { CurrentPosture = "sit", CurrentAction = "wk.command.paw_sit" });
+    var provider = new MockRuntimeContextStateProvider(session, liveAgentState: () => live);
+
+    var state = await provider.GetStateAsync();
+    Assert(Math.Abs(state.Personality.Liveliness - 0.91) < 0.001, "live personality projection was replaced by provider default");
+    Assert(Math.Abs(state.Relationship.Trust - 0.37) < 0.001, "live relationship projection was replaced by provider default");
+    Assert(state.RuntimeState.CurrentAction == "wk.command.paw_sit", "live embodied action was not projected");
 }
 
 static ChatProviderConnection Connection(ChatProviderType provider, string baseUrl, string model, string? key) =>

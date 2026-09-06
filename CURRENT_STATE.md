@@ -66,6 +66,17 @@
 - Windows CI now runs on `main`, every `agent/**` push, pull requests, and manual dispatch. A successful Windows run is still required before this change is called build-verified.
 - Asset approval scopes are unchanged: legacy red/standard assets remain expired motion references, approved v4 actions remain owner-command-only, and approved P2 lifecycle assets remain the autonomous visual pool.
 
+## Behavior Agent v1 foundation - 2026-09-06
+
+- A canonical in-memory `PetAgentState` now owns temperament, relationship, realtime needs and affect, posture, active action, episode, bounded recent experience, preference hooks, and elapsed-time bookkeeping.
+- State evolution is based on elapsed time and caps long resume gaps, instead of changing needs once per timer callback.
+- A capability catalog applies runtime approval, source, posture, episode, safe-interruption, dwell, cooldown, and autonomous-binding gates before utility scoring.
+- Episode rollout is now explicit. `Resting` is the first authoritative episode and uses only its approved, pose-compatible P2/V3R1/V4 idle, transition, and lifecycle allowlist. `Observing` is implemented behind an opt-in authoritative switch but remains shadow-only by default pending a separate 30-minute Windows visual run; all other episodes keep the legacy scheduler authoritative.
+- Every finite reducer-owned behavior carries its `BehaviorRequest.RequestId` through `PetMotionRequest` and renderer completion. `PetAgentState.ActiveExecutionId` rejects stale, duplicate, and late callbacks, while `CurrentPoseId` prevents front-prone and side-prone motions from being treated as interchangeable.
+- Behavior-specific `BehaviorOutcomeProfile` records preserve each migrated action's existing state deltas. Only IDs in `ReducerOwnedBehaviorIds` settle through `PetStateReducer`; Preview modes restore isolated snapshots and stable idle loops do not create busy state or repeated outcome effects.
+- The legacy selector remains a side-effect-free trace comparison for authoritative episodes. An authoritative episode with no eligible behavior keeps its current stable idle instead of falling back to legacy randomness. Clearing `AuthoritativeEpisodes` returns the system to shadow-only selection.
+- Conversation personality, relationship, posture, action, episode, energy, hunger, thirst, mood, stress, and busy state are projected from the same canonical state. No asset, registry, menu, or runtime approval state changed.
+
 ## Portable profile, album, and conversation data - 2026-08-22
 
 - Version-controlled, non-secret initial settings live under `config/defaults/` and are published as `WukongDefaults/` beside the executable.

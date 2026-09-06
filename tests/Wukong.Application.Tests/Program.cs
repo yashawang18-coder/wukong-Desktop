@@ -33,7 +33,16 @@ var tests = new (string Name, Func<Task> Run)[]
     ("behavior agent plans posture transitions and keeps end posture", BehaviorAgentPlansTransitionsAndKeepsPosture),
     ("behavior agent busy state blocks autonomous interruption", BehaviorAgentBusyBlocksAutonomous),
     ("behavior agent dialogue context matches decision", BehaviorAgentDialogueContextMatchesState),
-    ("initiative speech uses state and respects suppressions", InitiativeSpeechUsesStateAndSuppressions)
+    ("initiative speech uses state and respects suppressions", InitiativeSpeechUsesStateAndSuppressions),
+    ("canonical agent state evolves by elapsed time", CanonicalAgentStateUsesElapsedTime),
+    ("episode policy applies dwell and emergency recovery", EpisodePolicyAppliesHysteresis),
+    ("state reducer commits only completed outcome posture", StateReducerUsesLifecycleOutcome),
+    ("state reducer ignores stale duplicate and preview lifecycle events", StateReducerRejectsStaleDuplicateAndPreview),
+    ("capability catalog gates before deterministic scoring", CapabilityCatalogGatesBeforeScoring),
+    ("episode candidate scopes and pose families fail closed", EpisodeCandidateScopesAndPoseFamiliesFailClosed),
+    ("resting and observing stay inside rollout allowlists across ten thousand decisions", EpisodeRolloutSamplingNeverEscapes),
+    ("participation policy separates force refusal and defer", ParticipationPolicySeparatesOutcomes),
+    ("dialogue state projects from canonical agent state", DialogueProjectionUsesCanonicalState)
 };
 
 var failures = new List<string>();
@@ -267,7 +276,12 @@ static async Task AgentContextIncludesAllSources()
             CurrentPosture = "stand",
             CurrentAction = "standing_observe",
             CurrentBehavior = "wk.lifecycle.stand_idle_microloop",
-            MoodValence = 0.73
+            MoodValence = 0.73,
+            Energy = 0.41,
+            Hunger = 0.67,
+            Thirst = 0.58,
+            Episode = "observing",
+            IsBusy = true
         }
     };
     var service = CreateAgentService(snapshot, out var model, out _, out _);
@@ -282,6 +296,12 @@ static async Task AgentContextIncludesAllSources()
     Assert(system.Contains("current_posture=stand", StringComparison.Ordinal), "live posture did not enter context");
     Assert(system.Contains("current_action=standing_observe", StringComparison.Ordinal), "live action did not enter context");
     Assert(system.Contains("mood_valence=0.73", StringComparison.Ordinal), "live mood did not enter context");
+    Assert(system.Contains("energy=0.41", StringComparison.Ordinal), "live energy did not enter context");
+    Assert(system.Contains("hunger=0.67", StringComparison.Ordinal), "live hunger did not enter context");
+    Assert(system.Contains("thirst=0.58", StringComparison.Ordinal), "live thirst did not enter context");
+    Assert(system.Contains("episode=observing", StringComparison.Ordinal), "current episode did not enter context");
+    Assert(system.Contains("busy=True", StringComparison.Ordinal), "busy state did not enter context");
+    Assert(system.Contains("command_cooperativeness=0.82", StringComparison.Ordinal), "command cooperation baseline did not enter context");
     Assert(system.Contains("Never describe a posture or action that conflicts", StringComparison.Ordinal), "runtime consistency safety boundary missing");
     Assert(model.LastRequest.Messages.Any(x => x.Content.Contains("第一次回家", StringComparison.Ordinal)), "album memory did not enter request");
 }
@@ -551,6 +571,393 @@ static Task InitiativeSpeechUsesStateAndSuppressions()
     Assert(service.Decide(hungry with { Relationship = RelationshipState.Default with { InitiativeAcceptance = 0.10 } }).ReasonCode == "initiative_acceptance_low", "relationship acceptance did not suppress initiative speech");
     Assert(service.Decide(hungry with { LastSpokenAt = now - TimeSpan.FromMinutes(1) }).ReasonCode == "initiative_cooldown", "cooldown did not suppress repeated initiative speech");
     return Task.CompletedTask;
+}
+
+static Task CanonicalAgentStateUsesElapsedTime()
+{
+    var start = new DateTimeOffset(2026, 9, 6, 10, 0, 0, TimeSpan.Zero);
+    var reducer = new PetStateReducer();
+    var stepped = PetAgentState.CreateDefault(start);
+    for (var second = 1; second <= 8; second++)
+        stepped = reducer.Reduce(stepped, new PetTimeAdvanced(start.AddSeconds(second)));
+    var batched = reducer.Reduce(PetAgentState.CreateDefault(start), new PetTimeAdvanced(start.AddSeconds(8)));
+
+    AssertClose(stepped.Runtime.Energy, batched.Runtime.Energy, "energy depends on tick subdivision");
+    AssertClose(stepped.Runtime.Hunger, batched.Runtime.Hunger, "hunger depends on tick subdivision");
+    AssertClose(stepped.Runtime.Thirst, batched.Runtime.Thirst, "thirst depends on tick subdivision");
+    AssertClose(stepped.Runtime.Stress, batched.Runtime.Stress, "stress depends on tick subdivision");
+    Assert(stepped.Clock.AppliedElapsed == TimeSpan.FromSeconds(8), "elapsed clock was not recorded");
+
+    var resumed = reducer.Reduce(batched, new PetTimeAdvanced(start.AddDays(1)));
+    Assert(resumed.Clock.SkippedOfflineElapsed > TimeSpan.FromHours(23), "offline gap was treated as care debt");
+    return Task.CompletedTask;
+}
+
+static Task EpisodePolicyAppliesHysteresis()
+{
+    var start = new DateTimeOffset(2026, 9, 6, 10, 0, 0, TimeSpan.Zero);
+    var policy = new PetEpisodePolicy();
+    var exploringState = PetAgentState.CreateDefault(start) with
+    {
+        Runtime = PetRuntimeState.Default with
+        {
+            Energy = 0.86,
+            Boredom = 0.91,
+            Stress = 0.08,
+            Curiosity = 0.48,
+            Focus = 0.45
+        }
+    };
+
+    var held = policy.Evaluate(exploringState, start.AddSeconds(20));
+    Assert(!held.Changed && held.Episode.Kind == PetEpisodeKind.Resting, "episode changed before minimum dwell");
+    var changed = policy.Evaluate(exploringState, start.AddMinutes(2));
+    Assert(changed.Changed && changed.Episode.Kind == PetEpisodeKind.Exploring, "high energy and boredom did not enter exploring episode");
+
+    var emergency = policy.Evaluate(exploringState with
+    {
+        Runtime = exploringState.Runtime with { Energy = 0.04 },
+        Episode = new PetEpisodeState(PetEpisodeKind.Exploring, start.AddMinutes(2), TimeSpan.FromMinutes(5), "test")
+    }, start.AddMinutes(2).AddSeconds(1));
+    Assert(emergency.Changed && emergency.Episode.Kind == PetEpisodeKind.Recovering, "critical energy did not bypass dwell for recovery");
+
+    var busy = policy.Evaluate(exploringState with
+    {
+        Runtime = exploringState.Runtime with { IsBusy = true },
+        Episode = changed.Episode
+    }, start.AddMinutes(10));
+    Assert(!busy.Changed && busy.Episode.Kind == PetEpisodeKind.Exploring, "active behavior changed episode mid-lifecycle");
+    return Task.CompletedTask;
+}
+
+static Task StateReducerUsesLifecycleOutcome()
+{
+    var now = new DateTimeOffset(2026, 9, 6, 10, 0, 0, TimeSpan.Zero);
+    var reducer = new PetStateReducer();
+    var initial = PetAgentState.CreateDefault(now);
+    var interruptedExecution = Guid.NewGuid();
+    var started = reducer.Reduce(initial, new PetBehaviorStarted(
+        now, interruptedExecution, "wk.test.transition", "intro", false,
+        BehaviorRequestSource.AutonomousTick, BehaviorExecutionMode.Normal));
+    Assert(started.Runtime.IsBusy && started.Runtime.ActiveActionId == "wk.test.transition", "start did not establish busy state");
+
+    var interrupted = reducer.Reduce(started, new PetBehaviorFinished(
+        now.AddSeconds(1), interruptedExecution, "wk.test.transition", ExecutionStatus.Interrupted, 0.5,
+        StablePosture.Sit, "sit.neutral.left_front", new PetStateEffects(Energy: -0.20),
+        OwnerInteraction: true, MemoryEligible: true, PartialEffectPolicy.Proportional,
+        BehaviorRequestSource.AutonomousTick, BehaviorExecutionMode.Normal, "owner_stop"));
+    Assert(interrupted.Runtime.CurrentPosture == initial.Runtime.CurrentPosture, "interrupted behavior committed its end posture");
+    AssertClose(interrupted.Runtime.Energy, initial.Runtime.Energy - 0.10, "interrupted behavior did not apply partial body cost");
+    AssertClose(interrupted.Relationship.Trust, initial.Relationship.Trust, "interrupted interaction changed long-term trust");
+    var duplicateInterrupted = reducer.Reduce(interrupted, new PetBehaviorFinished(
+        now.AddSeconds(2), interruptedExecution, "wk.test.transition", ExecutionStatus.Interrupted, 0.5,
+        StablePosture.Sit, "sit.neutral.left_front", new PetStateEffects(Energy: -0.20),
+        OwnerInteraction: true, MemoryEligible: true, PartialEffectPolicy.Proportional,
+        BehaviorRequestSource.AutonomousTick, BehaviorExecutionMode.Normal, "duplicate_owner_stop"));
+    Assert(duplicateInterrupted.Runtime == interrupted.Runtime &&
+           duplicateInterrupted.RecentExperience.Count == interrupted.RecentExperience.Count,
+        "interrupted behavior was settled more than once");
+
+    var failedExecution = Guid.NewGuid();
+    var failedStarted = reducer.Reduce(initial, new PetBehaviorStarted(
+        now, failedExecution, "wk.test.failure", "intro", true,
+        BehaviorRequestSource.AutonomousTick, BehaviorExecutionMode.Normal));
+    var failed = reducer.Reduce(failedStarted, new PetBehaviorFinished(
+        now.AddSeconds(1), failedExecution, "wk.test.failure", ExecutionStatus.Failed, 0.25,
+        StablePosture.Sit, "sit.neutral.left_front", new PetStateEffects(Energy: -0.20),
+        OwnerInteraction: false, MemoryEligible: false, PartialEffectPolicy.Proportional,
+        BehaviorRequestSource.AutonomousTick, BehaviorExecutionMode.Normal, "frame_decode_failed"));
+    Assert(failed.Runtime.CurrentPosture == initial.Runtime.CurrentPosture && !failed.Runtime.IsBusy,
+        "failed behavior changed posture or retained the busy lock");
+    AssertClose(failed.Runtime.Energy, initial.Runtime.Energy - 0.05, "failed behavior did not apply its proportional body cost once");
+    var duplicateFailed = reducer.Reduce(failed, new PetBehaviorFinished(
+        now.AddSeconds(2), failedExecution, "wk.test.failure", ExecutionStatus.Failed, 0.25,
+        StablePosture.Sit, "sit.neutral.left_front", new PetStateEffects(Energy: -0.20),
+        OwnerInteraction: false, MemoryEligible: false, PartialEffectPolicy.Proportional,
+        BehaviorRequestSource.AutonomousTick, BehaviorExecutionMode.Normal, "duplicate_failure"));
+    Assert(duplicateFailed.Runtime == failed.Runtime && duplicateFailed.RecentExperience.Count == failed.RecentExperience.Count,
+        "failed behavior was settled more than once");
+
+    var completedExecution = Guid.NewGuid();
+    var completedStarted = reducer.Reduce(initial, new PetBehaviorStarted(
+        now, completedExecution, "wk.test.transition", "intro", false,
+        BehaviorRequestSource.OwnerContextMenu, BehaviorExecutionMode.Normal));
+    var completed = reducer.Reduce(completedStarted, new PetBehaviorFinished(
+        now.AddSeconds(2), completedExecution, "wk.test.transition", ExecutionStatus.Completed, 1,
+        StablePosture.Sit, "sit.neutral.left_front", new PetStateEffects(Energy: -0.03, Boredom: -0.10),
+        OwnerInteraction: true, MemoryEligible: true, PartialEffectPolicy.Proportional,
+        BehaviorRequestSource.OwnerContextMenu, BehaviorExecutionMode.Normal, "completed"));
+    Assert(completed.Runtime.CurrentPosture == StablePosture.Sit, "completed behavior did not commit end posture");
+    Assert(completed.Runtime.CurrentPoseId == "sit.neutral.left_front", "completed behavior did not commit end pose id");
+    Assert(completed.Relationship.Trust > initial.Relationship.Trust, "completed owner interaction did not slowly increase trust");
+    Assert(completed.RecentExperience.Count == 2, "lifecycle start and outcome were not added to bounded recent experience");
+    return Task.CompletedTask;
+}
+
+static Task StateReducerRejectsStaleDuplicateAndPreview()
+{
+    var now = new DateTimeOffset(2026, 9, 6, 11, 0, 0, TimeSpan.Zero);
+    var reducer = new PetStateReducer();
+    var initial = PetAgentState.CreateDefault(now);
+    var execution = Guid.NewGuid();
+    var started = reducer.Reduce(initial, new PetBehaviorStarted(
+        now, execution, "wk.test.observe", "intro", true,
+        BehaviorRequestSource.AutonomousTick, BehaviorExecutionMode.Normal));
+    var stale = reducer.Reduce(started, new PetBehaviorFinished(
+        now.AddSeconds(1), Guid.NewGuid(), "wk.test.observe", ExecutionStatus.Completed, 1,
+        StablePosture.Sit, "sit.neutral.left_front", new PetStateEffects(Energy: -0.5),
+        false, false, PartialEffectPolicy.Proportional,
+        BehaviorRequestSource.AutonomousTick, BehaviorExecutionMode.Normal, "stale"));
+    Assert(stale.Runtime == started.Runtime && stale.Relationship == started.Relationship &&
+           stale.RecentExperience.Count == started.RecentExperience.Count,
+        "stale completion changed canonical state");
+
+    var completed = reducer.Reduce(started, new PetBehaviorFinished(
+        now.AddSeconds(2), execution, "wk.test.observe", ExecutionStatus.Completed, 1,
+        StablePosture.Prone, "prone.awake.front", new PetStateEffects(Boredom: -0.08),
+        false, false, PartialEffectPolicy.Proportional,
+        BehaviorRequestSource.AutonomousTick, BehaviorExecutionMode.Normal, "completed"));
+    var duplicate = reducer.Reduce(completed, new PetBehaviorFinished(
+        now.AddSeconds(3), execution, "wk.test.observe", ExecutionStatus.Completed, 1,
+        StablePosture.Sit, "sit.neutral.left_front", new PetStateEffects(Boredom: -0.08),
+        false, false, PartialEffectPolicy.Proportional,
+        BehaviorRequestSource.AutonomousTick, BehaviorExecutionMode.Normal, "duplicate"));
+    Assert(duplicate.Runtime == completed.Runtime && duplicate.Relationship == completed.Relationship &&
+           duplicate.RecentExperience.Count == completed.RecentExperience.Count,
+        "duplicate completion applied outcome twice");
+
+    var previewExecution = Guid.NewGuid();
+    var previewStarted = reducer.Reduce(completed, new PetBehaviorStarted(
+        now.AddSeconds(4), previewExecution, "wk.test.preview", "intro", true,
+        BehaviorRequestSource.DeveloperPreview, BehaviorExecutionMode.DeveloperPreview));
+    var previewFinished = reducer.Reduce(previewStarted, new PetBehaviorFinished(
+        now.AddSeconds(5), previewExecution, "wk.test.preview", ExecutionStatus.Completed, 1,
+        StablePosture.Stand, "stand.neutral.left_front", new PetStateEffects(Energy: 0.5),
+        true, true, PartialEffectPolicy.Proportional,
+        BehaviorRequestSource.DeveloperPreview, BehaviorExecutionMode.DeveloperPreview, "preview"));
+    Assert(previewStarted.Runtime == completed.Runtime && previewFinished.Runtime == completed.Runtime &&
+           previewStarted.Relationship == completed.Relationship && previewFinished.Relationship == completed.Relationship &&
+           previewFinished.RecentExperience.Count == completed.RecentExperience.Count,
+        "developer preview wrote formal state");
+    return Task.CompletedTask;
+}
+
+static Task CapabilityCatalogGatesBeforeScoring()
+{
+    var now = new DateTimeOffset(2026, 9, 6, 10, 0, 0, TimeSpan.Zero);
+    var allowed = TestCapability("wk.test.rest", BehaviorParticipationMode.Autonomous, StablePosture.Prone, runtimeUse: true);
+    var locked = TestCapability("wk.test.locked", BehaviorParticipationMode.Autonomous, StablePosture.Prone, runtimeUse: false);
+    var command = TestCapability("wk.command.jump", BehaviorParticipationMode.UsuallyCooperative, StablePosture.Prone, runtimeUse: true);
+    var catalog = new BehaviorCapabilityCatalog(new[] { allowed, locked, command });
+    var state = PetAgentState.CreateDefault(now) with
+    {
+        Episode = new PetEpisodeState(PetEpisodeKind.Resting, now.AddMinutes(-2), TimeSpan.FromMinutes(1), "test")
+    };
+    var input = new BehaviorDecisionInput(
+        BehaviorRequestSource.AutonomousTick, now, "wk.runtime.idle", now.AddMinutes(-2), true,
+        new Dictionary<string, DateTimeOffset>(), Array.Empty<string>(), 42, true, true);
+    var engine = new BehaviorDecisionEngine();
+    var first = engine.Decide(state, catalog, input);
+    var second = engine.Decide(state, catalog, input);
+
+    Assert(first.SelectedBehaviorId == allowed.BehaviorId, "eligible autonomous capability was not selected");
+    Assert(first.SelectedBehaviorId == second.SelectedBehaviorId, "same state clock and seed changed selection");
+    AssertClose(first.Candidates.Single(item => item.Selected).FinalScore,
+        second.Candidates.Single(item => item.Selected).FinalScore, "same seed changed candidate score");
+    Assert(first.Candidates.Single(item => item.BehaviorId == locked.BehaviorId).GateReasons.Contains("runtime_capability_unavailable"),
+        "runtime gate was evaluated after scoring");
+    Assert(first.Candidates.Single(item => item.BehaviorId == command.BehaviorId).GateReasons.Contains("not_autonomous_capability"),
+        "command-only behavior entered autonomous scoring");
+    return Task.CompletedTask;
+}
+
+static Task EpisodeCandidateScopesAndPoseFamiliesFailClosed()
+{
+    var now = new DateTimeOffset(2026, 9, 6, 12, 0, 0, TimeSpan.Zero);
+    var episodes = new HashSet<PetEpisodeKind> { PetEpisodeKind.Resting, PetEpisodeKind.Observing };
+    var front = TestCapability("wk.test.front_observe", BehaviorParticipationMode.Autonomous, StablePosture.Prone, true) with
+    {
+        Category = BehaviorSemanticCategory.Observe,
+        AllowedEpisodes = episodes,
+        StartPoseFamily = "prone.front"
+    };
+    var side = front with { BehaviorId = "wk.test.side_observe", StartPoseFamily = "prone.non_front" };
+    var outside = front with { BehaviorId = "wk.command.jump", StartPoseFamily = "prone.front" };
+    var state = PetAgentState.CreateDefault(now) with
+    {
+        Runtime = PetRuntimeState.Default with
+        {
+            CurrentPosture = StablePosture.Prone,
+            CurrentPoseId = "prone.awake.front"
+        },
+        Episode = new PetEpisodeState(PetEpisodeKind.Observing, now.AddMinutes(-2), TimeSpan.Zero, "test")
+    };
+    var scope = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { front.BehaviorId, side.BehaviorId };
+    var decision = new BehaviorDecisionEngine().Decide(
+        state,
+        new BehaviorCapabilityCatalog(new[] { front, side, outside }),
+        new BehaviorDecisionInput(
+            BehaviorRequestSource.AutonomousTick, now, "wk.runtime.idle", now.AddMinutes(-2), true,
+            new Dictionary<string, DateTimeOffset>(), Array.Empty<string>(), 73, true, true, scope));
+
+    Assert(decision.SelectedBehaviorId == front.BehaviorId, "front-prone observation did not retain its compatible visual profile");
+    Assert(decision.Candidates.Single(item => item.BehaviorId == side.BehaviorId).GateReasons.Contains("pose_profile_mismatch"),
+        "incompatible prone camera profile crossed the pose gate");
+    Assert(decision.Candidates.Single(item => item.BehaviorId == outside.BehaviorId).GateReasons.Contains("episode_rollout_not_bound"),
+        "out-of-scope behavior entered the episode rollout");
+    return Task.CompletedTask;
+}
+
+static Task EpisodeRolloutSamplingNeverEscapes()
+{
+    var now = new DateTimeOffset(2026, 9, 6, 13, 0, 0, TimeSpan.Zero);
+    var allEpisodes = new HashSet<PetEpisodeKind> { PetEpisodeKind.Resting, PetEpisodeKind.Observing };
+    BehaviorCapability Allowed(string id, BehaviorSemanticCategory category) =>
+        TestCapability(id, BehaviorParticipationMode.Autonomous, StablePosture.Prone, true) with
+        {
+            Category = category,
+            AllowedEpisodes = allEpisodes,
+            MinimumDwell = TimeSpan.Zero,
+            Cooldown = TimeSpan.Zero
+        };
+
+    var restingId = "wk.test.resting_idle";
+    var observingId = "wk.test.observing_head_turn";
+    var forbiddenIds = new[]
+    {
+        "wk.command.jump",
+        "wk.command.spin",
+        "wk.magic.apparate",
+        "wk.interaction.car_ride",
+        "wk.test.unapproved"
+    };
+    var capabilities = new List<BehaviorCapability>
+    {
+        Allowed(restingId, BehaviorSemanticCategory.StableIdle),
+        Allowed(observingId, BehaviorSemanticCategory.Observe)
+    };
+    capabilities.AddRange(forbiddenIds.Select(id => Allowed(id, BehaviorSemanticCategory.OwnerCommand)));
+    var catalog = new BehaviorCapabilityCatalog(capabilities);
+    var engine = new BehaviorDecisionEngine();
+    var restingScope = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { restingId };
+    var observingScope = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { observingId };
+
+    for (var seed = 0; seed < 100; seed++)
+    {
+        for (var iteration = 0; iteration < 100; iteration++)
+        {
+            var episode = iteration % 2 == 0 ? PetEpisodeKind.Resting : PetEpisodeKind.Observing;
+            var scope = episode == PetEpisodeKind.Resting ? restingScope : observingScope;
+            var state = PetAgentState.CreateDefault(now) with
+            {
+                Episode = new PetEpisodeState(episode, now.AddMinutes(-2), TimeSpan.Zero, "sampling")
+            };
+            var result = engine.Decide(
+                state,
+                catalog,
+                new BehaviorDecisionInput(
+                    BehaviorRequestSource.AutonomousTick, now, "wk.runtime.idle", now.AddMinutes(-2), true,
+                    new Dictionary<string, DateTimeOffset>(), Array.Empty<string>(), seed * 100 + iteration,
+                    true, true, scope));
+            var expected = episode == PetEpisodeKind.Resting ? restingId : observingId;
+            Assert(result.SelectedBehaviorId == expected,
+                $"{episode} escaped its allowlist at seed={seed}, iteration={iteration}: {result.SelectedBehaviorId}");
+            Assert(!forbiddenIds.Contains(result.SelectedBehaviorId, StringComparer.OrdinalIgnoreCase),
+                "forbidden command, magic, or car-ride behavior entered autonomous selection");
+        }
+    }
+    return Task.CompletedTask;
+}
+
+static Task ParticipationPolicySeparatesOutcomes()
+{
+    var now = new DateTimeOffset(2026, 9, 6, 10, 0, 0, TimeSpan.Zero);
+    var state = PetAgentState.CreateDefault(now) with
+    {
+        Runtime = PetRuntimeState.Default with { Energy = 0.08, Stress = 0.90, CurrentPosture = StablePosture.Prone }
+    };
+    var policy = new BehaviorParticipationPolicy();
+    var forced = TestCapability("wk.magic.test", BehaviorParticipationMode.ForcedByOwner, StablePosture.Prone, true)
+        with { Effort = BehaviorEffortLevel.High };
+    var command = TestCapability("wk.command.jump", BehaviorParticipationMode.UsuallyCooperative, StablePosture.Prone, true)
+        with { Effort = BehaviorEffortLevel.High };
+    var unavailable = command with { BehaviorId = "wk.command.locked", RuntimeUse = false };
+
+    Assert(policy.Evaluate(forced, state, BehaviorRequestSource.OwnerContextMenu, now).Disposition == RequestDisposition.Accepted,
+        "owner-forced magic was rejected by mood");
+    Assert(policy.Evaluate(command, state, BehaviorRequestSource.OwnerContextMenu, now).Disposition == RequestDisposition.Rejected,
+        "high-effort command did not express state-based refusal");
+    Assert(policy.Evaluate(unavailable, state, BehaviorRequestSource.OwnerContextMenu, now).Disposition == RequestDisposition.Deferred,
+        "missing capability was confused with refusal");
+    return Task.CompletedTask;
+}
+
+static Task DialogueProjectionUsesCanonicalState()
+{
+    var now = new DateTimeOffset(2026, 9, 6, 10, 0, 0, TimeSpan.Zero);
+    var state = PetAgentState.CreateDefault(now) with
+    {
+        Temperament = TemperamentProfile.Default with { Activity = 91, Attachment = 24, CommandCooperativeness = 0.87 },
+        Relationship = RelationshipState.Default with { Trust = 0.33, Familiarity = 0.44 },
+        Runtime = PetRuntimeState.Default with
+        {
+            CurrentPosture = StablePosture.Sit,
+            ActiveActionId = "wk.command.paw_sit",
+            MoodValence = 0.27,
+            Stress = 0.73,
+            Energy = 0.29,
+            Hunger = 0.68,
+            Thirst = 0.74,
+            IsBusy = true
+        }
+    };
+    var projection = new DialogueStateProjector().Project(state);
+    AssertClose(projection.Personality.Liveliness, 0.91, "dialogue used a second personality default");
+    AssertClose(projection.Personality.CommandCooperativeness, 0.87, "dialogue lost command cooperation baseline");
+    AssertClose(projection.Relationship.Trust, 0.33, "dialogue used a second relationship default");
+    Assert(projection.RuntimeState.CurrentPosture == "sit", "dialogue posture diverged from embodied state");
+    Assert(projection.RuntimeState.CurrentAction == "wk.command.paw_sit", "dialogue action diverged from active action");
+    AssertClose(projection.RuntimeState.MoodValence, 0.27, "dialogue mood diverged from affect state");
+    AssertClose(projection.RuntimeState.Energy, 0.29, "dialogue energy diverged from runtime state");
+    AssertClose(projection.RuntimeState.Hunger, 0.68, "dialogue hunger diverged from runtime state");
+    AssertClose(projection.RuntimeState.Thirst, 0.74, "dialogue thirst diverged from runtime state");
+    Assert(projection.RuntimeState.Episode == "resting" && projection.RuntimeState.IsBusy, "dialogue lost episode or busy state");
+    return Task.CompletedTask;
+}
+
+static BehaviorCapability TestCapability(
+    string id,
+    BehaviorParticipationMode participation,
+    StablePosture posture,
+    bool runtimeUse) => new(
+        id,
+        BehaviorSemanticCategory.Rest,
+        participation,
+        BehaviorInterruptionPolicy.SafePreempt,
+        new HashSet<BehaviorRequestSource>
+        {
+            BehaviorRequestSource.AutonomousTick,
+            BehaviorRequestSource.OwnerContextMenu,
+            BehaviorRequestSource.ControlPanel
+        },
+        new HashSet<StablePosture> { posture },
+        posture,
+        BehaviorEffortLevel.Low,
+        new HashSet<PetEpisodeKind> { PetEpisodeKind.Resting },
+        ProductionApproved: true,
+        RuntimeUse: runtimeUse,
+        ProductionAsset: true,
+        AutonomousBindingEnabled: participation == BehaviorParticipationMode.Autonomous,
+        SupportsWindowTranslation: false,
+        MinimumDwell: TimeSpan.Zero,
+        Cooldown: TimeSpan.Zero,
+        BaseWeight: 0.5,
+        StateEffects: new PetStateEffects());
+
+static void AssertClose(double actual, double expected, string message)
+{
+    if (Math.Abs(actual - expected) > 0.000000001)
+        throw new InvalidOperationException($"{message}: expected={expected}, actual={actual}");
 }
 
 static BehaviorDecisionContext AgentDecisionContext(

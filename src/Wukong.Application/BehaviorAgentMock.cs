@@ -35,11 +35,13 @@ public sealed record TemperamentProfile(
     int Mischief)
 {
     public static TemperamentProfile Default { get; } = new(56, 62, 42, 38, 35);
+    public double CommandCooperativeness { get; init; } = 0.82;
     public double Activity01 => Clamp01(Activity);
     public double Attachment01 => Clamp01(Attachment);
     public double Sensitivity01 => Clamp01(Sensitivity);
     public double Independence01 => Clamp01(Independence);
     public double Mischief01 => Clamp01(Mischief);
+    public double CommandCooperativeness01 => Math.Clamp(CommandCooperativeness, 0, 1);
     private static double Clamp01(int value) => Math.Clamp(value, 0, 100) / 100.0;
 }
 
@@ -65,6 +67,13 @@ public sealed record PetRuntimeState(
     public double Curiosity { get; init; } = 0.46;
     public double Comfort { get; init; } = 0.78;
     public double Focus { get; init; } = 0.58;
+    public double Thirst { get; init; } = 0.18;
+    public string CurrentPhase { get; init; } = "idle";
+    public string StableAnchor { get; init; } = "ground.bottom_center";
+    public string CurrentPoseId { get; init; } = "prone.awake.left_front";
+    public Guid? ActiveExecutionId { get; init; }
+    public DateTimeOffset? ActiveActionStartedAt { get; init; }
+    public bool IsInterruptible { get; init; } = true;
 
     public PetRuntimeState Clamp() => this with
     {
@@ -78,10 +87,21 @@ public sealed record PetRuntimeState(
         Curiosity = Clamp01(Curiosity),
         Comfort = Clamp01(Comfort),
         Focus = Clamp01(Focus),
+        Thirst = Clamp01(Thirst),
+        CurrentPhase = string.IsNullOrWhiteSpace(CurrentPhase) ? "idle" : CurrentPhase.Trim(),
+        StableAnchor = string.IsNullOrWhiteSpace(StableAnchor) ? "ground.bottom_center" : StableAnchor.Trim(),
+        CurrentPoseId = string.IsNullOrWhiteSpace(CurrentPoseId) ? DefaultPoseFor(CurrentPosture) : CurrentPoseId.Trim(),
         RepeatedActionCount = Math.Max(0, RepeatedActionCount)
     };
 
     private static double Clamp01(double value) => Math.Clamp(value, 0, 1);
+
+    public static string DefaultPoseFor(StablePosture posture) => posture switch
+    {
+        StablePosture.Stand => "stand.neutral.left_front",
+        StablePosture.Sit => "sit.neutral.left_front",
+        _ => "prone.awake.left_front"
+    };
 }
 
 public sealed record RelationshipState(

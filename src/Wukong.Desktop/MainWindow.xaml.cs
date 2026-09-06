@@ -114,7 +114,9 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         _runtime = new DesktopRuntimeHost();
-        _agentRuntime = DesktopAgentRuntime.CreateDefault(BuildConversationRuntimeState);
+        _agentRuntime = DesktopAgentRuntime.CreateDefault(
+            BuildConversationRuntimeState,
+            _runtime.BuildDialogueProjection);
         _runtime.MotionRequested += Runtime_MotionRequested;
         _runtime.PetPixelSizeRequested += Runtime_PetPixelSizeRequested;
         _runtime.PetScaleRequested += Runtime_PetScaleRequested;
@@ -546,6 +548,7 @@ public partial class MainWindow : Window
             return;
 
         var behaviorId = _activeRequest.Motion.BehaviorId;
+        var executionId = _activeRequest.RequestId;
         var phase = _runtime.CurrentPhase;
         _animationTimer.Stop();
         _coinSingleClickTimer.Stop();
@@ -553,7 +556,17 @@ public partial class MainWindow : Window
         var returnToIdle = _activeRequest.ReturnToIdle;
         _activeRequest = null;
         if (returnToIdle)
-            _runtime.CompleteMotion(behaviorId, phase);
+            _runtime.CompleteMotion(executionId, behaviorId, phase);
+    }
+
+    private void FailCurrentMotion(string reason)
+    {
+        if (_activeRequest is not { TracksAgentLifecycle: true } request)
+            return;
+
+        _animationTimer.Stop();
+        _activeRequest = null;
+        _runtime.FailMotion(request.RequestId, request.Motion.BehaviorId, reason);
     }
 
     private async Task StopCurrentBehaviorAsync(string reason)
@@ -1395,6 +1408,8 @@ public partial class MainWindow : Window
             BootstrapLog.Write("Frame decode failed", ex);
             _runtime.ReportError($"frame_decode_failed:{Path.GetFileName(path)}:{ex.GetType().Name}");
             ShowFallback(ex.GetType().Name);
+            if (_activeRequest is { TracksAgentLifecycle: true })
+                Dispatcher.BeginInvoke(() => FailCurrentMotion($"frame_decode_failed:{ex.GetType().Name}"));
         }
     }
 

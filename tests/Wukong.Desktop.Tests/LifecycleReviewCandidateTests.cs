@@ -99,7 +99,7 @@ internal static class LifecycleReviewCandidateTests
             }
         }
 
-        var repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
+        var repoRoot = TestRepository.Root;
         var xaml = File.ReadAllText(Path.Combine(repoRoot, "src", "Wukong.Desktop", "ControlPanelWindow.xaml"));
         Assert(xaml.Contains("x:Name=\"LifecycleReviewCandidateList\"", StringComparison.Ordinal), "approved lifecycle list is missing");
         Assert(xaml.Contains("两组姿态仍保持独立", StringComparison.Ordinal) && xaml.Contains("禁止硬切拼接", StringComparison.Ordinal), "no-hard-splice warning is missing");
@@ -110,7 +110,7 @@ internal static class LifecycleReviewCandidateTests
 
     public static void AutonomousTicksUseApprovedDailyAllowlistWithoutCommands()
     {
-        var runtime = new DesktopRuntimeHost();
+        var runtime = new DesktopRuntimeHost(rolloutOptions: AutonomousAgentRolloutOptions.ShadowOnly);
         PetMotionRequest? request = null;
         runtime.MotionRequested += (_, value) => request = value;
         var nextDecision = typeof(DesktopRuntimeHost).GetField(
