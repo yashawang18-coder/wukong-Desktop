@@ -24,8 +24,10 @@
     "AutonomousTick",
     "DeveloperPreview"
   ],
-  "runtime_render_scale": 0.92,
-  "window_motion_enabled": false,
+  "runtime_render_scale": 0.86,
+  "runtime_scale_basis": "approved standing subject height; one fixed scale for both directions",
+  "window_motion_enabled": true,
+  "window_motion_validation": "passed_windows_renderer_qa",
   "mirror_policy": {
     "walk_right_is_exact_horizontal_mirror": true,
     "source_report_all_mirror_pixel_equal": true,
@@ -565,7 +567,7 @@
     {
       "behavior_id": "wk.candidate.autonomous.patrol_walk_left_v1",
       "display_name": "日常走动（向左）",
-      "description": "Owner-approved in-place patrol gait loop. Desktop translation remains intentionally disabled.",
+      "description": "Owner-approved patrol gait loop with leftward work-area-constrained desktop translation pending owner Windows movement review.",
       "from_pose": "stand.walk.left",
       "to_pose": "stand.walk.left",
       "direction": "left",
@@ -671,7 +673,7 @@
     {
       "behavior_id": "wk.candidate.autonomous.patrol_walk_right_v1",
       "display_name": "日常走动（向右）",
-      "description": "Owner-approved in-place patrol gait loop. Desktop translation remains intentionally disabled.",
+      "description": "Owner-approved patrol gait loop with rightward work-area-constrained desktop translation pending owner Windows movement review.",
       "from_pose": "stand.walk.right",
       "to_pose": "stand.walk.right",
       "direction": "right",

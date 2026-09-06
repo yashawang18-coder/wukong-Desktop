@@ -20,7 +20,7 @@ class PatrolWalkCandidateV1Tests(unittest.TestCase):
         cls.manifest = json.loads((BATCH / "manifest.json").read_text(encoding="utf-8"))
         cls.source_report = json.loads((BATCH / "qa-report.json").read_text(encoding="utf-8"))
 
-    def test_owner_approved_gate_allows_autonomous_gait_without_window_motion(self):
+    def test_owner_approved_gait_uses_local_window_motion_candidate(self):
         for document in (self.asset, self.manifest):
             self.assertEqual(BATCH_ID, document["asset_id"])
             self.assertEqual(SOURCE_ZIP_SHA256, document["source_zip_sha256"])
@@ -33,7 +33,9 @@ class PatrolWalkCandidateV1Tests(unittest.TestCase):
             self.assertFalse(document["prototype_use"])
             self.assertTrue(document["developer_preview"])
             self.assertTrue(document["autonomous_binding_enabled"])
-            self.assertFalse(document["window_motion_enabled"])
+            self.assertEqual(0.86, document["runtime_render_scale"])
+            self.assertTrue(document["window_motion_enabled"])
+            self.assertEqual("passed_windows_renderer_qa", document["window_motion_validation"])
             self.assertEqual(["AutonomousTick", "DeveloperPreview"], document["allowed_sources"])
 
     def test_all_runtime_frames_are_original_rgba_and_have_transparent_edges(self):

@@ -16,6 +16,8 @@
   "internal_handoff_sha256": "0d8f1d4b86720d1e15aee644f6a450596f025de5b55f4e697a4cb64d39b70bf2",
   "current_runtime_prone_anchor_exact": false,
   "approved_runtime_profile": "non_front_prone_owner_validated",
+  "runtime_render_scale": 0.6,
+  "runtime_scale_basis": "owner Windows visual correction after Alpha-bounds baseline; one fixed batch scale, no per-frame normalization",
   "frame_inventory": [
     {"path":"frames/head-lower/frame-001.png","width":1024,"height":1024,"mode":"RGBA","bytes":511761,"sha256":"254b75d53f355be23b4bd8258f62465441e8dbac6d45943bd0f9a9e2ca64df04"},
     {"path":"frames/head-lower/frame-002.png","width":1024,"height":1024,"mode":"RGBA","bytes":511761,"sha256":"254b75d53f355be23b4bd8258f62465441e8dbac6d45943bd0f9a9e2ca64df04"},
@@ -62,6 +64,7 @@
       "developer_preview": true,
       "autonomous_binding_enabled": true,
       "allowed_sources": ["AutonomousTick", "DeveloperPreview"],
+      "runtime_render_scale": 0.6,
       "phases": [
         {"name":"intro","loop":false,"frames":[
           {"path":"frames/head-lower/frame-001.png","duration_ms":150},{"path":"frames/head-lower/frame-002.png","duration_ms":150},{"path":"frames/head-lower/frame-003.png","duration_ms":150},{"path":"frames/head-lower/frame-004.png","duration_ms":150},{"path":"frames/head-lower/frame-005.png","duration_ms":150},{"path":"frames/head-lower/frame-006.png","duration_ms":150},{"path":"frames/head-lower/frame-007.png","duration_ms":150},{"path":"frames/head-lower/frame-008.png","duration_ms":150},{"path":"frames/head-lower/frame-009.png","duration_ms":150},{"path":"frames/head-lower/frame-010.png","duration_ms":150},{"path":"frames/head-lower/frame-011.png","duration_ms":350},{"path":"frames/head-lower/frame-012.png","duration_ms":350}

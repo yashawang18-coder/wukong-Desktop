@@ -145,7 +145,11 @@ public partial class MainWindow : Window
         _animationTimer.Tick += (_, _) => AdvanceFrame();
 
         _autonomousTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
-        _autonomousTimer.Tick += async (_, _) => await _runtime.SubmitAutonomousTickAsync();
+        _autonomousTimer.Tick += async (_, _) =>
+        {
+            UpdatePatrolTravelSpace();
+            await _runtime.SubmitAutonomousTickAsync();
+        };
 
         _coinStateTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         _coinStateTimer.Tick += (_, _) => _runtime.RefreshPetrifiedCoinState();
@@ -571,7 +575,7 @@ public partial class MainWindow : Window
         _effectCancellation?.Dispose();
         _effectCancellation = new CancellationTokenSource();
         RestoreWindowAfterEffect();
-        _effectDisplaySnapshot = request.Motion.Effect == DesktopMotionEffect.None
+        _effectDisplaySnapshot = request.Motion.Effect == DesktopMotionEffect.None && !request.Motion.WindowMotionEnabled
             ? null
             : CaptureEffectDisplaySnapshot();
 
@@ -585,6 +589,11 @@ public partial class MainWindow : Window
     private void StartMotionEffect(PetMotionRequest request)
     {
         var token = _effectCancellation?.Token ?? CancellationToken.None;
+        if (request.Motion.WindowMotionEnabled)
+        {
+            _ = RunPatrolWalkAsync(request, token);
+            return;
+        }
         _ = request.Motion.Effect switch
         {
             DesktopMotionEffect.BroomFlight => RunBroomFlightAsync(request, token),
@@ -593,6 +602,46 @@ public partial class MainWindow : Window
             DesktopMotionEffect.CarRide => RunCarRideAsync(request, token),
             _ => Task.CompletedTask
         };
+    }
+
+    private async Task RunPatrolWalkAsync(PetMotionRequest request, CancellationToken token)
+    {
+        try
+        {
+            var workArea = WindowPlacement.CurrentWorkingArea(this);
+            var width = ActualWidth > 0 ? ActualWidth : Width;
+            var height = ActualHeight > 0 ? ActualHeight : Height;
+            var start = ClampToWorkArea(new Point(Left, Top), workArea, width, height);
+            var cycles = request.LoopCycles == int.MaxValue ? 2 : Math.Max(1, request.LoopCycles);
+            var durationMs = request.Motion.Phases
+                .Where(phase => phase.Frames.Count > 0)
+                .Sum(phase => phase.DurationTotalMs(request.Motion.FrameDurationMs)) * cycles;
+            var duration = TimeSpan.FromMilliseconds(Math.Max(500, durationMs));
+            var target = ChoosePatrolWalkTarget(start, workArea, width, height, request.Motion.Direction, duration);
+            var distance = Math.Abs(target.X - start.X);
+            _runtime.ReportPerformance($"patrol_walk_motion direction={request.Motion.Direction} distance_px={distance:0.0} duration_ms={duration.TotalMilliseconds:0}");
+            await MoveWindowAsync(start, target, duration, token, MotionEasing.EaseInOut);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _runtime.ReportError($"patrol_walk_motion_failed:{ex.GetType().Name}");
+        }
+        finally
+        {
+            ApplyVisiblePlacement(new Point(Left, Top));
+        }
+    }
+
+    private void UpdatePatrolTravelSpace()
+    {
+        var workArea = WindowPlacement.CurrentWorkingArea(this);
+        var width = ActualWidth > 0 ? ActualWidth : Width;
+        var availableLeft = Math.Max(0, Left - workArea.Left);
+        var availableRight = Math.Max(0, workArea.Right - (Left + width));
+        _runtime.UpdatePatrolTravelSpace(availableLeft, availableRight, Math.Max(48, width * 0.45));
     }
 
     private async Task RunBroomFlightAsync(PetMotionRequest request, CancellationToken token)
@@ -1242,6 +1291,26 @@ public partial class MainWindow : Window
     private static Point ClampToWorkArea(Point preferred, Rect workArea, double width, double height) => new(
         Math.Min(Math.Max(preferred.X, workArea.Left), Math.Max(workArea.Left, workArea.Right - width)),
         Math.Min(Math.Max(preferred.Y, workArea.Top), Math.Max(workArea.Top, workArea.Bottom - height)));
+
+    public static Point ChoosePatrolWalkTarget(
+        Point start,
+        Rect workArea,
+        double width,
+        double height,
+        string direction,
+        TimeSpan duration)
+    {
+        var origin = ClampToWorkArea(start, workArea, width, height);
+        var minX = workArea.Left;
+        var maxX = Math.Max(minX, workArea.Right - width);
+        var maximumDistance = Math.Max(1, workArea.Width * 0.22);
+        var minimumDistance = Math.Min(maximumDistance, Math.Max(56, width * 0.7));
+        var desiredDistance = Math.Clamp(duration.TotalSeconds * 86, minimumDistance, maximumDistance);
+        var targetX = string.Equals(direction, "left", StringComparison.OrdinalIgnoreCase)
+            ? Math.Max(minX, origin.X - desiredDistance)
+            : Math.Min(maxX, origin.X + desiredDistance);
+        return ClampToWorkArea(new Point(targetX, origin.Y), workArea, width, height);
+    }
 
     public static IReadOnlyList<Point> BuildCarRidePreviewPath(Point start, Rect workArea, double width, double height)
     {

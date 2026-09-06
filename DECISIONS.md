@@ -1,5 +1,23 @@
 # Decisions
 
+## 2026-09-06 - approve compatible sleep v10 runtime routes and patrol translation
+
+The owner completed Windows review of the final sleep/prone sizing and real patrol movement. Approve the four non-deprecated sleep v10 actions with `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, and `prototype_use=false`. Keep the four owner-rejected color/fur variants deprecated and closed to every playback source.
+
+Runtime approval does not remove posture compatibility. Enable only `wk.candidate.sleep.main_lifecycle_v2` from the compatible non-front prone profile and `wk.candidate.sleep.sprawled_front_breath_v2` from the front-prone profile for low-frequency `AutonomousTick`. Keep the independently approved roll and left-side breathing loop out of autonomous selection until the runtime can prove their required low-head or left-side sleep pose. Preserve the no-hard-cut, no-reversed-wake, and no-legacy-sleep-fallback rules.
+
+Accept prone-head V4 at `0.60`, the affected sleep actions at their reviewed action-level scales, and the P2 completion prone idle at `0.68`; these are renderer transforms and do not modify PNG bytes. Accept the bounded patrol translation with `window_motion_validation=passed_windows_renderer_qa`. Patrol remains a low-frequency standing behavior and cannot run when the current work area lacks safe travel distance.
+
+## 2026-09-05 - normalize visible subject size and stage real patrol translation
+
+Use fixed action-level presentation scales. Alpha-visible subject bounds provide an objective first pass, but owner Windows review is authoritative where equal bounds still produce unequal perceived body mass across poses. Do not normalize each frame independently and do not modify source PNG pixels. This keeps intra-sequence geometry stable while allowing one reviewed correction per action.
+
+The approved P2 prone idle is also a presentation-scale boundary: prone-ending actions return to it, so leaving it at the shared `0.92` target caused a visible size jump after otherwise smaller actions. Give only that stable prone idle a fixed `0.68` render override and align the affected prone-head and sleep review actions to the same visible-width range. This changes presentation metadata, not approved PNG bytes or behavior eligibility.
+
+Deprecate only these owner-rejected sleep v10 behaviors for color and fur-quality mismatch: `wk.candidate.sleep.sprawled_right_side_breath_v2`, `wk.candidate.sleep.compact_prone_breath_v2`, `wk.candidate.sleep.curled_side_breath_v2`, and `wk.candidate.sleep.top_down_prone_breath_v2`. Preserve their files and metadata as expired audit evidence, but close every playback source including DeveloperPreview. The remaining four sleep actions stay review-only and do not enter the autonomous pool.
+
+Make patrol walking translate the main pet window in the same direction as the approved left/right gait frames. Select a patrol direction only when that side has sufficient working-area space, move for the two-cycle gait duration, keep the ground anchor stable, and constrain the target to the current display work area. This is a local movement candidate: the gait pixels retain their approval, while `window_motion_validation=pending_owner_windows_renderer_qa` remains until the owner checks actual Windows direction, scale, route, and cancellation.
+
 ## 2026-09-05 - approve seven low-frequency autonomous daily entries
 
 The owner explicitly confirmed Windows renderer QA and runtime approval for four posture transitions, prone head-lower/turn V4, and both patrol-walk directions. Enable only these seven IDs for `AutonomousTick` and retain explicit `DeveloperPreview` access. Their runtime state is `passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, and `prototype_use=false`.

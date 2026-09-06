@@ -30,7 +30,10 @@ internal static class PatrolWalkCandidateTests
         Assert(!asset.GetProperty("prototype_use").GetBoolean(), "patrol walk enabled owner prototype use");
         Assert(asset.GetProperty("developer_preview").GetBoolean(), "patrol walk developer preview was disabled");
         Assert(asset.GetProperty("autonomous_binding_enabled").GetBoolean(), "patrol walk autonomous binding missing");
-        Assert(!asset.GetProperty("window_motion_enabled").GetBoolean(), "in-place gait approval must not enable window translation");
+        Assert(asset.GetProperty("runtime_render_scale").GetDouble() == 0.86, "patrol walk runtime scale changed");
+        Assert(asset.GetProperty("window_motion_enabled").GetBoolean(), "patrol walk must move in its rendered direction");
+        Assert(asset.GetProperty("window_motion_validation").GetString() == "passed_windows_renderer_qa",
+            "patrol window movement owner Windows QA was not recorded");
         Assert(asset.GetProperty("allowed_sources").EnumerateArray().Select(x => x.GetString()).SequenceEqual(new[] { "AutonomousTick", "DeveloperPreview" }),
             "patrol walk source policy changed");
 
@@ -86,7 +89,8 @@ internal static class PatrolWalkCandidateTests
         Assert(motions.All(x => x.VisualApproved && x.RuntimeEnabled && x.RuntimeApproved && !x.PrototypeUse),
             "patrol walk catalog approval is incomplete");
         Assert(motions.All(x => x.AutonomousBindingEnabled), "patrol walk catalog autonomous binding is missing");
-        Assert(motions.All(x => x.RenderScaleOverride == 0.92), "patrol walk lost its shared review scale");
+        Assert(motions.All(x => x.RenderScaleOverride == 0.86), "patrol walk lost its shared review scale");
+        Assert(motions.All(x => x.WindowMotionEnabled), "patrol walk catalog did not enable work-area translation");
         Assert(motions.All(x => DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(x.BehaviorId)),
             "patrol walk is missing from the autonomous allowlist");
 
@@ -107,6 +111,20 @@ internal static class PatrolWalkCandidateTests
             runtime.CompleteMotion(request.Motion.BehaviorId, motion.Phases[0].Name);
             Assert(runtime.CurrentStablePosture == postureBefore, "developer patrol walk preview changed production posture");
         }
+    }
+
+    public static void WindowTravelIsDirectionalAndWorkAreaBounded()
+    {
+        var area = new System.Windows.Rect(0, 0, 1920, 1080);
+        var start = new System.Windows.Point(820, 700);
+        var duration = TimeSpan.FromMilliseconds(2640);
+        var left = MainWindow.ChoosePatrolWalkTarget(start, area, 280, 280, "left", duration);
+        var right = MainWindow.ChoosePatrolWalkTarget(start, area, 280, 280, "right", duration);
+
+        Assert(left.X < start.X, "left-facing patrol did not travel left");
+        Assert(right.X > start.X, "right-facing patrol did not travel right");
+        Assert(left.Y == start.Y && right.Y == start.Y, "patrol introduced vertical drift");
+        Assert(left.X >= area.Left && right.X + 280 <= area.Right, "patrol target escaped the work area");
     }
 
     private static string Sha256(string path)

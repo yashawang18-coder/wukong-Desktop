@@ -1,10 +1,21 @@
+## Owner-approved sleep/prone sizing and patrol movement - 2026-09-06
+
+- No PNG was resized, cropped, recolored, re-encoded, moved, or replaced. Presentation sizing uses one fixed action-level scale, never per-frame fit. Owner Windows review identified the approved P2 prone idle as the oversized completion target, so it now uses `0.68`; the aligned pose-specific scales are sleep v10 main `0.61`, roll `0.64`, front breath `0.63`, left-side breath `0.78`, and approved prone head-lower/turn V4 `0.60`. Patrol walk remains `0.86` in both directions.
+- `wk.candidate.sleep.sprawled_right_side_breath_v2`, `wk.candidate.sleep.compact_prone_breath_v2`, `wk.candidate.sleep.curled_side_breath_v2`, and `wk.candidate.sleep.top_down_prone_breath_v2` are deprecated after owner rejection of their color and fur texture. Each records `runtime_validation=failed_owner_visual_qa`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, `developer_preview=false`, an empty source allowlist, and `deprecated_reason=owner_rejected_color_and_fur_texture_2026_09_05`.
+- The four rejected sleep variants remain immutable audit evidence. They are hidden from the default gallery, visible under the expired filter, and cannot be selected by Normal, autonomous, prototype, or developer playback.
+- Prone-head V4 keeps its existing approved action and autonomous gates. The owner accepted its `0.60` presentation scale against the approved prone idle; no pixels or posture eligibility changed.
+- Patrol gait frames and their existing approval are unchanged. The owner accepted the work-area-constrained horizontal translation on 2026-09-06, so `window_motion_validation=passed_windows_renderer_qa`. It still runs only as a low-frequency standing autonomous action or isolated developer preview.
+- Owner Windows review passed for the four non-deprecated sleep v10 actions: `wk.candidate.sleep.main_lifecycle_v2`, `wk.candidate.sleep.prone_to_side_roll_v2`, `wk.candidate.sleep.sprawled_front_breath_v2`, and `wk.candidate.sleep.sprawled_left_side_breath_v2`. They record `visual_approved=true`, `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, and `prototype_use=false`.
+- Autonomous sleep routing remains posture-safe: only the complete lifecycle from the compatible non-front prone profile and front breathing from the front-prone profile are enabled for `AutonomousTick`. The independent roll and left-side loop are runtime approved but remain explicit developer previews until their required pose bridges exist. No incompatible camera views are hard-cut, and the missing wake/interrupt-exit assets remain recorded gaps.
+- These owner-approved changes are prepared on `agent/car-prone-runtime-release-v1`; publication status is reported from Git after the final non-force push.
+
 ## Owner-approved autonomous posture, prone-head, and patrol actions - 2026-09-05
 
 - The owner completed Windows renderer QA and explicitly approved seven runtime entries: `wk.daily.stand_to_sit`, `wk.daily.sit_to_prone`, `wk.daily.prone_to_sit`, `wk.daily.sit_to_stand`, `wk.candidate.daily.prone_head_lower_turn_v4`, `wk.candidate.autonomous.patrol_walk_left_v1`, and `wk.candidate.autonomous.patrol_walk_right_v1`.
 - These entries now record `visual_approved=true`, `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, `prototype_use=false`, and `autonomous_binding_enabled=true`. Their permitted sources are `AutonomousTick` and `DeveloperPreview` only.
 - The four posture transitions continue to reference immutable approved command/lifecycle ranges. No PNG was duplicated, edited, resized, recolored, or re-hashed during approval.
 - Prone-head V4 remains a closed 44-frame microevent. `current_runtime_prone_anchor_exact=false` remains an audit fact; approval is explicitly scoped to `non_front_prone_owner_validated`, and the forward-prone profile cannot select it.
-- Patrol walk contains the existing 24 byte-preserved frames and runs for two gait cycles as a low-frequency standing autonomous action. `window_motion_enabled=false` remains unchanged because desktop translation was not included in this approval.
+- Patrol walk contains the existing 24 byte-preserved frames and runs for two gait cycles as a low-frequency standing autonomous action. Its gait approval remains valid; the later local translation candidate is tracked separately above and still requires owner Windows review.
 - Jump, spin, command-only actions, magic, car ride, and the pending sleep v10 package remain outside this autonomous allowlist. The earlier pending-review entries below are historical and are superseded only for the seven IDs listed here.
 
 ## Autonomous patrol-walk v1 local review candidate - 2026-09-04
@@ -283,7 +294,7 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
   dialogue/model routing, fallback, or startup autoplay.
 - Repository stage: local uncommitted Windows review candidate.
 
-## 2026-09-05 sleep runtime v10 local review candidate
+## 2026-09-05 sleep runtime v10 initial import history
 
 - Replaced the local, uncommitted v5 preview with
   `WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10`, imported only from
@@ -307,18 +318,17 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
   RGBA mode, 1024 x 1024 canvas, non-empty Alpha, transparent canvas edges,
   unique paths, byte counts, and SHA-256. This does not constitute owner visual
   approval or Windows transparent-renderer approval.
-- Current state is `owner_preview_approved=false`, `visual_approved=false`,
+- At initial import the state was `owner_preview_approved=false`, `visual_approved=false`,
   `runtime_validation=pending_owner_windows_renderer_qa`,
   `runtime_approved=false`, `runtime_use=false`, `production_asset=false`,
   `prototype_use=false`, and `autonomous_binding_enabled=false`.
-- The eight actions are available only through the existing isolated
+- At initial import the eight actions were available only through the existing isolated
   `DeveloperPreview` BehaviorRequest path. They remain absent from Normal,
   AutonomousTick, dialogue/model routing, owner commands, fallback, and startup.
 - The main lifecycle already contains its roll; the independent roll is not
   appended. Incompatible camera views are not hard-cut. No approved wake or
   interrupt-exit sequence exists, and legacy sleep pixels are not a fallback.
-- Repository stage: feature-branch runtime candidate; owner Windows animation
-  visual QA is pending and no approval is implied by branch publication.
+- This initial-import state is superseded only for the four non-deprecated actions by the explicit 2026-09-06 owner approval recorded at the top of this document. The four rejected variants remain closed.
 
 ## Next implementation target
 

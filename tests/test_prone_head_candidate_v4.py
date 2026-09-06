@@ -25,6 +25,7 @@ class ProneHeadCandidateV4Tests(unittest.TestCase):
             self.assertFalse(document["prototype_use"])
             self.assertTrue(document["autonomous_binding_enabled"])
             self.assertEqual("non_front_prone_owner_validated", document["approved_runtime_profile"])
+            self.assertEqual(0.60, document["runtime_render_scale"])
         self.assertEqual(["AutonomousTick", "DeveloperPreview"], self.manifest["allowed_sources"])
         self.assertFalse(self.manifest["current_runtime_prone_anchor_exact"])
 
@@ -69,6 +70,21 @@ class ProneHeadCandidateV4Tests(unittest.TestCase):
             self.manifest["internal_handoff_sha256"],
             inventory["frames/head-turn/frame-001.png"]["sha256"],
         )
+
+    def test_fixed_scale_matches_approved_prone_visible_major_axis(self):
+        reference = ROOT / "assets" / "action-batches" / "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2" / "frames" / "microloops" / "prone-idle" / "01.png"
+        with Image.open(reference) as image:
+            bounds = image.getchannel("A").getbbox()
+            reference_major = max(bounds[2] - bounds[0], bounds[3] - bounds[1]) * 0.68
+
+        visible_majors = []
+        for item in self.manifest["frame_inventory"]:
+            with Image.open(BATCH / item["path"]) as image:
+                bounds = image.getchannel("A").getbbox()
+                visible_majors.append(max(bounds[2] - bounds[0], bounds[3] - bounds[1]))
+        ratio = max(visible_majors) * self.manifest["runtime_render_scale"] / reference_major
+        self.assertGreaterEqual(ratio, 0.95)
+        self.assertLessEqual(ratio, 1.05)
 
 
 if __name__ == "__main__":

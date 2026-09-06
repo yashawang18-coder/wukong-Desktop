@@ -130,6 +130,7 @@ public sealed record PlayableMotion(
     bool VisualApproved = false,
     bool RuntimeApproved = false,
     bool AutonomousBindingEnabled = false,
+    bool WindowMotionEnabled = false,
     bool Deprecated = false)
 {
     public bool IsUsable => Phases.Any(x => x.Frames.Count > 0);
@@ -166,9 +167,10 @@ public sealed record PlayableMotion(
     public MotionVisibleMetrics VisibleMetrics => MotionVisualSizer.Measure(FirstFrame);
     public int VisibleSubjectWidth => VisibleMetrics.VisibleWidth;
     public int VisibleSubjectHeight => VisibleMetrics.VisibleHeight;
-    public double PreviewRenderSize => ScaleReferenceFrames is { Count: > 0 }
-        ? Math.Clamp(150 * MotionVisualSizer.RenderScaleForMotion(this, DesktopMotionCatalog.ReferenceFramePath), 150 * 0.45, 150 * 2.6)
-        : MotionVisualSizer.PreviewRenderSize(FirstFrame, DesktopMotionCatalog.ReferenceFramePath, VisualScale, 150);
+    public double PreviewRenderSize => Math.Clamp(
+        150 * MotionVisualSizer.RenderScaleForMotion(this, DesktopMotionCatalog.ReferenceFramePath),
+        150 * 0.45,
+        150 * 2.6);
 }
 
 public sealed record MotionVisibleMetrics(int CanvasWidth, int CanvasHeight, Int32Rect Bounds)
@@ -282,6 +284,7 @@ public static class MotionVisualSizer
 public sealed class DesktopMotionCatalog
 {
     private const double ApprovedPetVisualScale = 0.92;
+    private const double ApprovedProneIdleRenderScale = 0.68;
     public const string RoadGazeReviewMarkerFileName = "Wukong.RoadGazeReview.enabled";
     private readonly IReadOnlyList<PlayableMotion> _allMotions;
     private readonly Dictionary<string, PlayableMotion> _motions;
@@ -865,6 +868,12 @@ public sealed class DesktopMotionCatalog
                 Description: action.Description,
                 CandidateProfile: action.CandidateProfile ?? manifest.CandidateProfile,
                 VisualScale: ApprovedPetVisualScale,
+                RenderScaleOverride: string.Equals(
+                    action.BehaviorId,
+                    LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
+                    StringComparison.OrdinalIgnoreCase)
+                        ? ApprovedProneIdleRenderScale
+                        : action.RuntimeRenderScale,
                 VisualApproved: action.RuntimeApproved,
                 RuntimeApproved: action.RuntimeApproved,
                 AutonomousBindingEnabled: !string.IsNullOrWhiteSpace(action.AutonomousMapping));
@@ -915,6 +924,8 @@ public sealed class DesktopMotionCatalog
             batchErrors.Add("unverified_runtime_anchor_claim");
         if (!string.Equals(manifest.ApprovedRuntimeProfile, "non_front_prone_owner_validated", StringComparison.Ordinal))
             batchErrors.Add("approved_runtime_profile_invalid");
+        if (manifest.RuntimeRenderScale <= 0)
+            batchErrors.Add("runtime_render_scale_invalid");
         if (manifest.AllowedSources is null ||
             manifest.AllowedSources.Count != 2 ||
             !manifest.AllowedSources.Contains("AutonomousTick", StringComparer.Ordinal) ||
@@ -1044,6 +1055,7 @@ public sealed class DesktopMotionCatalog
                 Description: $"{action.Description} Internal low-head handoff is exact; owner Windows renderer QA permits autonomous use from the compatible non-front prone profile only.",
                 CandidateProfile: manifest.CandidateProfile,
                 VisualScale: ApprovedPetVisualScale,
+                RenderScaleOverride: manifest.RuntimeRenderScale,
                 VisualApproved: true,
                 RuntimeApproved: true,
                 AutonomousBindingEnabled: true);
@@ -1081,22 +1093,23 @@ public sealed class DesktopMotionCatalog
         }
 
         var batchErrors = new List<string>();
-        if (manifest.OwnerPreviewApproved ||
-            manifest.VisualApproved ||
-            manifest.RuntimeApproved ||
-            manifest.RuntimeUse ||
-            manifest.ProductionAsset ||
+        if (!manifest.OwnerPreviewApproved ||
+            !manifest.VisualApproved ||
+            !manifest.RuntimeApproved ||
+            !manifest.RuntimeUse ||
+            !manifest.ProductionAsset ||
             manifest.PrototypeUse ||
             !manifest.DeveloperPreview ||
-            manifest.AutonomousBindingEnabled ||
-            !string.Equals(manifest.RuntimeValidation, "pending_owner_windows_renderer_qa", StringComparison.Ordinal))
-            batchErrors.Add("candidate_gate_invalid");
+            !manifest.AutonomousBindingEnabled ||
+            !string.Equals(manifest.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal))
+            batchErrors.Add("approved_batch_gate_invalid");
         if (manifest.SourceFrameCount != 48 || manifest.RuntimeFrameCount != 48 || manifest.SequenceCount != 8)
             batchErrors.Add("candidate_inventory_contract_invalid");
         if (manifest.RuntimeRenderScale <= 0)
             batchErrors.Add("runtime_render_scale_invalid");
         if (manifest.AllowedSources is null ||
-            manifest.AllowedSources.Count != 1 ||
+            manifest.AllowedSources.Count != 2 ||
+            !manifest.AllowedSources.Contains("AutonomousTick", StringComparer.Ordinal) ||
             !manifest.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
             batchErrors.Add("source_policy_invalid");
 
@@ -1145,22 +1158,49 @@ public sealed class DesktopMotionCatalog
         foreach (var action in actions)
         {
             var errors = new List<string>();
+            var deprecated = action.Deprecated;
             if (!SleepCandidateBehaviorIds.All.Contains(action.BehaviorId))
                 errors.Add("behavior_id_invalid");
-            if (action.OwnerPreviewApproved ||
-                action.VisualApproved ||
-                action.RuntimeApproved ||
-                action.RuntimeUse ||
-                action.ProductionAsset ||
-                action.PrototypeUse ||
-                !action.DeveloperPreview ||
-                action.AutonomousBindingEnabled ||
-                !string.Equals(action.RuntimeValidation, "pending_owner_windows_renderer_qa", StringComparison.Ordinal))
-                errors.Add("action_gate_invalid");
-            if (action.AllowedSources is null ||
-                action.AllowedSources.Count != 1 ||
-                !action.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
-                errors.Add("action_source_policy_invalid");
+            if (action.RuntimeRenderScale <= 0)
+                errors.Add("action_runtime_render_scale_invalid");
+            if (deprecated)
+            {
+                if (action.OwnerPreviewApproved ||
+                    action.VisualApproved ||
+                    action.RuntimeApproved ||
+                    action.RuntimeUse ||
+                    action.ProductionAsset ||
+                    action.PrototypeUse ||
+                    action.DeveloperPreview ||
+                    action.AutonomousBindingEnabled ||
+                    action.AllowedSources is null ||
+                    action.AllowedSources.Count != 0 ||
+                    !string.Equals(action.RuntimeValidation, "failed_owner_visual_qa", StringComparison.Ordinal) ||
+                    string.IsNullOrWhiteSpace(action.DeprecatedReason))
+                    errors.Add("deprecated_action_gate_invalid");
+            }
+            else
+            {
+                var autonomous = SleepCandidateBehaviorIds.AutonomousAllowed.Contains(action.BehaviorId);
+                if (!SleepCandidateBehaviorIds.RuntimeApproved.Contains(action.BehaviorId) ||
+                    !action.OwnerPreviewApproved ||
+                    !action.VisualApproved ||
+                    !action.RuntimeApproved ||
+                    !action.RuntimeUse ||
+                    !action.ProductionAsset ||
+                    action.PrototypeUse ||
+                    !action.DeveloperPreview ||
+                    action.AutonomousBindingEnabled != autonomous ||
+                    !string.Equals(action.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal))
+                    errors.Add("approved_action_gate_invalid");
+                var expectedSources = autonomous
+                    ? new[] { "AutonomousTick", "DeveloperPreview" }
+                    : new[] { "DeveloperPreview" };
+                if (action.AllowedSources is null ||
+                    !action.AllowedSources.OrderBy(x => x, StringComparer.Ordinal)
+                        .SequenceEqual(expectedSources.OrderBy(x => x, StringComparer.Ordinal), StringComparer.Ordinal))
+                    errors.Add("approved_action_source_policy_invalid");
+            }
 
             var phases = new List<MotionPhase>();
             foreach (var phase in action.Phases ?? Array.Empty<SleepCandidatePhaseManifest>())
@@ -1207,22 +1247,25 @@ public sealed class DesktopMotionCatalog
                 action.Interruptible,
                 phases,
                 batchRoot,
-                RuntimeEnabled: false,
-                Status: "v10 待主人 Windows 渲染验收",
-                MissingContent: "Windows transparent-renderer QA / compatible runtime bridge / approved wake and interrupt-exit / runtime approval",
+                RuntimeEnabled: action.RuntimeUse && action.RuntimeApproved && !deprecated,
+                Status: deprecated ? "已过期：主人否决色彩和毛发质感" : "已通过 Windows 渲染验收",
+                MissingContent: deprecated
+                    ? action.DeprecatedReason ?? "owner_rejected_visual_quality"
+                    : "Approved wake and interrupt-exit remain unavailable; incompatible camera-view entries stay disabled.",
                 StartPose: action.FromPose,
                 EndPose: action.ToPose,
                 StyleGroup: "wukong-sleep-runtime-final-v10-candidate",
-                Disposition: "仅开发者候审预览",
+                Disposition: deprecated ? "已过期" : action.AutonomousBindingEnabled ? "已启用：兼容趴姿低频自主" : "运行已批准：仅兼容入口预览",
                 PrototypeUse: false,
                 AssetBatch: manifest.BatchId,
-                Description: $"{action.Description} entry_policy={action.EntryPolicy}; source={manifest.SourceZip}; owner_preview_approved=false; visual_approved=false; runtime_use=false.",
+                Description: $"{action.Description} entry_policy={action.EntryPolicy}; source={manifest.SourceZip}; owner_preview_approved={action.OwnerPreviewApproved}; visual_approved={action.VisualApproved}; runtime_use={action.RuntimeUse}; deprecated={deprecated}.",
                 CandidateProfile: manifest.CandidateProfile,
                 VisualScale: ApprovedPetVisualScale,
-                RenderScaleOverride: manifest.RuntimeRenderScale,
-                VisualApproved: false,
-                RuntimeApproved: false,
-                AutonomousBindingEnabled: false);
+                RenderScaleOverride: action.RuntimeRenderScale,
+                VisualApproved: action.VisualApproved,
+                RuntimeApproved: action.RuntimeApproved,
+                AutonomousBindingEnabled: action.AutonomousBindingEnabled,
+                Deprecated: deprecated);
         }
     }
 
@@ -1265,9 +1308,11 @@ public sealed class DesktopMotionCatalog
             manifest.PrototypeUse ||
             !manifest.DeveloperPreview ||
             !manifest.AutonomousBindingEnabled ||
-            manifest.WindowMotionEnabled ||
+            !manifest.WindowMotionEnabled ||
             !string.Equals(manifest.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal))
             batchErrors.Add("approved_gate_invalid");
+        if (!string.Equals(manifest.WindowMotionValidation, "passed_windows_renderer_qa", StringComparison.Ordinal))
+            batchErrors.Add("window_motion_validation_invalid");
         if (manifest.SourceFrameCount != 24 || manifest.RuntimeFrameCount != 24 || manifest.SequenceCount != 2)
             batchErrors.Add("candidate_inventory_contract_invalid");
         if (manifest.RuntimeRenderScale <= 0)
@@ -1383,21 +1428,22 @@ public sealed class DesktopMotionCatalog
                 phases,
                 batchRoot,
                 RuntimeEnabled: true,
-                Status: "Windows renderer QA passed; low-frequency in-place autonomous gait enabled",
-                MissingContent: "Window translation remains disabled and requires separate motion QA.",
+                Status: "步态素材已批准；桌面位移等待主人 Windows 复验",
+                MissingContent: "Window translation is enabled in this local candidate and remains pending owner Windows renderer QA.",
                 StartPose: action.FromPose,
                 EndPose: action.ToPose,
                 StyleGroup: "wukong-autonomous-patrol-walk-v1-candidate",
                 Disposition: "已启用",
                 PrototypeUse: false,
                 AssetBatch: manifest.BatchId,
-                Description: $"{action.Description} source={manifest.SourcePackage}; runtime_use=true; window_motion=false.",
+                Description: $"{action.Description} source={manifest.SourcePackage}; runtime_use=true; window_motion=true; window_motion_validation={manifest.WindowMotionValidation}.",
                 CandidateProfile: manifest.CandidateProfile,
                 VisualScale: ApprovedPetVisualScale,
                 RenderScaleOverride: manifest.RuntimeRenderScale,
                 VisualApproved: true,
                 RuntimeApproved: true,
-                AutonomousBindingEnabled: true);
+                AutonomousBindingEnabled: true,
+                WindowMotionEnabled: true);
         }
     }
 
@@ -2308,6 +2354,22 @@ public static class SleepCandidateBehaviorIds
         CurledSideBreath,
         TopDownProneBreath
     };
+
+    public static readonly IReadOnlySet<string> RuntimeApproved = new HashSet<string>(StringComparer.Ordinal)
+    {
+        MainLifecycle,
+        ProneToSideRoll,
+        SprawledFrontBreath,
+        SprawledLeftSideBreath
+    };
+
+    // Only entries with a compatible posture represented by the current runtime may run autonomously.
+    public static readonly IReadOnlySet<string> AutonomousAllowed = new HashSet<string>(StringComparer.Ordinal)
+    {
+        MainLifecycle,
+        SprawledFrontBreath
+    };
+
 }
 
 public static class PatrolWalkCandidateBehaviorIds
@@ -2450,7 +2512,8 @@ public sealed record LifecycleCandidateActionManifest(
     [property: JsonPropertyName("to_pose")] string ToPose,
     [property: JsonPropertyName("direction")] string Direction,
     [property: JsonPropertyName("interruptible")] bool Interruptible,
-    [property: JsonPropertyName("phases")] IReadOnlyList<LifecycleCandidatePhaseManifest> Phases);
+    [property: JsonPropertyName("phases")] IReadOnlyList<LifecycleCandidatePhaseManifest> Phases,
+    [property: JsonPropertyName("runtime_render_scale")] double? RuntimeRenderScale = null);
 
 public sealed record LifecycleCandidatePhaseManifest(
     [property: JsonPropertyName("name")] string Name,
@@ -2520,6 +2583,7 @@ public sealed record ProneHeadCandidateBatchManifest(
     [property: JsonPropertyName("internal_handoff_sha256")] string InternalHandoffSha256,
     [property: JsonPropertyName("current_runtime_prone_anchor_exact")] bool CurrentRuntimeProneAnchorExact,
     [property: JsonPropertyName("approved_runtime_profile")] string ApprovedRuntimeProfile,
+    [property: JsonPropertyName("runtime_render_scale")] double RuntimeRenderScale,
     [property: JsonPropertyName("frame_inventory")] IReadOnlyList<ProneHeadCandidateInventoryFrame> FrameInventory,
     [property: JsonPropertyName("actions")] IReadOnlyList<ProneHeadCandidateActionManifest> Actions);
 
@@ -2606,6 +2670,9 @@ public sealed record SleepCandidateActionManifest(
     [property: JsonPropertyName("developer_preview")] bool DeveloperPreview,
     [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
     [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
+    [property: JsonPropertyName("runtime_render_scale")] double RuntimeRenderScale,
+    [property: JsonPropertyName("deprecated")] bool Deprecated,
+    [property: JsonPropertyName("deprecated_reason")] string? DeprecatedReason,
     [property: JsonPropertyName("phases")] IReadOnlyList<SleepCandidatePhaseManifest> Phases);
 
 public sealed record SleepCandidatePhaseManifest(
@@ -2634,6 +2701,7 @@ public sealed record PatrolWalkCandidateBatchManifest(
     [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
     [property: JsonPropertyName("runtime_render_scale")] double RuntimeRenderScale,
     [property: JsonPropertyName("window_motion_enabled")] bool WindowMotionEnabled,
+    [property: JsonPropertyName("window_motion_validation")] string WindowMotionValidation,
     [property: JsonPropertyName("frame_inventory")] IReadOnlyList<ProneHeadCandidateInventoryFrame> FrameInventory,
     [property: JsonPropertyName("actions")] IReadOnlyList<PatrolWalkCandidateActionManifest> Actions);
 
@@ -2966,7 +3034,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             AutonomousDailyCandidateBehaviorIds.SitToStand,
             ProneHeadCandidateBehaviorIds.HeadLowerTurnV4,
             PatrolWalkCandidateBehaviorIds.WalkLeft,
-            PatrolWalkCandidateBehaviorIds.WalkRight
+            PatrolWalkCandidateBehaviorIds.WalkRight,
+            SleepCandidateBehaviorIds.MainLifecycle,
+            SleepCandidateBehaviorIds.SprawledFrontBreath
         };
     private readonly DesktopMotionCatalog _catalog;
     private readonly PetrifiedCoinAssets? _coinAssets;
@@ -2998,6 +3068,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private DateTimeOffset? _lastInitiativeSpeechAt;
     private BehaviorRequestSource _coinPreviewSource = BehaviorRequestSource.OwnerContextMenu;
     private bool _frontProneProfileActive;
+    private bool _patrolCanMoveLeft;
+    private bool _patrolCanMoveRight;
 
     public DesktopRuntimeHost(PetrifiedCoinOptions? coinOptions = null, Func<DateTimeOffset>? now = null)
     {
@@ -3266,6 +3338,13 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         var clamped = RuntimeVisualScale.ClampUserScale(scale);
         PetScaleRequested?.Invoke(this, clamped);
         Trace("user_scale", $"scale={clamped:0.00}");
+    }
+
+    public void UpdatePatrolTravelSpace(double availableLeftPixels, double availableRightPixels, double minimumTravelPixels)
+    {
+        var minimum = Math.Max(1, minimumTravelPixels);
+        _patrolCanMoveLeft = availableLeftPixels >= minimum;
+        _patrolCanMoveRight = availableRightPixels >= minimum;
     }
 
     public void ReportPerformance(string detail) => Trace("performance", detail);
@@ -3712,8 +3791,34 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         if (completedMotion is not null &&
             string.Equals(completedMotion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
         {
-            Trace("sleep_candidate_completed", $"{behaviorId} phase={phase} review_only=true state_write=false memory_write=false");
-            StartStablePostureIdle(_agentState.CurrentPosture, $"sleep_candidate_complete:{behaviorId}");
+            if (_currentExecutionMode != BehaviorExecutionMode.Normal)
+            {
+                Trace("sleep_preview_completed", $"{behaviorId} phase={phase} state_write=false memory_write=false");
+                StartStablePostureIdle(_agentState.CurrentPosture, $"sleep_preview_complete:{behaviorId}");
+                return;
+            }
+
+            _frontProneProfileActive = string.Equals(
+                behaviorId,
+                SleepCandidateBehaviorIds.SprawledFrontBreath,
+                StringComparison.OrdinalIgnoreCase);
+            _agentState = _agentState with
+            {
+                CurrentPosture = StablePosture.Prone,
+                LastActionId = behaviorId,
+                RepeatedActionCount = string.Equals(_agentState.LastActionId, behaviorId, StringComparison.OrdinalIgnoreCase)
+                    ? _agentState.RepeatedActionCount + 1
+                    : 0,
+                IsBusy = false,
+                ActiveActionId = null,
+                Energy = Clamp01(_agentState.Energy + 0.025),
+                Stress = Clamp01(_agentState.Stress - 0.02),
+                Comfort = Clamp01(_agentState.Comfort + 0.02),
+                Arousal = Clamp01(_agentState.Arousal - 0.025)
+            };
+            Trace("sleep_runtime_completed", $"{behaviorId} phase={phase} posture=Prone runtime_approved=true front_prone={_frontProneProfileActive}");
+            RaiseMetrics();
+            StartStablePostureIdle(StablePosture.Prone, $"sleep_runtime_complete:{behaviorId}");
             return;
         }
 
@@ -3722,7 +3827,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         {
             if (_currentExecutionMode != BehaviorExecutionMode.Normal)
             {
-                Trace("patrol_walk_preview_completed", $"{behaviorId} phase={phase} state_write=false window_motion=false");
+                Trace("patrol_walk_preview_completed", $"{behaviorId} phase={phase} state_write=false window_motion=true");
                 StartStablePostureIdle(_agentState.CurrentPosture, $"patrol_walk_preview_complete:{behaviorId}");
                 return;
             }
@@ -3733,7 +3838,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                 IsBusy = false,
                 ActiveActionId = null
             };
-            Trace("patrol_walk_completed", $"{behaviorId} phase={phase} posture=Stand runtime_approved=true window_motion=false");
+            Trace("patrol_walk_completed", $"{behaviorId} phase={phase} posture=Stand runtime_approved=true window_motion=true");
             RaiseMetrics();
             StartStablePostureIdle(StablePosture.Stand, $"patrol_walk_complete:{behaviorId}");
             return;
@@ -3900,6 +4005,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         if (source == BehaviorRequestSource.AutonomousTick &&
             string.Equals(motion.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
             loopCycles = 2;
+        if (source == BehaviorRequestSource.AutonomousTick &&
+            string.Equals(motion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+            loopCycles = motion.Phases.Any(x => x.Loop) ? 3 : 1;
         if (source == BehaviorRequestSource.AutonomousTick && !stableIdle)
         {
             _agentState = _agentState with
@@ -3920,6 +4028,10 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         if (motion.Deprecated &&
             string.Equals(motion.AssetBatch, "WK-INTERACTION-PRONE-TOUCH-v4-1", StringComparison.OrdinalIgnoreCase))
             return (false, "asset_deprecated_owner_rejected", $"{motion.DisplayName} 已由主人明确移出使用范围");
+
+        if (motion.Deprecated &&
+            string.Equals(motion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+            return (false, "asset_deprecated_owner_rejected", $"{motion.DisplayName} 已由主人否决色彩和毛发质感，仅保留静态审计记录");
 
         if (executionMode == BehaviorExecutionMode.DeveloperPreview)
             return (true, "developer_preview", "开发者预览已允许");
@@ -3945,6 +4057,12 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             executionMode == BehaviorExecutionMode.Normal &&
             source is not (BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel))
             return (false, "car_ride_source_forbidden", "兜风只允许主人从玩一下菜单或面板手动触发");
+
+        if (string.Equals(motion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) &&
+            executionMode == BehaviorExecutionMode.Normal &&
+            (source != BehaviorRequestSource.AutonomousTick ||
+             !SleepCandidateBehaviorIds.AutonomousAllowed.Contains(motion.BehaviorId)))
+            return (false, "sleep_source_or_posture_route_forbidden", "该睡眠动作只允许从兼容姿态的自主日常路由触发");
 
         if (MockCommandActionIds.PrototypeWhitelist.Contains(motion.BehaviorId) &&
             executionMode == BehaviorExecutionMode.Normal &&
@@ -4110,12 +4228,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                         "autonomous:prefer_approved_v3r1_long_prone_rest");
                     if (Energy >= 0.35 && Stress < 0.65)
                     {
-                        AddIfEnabled(candidates, PatrolWalkCandidateBehaviorIds.WalkLeft,
-                            0.08 + _agentState.Boredom * 0.08 + Curiosity * 0.05,
-                            "autonomous:low_frequency_in_place_patrol_left");
-                        AddIfEnabled(candidates, PatrolWalkCandidateBehaviorIds.WalkRight,
-                            0.08 + _agentState.Boredom * 0.08 + Curiosity * 0.05,
-                            "autonomous:low_frequency_in_place_patrol_right");
+                        if (_patrolCanMoveLeft)
+                            AddIfEnabled(candidates, PatrolWalkCandidateBehaviorIds.WalkLeft,
+                                0.08 + _agentState.Boredom * 0.08 + Curiosity * 0.05,
+                                "autonomous:low_frequency_patrol_left");
+                        if (_patrolCanMoveRight)
+                            AddIfEnabled(candidates, PatrolWalkCandidateBehaviorIds.WalkRight,
+                                0.08 + _agentState.Boredom * 0.08 + Curiosity * 0.05,
+                                "autonomous:low_frequency_patrol_right");
                     }
                 }
                 break;
@@ -4144,6 +4264,13 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                     if (lickReady && string.Equals(_currentBehaviorId, LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4, StringComparison.OrdinalIgnoreCase))
                         AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.FrontProneLickV4,
                             0.08 + Curiosity * 0.06 + Mood * 0.04, "autonomous:approved_v4_single_lick_microevent");
+                    if (elapsed >= TimeSpan.FromSeconds(18) &&
+                        Energy < 0.62 &&
+                        Stress < 0.72 &&
+                        IsSleepAutonomousProfileAllowed(SleepCandidateBehaviorIds.SprawledFrontBreath, _agentState.CurrentPosture, _frontProneProfileActive))
+                        AddIfEnabled(candidates, SleepCandidateBehaviorIds.SprawledFrontBreath,
+                            0.06 + (1 - Energy) * 0.08 + Comfort * 0.04,
+                            "autonomous:approved_front_sleep_breath_from_compatible_profile");
                 }
                 else
                 {
@@ -4158,6 +4285,12 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                         AddIfEnabled(candidates, AutonomousDailyCandidateBehaviorIds.ProneToSit,
                             0.07 + Energy * 0.05 + _agentState.Arousal * 0.03,
                             "autonomous:low_frequency_prone_to_sit_transition");
+                        if (Energy < 0.58 &&
+                            Stress < 0.72 &&
+                            IsSleepAutonomousProfileAllowed(SleepCandidateBehaviorIds.MainLifecycle, _agentState.CurrentPosture, _frontProneProfileActive))
+                            AddIfEnabled(candidates, SleepCandidateBehaviorIds.MainLifecycle,
+                                0.07 + (1 - Energy) * 0.10 + Comfort * 0.04,
+                                "autonomous:approved_sleep_lifecycle_from_compatible_prone_profile");
                     }
                 }
                 break;
@@ -4174,7 +4307,10 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             return candidate with { Score = Math.Max(0.05, candidate.Score * penalty) };
         }).ToArray();
         var total = adjusted.Sum(x => x.Score);
-        var decisionRandom = new Random(HashCode.Combine(_decisionSeed, _autonomousDecisionCount++, (int)_agentState.CurrentPosture));
+        var decisionRandom = new Random(CombineDecisionSeed(
+            _decisionSeed,
+            _autonomousDecisionCount++,
+            (int)_agentState.CurrentPosture));
         var draw = decisionRandom.NextDouble() * total;
         foreach (var candidate in adjusted)
         {
@@ -4194,6 +4330,22 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     };
 
     public static int ChooseAutonomousProneLoopCycles(Random random) => random.Next(4, 8);
+
+    private static int CombineDecisionSeed(int seed, int decisionCount, int posture)
+    {
+        unchecked
+        {
+            var combined = (uint)seed;
+            combined ^= 0x9e3779b9u + (uint)decisionCount + (combined << 6) + (combined >> 2);
+            combined ^= 0x9e3779b9u + (uint)posture + (combined << 6) + (combined >> 2);
+            combined ^= combined >> 16;
+            combined *= 0x7feb352du;
+            combined ^= combined >> 15;
+            combined *= 0x846ca68bu;
+            combined ^= combined >> 16;
+            return (int)combined;
+        }
+    }
 
     private void CompletePendingAgentDecision(bool completed, string reason)
     {
@@ -4226,6 +4378,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public static bool IsProneHeadAutonomousProfileAllowed(StablePosture posture, bool frontProneProfileActive) =>
         posture == StablePosture.Prone && !frontProneProfileActive;
+
+    public static bool IsSleepAutonomousProfileAllowed(string behaviorId, StablePosture posture, bool frontProneProfileActive) =>
+        posture == StablePosture.Prone && behaviorId switch
+        {
+            SleepCandidateBehaviorIds.MainLifecycle => !frontProneProfileActive,
+            SleepCandidateBehaviorIds.SprawledFrontBreath => frontProneProfileActive,
+            _ => false
+        };
 
     private void UpdateDecision(PetActionResult result, string source, string reasonCode, string userFacing)
     {

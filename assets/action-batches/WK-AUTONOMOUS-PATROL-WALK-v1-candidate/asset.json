@@ -24,14 +24,16 @@
     "AutonomousTick",
     "DeveloperPreview"
   ],
-  "runtime_render_scale": 0.92,
-  "window_motion_enabled": false,
+  "runtime_render_scale": 0.86,
+  "runtime_scale_basis": "approved standing subject height; one fixed scale for both directions",
+  "window_motion_enabled": true,
+  "window_motion_validation": "passed_windows_renderer_qa",
   "mirror_policy": {
     "walk_right_is_exact_horizontal_mirror": true,
     "source_report_all_mirror_pixel_equal": true,
     "runtime_mirroring_required": false
   },
   "runtime_frame_format": "1024x1024 RGBA PNG copied byte-for-byte from the source ZIP",
-  "review_scope": "owner-approved in-place gait playback for low-frequency autonomous use",
-  "notes": "Enabled for low-frequency AutonomousTick gait playback and DeveloperPreview. Window translation remains disabled because it was not part of this approval."
+  "review_scope": "owner-approved gait playback with local candidate desktop translation pending owner Windows review",
+  "notes": "The immutable gait frames remain approved for low-frequency AutonomousTick and DeveloperPreview. The local candidate now translates the pet in frame direction inside the current work area; that movement behavior still requires owner Windows renderer QA."
 }

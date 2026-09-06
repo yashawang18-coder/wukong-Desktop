@@ -16,7 +16,35 @@ BATCH_ID = "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10"
 SOURCE_ZIP_NAME = "wukong-sleep-runtime-final-transparent-v10.zip"
 SOURCE_ZIP_SHA256 = "174350b0aaa7d01a6639d8ce189fb7a12d3541e5dc5ce4460b1461d8f0d1c701"
 CANVAS_SIZE = (1024, 1024)
-RUNTIME_RENDER_SCALE = 0.92
+RUNTIME_RENDER_SCALE = 0.61
+APPROVED_PRONE_IDLE_RENDER_SCALE = 0.68
+RUNTIME_RENDER_SCALES = {
+    "wk.candidate.sleep.main_lifecycle_v2": 0.61,
+    "wk.candidate.sleep.prone_to_side_roll_v2": 0.64,
+    "wk.candidate.sleep.sprawled_front_breath_v2": 0.63,
+    "wk.candidate.sleep.sprawled_left_side_breath_v2": 0.78,
+    "wk.candidate.sleep.sprawled_right_side_breath_v2": 0.80,
+    "wk.candidate.sleep.compact_prone_breath_v2": 1.01,
+    "wk.candidate.sleep.curled_side_breath_v2": 0.92,
+    "wk.candidate.sleep.top_down_prone_breath_v2": 1.04,
+}
+DEPRECATED_ACTIONS = {
+    "wk.candidate.sleep.sprawled_right_side_breath_v2",
+    "wk.candidate.sleep.compact_prone_breath_v2",
+    "wk.candidate.sleep.curled_side_breath_v2",
+    "wk.candidate.sleep.top_down_prone_breath_v2",
+}
+DEPRECATED_REASON = "owner_rejected_color_and_fur_texture_2026_09_05"
+RUNTIME_APPROVED_ACTIONS = {
+    "wk.candidate.sleep.main_lifecycle_v2",
+    "wk.candidate.sleep.prone_to_side_roll_v2",
+    "wk.candidate.sleep.sprawled_front_breath_v2",
+    "wk.candidate.sleep.sprawled_left_side_breath_v2",
+}
+AUTONOMOUS_ACTIONS = {
+    "wk.candidate.sleep.main_lifecycle_v2",
+    "wk.candidate.sleep.sprawled_front_breath_v2",
+}
 
 
 @dataclass(frozen=True)
@@ -37,10 +65,10 @@ MAIN_DURATIONS = (260,) * 15 + (1100,)
 ROLL_DURATIONS = (260,) * 7 + (800,)
 LOOP_DURATIONS = (650,) * 4
 SEQUENCES = (
-    SequenceSpec("01-main-sleep-lifecycle", "wk.candidate.sleep.main_lifecycle_v2", "Sleep lifecycle v10 review", MAIN_DURATIONS, "intro", False, "prone.awake.left_front", "sleep.side.stable", "front-prone-to-side-sleep", "developer review only; current runtime prone bridge requires Windows QA"),
-    SequenceSpec("02-prone-to-side-roll", "wk.candidate.sleep.prone_to_side_roll_v2", "Prone-to-side roll v10 review", ROLL_DURATIONS, "intro", False, "sleep.prone.low_head", "sleep.side.stable", "prone-to-side", "developer review only; never append after the complete main lifecycle"),
-    SequenceSpec("03-sprawled-front-breath", "wk.candidate.sleep.sprawled_front_breath_v2", "Sprawled front breathing v10 review", LOOP_DURATIONS, "loop", True, "sleep.prone.sprawled.front", "sleep.prone.sprawled.front", "front", "developer review only; compatible posture entry required"),
-    SequenceSpec("04-sprawled-left-side-breath", "wk.candidate.sleep.sprawled_left_side_breath_v2", "Sprawled left-side breathing v10 review", LOOP_DURATIONS, "loop", True, "sleep.side.sprawled.left", "sleep.side.sprawled.left", "left-side", "developer review only; compatible posture entry required"),
+    SequenceSpec("01-main-sleep-lifecycle", "wk.candidate.sleep.main_lifecycle_v2", "Sleep lifecycle v10", MAIN_DURATIONS, "intro", False, "prone.awake.left_front", "sleep.side.stable", "front-prone-to-side-sleep", "autonomous only from the compatible non-front prone profile; developer preview remains available"),
+    SequenceSpec("02-prone-to-side-roll", "wk.candidate.sleep.prone_to_side_roll_v2", "Prone-to-side roll v10", ROLL_DURATIONS, "intro", False, "sleep.prone.low_head", "sleep.side.stable", "prone-to-side", "runtime approved but not autonomous until the low-head sleep pose is represented; never append after the complete main lifecycle"),
+    SequenceSpec("03-sprawled-front-breath", "wk.candidate.sleep.sprawled_front_breath_v2", "Sprawled front breathing v10", LOOP_DURATIONS, "loop", True, "sleep.prone.sprawled.front", "sleep.prone.sprawled.front", "front", "autonomous only from the compatible front-prone profile; developer preview remains available"),
+    SequenceSpec("04-sprawled-left-side-breath", "wk.candidate.sleep.sprawled_left_side_breath_v2", "Sprawled left-side breathing v10", LOOP_DURATIONS, "loop", True, "sleep.side.sprawled.left", "sleep.side.sprawled.left", "left-side", "runtime approved but not autonomous until a compatible left-side sleep bridge exists"),
     SequenceSpec("05-sprawled-right-side-breath", "wk.candidate.sleep.sprawled_right_side_breath_v2", "Sprawled right-side breathing v10 review", LOOP_DURATIONS, "loop", True, "sleep.side.sprawled.right", "sleep.side.sprawled.right", "right-side", "developer review only; compatible posture entry required"),
     SequenceSpec("06-compact-prone-breath", "wk.candidate.sleep.compact_prone_breath_v2", "Compact prone breathing v10 review", LOOP_DURATIONS, "loop", True, "sleep.prone.compact", "sleep.prone.compact", "front-three-quarter", "developer review only; compatible posture entry required"),
     SequenceSpec("07-curled-side-breath", "wk.candidate.sleep.curled_side_breath_v2", "Curled side breathing v10 review", LOOP_DURATIONS, "loop", True, "sleep.side.curled", "sleep.side.curled", "side-curled", "developer review only; compatible posture entry required"),
@@ -158,11 +186,14 @@ def import_package(zip_path: Path, repository_root: Path) -> Path:
                 frame_inventory.append(frame_record)
                 phase_frames.append({"path": relative, "duration_ms": duration_ms, "bytes": len(payload), "sha256": digest})
 
+            deprecated = spec.behavior_id in DEPRECATED_ACTIONS
+            runtime_approved = spec.behavior_id in RUNTIME_APPROVED_ACTIONS
+            autonomous = spec.behavior_id in AUTONOMOUS_ACTIONS
             actions.append({
                 "behavior_id": spec.behavior_id,
                 "asset_version": 10,
                 "display_name": spec.display_name,
-                "description": "Byte-preserved v10 transparent PNGs for isolated Windows renderer review.",
+                "description": "Byte-preserved v10 transparent PNGs approved by owner Windows renderer QA." if runtime_approved else "Byte-preserved v10 transparent PNGs retained as deprecated audit evidence.",
                 "from_pose": spec.from_pose,
                 "to_pose": spec.to_pose,
                 "direction": spec.direction,
@@ -171,16 +202,19 @@ def import_package(zip_path: Path, repository_root: Path) -> Path:
                 "total_duration_ms": sum(spec.durations_ms),
                 "interruptible": True,
                 "loop": spec.loop,
-                "owner_preview_approved": False,
-                "visual_approved": False,
-                "runtime_validation": "pending_owner_windows_renderer_qa",
-                "runtime_approved": False,
-                "runtime_use": False,
-                "production_asset": False,
+                "owner_preview_approved": runtime_approved,
+                "visual_approved": runtime_approved,
+                "runtime_validation": "failed_owner_visual_qa" if deprecated else "passed_windows_renderer_qa",
+                "runtime_approved": runtime_approved,
+                "runtime_use": runtime_approved,
+                "production_asset": runtime_approved,
                 "prototype_use": False,
-                "developer_preview": True,
-                "autonomous_binding_enabled": False,
-                "allowed_sources": ["DeveloperPreview"],
+                "developer_preview": not deprecated,
+                "autonomous_binding_enabled": autonomous,
+                "allowed_sources": [] if deprecated else (["AutonomousTick", "DeveloperPreview"] if autonomous else ["DeveloperPreview"]),
+                "runtime_render_scale": RUNTIME_RENDER_SCALES[spec.behavior_id],
+                "deprecated": deprecated,
+                "deprecated_reason": DEPRECATED_REASON if deprecated else None,
                 "phases": [{"name": spec.phase, "loop": spec.loop, "frame_count": len(spec.durations_ms), "frames": phase_frames}],
             })
 
@@ -200,40 +234,45 @@ def import_package(zip_path: Path, repository_root: Path) -> Path:
         "runtime_render_scale": RUNTIME_RENDER_SCALE,
         "scaled_visible_height_px": round(first["visible_height"] * RUNTIME_RENDER_SCALE, 3),
         "runtime_visible_height_px": runtime_bounds[3] - runtime_bounds[1] if runtime_bounds else None,
-        "windows_transition_review": "pending",
+        "candidate_visible_major_axis_px": max(first["visible_width"], first["visible_height"]),
+        "candidate_scaled_visible_major_axis_px": round(max(first["visible_width"], first["visible_height"]) * RUNTIME_RENDER_SCALE, 3),
+        "runtime_visible_major_axis_px": max(runtime_bounds[2] - runtime_bounds[0], runtime_bounds[3] - runtime_bounds[1]) if runtime_bounds else None,
+        "runtime_scaled_visible_major_axis_px": round(max(runtime_bounds[2] - runtime_bounds[0], runtime_bounds[3] - runtime_bounds[1]) * APPROVED_PRONE_IDLE_RENDER_SCALE, 3) if runtime_bounds else None,
+        "windows_transition_review": "passed_windows_renderer_qa",
     }
     common = {
         "schema_version": 1,
         "asset_id": BATCH_ID,
         "asset_version": 10,
-        "asset_stage": "runtime-candidate",
+        "asset_stage": "runtime-approved",
         "source_package": SOURCE_ZIP_NAME,
         "source_zip_sha256": SOURCE_ZIP_SHA256,
         "source_frame_count": 48,
         "runtime_frame_count": 48,
         "sequence_count": 8,
         "source_png_byte_identity": True,
-        "owner_preview_approved": False,
-        "owner_material_visual_confirmed": False,
-        "visual_approved": False,
+        "owner_preview_approved": True,
+        "owner_material_visual_confirmed": True,
+        "visual_approved": True,
         "automated_validation": "passed_import_integrity",
-        "runtime_validation": "pending_owner_windows_renderer_qa",
-        "runtime_approved": False,
-        "runtime_use": False,
-        "production_asset": False,
+        "runtime_validation": "passed_windows_renderer_qa",
+        "runtime_approved": True,
+        "runtime_use": True,
+        "production_asset": True,
         "prototype_use": False,
         "developer_preview": True,
-        "autonomous_binding_enabled": False,
-        "normal_runtime_available": False,
-        "allowed_sources": ["DeveloperPreview"],
+        "autonomous_binding_enabled": True,
+        "normal_runtime_available": True,
+        "allowed_sources": ["AutonomousTick", "DeveloperPreview"],
         "runtime_render_scale": RUNTIME_RENDER_SCALE,
+        "runtime_scale_policy": "one fixed owner-reviewed visual scale per sequence after Alpha-bounds baseline; never adapt per frame",
         "current_runtime_prone_bridge": comparison,
     }
     manifest = {
         **common,
         "batch_id": BATCH_ID,
-        "candidate_profile": "sleep-runtime-final-v10-owner-review-pending",
-        "visual_approval_scope": "not yet approved; v10 source frames are awaiting owner Windows review",
+        "candidate_profile": "sleep-runtime-final-v10-approved-compatible-routing",
+        "visual_approval_scope": "owner Windows renderer QA passed for the four non-deprecated sequences on 2026-09-06; deprecated variants remain excluded",
         "timing_source": "existing stable sleep preview semantics; source v10 ZIP contains PNG files only",
         "sequence_rules": {
             "main_lifecycle_includes_roll": True,
@@ -252,8 +291,10 @@ def import_package(zip_path: Path, repository_root: Path) -> Path:
     asset = {
         **common,
         "runtime_frame_format": "1024x1024 RGBA PNG copied byte-for-byte from the supplied v10 ZIP",
-        "missing_content": ["approved wake exit", "approved interrupt exit", "Windows transparent-renderer continuity approval"],
-        "notes": "v10 replaces the local unapproved v5 preview. Only the eight supplied sequences are registered.",
+        "missing_content": ["approved wake exit", "approved interrupt exit", "compatible bridges for independent side-view variants"],
+        "deprecated_action_count": len(DEPRECATED_ACTIONS),
+        "deprecated_actions": sorted(DEPRECATED_ACTIONS),
+        "notes": "Owner Windows review passed on 2026-09-06 for the four non-deprecated sequences. Main lifecycle and front breathing are enabled only from compatible autonomous prone profiles; the independent roll and left-side loop remain runtime-approved explicit previews until a compatible pose bridge exists. Four rejected variants remain deprecated audit evidence.",
     }
     report = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -270,7 +311,7 @@ def import_package(zip_path: Path, repository_root: Path) -> Path:
         "maximum_possible_blue_carrier_pixels": max(item["possible_blue_carrier_pixels"] for item in frame_inventory),
         "source_png_byte_identity": True,
         "runtime_prone_anchor_comparison": comparison,
-        "windows_renderer_qa": "pending",
+        "windows_renderer_qa": "passed_owner_review_2026_09_06",
     }
 
     write_json(batch_root / "asset.json", asset)
@@ -281,7 +322,7 @@ def import_package(zip_path: Path, repository_root: Path) -> Path:
         "# Wukong sleep runtime final v10 candidate\n\n"
         "This candidate contains only the 48 transparent PNG files supplied in `wukong-sleep-runtime-final-transparent-v10.zip`. Files are copied byte-for-byte; no frame is generated, recolored, resized, cropped, filtered, or re-encoded.\n\n"
         "The source archive contains eight sequences and no manifest, report, GIF, or timing metadata. Preview timing retains the existing stable sleep semantics: the 16-frame lifecycle uses 260 ms for F01-F15 and 1100 ms for F16; the eight-frame roll uses 260 ms for F01-F07 and 800 ms for F08; breathing loops use 650 ms per frame.\n\n"
-        "Runtime gates remain closed: `runtime_validation=pending_owner_windows_renderer_qa`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, and `prototype_use=false`. Only isolated `DeveloperPreview` is allowed.\n\n"
+        "Owner Windows renderer QA passed on 2026-09-06 for the four non-deprecated sequences. They are `runtime_approved=true`, `runtime_use=true`, and `production_asset=true`; `prototype_use=false`. Only the compatible main lifecycle and front breathing sequence enter the low-frequency autonomous pool.\n\n"
         "The v5 front-three-quarter-side and right-rear breathing views are absent from v10 and are not carried forward. The main lifecycle already includes its roll; the independent roll must not be appended. Incompatible camera views must not be hard-cut together. No approved wake or interrupt-exit sequence exists, and legacy sleep artwork is not an allowed fallback.\n",
         encoding="utf-8",
         newline="\n",

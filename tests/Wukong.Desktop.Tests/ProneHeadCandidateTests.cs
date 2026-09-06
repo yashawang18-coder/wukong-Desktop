@@ -30,6 +30,7 @@ internal static class ProneHeadCandidateTests
         Assert(asset.GetProperty("internal_handoff_exact").GetBoolean(), "internal low-head handoff was not recorded");
         Assert(!asset.GetProperty("current_runtime_prone_anchor_exact").GetBoolean(), "candidate falsely claimed an existing runtime anchor");
         Assert(asset.GetProperty("approved_runtime_profile").GetString() == "non_front_prone_owner_validated", "prone head approved posture profile changed");
+        Assert(asset.GetProperty("runtime_render_scale").GetDouble() == 0.60, "prone head runtime scale changed");
 
         using var manifestDocument = JsonDocument.Parse(File.ReadAllText(manifestPath));
         var manifest = manifestDocument.RootElement;
@@ -84,6 +85,7 @@ internal static class ProneHeadCandidateTests
         var motion = catalog.Motions.Single(x => x.BehaviorId == ProneHeadCandidateBehaviorIds.HeadLowerTurnV4);
         Assert(motion.RuntimeEnabled && motion.RuntimeApproved && !motion.PrototypeUse, "prone head catalog approval is incomplete");
         Assert(motion.AutonomousBindingEnabled, "prone head catalog autonomous binding is missing");
+        Assert(motion.RenderScaleOverride == 0.60, "prone head action must use its fixed owner-reviewed scale");
         Assert(motion.Phases.Select(x => x.Frames.Count).SequenceEqual(new[] { 12, 22, 10 }), "catalog did not preserve round-trip phases");
         Assert(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(motion.BehaviorId), "prone head action is missing from the autonomous allowlist");
         Assert(DesktopRuntimeHost.IsProneHeadAutonomousProfileAllowed(StablePosture.Prone, frontProneProfileActive: false),
@@ -104,6 +106,9 @@ internal static class ProneHeadCandidateTests
         Assert(request!.Source == BehaviorRequestSource.DeveloperForced, "candidate bypassed the developer request source");
         Assert(request.ExecutionMode == BehaviorExecutionMode.DeveloperPreview, "candidate bypassed DeveloperPreview mode");
         Assert(request.Motion.BehaviorId == ProneHeadCandidateBehaviorIds.HeadLowerTurnV4, "wrong candidate motion was requested");
+        runtime.CompleteMotion(request.Motion.BehaviorId, "exit");
+        Assert(request.Motion.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop, "prone-head completion did not return to stable prone idle");
+        Assert(request.Motion.RenderScaleOverride == 0.68, "prone-head completion returned to the oversized prone idle scale");
     }
 
     private static string Sha256(string path)
