@@ -1,0 +1,242 @@
+{
+  "asset_id": "WK-MAGIC-PETRIFY-COIN-v19-candidate",
+  "validated_at": "2026-09-07",
+  "result": "passed_static_candidate_validation",
+  "source_master_count": 8,
+  "runtime_png_count": 44,
+  "derived_flip_frame_count": 36,
+  "all_png_decode": true,
+  "all_png_rgba_1024": true,
+  "shared_face_alpha": true,
+  "shared_visible_bounds": [
+    62,
+    70,
+    962,
+    952
+  ],
+  "transparent_rgb_zeroed": true,
+  "visible_source_pixels_preserved": true,
+  "runtime_validation": "pending_windows_renderer_qa",
+  "records": [
+    {
+      "path": "petrificus_coin/v19/back/state-01-vivid.png",
+      "bytes": 1449404,
+      "sha256": "8b634c774cb1d6693c2f1754ed61862612597fbbc22c2e130c37386ce2e59e0b"
+    },
+    {
+      "path": "petrificus_coin/v19/back/state-02-flat.png",
+      "bytes": 1579585,
+      "sha256": "8b552c3badf3bf966864195201472e7b9d5d5f56f751f6733e19e470939f776d"
+    },
+    {
+      "path": "petrificus_coin/v19/back/state-03-faded.png",
+      "bytes": 1665651,
+      "sha256": "f8e3f799f1b9c4d9456b45091945d287445199f26d2b65a34133f9785249f5ba"
+    },
+    {
+      "path": "petrificus_coin/v19/back/state-04-exhausted.png",
+      "bytes": 1720871,
+      "sha256": "c8948411cdc7bf2a4dd08d249fa97f4c037d9bbed3444f8edc62dd9612eefe0b"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/exhausted/front-to-back/frame-001.png",
+      "bytes": 1585370,
+      "sha256": "636576ad8667c502eccf053a5b02442118c4614bc8685b1ef677e85b93efe3b2"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/exhausted/front-to-back/frame-002.png",
+      "bytes": 1511650,
+      "sha256": "a8b05dd2f4bf38bdd87fbd236b4d040142595e9c524b0aecb65d7a787fe709f8"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/exhausted/front-to-back/frame-003.png",
+      "bytes": 1230137,
+      "sha256": "f89ffa0e849a4e309c92aaadf78612b3a19df91249b07d9986d7f074c347f3c7"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/exhausted/front-to-back/frame-004.png",
+      "bytes": 776288,
+      "sha256": "e474556744b7219e9f4396a1655298cf0901d269f933cbc08e2d11c8a52b85a2"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/exhausted/front-to-back/frame-005.png",
+      "bytes": 221931,
+      "sha256": "14e82f55fb7baee8f63a705f0a8516956c6a5f72743729e2325852f751d4bb7a"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/exhausted/front-to-back/frame-006.png",
+      "bytes": 811693,
+      "sha256": "8455e0682f86ad593c090cde3d3a408081e069c12a758a00228d9d91359075ea"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/exhausted/front-to-back/frame-007.png",
+      "bytes": 1317993,
+      "sha256": "3b6f65a5dfd1c7b8dfa78f85ed5530e1df7363d2e6c0c031b02b1e4a44052a59"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/exhausted/front-to-back/frame-008.png",
+      "bytes": 1631033,
+      "sha256": "bbc5600698cb956839e6a5f60f1499a73f456ada7757fc79c559f7e711a3920a"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/exhausted/front-to-back/frame-009.png",
+      "bytes": 1720871,
+      "sha256": "c8948411cdc7bf2a4dd08d249fa97f4c037d9bbed3444f8edc62dd9612eefe0b"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/faded/front-to-back/frame-001.png",
+      "bytes": 1620858,
+      "sha256": "c3ae2d1d86e7db54baca0f3363a6a536fdb4ac184213be16930ddac1547a8057"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/faded/front-to-back/frame-002.png",
+      "bytes": 1544753,
+      "sha256": "f600c07298d37ec09f9daee6be685d5e044d7648b89714103eb5056aa109286b"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/faded/front-to-back/frame-003.png",
+      "bytes": 1255460,
+      "sha256": "3be5543c20846ff6e43d64099df0f95ee0a3d4e245e137eec887ff21923c2c33"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/faded/front-to-back/frame-004.png",
+      "bytes": 789937,
+      "sha256": "0876fac9e445ec5ec28f0b9b9999dc59ad2bef84e8dddb10eba458b0bbc03f4a"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/faded/front-to-back/frame-005.png",
+      "bytes": 222345,
+      "sha256": "3fe6bc5aadf8543598f8c81d89f355e7bf05715c7ea5b3a1633a22ea32c78b1e"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/faded/front-to-back/frame-006.png",
+      "bytes": 790682,
+      "sha256": "bc8f55597f2b2b2362b215aff3e56b4a8ac014829e9862bc53af9cfad69b2a97"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/faded/front-to-back/frame-007.png",
+      "bytes": 1279641,
+      "sha256": "fde31afd2b43217ea1e1bf4479dd7a41d9f2df156ce9c9df025fd5e938945225"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/faded/front-to-back/frame-008.png",
+      "bytes": 1581758,
+      "sha256": "f8b6ad318d93c312c9cf017849d7ef73cb4526f820445a14bb30f759e50a4516"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/faded/front-to-back/frame-009.png",
+      "bytes": 1665651,
+      "sha256": "f8e3f799f1b9c4d9456b45091945d287445199f26d2b65a34133f9785249f5ba"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/flat/front-to-back/frame-001.png",
+      "bytes": 1542417,
+      "sha256": "363117f4e466996686a9c2c5ecc342e074fbde2e2c788a00f92a8e97773cf0e3"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/flat/front-to-back/frame-002.png",
+      "bytes": 1474388,
+      "sha256": "741970be12ebe980c020da34637c40538e87fad713b23892da780d251c5657fc"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/flat/front-to-back/frame-003.png",
+      "bytes": 1192915,
+      "sha256": "0928a310d96f2eb9545a53071c9c3a3f7c86c27822996ea764b98419c2bbd72e"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/flat/front-to-back/frame-004.png",
+      "bytes": 749951,
+      "sha256": "c7a15b5820a8c305dc8be4a08de69d4816be026de2294671342ba2e8ecce3f33"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/flat/front-to-back/frame-005.png",
+      "bytes": 213678,
+      "sha256": "af2e053a21b3593095c584254df057af88e3dba3edb0a26754b6d24588e464fd"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/flat/front-to-back/frame-006.png",
+      "bytes": 754109,
+      "sha256": "63ff77d55a7396f5611564f4f595e6e56c1933636fc09d41584658876b5849a5"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/flat/front-to-back/frame-007.png",
+      "bytes": 1215241,
+      "sha256": "927a84d7ab380e62d6a08e1de23c06ba4636fef4fe70b6c3bdd5f287dbda2ead"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/flat/front-to-back/frame-008.png",
+      "bytes": 1498790,
+      "sha256": "f3836e2fc7c584dd02b2678fc3240f0c121e622c30b96525d367ad5bf2849a5d"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/flat/front-to-back/frame-009.png",
+      "bytes": 1579585,
+      "sha256": "8b552c3badf3bf966864195201472e7b9d5d5f56f751f6733e19e470939f776d"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/vivid/front-to-back/frame-001.png",
+      "bytes": 1483190,
+      "sha256": "5e3e183a21782172833dc0304be64b22348ce741508a80c39794a2fa476ec8c5"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/vivid/front-to-back/frame-002.png",
+      "bytes": 1424536,
+      "sha256": "daec9dd1908d9bb46e81120356377423e47fe5fe81f0840a5d8cf30cc69fea7d"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/vivid/front-to-back/frame-003.png",
+      "bytes": 1162781,
+      "sha256": "698c013eff73d49d19ffe6919727b5b18dfb75b76a9bd510ea6e3851b3549223"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/vivid/front-to-back/frame-004.png",
+      "bytes": 740393,
+      "sha256": "4974d87fedfcdbf7aed32565c1bd7f26f8e89c2e31c0f7c0b883281e64975c45"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/vivid/front-to-back/frame-005.png",
+      "bytes": 214291,
+      "sha256": "57eac086baf8a412504ce85957b9b885b369ab77148c257776785bf42a150662"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/vivid/front-to-back/frame-006.png",
+      "bytes": 693794,
+      "sha256": "0108cf4a4a9b8a0fbff30611c7b75ca8b0e1c3ed33e8394d525cbfa5999d3ec4"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/vivid/front-to-back/frame-007.png",
+      "bytes": 1112353,
+      "sha256": "4089b987cc3be3896dc388db76e5f07d535961aa8585a7d381e8d13071708434"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/vivid/front-to-back/frame-008.png",
+      "bytes": 1377755,
+      "sha256": "e6e268e1b7a812b0a722c6561bb51379b9070804206d9f83da939913cf715661"
+    },
+    {
+      "path": "petrificus_coin/v19/flip/vivid/front-to-back/frame-009.png",
+      "bytes": 1449404,
+      "sha256": "8b634c774cb1d6693c2f1754ed61862612597fbbc22c2e130c37386ce2e59e0b"
+    },
+    {
+      "path": "petrificus_coin/v19/front/state-01-vivid.png",
+      "bytes": 1483190,
+      "sha256": "5e3e183a21782172833dc0304be64b22348ce741508a80c39794a2fa476ec8c5"
+    },
+    {
+      "path": "petrificus_coin/v19/front/state-02-flat.png",
+      "bytes": 1542417,
+      "sha256": "363117f4e466996686a9c2c5ecc342e074fbde2e2c788a00f92a8e97773cf0e3"
+    },
+    {
+      "path": "petrificus_coin/v19/front/state-03-faded.png",
+      "bytes": 1620858,
+      "sha256": "c3ae2d1d86e7db54baca0f3363a6a536fdb4ac184213be16930ddac1547a8057"
+    },
+    {
+      "path": "petrificus_coin/v19/front/state-04-exhausted.png",
+      "bytes": 1585370,
+      "sha256": "636576ad8667c502eccf053a5b02442118c4614bc8685b1ef677e85b93efe3b2"
+    }
+  ]
+}

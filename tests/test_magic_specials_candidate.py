@@ -4,7 +4,8 @@ import struct
 import unittest
 from pathlib import Path
 
-from PIL import Image, ImageFilter
+import numpy as np
+from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -75,6 +76,17 @@ class MagicSpecialsCandidateTests(unittest.TestCase):
             self.assertEqual(len(frames), 9)
             paths.extend(path.relative_to(BATCH).as_posix() for path in frames)
         self.assertEqual(len(paths), 44)
+        self.assertTrue(all(path.startswith("petrificus_coin/v19/") for path in paths))
+        self.assertEqual(self.coin["asset_id"], "WK-MAGIC-PETRIFY-COIN-v19-candidate")
+        self.assertEqual(self.coin["status"], "runtime-candidate")
+        self.assertFalse(self.coin["visual_approved"])
+        self.assertEqual(self.coin["runtime_validation"], "pending_windows_renderer_qa")
+        self.assertFalse(self.coin["runtime_approved"])
+        self.assertFalse(self.coin["runtime_use"])
+        self.assertTrue(self.coin["prototype_use"])
+        self.assertFalse(self.coin["production_asset"])
+        self.assertEqual(self.coin["timing"]["settle_to_flat_ms"], 5000)
+        self.assertEqual(self.coin["state_machine"]["settle"]["after_ms"], 5000)
         shared = self.coin["canvas"]["shared_visible_bounds"]
         expected_bounds = (
             shared["x"],
@@ -94,7 +106,7 @@ class MagicSpecialsCandidateTests(unittest.TestCase):
 
     def test_every_runtime_png_decodes_with_transparent_edges(self):
         paths = sorted(BATCH.rglob("*.png"))
-        self.assertEqual(len(paths), 207)
+        self.assertEqual(len(paths), 251)
         allowed_empty = {
             "apparate/disappear/frame-014.png",
             "apparate/invisible/frame-001-relocation-cut.png",
@@ -111,9 +123,9 @@ class MagicSpecialsCandidateTests(unittest.TestCase):
                 self.assertEqual(corners, [0, 0, 0, 0], f"opaque canvas corner: {path}")
         self.assertEqual(actual_empty, allowed_empty, "only the declared Apparate relocation cut may be fully transparent")
 
-    def test_coin_edge_baseline_is_shared_complete_and_has_no_cutout_fringe(self):
+    def test_coin_edge_baseline_is_shared_and_transparent_rgb_is_clean(self):
         baseline = self.coin["edge_baseline"]
-        self.assertEqual(baseline["profile"], "shared_complete_antialiased_ellipse_v1")
+        self.assertEqual(baseline["profile"], "v19_source_shared_alpha")
         self.assertTrue(baseline["faces_share_exact_alpha"])
         self.assertTrue(baseline["transparent_rgb_zeroed"])
 
@@ -126,31 +138,56 @@ class MagicSpecialsCandidateTests(unittest.TestCase):
 
         for index in range(1, 10):
             alphas = []
-            for state in ("vivid", "flat", "faded", "exhausted"):
-                relative = f"petrificus_coin/flip/{state}/front-to-back/frame-{index:03d}.png"
+            for relative_directory in self.coin["flip"]["front_to_back"]["directories_by_state"].values():
+                relative = f"{relative_directory}/frame-{index:03d}.png"
                 with Image.open(BATCH / relative) as image:
                     alphas.append(image.getchannel("A").tobytes())
             self.assertTrue(all(alpha == alphas[0] for alpha in alphas[1:]), f"flip alpha drift at frame {index}")
 
         relatives = face_relatives + [
-            f"petrificus_coin/flip/{state}/front-to-back/frame-{index:03d}.png"
-            for state in ("vivid", "flat", "faded", "exhausted")
+            f"{relative_directory}/frame-{index:03d}.png"
+            for relative_directory in self.coin["flip"]["front_to_back"]["directories_by_state"].values()
             for index in range(1, 10)
         ]
         for relative in relatives:
             with self.subTest(path=relative), Image.open(BATCH / relative) as image:
-                rgba = image.convert("RGBA")
-                alpha = rgba.getchannel("A")
-                eroded = alpha.point(lambda value: 255 if value else 0).filter(ImageFilter.MinFilter(11))
-                pale_boundary = 0
-                transparent_rgb = 0
-                for (red, green, blue, visible), interior in zip(rgba.getdata(), eroded.getdata()):
-                    if not visible and (red or green or blue):
-                        transparent_rgb += 1
-                    if visible and not interior and red >= 225 and green >= 215 and blue >= 158 and red - blue <= 96:
-                        pale_boundary += 1
-                self.assertEqual(pale_boundary, 0, f"pale cutout fringe remains: {relative}")
-                self.assertEqual(transparent_rgb, 0, f"transparent RGB is not clean: {relative}")
+                rgba = np.asarray(image.convert("RGBA"))
+                transparent_rgb = np.any(rgba[rgba[:, :, 3] == 0, :3])
+                self.assertFalse(transparent_rgb, f"transparent RGB is not clean: {relative}")
+
+    def test_v19_flip_endpoints_match_their_master_faces(self):
+        states = {item["id"]: item for item in self.coin["states"]}
+        directories = self.coin["flip"]["front_to_back"]["directories_by_state"]
+        self.assertEqual(self.coin["derivation"]["flip_widths"], [900, 845, 672, 415, 112, 415, 672, 845, 900])
+        self.assertEqual(self.coin["derivation"]["swap_face_at_frame"], 6)
+        self.assertFalse(self.coin["derivation"]["visible_pixels_repainted"])
+        for state_id, state in states.items():
+            directory = BATCH / directories[state_id]
+            with (
+                Image.open(BATCH / state["front"]) as front,
+                Image.open(directory / "frame-001.png") as first,
+                Image.open(BATCH / state["back"]) as back,
+                Image.open(directory / "frame-009.png") as last,
+            ):
+                self.assertEqual(first.tobytes(), front.tobytes(), f"{state_id} flip front endpoint drifted")
+                self.assertEqual(last.tobytes(), back.tobytes(), f"{state_id} flip back endpoint drifted")
+
+    def test_v19_source_provenance_is_frozen(self):
+        expected = {
+            "dog_coin_back_state_01.png": "a55ff63db90600c7b194b1c55c9b7cef9f910c78d9e41315a0ab7f4903ca996a",
+            "dog_coin_back_state_02.png": "8abb767ca556ce3d17e9f607bf5b42738b10105f0111592b58162e8e4d6fbaa0",
+            "dog_coin_back_state_03.png": "692c9894a6f125308906d5a6103a16f6064022f2f94cb919eb807a22f2ff19a7",
+            "dog_coin_back_state_04.png": "7ba408ae1c7b5cc19d91a46a50d2dedfef794e0eb938595b5c84b3424e3a8c34",
+            "dog_coin_front_state_01.png": "2586397f4e8719b367a768a4aefeb682c60ec4aa58982487604e1c6fd5bfb294",
+            "dog_coin_front_state_02.png": "193b0ebc01e4e83c849189cf45a22613beb93f434147c44949ea1f636e3ca749",
+            "dog_coin_front_state_03.png": "a6c127e342ece94696e7320535c72d9ab495a8ea79c944a16ffa849597eafa99",
+            "dog_coin_front_state_04.png": "61f753b177fd91959f0ce082ae06462e2c7b1733f2c78ab293e3a7f8b1622e6b",
+        }
+        actual = {}
+        for line in (BATCH / "petrificus_coin/v19/SOURCE-SHA256SUMS.txt").read_text(encoding="utf-8").splitlines():
+            digest, filename = line.split("  ", 1)
+            actual[filename] = digest
+        self.assertEqual(actual, expected)
 
 
 if __name__ == "__main__":

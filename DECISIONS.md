@@ -1,5 +1,18 @@
 # Decisions
 
+## 2026-09-09 - expand eligible pet actions with a locked whole-frame orientation transform
+
+Use a WPF whole-frame horizontal `ScaleTransform` to provide left/right presentation for current non-directional pet actions without duplicating or rewriting approved PNGs. Treat this as runtime orientation, not as approval of a generated mirror asset. Capture the orientation once per `PetMotionRequest` and preserve it across all phases and the terminal posture hold.
+
+Apply the transform only to the explicit current action-batch allowlist. Exclude magic and coin effects, car ride and road-gaze native directions, the existing left/right patrol pair, expired assets, window-moving actions, and motions that already provide multiple directional frame groups. Native patrol direction may update the facing inherited by the next action. Keep all existing manifest approval values unchanged and require owner Windows visual review before claiming the orientation variants are accepted.
+
+## 2026-09-07 - stage petrified coin v19 without widening magic approval
+
+Use the eight owner-supplied v19 masters as the only active coin-face source and keep them under a new versioned `petrificus_coin/v19/` path. Preserve visible master pixels and the exact shared alpha mask; clear only hidden RGB where alpha is zero. Derive the missing flip intermediates deterministically from each matching front/back pair with premultiplied-alpha horizontal compression. Do not use generative redraw, interpolation between unrelated states, recoloring, cropping, or per-frame geometry adjustment.
+
+Keep the prior coin PNGs as immutable historical evidence, but point the active coin manifest, checksum inventory, and Petrificus initial hold frame only at v19. Frame 1 and frame 9 of each flip must exactly match the corresponding canonical front and back faces, preserving the established state machine and double-click behavior.
+
+Static asset validation and a successful build do not approve the new artwork in the Windows renderer. Keep `visual_approved=false`, `runtime_validation=pending_windows_renderer_qa`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, and `prototype_use=true`. OwnerContextMenu and ControlPanel remain the only allowed PrototypePreview sources; Normal, autonomous, dialogue, model, memory, and production registry access remain closed.
 ## 2026-09-06 - approve compatible sleep v10 runtime routes and patrol translation
 
 The owner completed Windows review of the final sleep/prone sizing and real patrol movement. Approve the four non-deprecated sleep v10 actions with `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, and `prototype_use=false`. Keep the four owner-rejected color/fur variants deprecated and closed to every playback source.

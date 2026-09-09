@@ -1,0 +1,64 @@
+{
+  "asset_id": "WK-MAGIC-PETRIFY-COIN-v19-candidate",
+  "behavior_id": "wk.magic.petrificus_totalus",
+  "asset_stage": "runtime-candidate",
+  "visual_approved": false,
+  "runtime_validation": "pending_windows_renderer_qa",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "prototype_use": true,
+  "production_asset": false,
+  "allowed_sources": [
+    "OwnerContextMenu",
+    "ControlPanel"
+  ],
+  "canvas": {
+    "width": 1024,
+    "height": 1024,
+    "mode": "RGBA",
+    "visible_bounds": {
+      "x": 62,
+      "y": 70,
+      "width": 900,
+      "height": 882
+    },
+    "anchor": {
+      "x": 512,
+      "y": 952,
+      "meaning": "bottom_center"
+    }
+  },
+  "states": [
+    "vivid",
+    "flat",
+    "faded",
+    "exhausted"
+  ],
+  "runtime_png_count": 44,
+  "master_count": 8,
+  "derived_flip_frame_count": 36,
+  "flip": {
+    "frames_per_state": 9,
+    "frame_duration_ms": 80,
+    "widths": [
+      900,
+      845,
+      672,
+      415,
+      112,
+      415,
+      672,
+      845,
+      900
+    ],
+    "back_to_front_strategy": "reverse_front_to_back"
+  },
+  "source": {
+    "label": "dog_coin_assets_8pack_final_v19",
+    "external_path_not_persisted": true,
+    "sha256_manifest": "SOURCE-SHA256SUMS.txt"
+  },
+  "runtime_checksums": "SHA256SUMS.txt",
+  "validation_report": "IMPORT-VALIDATION-REPORT.json",
+  "notes": "Eight owner-supplied v19 masters plus deterministic flip derivatives. Windows WPF visual QA is still required before runtime approval."
+}

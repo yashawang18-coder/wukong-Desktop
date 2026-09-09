@@ -131,7 +131,8 @@ public sealed record PlayableMotion(
     bool RuntimeApproved = false,
     bool AutonomousBindingEnabled = false,
     bool WindowMotionEnabled = false,
-    bool Deprecated = false)
+    bool Deprecated = false,
+    bool SupportsHorizontalMirror = false)
 {
     public bool IsUsable => Phases.Any(x => x.Frames.Count > 0);
     public string FirstFrame => Phases.SelectMany(x => x.Frames).FirstOrDefault() ?? string.Empty;
@@ -158,6 +159,7 @@ public sealed record PlayableMotion(
         $"运行批准：{(EffectiveRuntimeApproved ? "已批准" : "未批准")}",
         $"当前启用：{(RuntimeEnabled ? "是" : "否")}",
         $"自主行为池：{(AutonomousBindingEnabled ? "是" : "否")}",
+        $"左右镜像：{(SupportsHorizontalMirror ? "可用" : "不适用")}",
         $"已过期：{(IsExpired ? "是" : "否")}",
         $"来源包：{AssetBatch}",
         $"action id：{BehaviorId}"
@@ -178,6 +180,30 @@ public sealed record MotionVisibleMetrics(int CanvasWidth, int CanvasHeight, Int
     public int VisibleWidth => Bounds.Width;
     public int VisibleHeight => Bounds.Height;
     public double VisibleHeightRatio => CanvasHeight <= 0 ? 1.0 : VisibleHeight / (double)CanvasHeight;
+}
+
+public static class MotionHorizontalMirrorPolicy
+{
+    private static readonly IReadOnlySet<string> EligibleAssetBatches =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            LifecycleCandidateBehaviorIds.AssetBatch,
+            LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch,
+            LifecycleReviewCandidateBehaviorIds.V4AssetBatch,
+            SideProneFrontBehaviorIds.AssetBatch,
+            ProneHeadCandidateBehaviorIds.AssetBatch,
+            SleepCandidateBehaviorIds.AssetBatch,
+            FoodWaterCandidateBehaviorIds.AssetBatch,
+            AutonomousDailyCandidateBehaviorIds.AssetBatch,
+            CommandMockBehaviorIds.AssetBatch
+        };
+
+    public static bool Supports(PlayableMotion motion) =>
+        !motion.IsExpired &&
+        motion.Effect == DesktopMotionEffect.None &&
+        !motion.WindowMotionEnabled &&
+        motion.DirectionalFrames is not { Count: > 1 } &&
+        EligibleAssetBatches.Contains(motion.AssetBatch);
 }
 
 public static class MotionVisualSizer
@@ -378,7 +404,11 @@ public sealed class DesktopMotionCatalog
     {
         _allMotions = motions
             .Where(x => x.IsUsable)
-            .Select(x => x with { DisplayName = MotionDisplayNameCatalog.Resolve(x.BehaviorId, x.DisplayName) })
+            .Select(x => x with
+            {
+                DisplayName = MotionDisplayNameCatalog.Resolve(x.BehaviorId, x.DisplayName),
+                SupportsHorizontalMirror = MotionHorizontalMirrorPolicy.Supports(x)
+            })
             .ToArray();
         _motions = new Dictionary<string, PlayableMotion>(StringComparer.OrdinalIgnoreCase);
         foreach (var motion in _allMotions)
@@ -3355,7 +3385,8 @@ public sealed record PetMotionRequest(
     int LoopCycles,
     BehaviorRequestSource Source = BehaviorRequestSource.OwnerUi,
     BehaviorExecutionMode ExecutionMode = BehaviorExecutionMode.Normal,
-    long RequestedAtTimestamp = 0);
+    long RequestedAtTimestamp = 0,
+    bool MirrorHorizontally = false);
 
 public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 {
@@ -3414,6 +3445,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private bool _frontProneProfileActive;
     private bool _patrolCanMoveLeft;
     private bool _patrolCanMoveRight;
+    private bool _petFacesRight;
     private readonly Queue<string> _pendingFoodWaterSequence = new();
     private BehaviorRequestSource _pendingFoodWaterSource = BehaviorRequestSource.OwnerContextMenu;
     private string _pendingFoodWaterTarget = string.Empty;
@@ -3446,6 +3478,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public event EventHandler<double>? PetScaleRequested;
 
     public ObservableCollection<string> TraceLines { get; } = new();
+    public bool PetFacesRight => _petFacesRight;
     public IReadOnlyList<PlayableMotion> Motions => _catalog.Motions;
     public string ReferenceVisualFramePath => _catalog.RequiredIdle.FirstFrame;
     public IReadOnlyList<PlayableMotion> MagicMotions => _catalog.Motions
@@ -3710,6 +3743,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         var clamped = RuntimeVisualScale.ClampUserScale(scale);
         PetScaleRequested?.Invoke(this, clamped);
         Trace("user_scale", $"scale={clamped:0.00}");
+    }
+
+    public void SetPetFacingRight(bool faceRight, string reason = "runtime")
+    {
+        if (_petFacesRight == faceRight)
+            return;
+        _petFacesRight = faceRight;
+        Trace("pet_facing_changed", $"direction={(faceRight ? "right" : "left")} reason={reason}");
     }
 
     public void UpdatePatrolTravelSpace(double availableLeftPixels, double availableRightPixels, double minimumTravelPixels)
@@ -4419,7 +4460,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             Description: "Briefly settles on the approved command terminal frame, then enters the matching posture microloop.",
             CandidateProfile: completedMotion.CandidateProfile,
             VisualScale: completedMotion.VisualScale,
-            RenderScaleOverride: MotionVisualSizer.RenderScaleForMotion(completedMotion, DesktopMotionCatalog.ReferenceFramePath));
+            RenderScaleOverride: MotionVisualSizer.RenderScaleForMotion(completedMotion, DesktopMotionCatalog.ReferenceFramePath),
+            SupportsHorizontalMirror: completedMotion.SupportsHorizontalMirror);
 
         Accept(hold, BehaviorRequestSource.OwnerUi, BehaviorExecutionMode.Normal, source, returnToIdle: true, loopCycles: 2);
     }
@@ -4621,6 +4663,16 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         bool returnToIdle,
         int loopCycles)
     {
+        if (executionMode == BehaviorExecutionMode.Normal &&
+            string.Equals(motion.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.Equals(motion.BehaviorId, PatrolWalkCandidateBehaviorIds.WalkRight, StringComparison.OrdinalIgnoreCase))
+                SetPetFacingRight(true, "patrol_walk_right");
+            else if (string.Equals(motion.BehaviorId, PatrolWalkCandidateBehaviorIds.WalkLeft, StringComparison.OrdinalIgnoreCase))
+                SetPetFacingRight(false, "patrol_walk_left");
+        }
+
+        var mirrorHorizontally = motion.SupportsHorizontalMirror && _petFacesRight;
         _currentBehaviorId = motion.BehaviorId;
         _currentMotion = motion;
         _currentExecutionMode = executionMode;
@@ -4646,8 +4698,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         }
         OnPropertyChanged(nameof(IsPetrified));
         UpdateDecision(PetActionResult.Accepted, source.ToString(), reason, executionMode == BehaviorExecutionMode.PrototypePreview ? "正在展示原型魔法" : "接受");
-        MotionRequested?.Invoke(this, new PetMotionRequest(motion, reason, returnToIdle, loopCycles, source, executionMode, _pendingRequestTimestamp));
-        Trace("motion_requested", $"{motion.BehaviorId} source={source} mode={executionMode} asset_batch={motion.AssetBatch} reason={reason}");
+        MotionRequested?.Invoke(this, new PetMotionRequest(motion, reason, returnToIdle, loopCycles, source, executionMode, _pendingRequestTimestamp, mirrorHorizontally));
+        Trace("motion_requested", $"{motion.BehaviorId} source={source} mode={executionMode} asset_batch={motion.AssetBatch} mirror={mirrorHorizontally} reason={reason}");
         OnPropertyChanged(nameof(CurrentBehaviorId));
         OnPropertyChanged(nameof(CurrentAction));
         OnPropertyChanged(nameof(LastTrigger));

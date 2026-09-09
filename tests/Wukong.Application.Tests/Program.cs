@@ -19,6 +19,8 @@ var tests = new (string Name, Func<Task> Run)[]
     ("animation interruption uses interrupt fallback", AnimationInterruptsSafely),
     ("player failure converts to failed outcome", PlayerFailureIsOutcome),
     ("agent context includes prompt profiles state and memory", AgentContextIncludesAllSources),
+    ("default context preserves a long custom pet prompt", DefaultContextPreservesLongPetPrompt),
+    ("conversation reply is constrained to one short sentence", ConversationReplyIsConstrained),
     ("album instructions remain untrusted reference data", AlbumInstructionsRemainData),
     ("agent context budget reports truncation", AgentContextBudgetTruncates),
     ("conversation history clears and is shared by session", ConversationHistoryClears),
@@ -283,7 +285,41 @@ static async Task AgentContextIncludesAllSources()
     Assert(system.Contains("current_action=standing_observe", StringComparison.Ordinal), "live action did not enter context");
     Assert(system.Contains("mood_valence=0.73", StringComparison.Ordinal), "live mood did not enter context");
     Assert(system.Contains("Never describe a posture or action that conflicts", StringComparison.Ordinal), "runtime consistency safety boundary missing");
+    Assert(system.Contains("never exceed 20 visible characters", StringComparison.Ordinal), "concise response contract missing");
+    Assert(model.LastRequest.MaxOutputTokens == 48, "model response token budget is not bounded");
     Assert(model.LastRequest.Messages.Any(x => x.Content.Contains("第一次回家", StringComparison.Ordinal)), "album memory did not enter request");
+}
+
+static Task DefaultContextPreservesLongPetPrompt()
+{
+    var marker = "PROMPT_END_MARKER";
+    var snapshot = AgentSnapshot() with
+    {
+        CustomPetPrompt = "PROMPT_START_" + new string('p', 5_000) + marker
+    };
+    var assembled = new AgentContextAssembler().Assemble(
+        snapshot, Array.Empty<AgentChatMessage>(), "hello", DateTimeOffset.UtcNow);
+    var system = assembled.ModelRequest.Messages.Single(x => x.Role == AgentChatRole.System).Content;
+    Assert(system.Contains(marker, StringComparison.Ordinal), "default profile budget truncated the custom pet prompt");
+    return Task.CompletedTask;
+}
+
+static async Task ConversationReplyIsConstrained()
+{
+    var history = new InMemoryConversationHistoryStore();
+    var model = new CapturingModelRuntime(
+        responseText: "\u609f\u7a7a\uff1a\u8001\u7238\u8f9b\u82e6\u5566\u3002\u4e0d\u5982\u4f60\u5e26\u6211\u51fa\u53bb\u515c\u515c\u98ce\uff0c\u518d\u5403\u70b9\u8089\u8089\u3002");
+    var service = new ContextualConversationService(
+        model, new StaticContextProvider(AgentSnapshot()), new AgentContextAssembler(),
+        history, new InMemoryConversationMemoryStore(), new DeveloperDiagnostics(new DeveloperSession()));
+
+    var result = await service.SendAsync(new("concise", "hello"));
+
+    Assert(result.Success, "constrained response failed");
+    Assert(result.AssistantText == "\u8001\u7238\u8f9b\u82e6\u5566\u3002", "response did not keep only the first short sentence");
+    Assert(result.AssistantText!.Length <= PetReplyPolicy.MaximumVisibleTextElements, "response exceeded the visible character limit");
+    var saved = await history.ReadAsync("concise");
+    Assert(saved[^1].Content == result.AssistantText, "unconstrained model text entered conversation history");
 }
 
 static Task AlbumInstructionsRemainData()
@@ -697,8 +733,13 @@ sealed class StaticContextProvider : IPetContextProvider
 sealed class CapturingModelRuntime : IChatModelRuntime
 {
     private readonly bool _fail;
+    private readonly string _responseText;
     private ChatProviderConfiguration _configuration = ChatProviderConfiguration.Default(ChatProviderType.OpenAICompatible) with { ApiKeyConfigured = true };
-    public CapturingModelRuntime(bool fail = false) => _fail = fail;
+    public CapturingModelRuntime(bool fail = false, string responseText = "\u609f\u7a7a\u542c\u89c1\u4e86\u3002")
+    {
+        _fail = fail;
+        _responseText = responseText;
+    }
     public ChatModelRequest? LastRequest { get; private set; }
 
     public Task<ChatProviderConfiguration> GetActiveConfigurationAsync(CancellationToken cancellationToken = default) => Task.FromResult(_configuration);
@@ -719,7 +760,7 @@ sealed class CapturingModelRuntime : IChatModelRuntime
         LastRequest = request;
         if (_fail)
             throw new ChatProviderException(ChatFailureKind.Authentication, "配置无效", "test_failure");
-        return Task.FromResult(new ChatModelResponse("悟空听见了。", "test-response"));
+        return Task.FromResult(new ChatModelResponse(_responseText, "test-response"));
     }
     public Task<ChatModelResponse> TestConnectionAsync(CancellationToken cancellationToken = default) =>
         SendAsync(new ChatModelRequest(Array.Empty<AgentChatMessage>(), 0), cancellationToken);

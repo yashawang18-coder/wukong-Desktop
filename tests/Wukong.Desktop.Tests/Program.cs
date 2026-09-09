@@ -31,8 +31,11 @@ var tests = new (string Name, Action Run)[]
     ("desktop single instance rejects a duplicate process", DesktopSingleInstanceRejectsDuplicate),
     ("control panel xaml constructs", ControlPanelXamlConstructs),
     ("owner-facing motion names are concise Chinese labels", OwnerFacingMotionNamesAreChinese),
+    ("horizontal mirror policy covers only non-directional pet actions", HorizontalMirrorPolicyCoversOnlyNonDirectionalPetActions),
+    ("motion requests lock horizontal orientation for the full playback", MotionRequestsLockHorizontalOrientation),
     ("agent windows construct and desktop chat starts hidden", AgentWindowsConstructAndChatStartsHidden),
     ("desktop chat uses single-line enter send semantics", DesktopChatKeyboardSemantics),
+    ("desktop chat remains visible after a successful send", DesktopChatRemainsVisibleAfterSend),
     ("desktop chat sensor is limited to lower blank region", DesktopChatSensorIsLimited),
     ("desktop chat placement stays visible at all corners", DesktopChatPlacementStaysVisible),
     ("desktop input opens directly below the live pet window", DesktopInputOpensBelowPet),
@@ -656,6 +659,18 @@ static void DesktopChatKeyboardSemantics()
     Assert(DesktopChatWindow.ShouldSend(System.Windows.Input.Key.Enter, System.Windows.Input.ModifierKeys.None), "Enter should send");
     Assert(!DesktopChatWindow.ShouldSend(System.Windows.Input.Key.Enter, System.Windows.Input.ModifierKeys.Shift), "Shift+Enter should not send from the single-line input");
     Assert(!DesktopChatWindow.ShouldSend(System.Windows.Input.Key.Escape, System.Windows.Input.ModifierKeys.None), "Escape should not send");
+}
+
+static void DesktopChatRemainsVisibleAfterSend()
+{
+    var code = File.ReadAllText(Path.GetFullPath(Path.Combine("src", "Wukong.Desktop", "DesktopChatWindow.xaml.cs")));
+    var successStart = code.IndexOf("if (result.Success", StringComparison.Ordinal);
+    var failureStart = code.IndexOf("else if (!result.Success)", successStart, StringComparison.Ordinal);
+    Assert(successStart >= 0 && failureStart > successStart, "chat success handler was not found");
+    var successBlock = code[successStart..failureStart];
+    Assert(!successBlock.Contains("Collapse();", StringComparison.Ordinal), "successful send still collapses the chat input");
+    Assert(successBlock.Contains("ChatInput.Focus();", StringComparison.Ordinal), "successful send does not keep keyboard focus");
+    Assert(code.Contains("if (busy)\n            _autoCollapseTimer.Stop();", StringComparison.Ordinal), "request does not pause auto-collapse");
 }
 
 static void DesktopChatSensorIsLimited()
@@ -1465,6 +1480,11 @@ static void PetrifiedCoinAssetsAndChecksumsAreComplete()
     using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
     var states = manifest.RootElement.GetProperty("states").EnumerateArray().ToArray();
     Assert(states.Length == 4, "coin must expose vivid, flat, faded, and exhausted states");
+    Assert(manifest.RootElement.GetProperty("asset_id").GetString() == "WK-MAGIC-PETRIFY-COIN-v19-candidate", "active coin manifest is not v19");
+    Assert(manifest.RootElement.GetProperty("runtime_validation").GetString() == "pending_windows_renderer_qa", "v19 coin renderer QA gate changed");
+    Assert(!manifest.RootElement.GetProperty("runtime_approved").GetBoolean(), "v19 coin was approved without Windows QA");
+    Assert(!manifest.RootElement.GetProperty("runtime_use").GetBoolean(), "v19 coin entered production runtime");
+    Assert(manifest.RootElement.GetProperty("prototype_use").GetBoolean(), "v19 owner preview was disabled");
     var pngPaths = states.SelectMany(x => new[]
     {
         x.GetProperty("front").GetString()!,
@@ -1477,6 +1497,7 @@ static void PetrifiedCoinAssetsAndChecksumsAreComplete()
         pngPaths.AddRange(files.Select(x => Path.GetRelativePath(root, x).Replace(Path.DirectorySeparatorChar, '/')));
     }
     Assert(pngPaths.Count == 44, "coin package must contain eight faces and 36 flip frames");
+    Assert(pngPaths.All(x => x.StartsWith("petrificus_coin/v19/", StringComparison.Ordinal)), "active coin manifest still references a legacy coin path");
 
     var checksums = File.ReadAllLines(checksumPath)
         .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -2510,6 +2531,57 @@ static void AlbumFolderRemovalPersistsAndKeepsFiles()
         TryDeleteDirectory(root);
     }
 }
+static void HorizontalMirrorPolicyCoversOnlyNonDirectionalPetActions()
+{
+    var runtime = new DesktopRuntimeHost();
+    var eligibleBatches = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        LifecycleCandidateBehaviorIds.AssetBatch,
+        LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch,
+        LifecycleReviewCandidateBehaviorIds.V4AssetBatch,
+        SideProneFrontBehaviorIds.AssetBatch,
+        ProneHeadCandidateBehaviorIds.AssetBatch,
+        SleepCandidateBehaviorIds.AssetBatch,
+        FoodWaterCandidateBehaviorIds.AssetBatch,
+        AutonomousDailyCandidateBehaviorIds.AssetBatch,
+        CommandMockBehaviorIds.AssetBatch
+    };
+    var expected = runtime.Motions.Where(x => eligibleBatches.Contains(x.AssetBatch) && !x.IsExpired).ToArray();
+    Assert(expected.Length > 0, "no current pet actions were eligible for horizontal mirror expansion");
+    Assert(expected.All(x => x.SupportsHorizontalMirror), "an eligible non-directional action did not expose its mirror variant");
+    Assert(runtime.MagicMotions.All(x => !x.SupportsHorizontalMirror), "magic assets must never be runtime mirrored");
+    Assert(runtime.CarRideCandidateMotions.All(x => !x.SupportsHorizontalMirror), "native car directions must never be runtime mirrored");
+    Assert(runtime.Motions.Where(x => x.AssetBatch == PatrolWalkCandidateBehaviorIds.AssetBatch).All(x => !x.SupportsHorizontalMirror), "native left/right patrol assets were mirrored twice");
+    Assert(runtime.Motions.Where(x => x.IsExpired).All(x => !x.SupportsHorizontalMirror), "expired assets exposed new mirror variants");
+
+    var mainXaml = File.ReadAllText(Path.GetFullPath(Path.Combine("src", "Wukong.Desktop", "MainWindow.xaml")));
+    var panelXaml = File.ReadAllText(Path.GetFullPath(Path.Combine("src", "Wukong.Desktop", "ControlPanelWindow.xaml")));
+    Assert(mainXaml.Contains("x:Name=\"PetFacingTransform\"", StringComparison.Ordinal), "main pet renderer is missing the horizontal transform");
+    Assert(panelXaml.Contains("x:Name=\"PreviewMirrorCheck\"", StringComparison.Ordinal), "asset preview is missing the mirror review control");
+}
+
+static void MotionRequestsLockHorizontalOrientation()
+{
+    var runtime = new DesktopRuntimeHost();
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, request) => requests.Add(request);
+    var command = runtime.CommandMotionMockMotions.First(x => x.SupportsHorizontalMirror);
+
+    runtime.SetPetFacingRight(true, "test");
+    var result = runtime.SubmitDeveloperMotionAsync(command.BehaviorId).GetAwaiter().GetResult();
+    Assert(result == PetActionResult.Accepted, "mirror-capable developer action was not accepted");
+    var captured = requests.Last();
+    Assert(captured.MirrorHorizontally, "right-facing request did not lock its mirror flag");
+
+    runtime.SetPetFacingRight(false, "test");
+    Assert(captured.MirrorHorizontally, "an in-flight request changed orientation after dispatch");
+
+    var magic = runtime.MagicMotions.First();
+    result = runtime.SubmitDeveloperMotionAsync(magic.BehaviorId).GetAwaiter().GetResult();
+    Assert(result == PetActionResult.Accepted, "developer magic preview was not accepted");
+    Assert(!requests.Last().MirrorHorizontally, "magic preview bypassed the mirror exclusion");
+}
+
 static void AutonomousTickCanRequestMotion()
 {
     var now = new DateTimeOffset(2026, 9, 5, 14, 0, 0, TimeSpan.Zero);

@@ -1096,11 +1096,11 @@
           "frame_count": 1,
           "frames": [
             {
-              "path": "petrificus_coin/front/state-01-vivid.png",
+              "path": "petrificus_coin/v19/front/state-01-vivid.png",
               "width": 1024,
               "height": 1024,
-              "sha256": "56fb85c1bde2478bb133a9f449adf1065d3f557bdbb44d5571c180f149089b2e",
-              "bytes": 1514473
+              "sha256": "5e3e183a21782172833dc0304be64b22348ce741508a80c39794a2fa476ec8c5",
+              "bytes": 1483190
             }
           ]
         }

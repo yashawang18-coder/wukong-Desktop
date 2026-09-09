@@ -76,6 +76,15 @@ Mirroring is a versioned pixel derivative, not an implicit fallback. A package i
 - Keep `runtime_approved=false` and `runtime_use=false` until the mirrored derivative receives separate owner visual and Windows renderer QA.
 - Treat missing or ambiguous mirror metadata as unsafe and generate no frames.
 
+### Runtime orientation transform
+
+A whole-frame WPF `ScaleTransform` is an orientation presentation rule, not a generated pixel derivative. It may be enabled only by the explicit `MotionHorizontalMirrorPolicy` allowlist and does not change PNG bytes, hashes, manifests, or approval state.
+
+- Lock one orientation when a `PetMotionRequest` is created; intro, loop, exit, interrupt exit, and terminal hold must keep it.
+- Exclude every magic effect, car ride/native directional set, window-moving left/right patrol set, expired asset, and any action with multiple native directional frame groups.
+- Let a completed native patrol direction establish the facing inherited by later eligible actions; never flip individual frames.
+- Keep generated mirror-PNG approval and runtime-transform approval separate. The transform still requires Windows owner visual review before it is described as visually accepted.
+
 ## Privacy and review rules
 
 - Do not commit real photographs of Wukong.

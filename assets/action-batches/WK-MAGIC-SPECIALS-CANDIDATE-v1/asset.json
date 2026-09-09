@@ -47,6 +47,15 @@
       "runtime_validation": "pending",
       "runtime_approved": false,
       "runtime_use": false
+    },
+    {
+      "id": "2026-09-07-v19-eight-master-import",
+      "date": "2026-09-07",
+      "change": "Pointed the owner-only petrified coin prototype at the versioned v19 eight-master set and deterministic flip derivatives. Existing magic gates remain closed.",
+      "visual_approved": false,
+      "runtime_validation": "pending_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false
     }
   ]
 }

@@ -1211,7 +1211,10 @@ public partial class ControlPanelWindow : Window
 
         _previewMotion = motion;
         PreviewTitle.Text = $"{motion.DisplayName} - {motion.BehaviorId}";
-        PreviewMeta.Text = $"{motion.Category} - {motion.Direction} - {motion.FrameCount} frames - {motion.Fps:F2} fps - {motion.RuntimeStatus} - profile: {motion.CandidateProfile}";
+        PreviewMeta.Text = $"{motion.Category} - {motion.Direction} - {motion.FrameCount} frames - {motion.Fps:F2} fps - {motion.RuntimeStatus} - 左右镜像：{(motion.SupportsHorizontalMirror ? "可用" : "不适用")} - profile: {motion.CandidateProfile}";
+        PreviewMirrorCheck.IsChecked = false;
+        PreviewMirrorCheck.IsEnabled = motion.SupportsHorizontalMirror;
+        ApplyPreviewMirror();
         PreviewPhaseCombo.ItemsSource = motion.Phases;
         PreviewPhaseCombo.DisplayMemberPath = nameof(MotionPhase.Name);
         PreviewPhaseCombo.SelectedIndex = 0;
@@ -1251,6 +1254,15 @@ public partial class ControlPanelWindow : Window
             : Color.FromRgb(248, 247, 243));
         PreviewBackgroundButton.Content = _previewDark ? "切换为明色背景" : "切换为深色背景";
         PreviewBackgroundStatus.Text = _previewDark ? "当前：深色背景" : "当前：明色背景";
+    }
+
+    private void PreviewMirror_Changed(object sender, RoutedEventArgs e) => ApplyPreviewMirror();
+
+    private void ApplyPreviewMirror()
+    {
+        if (PreviewFacingTransform is null)
+            return;
+        PreviewFacingTransform.ScaleX = PreviewMirrorCheck?.IsEnabled == true && PreviewMirrorCheck.IsChecked == true ? -1 : 1;
     }
 
     private void SelectPreviewPhase(MotionPhase? phase)

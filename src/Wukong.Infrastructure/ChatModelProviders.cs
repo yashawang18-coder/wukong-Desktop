@@ -86,6 +86,7 @@ public sealed class OpenAiChatModelProvider : HttpChatModelProvider
     public override async Task<ChatModelResponse> SendAsync(ChatProviderConnection connection, ChatModelRequest request, CancellationToken cancellationToken = default)
     {
         var config = connection.Configuration.Normalize();
+        var maxOutputTokens = Math.Clamp(request.MaxOutputTokens, 16, 256);
         using var http = new HttpRequestMessage(HttpMethod.Post, config.BaseUrl + "/chat/completions");
         http.Headers.Authorization = new AuthenticationHeaderValue("Bearer", connection.ApiKey);
         var payload = new
@@ -93,6 +94,7 @@ public sealed class OpenAiChatModelProvider : HttpChatModelProvider
             model = config.Model,
             messages = request.Messages.Select(x => new { role = Role(x.Role), content = x.Content }).ToArray(),
             temperature = request.Temperature,
+            max_tokens = maxOutputTokens,
             stream = false
         };
         var json = await SendJsonAsync(http, payload, config.TimeoutSeconds, cancellationToken);
@@ -114,6 +116,7 @@ public sealed class AnthropicChatModelProvider : HttpChatModelProvider
     public override async Task<ChatModelResponse> SendAsync(ChatProviderConnection connection, ChatModelRequest request, CancellationToken cancellationToken = default)
     {
         var config = connection.Configuration.Normalize();
+        var maxOutputTokens = Math.Clamp(request.MaxOutputTokens, 16, 256);
         using var http = new HttpRequestMessage(HttpMethod.Post, config.BaseUrl + "/v1/messages");
         http.Headers.TryAddWithoutValidation("x-api-key", connection.ApiKey);
         http.Headers.TryAddWithoutValidation("anthropic-version", "2023-06-01");
@@ -121,7 +124,7 @@ public sealed class AnthropicChatModelProvider : HttpChatModelProvider
         var payload = new
         {
             model = config.Model,
-            max_tokens = 800,
+            max_tokens = maxOutputTokens,
             temperature = request.Temperature,
             system,
             messages = request.Messages.Where(x => x.Role != AgentChatRole.System)
@@ -147,6 +150,7 @@ public sealed class GeminiChatModelProvider : HttpChatModelProvider
     public override async Task<ChatModelResponse> SendAsync(ChatProviderConnection connection, ChatModelRequest request, CancellationToken cancellationToken = default)
     {
         var config = connection.Configuration.Normalize();
+        var maxOutputTokens = Math.Clamp(request.MaxOutputTokens, 16, 256);
         var model = Uri.EscapeDataString(config.Model);
         using var http = new HttpRequestMessage(HttpMethod.Post, config.BaseUrl + $"/v1beta/models/{model}:generateContent");
         http.Headers.TryAddWithoutValidation("x-goog-api-key", connection.ApiKey);
@@ -156,7 +160,7 @@ public sealed class GeminiChatModelProvider : HttpChatModelProvider
             systemInstruction = new { parts = new[] { new { text = system } } },
             contents = request.Messages.Where(x => x.Role != AgentChatRole.System)
                 .Select(x => new { role = x.Role == AgentChatRole.Assistant ? "model" : "user", parts = new[] { new { text = x.Content } } }).ToArray(),
-            generationConfig = new { temperature = request.Temperature }
+            generationConfig = new { temperature = request.Temperature, maxOutputTokens }
         };
         var json = await SendJsonAsync(http, payload, config.TimeoutSeconds, cancellationToken);
         using var document = JsonDocument.Parse(json);
@@ -177,13 +181,14 @@ public sealed class OllamaChatModelProvider : HttpChatModelProvider
     public override async Task<ChatModelResponse> SendAsync(ChatProviderConnection connection, ChatModelRequest request, CancellationToken cancellationToken = default)
     {
         var config = connection.Configuration.Normalize();
+        var maxOutputTokens = Math.Clamp(request.MaxOutputTokens, 16, 256);
         using var http = new HttpRequestMessage(HttpMethod.Post, config.BaseUrl + "/api/chat");
         var payload = new
         {
             model = config.Model,
             messages = request.Messages.Select(x => new { role = Role(x.Role), content = x.Content }).ToArray(),
             stream = false,
-            options = new { temperature = request.Temperature }
+            options = new { temperature = request.Temperature, num_predict = maxOutputTokens }
         };
         var json = await SendJsonAsync(http, payload, config.TimeoutSeconds, cancellationToken);
         using var document = JsonDocument.Parse(json);

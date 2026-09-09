@@ -462,6 +462,7 @@ public partial class MainWindow : Window
             _frameIndex = 0;
             _loopCount = 0;
             _visualScalePhaseIndex = -1;
+            ApplyHorizontalMirror(request.MirrorHorizontally);
             PrepareMotionEffect(request);
             var firstPhase = request.Motion.Phases.FirstOrDefault(x => x.Frames.Count > 0);
             var scaleStarted = Stopwatch.GetTimestamp();
@@ -1392,6 +1393,9 @@ public partial class MainWindow : Window
 
         SetFrame(frame, motion.Phases.First(x => x.Frames.Count > 0).Name);
     }
+
+    private void ApplyHorizontalMirror(bool mirrorHorizontally) =>
+        PetFacingTransform.ScaleX = mirrorHorizontally ? -1 : 1;
 
     private void SetFrame(string path, string phase, double? visualScale = null)
     {

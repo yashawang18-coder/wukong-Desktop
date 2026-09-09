@@ -87,7 +87,12 @@
                MouseLeftButtonUp="PetImage_MouseLeftButtonUp"
                MouseWheel="Window_MouseWheel"
                SnapsToDevicePixels="True"
-               RenderOptions.BitmapScalingMode="HighQuality" />
+               RenderOptions.BitmapScalingMode="HighQuality"
+               RenderTransformOrigin="0.5,0.5">
+            <Image.RenderTransform>
+                <ScaleTransform x:Name="PetFacingTransform" ScaleX="1" ScaleY="1" />
+            </Image.RenderTransform>
+        </Image>
 
         <Border x:Name="ChatSensorHint"
                 Height="32"

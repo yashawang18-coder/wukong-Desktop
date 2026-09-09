@@ -255,7 +255,9 @@ static async Task OpenAiRequestFormatIsCorrect()
     Assert(response.Text == "ok", "openai response was not parsed");
     Assert(handler.Last!.Uri.EndsWith("/v1/chat/completions", StringComparison.Ordinal), "openai endpoint wrong");
     Assert(handler.Last.Headers.TryGetValue("Authorization", out var auth) && auth == "Bearer openai-secret", "openai authorization wrong");
-    Assert(handler.Last.Body.Contains("\"messages\"", StringComparison.Ordinal) && handler.Last.Body.Contains("\"model\":\"gpt-test\"", StringComparison.Ordinal), "openai payload wrong");
+    Assert(handler.Last.Body.Contains("\"messages\"", StringComparison.Ordinal) &&
+           handler.Last.Body.Contains("\"model\":\"gpt-test\"", StringComparison.Ordinal) &&
+           handler.Last.Body.Contains("\"max_tokens\":48", StringComparison.Ordinal), "openai payload wrong");
 }
 
 static async Task AnthropicRequestFormatIsCorrect()
@@ -266,7 +268,7 @@ static async Task AnthropicRequestFormatIsCorrect()
     Assert(handler.Last!.Uri.EndsWith("/v1/messages", StringComparison.Ordinal), "anthropic endpoint wrong");
     Assert(handler.Last.Headers["x-api-key"] == "anthropic-secret", "anthropic key header wrong");
     Assert(handler.Last.Headers.ContainsKey("anthropic-version"), "anthropic version missing");
-    Assert(handler.Last.Body.Contains("\"system\"", StringComparison.Ordinal) && handler.Last.Body.Contains("\"max_tokens\":800", StringComparison.Ordinal), "anthropic payload wrong");
+    Assert(handler.Last.Body.Contains("\"system\"", StringComparison.Ordinal) && handler.Last.Body.Contains("\"max_tokens\":48", StringComparison.Ordinal), "anthropic payload wrong");
 }
 
 static async Task GeminiRequestFormatIsCorrect()
@@ -276,7 +278,9 @@ static async Task GeminiRequestFormatIsCorrect()
     await provider.SendAsync(Connection(ChatProviderType.Gemini, "https://generativelanguage.googleapis.com", "gemini-test", "gemini-secret"), Request());
     Assert(handler.Last!.Uri.Contains("/v1beta/models/gemini-test:generateContent", StringComparison.Ordinal), "gemini endpoint wrong");
     Assert(handler.Last.Headers["x-goog-api-key"] == "gemini-secret", "gemini key header wrong");
-    Assert(handler.Last.Body.Contains("\"systemInstruction\"", StringComparison.Ordinal) && handler.Last.Body.Contains("\"role\":\"model\"", StringComparison.Ordinal), "gemini payload wrong");
+    Assert(handler.Last.Body.Contains("\"systemInstruction\"", StringComparison.Ordinal) &&
+           handler.Last.Body.Contains("\"role\":\"model\"", StringComparison.Ordinal) &&
+           handler.Last.Body.Contains("\"maxOutputTokens\":48", StringComparison.Ordinal), "gemini payload wrong");
 }
 
 static async Task OllamaRequestFormatIsCorrect()
@@ -285,7 +289,9 @@ static async Task OllamaRequestFormatIsCorrect()
     var provider = new OllamaChatModelProvider(new HttpClient(handler));
     await provider.SendAsync(Connection(ChatProviderType.Ollama, "http://127.0.0.1:11434", "qwen-test", null), Request());
     Assert(handler.Last!.Uri.EndsWith("/api/chat", StringComparison.Ordinal), "ollama endpoint wrong");
-    Assert(handler.Last.Body.Contains("\"stream\":false", StringComparison.Ordinal) && handler.Last.Body.Contains("\"options\"", StringComparison.Ordinal), "ollama payload wrong");
+    Assert(handler.Last.Body.Contains("\"stream\":false", StringComparison.Ordinal) &&
+           handler.Last.Body.Contains("\"options\"", StringComparison.Ordinal) &&
+           handler.Last.Body.Contains("\"num_predict\":48", StringComparison.Ordinal), "ollama payload wrong");
     Assert(!handler.Last.Headers.ContainsKey("Authorization"), "ollama received an unrelated key");
 }
 

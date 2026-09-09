@@ -92,7 +92,7 @@ public partial class DesktopChatWindow : Window
             if (result.Success && !string.IsNullOrWhiteSpace(result.AssistantText))
             {
                 AssistantReplyAvailable?.Invoke(this, result.AssistantText.Trim());
-                Collapse();
+                ChatInput.Focus();
             }
             else if (!result.Success)
             {
@@ -110,6 +110,8 @@ public partial class DesktopChatWindow : Window
 
     private void SetBusy(bool busy)
     {
+        if (busy)
+            _autoCollapseTimer.Stop();
         ChatInput.IsEnabled = !busy;
         SendButton.IsEnabled = !busy;
         SendButton.Content = busy ? "发送中" : "发送";

@@ -30,7 +30,10 @@ public sealed record ChatProviderConfiguration(
 
 public sealed record ChatProviderConnection(ChatProviderConfiguration Configuration, string? ApiKey);
 public sealed record ChatProviderCapabilities(bool RequiresApiKey, bool SupportsSystemMessages, bool SupportsCustomBaseUrl, bool SupportsLocalModels);
-public sealed record ChatModelRequest(IReadOnlyList<AgentChatMessage> Messages, double Temperature);
+public sealed record ChatModelRequest(
+    IReadOnlyList<AgentChatMessage> Messages,
+    double Temperature,
+    int MaxOutputTokens = 48);
 public sealed record ChatModelResponse(string Text, string ProviderResponseId, string? FinishReason = null);
 
 public sealed class ChatProviderException : Exception
