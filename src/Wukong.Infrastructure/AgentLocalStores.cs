@@ -225,6 +225,16 @@ public sealed class LocalAgentProfileStore : IAgentProfileStore
     public Task SaveOwnerProfileAsync(OwnerProfileSnapshot profile, CancellationToken cancellationToken = default) =>
         AgentJson.WriteAsync(Path.Combine(_profileDirectory, "owner-profile.json"), profile, cancellationToken);
 
+    public async Task<PersonalitySnapshot> LoadPersonalityAsync(CancellationToken cancellationToken = default) =>
+        (await AgentJson.ReadAsync<PersonalitySnapshot>(Path.Combine(_profileDirectory, "personality-profile.json"), cancellationToken)
+         ?? PersonalitySnapshot.Default).Clamp();
+
+    public Task SavePersonalityAsync(PersonalitySnapshot personality, CancellationToken cancellationToken = default) =>
+        AgentJson.WriteAsync(
+            Path.Combine(_profileDirectory, "personality-profile.json"),
+            personality.Clamp(),
+            cancellationToken);
+
     public async Task<string> LoadPetPromptAsync(CancellationToken cancellationToken = default)
     {
         var path = Path.Combine(_profileDirectory, "pet-prompt.txt");
@@ -392,7 +402,7 @@ public sealed class FileAgentMemoryConfigurationStore : IAgentMemoryConfiguratio
         AgentJson.WriteAsync(_path, configuration, cancellationToken);
 }
 
-public sealed class MockRuntimeContextStateProvider : IRuntimeContextStateProvider, IMockContextController
+public sealed class MockRuntimeContextStateProvider : IRuntimeContextStateProvider, IRuntimeContextOverrideState, IMockContextController
 {
     private readonly IDeveloperSession? _developerSession;
     private readonly Func<PetRuntimeStateSnapshot>? _liveRuntimeState;
@@ -408,6 +418,15 @@ public sealed class MockRuntimeContextStateProvider : IRuntimeContextStateProvid
     {
         _developerSession = developerSession;
         _liveRuntimeState = liveRuntimeState;
+    }
+
+    public bool HasDeveloperOverride
+    {
+        get
+        {
+            lock (_gate)
+                return _hasDeveloperOverride && (_developerSession?.IsAuthenticated ?? true);
+        }
     }
 
     public Task<(PersonalitySnapshot Personality, RelationshipSnapshot Relationship, PetRuntimeStateSnapshot RuntimeState)> GetStateAsync(
@@ -462,6 +481,7 @@ public sealed class LocalPetContextProvider : IPetContextProvider
     {
         var petTask = _profiles.LoadPetProfileAsync(cancellationToken);
         var ownerTask = _profiles.LoadOwnerProfileAsync(cancellationToken);
+        var personalityTask = _profiles.LoadPersonalityAsync(cancellationToken);
         var promptTask = _profiles.LoadPetPromptAsync(cancellationToken);
         var stateTask = _runtimeState.GetStateAsync(cancellationToken);
         var memoryConfiguration = request.MemoryConfiguration ?? AgentMemoryConfiguration.Default;
@@ -471,14 +491,17 @@ public sealed class LocalPetContextProvider : IPetContextProvider
         var memoryTask = memoryConfiguration.UseLongTermMemory
             ? _conversationMemory.ReadAsync(cancellationToken)
             : Task.FromResult<IReadOnlyList<ConversationMemoryCandidate>>(Array.Empty<ConversationMemoryCandidate>());
-        await Task.WhenAll(petTask, ownerTask, promptTask, stateTask, albumTask, memoryTask);
+        await Task.WhenAll(petTask, ownerTask, personalityTask, promptTask, stateTask, albumTask, memoryTask);
         var state = await stateTask;
+        var personality = _runtimeState is IRuntimeContextOverrideState { HasDeveloperOverride: true }
+            ? state.Personality
+            : await personalityTask;
         var confirmed = SelectConfirmedMemories(await memoryTask, request.UserMessage);
         return new(
             await petTask,
             await ownerTask,
             await promptTask,
-            state.Personality.Clamp(),
+            personality.Clamp(),
             state.Relationship.Clamp(),
             state.RuntimeState.Clamp(),
             await albumTask,

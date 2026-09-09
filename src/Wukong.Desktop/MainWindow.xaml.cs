@@ -176,8 +176,17 @@ public partial class MainWindow : Window
         _runtime.StartIdle();
     }
 
-    private void Window_Loaded(object sender, RoutedEventArgs e)
+    private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
+        try
+        {
+            var personality = await _agentRuntime.Profiles.LoadPersonalityAsync();
+            _runtime.UpdateTemperament(TemperamentProfile.FromSnapshot(personality));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            BootstrapLog.WriteRaw($"personality_profile_load_failed type={ex.GetType().Name}");
+        }
         ApplyVisiblePlacement(WindowPlacement.BottomRight(
             SystemParameters.WorkArea,
             Width,
@@ -368,6 +377,12 @@ public partial class MainWindow : Window
 
     private async void CarRideMenuItem_Click(object sender, RoutedEventArgs e) =>
         await _runtime.SubmitCarRideAsync(BehaviorRequestSource.OwnerContextMenu);
+
+    private async void FoodWaterMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem { Tag: string behaviorId })
+            await _runtime.SubmitFoodWaterAsync(behaviorId, BehaviorRequestSource.OwnerContextMenu);
+    }
 
     private void OpenPanelMenuItem_Click(object sender, RoutedEventArgs e) => OpenControlPanel();
 

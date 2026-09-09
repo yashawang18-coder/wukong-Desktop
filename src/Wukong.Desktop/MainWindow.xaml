@@ -21,7 +21,10 @@
         <Grid.ContextMenu>
             <ContextMenu>
                 <MenuItem Header="&#x804A;&#x5929;" Click="ChatMenuItem_Click" />
-                <MenuItem Header="&#x5403;&#x4E00;&#x4E0B;&#xFF08;&#x5F85;&#x89E3;&#x9501;&#xFF09;" IsEnabled="False" />
+                <MenuItem Header="&#x5403;&#x4E00;&#x4E0B;">
+                    <MenuItem Header="&#x559D;&#x6C34;" Tag="wk.interaction.drink_water" Click="FoodWaterMenuItem_Click" />
+                    <MenuItem Header="&#x5403;&#x996D;" Tag="wk.interaction.eat_kibble" Click="FoodWaterMenuItem_Click" />
+                </MenuItem>
                 <MenuItem Header="&#x73A9;&#x4E00;&#x4E0B;">
                     <MenuItem Header="&#x515C;&#x98CE;" Tag="wk.interaction.car_ride" Click="CarRideMenuItem_Click" />
                     <MenuItem Header="&#x6563;&#x6B65;&#xFF08;&#x5F85;&#x89E3;&#x9501;&#xFF09;" IsEnabled="False" />
@@ -39,7 +42,6 @@
                     <MenuItem Header="Accio Broom" Tag="wk.magic.accio_broom" Click="MagicMenuItem_Click" />
                     <MenuItem Header="Apparate" Tag="wk.magic.apparate" Click="MagicMenuItem_Click" />
                     <MenuItem Header="Petrificus Totalus" Tag="wk.magic.petrificus_totalus" Click="MagicMenuItem_Click" />
-                    <MenuItem Header="Scourgify" Tag="wk.magic.scourgify" Click="MagicMenuItem_Click" />
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="停下" Click="StopMenuItem_Click" />

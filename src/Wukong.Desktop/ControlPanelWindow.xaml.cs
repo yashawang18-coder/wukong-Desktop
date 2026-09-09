@@ -452,17 +452,38 @@ public partial class ControlPanelWindow : Window
         });
     }
 
+    private async void SaveTemperament_Click(object sender, RoutedEventArgs e)
+    {
+        var temperament = new TemperamentProfile(
+            (int)Math.Round(TemperamentActivitySlider.Value),
+            (int)Math.Round(TemperamentAttachmentSlider.Value),
+            (int)Math.Round(TemperamentSensitivitySlider.Value),
+            (int)Math.Round(TemperamentIndependenceSlider.Value),
+            (int)Math.Round(TemperamentMischiefSlider.Value)).Clamp();
+        try
+        {
+            await _agent.Profiles.SavePersonalityAsync(temperament.ToSnapshot());
+            _runtime.UpdateTemperament(temperament);
+            TemperamentSaveStatus.Text = "已保存";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            TemperamentSaveStatus.Text = $"保存失败：{ex.GetType().Name}";
+        }
+    }
+
     private async void SaveModelConfig_Click(object sender, RoutedEventArgs e) => await SaveModelConfigurationAsync();
 
     private async Task LoadAgentUiAsync()
     {
         var petTask = _agent.Profiles.LoadPetProfileAsync();
         var ownerTask = _agent.Profiles.LoadOwnerProfileAsync();
+        var personalityTask = _agent.Profiles.LoadPersonalityAsync();
         var promptTask = _agent.Profiles.LoadPetPromptAsync();
         var configurationsTask = _agent.Models.GetConfigurationsAsync();
         var activeTask = _agent.Models.GetActiveConfigurationAsync();
         var memoryConfigurationTask = _agent.MemoryConfiguration.LoadAsync();
-        await Task.WhenAll(petTask, ownerTask, promptTask, configurationsTask, activeTask, memoryConfigurationTask);
+        await Task.WhenAll(petTask, ownerTask, personalityTask, promptTask, configurationsTask, activeTask, memoryConfigurationTask);
 
         var pet = await petTask;
         _loadedPetProfile = pet;
@@ -479,6 +500,7 @@ public partial class ControlPanelWindow : Window
         OwnerScheduleText.Text = owner.Schedule;
         OwnerPreferenceText.Text = owner.CompanionPreference;
         OwnerNotesText.Text = owner.Notes;
+        _runtime.UpdateTemperament(TemperamentProfile.FromSnapshot(await personalityTask));
         PetPromptText.Text = await promptTask;
         _memoryConfiguration = await memoryConfigurationTask;
         ApplyMemoryConfigurationToUi(_memoryConfiguration);
@@ -785,8 +807,6 @@ public partial class ControlPanelWindow : Window
             DeveloperPage.Visibility = Visibility.Collapsed;
             OwnerPage.Visibility = Visibility.Visible;
         }
-        if (visible == Visibility.Collapsed && AutonomousDailyAssetsPanel.Visibility == Visibility.Visible)
-            SelectNormalAssetSubTab("Base");
     }
 
     private void RefreshDiagnostics_Click(object sender, RoutedEventArgs e) => RefreshDiagnosticsView();
@@ -945,6 +965,24 @@ public partial class ControlPanelWindow : Window
             : $"审阅展示 {motion.DisplayName}：{result}";
     }
 
+    private async void ShowFoodWater_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: PlayableMotion motion })
+            return;
+
+        MagicShowStatus.Text = $"正在准备 {motion.DisplayName}...";
+        var result = await _runtime.SubmitFoodWaterAsync(motion.BehaviorId, BehaviorRequestSource.ControlPanel);
+        MagicShowStatus.Text = result switch
+        {
+            PetActionResult.Accepted => $"{motion.DisplayName}：正在展示",
+            PetActionResult.Deferred => $"{motion.DisplayName}：{_runtime.CurrentReason}",
+            PetActionResult.MissingAsset => $"{motion.DisplayName}：素材缺失",
+            PetActionResult.Interrupted => $"{motion.DisplayName}：已停止",
+            PetActionResult.Failed => $"{motion.DisplayName}：执行失败并已恢复",
+            _ => $"{motion.DisplayName}：{result}"
+        };
+    }
+
     private void CandidateSize_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button { Tag: string value } &&
@@ -963,21 +1001,28 @@ public partial class ControlPanelWindow : Window
         static IEnumerable<PlayableMotion> Filter(IEnumerable<PlayableMotion> motions, bool showExpired) =>
             motions.Where(motion => showExpired ? motion.IsExpired : !motion.IsExpired);
 
-        AssetList.ItemsSource = Filter(_runtime.Motions.Where(IsBaseMotion), expiredOnly).OrderBy(x => x.BehaviorId).ToList();
+        var baseMotions = _runtime.Motions.Where(IsBaseMotion)
+            .Concat(_runtime.AutonomousDailyCandidateMotions)
+            .Concat(_runtime.Motions.Where(x =>
+                string.Equals(x.AssetBatch, "WK-INTERACTION-PRONE-TOUCH-v4-1", StringComparison.OrdinalIgnoreCase)))
+            .GroupBy(x => (x.AssetBatch, x.BehaviorId))
+            .Select(x => x.First());
+        AssetList.ItemsSource = Filter(baseMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
         PlayAssetList.ItemsSource = Filter(_runtime.CarRideCandidateMotions, expiredOnly).ToList();
         CommandAssetList.ItemsSource = Filter(_runtime.Motions.Where(IsCommandMotion), expiredOnly)
             .OrderByDescending(x => string.Equals(x.AssetBatch, CommandMockBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
             .ThenBy(x => x.BehaviorId)
             .ToList();
+        FoodWaterCandidateList.ItemsSource = Filter(_runtime.FoodWaterCandidateMotions, expiredOnly)
+            .OrderBy(x => x.BehaviorId)
+            .ToList();
         MagicSpecialList.ItemsSource = Filter(_runtime.MagicMotions
-            .Where(x => !string.Equals(x.BehaviorId, MagicBehaviorIds.PetrificusRelease, StringComparison.OrdinalIgnoreCase)), expiredOnly)
+            .Where(x => !string.Equals(x.BehaviorId, MagicBehaviorIds.PetrificusRelease, StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(x.BehaviorId, MagicBehaviorIds.Scourgify, StringComparison.OrdinalIgnoreCase)), expiredOnly)
             .OrderBy(x => x.DisplayName)
             .ToList();
         LifecycleCandidateList.ItemsSource = Filter(_runtime.LifecycleCandidateMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
         LifecycleReviewCandidateList.ItemsSource = Filter(_runtime.LifecycleReviewCandidateMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
-        AutonomousDailyAssetList.ItemsSource = Filter(_runtime.AutonomousDailyCandidateMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
-        InteractionReviewAssetList.ItemsSource = Filter(_runtime.Motions.Where(x =>
-            string.Equals(x.AssetBatch, "WK-INTERACTION-PRONE-TOUCH-v4-1", StringComparison.OrdinalIgnoreCase)), expiredOnly).ToList();
         CarRideCandidateList.ItemsSource = Filter(_runtime.CarRideCandidateMotions, expiredOnly).ToList();
     }
 
@@ -1001,44 +1046,21 @@ public partial class ControlPanelWindow : Window
         if (sender is not Button { Tag: string tab })
             return;
 
-        NormalAssetsPanel.Visibility = tab == "Normal" ? Visibility.Visible : Visibility.Collapsed;
-        PlayAssetsPanel.Visibility = Visibility.Collapsed;
-        CommandAssetsPanel.Visibility = Visibility.Collapsed;
-        AutonomousDailyAssetsPanel.Visibility = Visibility.Collapsed;
-        MagicAssetsPanel.Visibility = tab == "Magic" ? Visibility.Visible : Visibility.Collapsed;
-        NormalAssetSubTabs.Visibility = tab == "Normal" ? Visibility.Visible : Visibility.Collapsed;
-        NormalAssetsTabButton.Style = PanelTabStyle(tab == "Normal");
-        MagicAssetsTabButton.Style = PanelTabStyle(tab == "Magic");
-        if (tab == "Normal")
-            SelectNormalAssetSubTab("Base");
+        SelectAssetTab(tab);
     }
 
-    private void NormalAssetSubTab_Click(object sender, RoutedEventArgs e)
+    private void SelectAssetTab(string tab)
     {
-        if (sender is not Button { Tag: string tab })
-            return;
-
-        if (tab == "AutonomousDaily" && !_agent.DeveloperSession.IsAuthenticated)
-        {
-            DeveloperToggle.IsChecked = true;
-            if (!_agent.DeveloperSession.IsAuthenticated)
-                return;
-        }
-
-        SelectNormalAssetSubTab(tab);
-    }
-
-    private void SelectNormalAssetSubTab(string tab)
-    {
-        AssetList.Visibility = Visibility.Visible;
         NormalAssetsPanel.Visibility = tab == "Base" ? Visibility.Visible : Visibility.Collapsed;
         PlayAssetsPanel.Visibility = tab == "Play" ? Visibility.Visible : Visibility.Collapsed;
         CommandAssetsPanel.Visibility = tab == "Command" ? Visibility.Visible : Visibility.Collapsed;
-        AutonomousDailyAssetsPanel.Visibility = tab == "AutonomousDaily" ? Visibility.Visible : Visibility.Collapsed;
+        FoodWaterAssetsPanel.Visibility = tab == "FoodWater" ? Visibility.Visible : Visibility.Collapsed;
+        MagicAssetsPanel.Visibility = tab == "Magic" ? Visibility.Visible : Visibility.Collapsed;
         BaseAssetsTabButton.Style = PanelTabStyle(tab == "Base");
         PlayAssetsTabButton.Style = PanelTabStyle(tab == "Play");
         CommandAssetsTabButton.Style = PanelTabStyle(tab == "Command");
-        AutonomousDailyAssetsTabButton.Style = PanelTabStyle(tab == "AutonomousDaily");
+        FoodWaterAssetsTabButton.Style = PanelTabStyle(tab == "FoodWater");
+        MagicAssetsTabButton.Style = PanelTabStyle(tab == "Magic");
     }
 
     private Style PanelTabStyle(bool selected) => (Style)FindResource(selected ? "PanelTabButtonSelected" : "PanelTabButton");

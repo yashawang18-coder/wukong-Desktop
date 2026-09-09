@@ -35,7 +35,12 @@ class MagicSpecialsCandidateTests(unittest.TestCase):
         for action in self.manifest["actions"]:
             self.assertFalse(action["runtime_approved"])
             self.assertFalse(action["runtime_use"])
-            self.assertTrue(action["prototype_use"])
+            if action["behavior_id"] == "wk.magic.scourgify":
+                self.assertFalse(action["prototype_use"])
+                self.assertTrue(action["deprecated"])
+                self.assertEqual("owner_removed_mock_scourgify_2026_09_08", action["deprecated_reason"])
+            else:
+                self.assertTrue(action["prototype_use"])
 
     def test_action_manifest_hashes_and_dimensions(self):
         for action in self.manifest["actions"]:

@@ -12,7 +12,7 @@
     "OwnerContextMenu and ControlPanel may use PrototypePreview only.",
     "Coin pointer interaction is allowed only while the owner-started petrification preview is active.",
     "Windows transparent-renderer QA is still required before production runtime use.",
-    "Scourgify remains mock artwork; all other actions use the reviewed local candidate packages."
+    "Scourgify mock artwork is retained only as historical evidence and is excluded from the runtime catalog, context menu, and asset gallery."
   ],
   "broom_directional_flight": {
     "down": [
@@ -1259,7 +1259,7 @@
       "behavior_id": "wk.magic.scourgify",
       "action_id": "wk.magic.scourgify",
       "display_name": "Scourgify",
-      "description": "Existing code-drawn Scourgify placeholder retained until reviewed artwork is available.",
+      "description": "Historical code-drawn placeholder removed from owner-facing use.",
       "source_folder": "scourgify",
       "frame_count": 12,
       "frame_duration_ms": 90,
@@ -1268,11 +1268,13 @@
       "to_pose": "prone.awake.left_front",
       "direction": "left_front",
       "interruptible": true,
-      "runtime_validation": "pending",
+      "runtime_validation": "deprecated_owner_removed_2026_09_08",
       "runtime_approved": false,
       "runtime_use": false,
-      "prototype_use": true,
+      "prototype_use": false,
       "production_asset": false,
+      "deprecated": true,
+      "deprecated_reason": "owner_removed_mock_scourgify_2026_09_08",
       "effect": "Scourgify",
       "interrupt_exit_strategy": "cancel_restore_idle",
       "phases": [

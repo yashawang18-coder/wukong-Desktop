@@ -15,6 +15,7 @@ public sealed record PortableDataLayout(
     {
         "pet-profile.json",
         "owner-profile.json",
+        "personality-profile.json",
         "pet-prompt.txt",
         "pet-scale.txt"
     };

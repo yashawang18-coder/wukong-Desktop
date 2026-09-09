@@ -575,3 +575,28 @@ Restrictions:
   startup, commands, magic, car ride, or fallback behavior.
 - Preserve the source PNG bytes, source package identity, QA report, and frame
   checksum inventory until owner Windows renderer review is complete.
+## 2026-09-08 - replace the local food and water v2 review batch with v5
+
+Accept `WK-FOOD-WATER-COAT-SEAM-v5` as the sole pixel and timeline source for the local food/water review integration. Copy its 48 unique 1024x1024 RGBA PNGs byte-for-byte and preserve the source manifest's repeated references, yielding 103 eating slots and 91 drinking slots at 125 ms without storing 194 duplicate PNG files. Keep the four unreferenced pause frames in the source inventory for traceability, but do not insert them into a timeline.
+
+The owner has approved both v5 actions for deterministic manual use. Promote them to `visual_approved=true`, `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, and `prototype_use=false`. Only `OwnerContextMenu`, `ControlPanel`, and isolated `DeveloperPreview` are allowed sources. `OwnerContextMenu` and `ControlPanel` use `Normal` mode through the existing `BehaviorRequest` pipeline and approved posture transitions; autonomous, dialogue, model, command, and startup routes remain forbidden.
+
+The importer must not repair, re-encode, rescale, crop, or recolor v5 pixels. Preserve the source QA claim that five eat-lower frames received its seam repair while the other 43 frames are byte unchanged. Sparse pre-existing edge-colour artefacts remain an explicit Windows owner-QA item; they are not authority to mutate the delivered source.
+
+## 2026-09-08 - organize owner assets by behavior entry and retire Scourgify mock
+
+The asset page uses the same owner-facing taxonomy as the desktop menu: `基础动作`, `玩一下`, `吃一下`, `口令`, `魔法特辑`, and locked `节日特辑`. Autonomous daily assets belong under `基础动作`; they are not exposed as a developer category in the asset library.
+
+Remove `wk.magic.scourgify` from the owner context menu, prototype whitelist, runtime catalog, and magic asset gallery. Preserve its original PNGs and manifest history, but mark the action deprecated with all runtime/prototype gates disabled. This retirement does not affect Accio Broom, Apparate, or Petrificus Totalus.
+
+## 2026-09-09 - separate technical motion identity from owner-facing names
+
+Keep behavior IDs, asset IDs, batch names, and manifest display names as stable technical and provenance data. Resolve a concise Chinese presentation name at the desktop catalog boundary for owner-facing action state and asset cards. Developer diagnostics continue to expose the canonical IDs. This prevents UX wording changes from breaking asset registration or behavior routing.
+
+## 2026-09-09 - improve autonomous continuity by orchestration, not asset mutation
+
+Do not merge, split, resample, recolor, or rewrite approved frames to mask transition problems. Build natural daily presentation from existing posture-compatible sequences: keep the current stable idle without restarting it, expose one preferred idle for the current pose, require longer pose dwell, and penalize another posture transition during the recent-transition window. Any transition that lacks an approved visual bridge remains unavailable rather than being hard-cut.
+
+## 2026-09-09 - persist owner temperament separately from developer simulation
+
+Store the five owner temperament dimensions in the portable profile defaults and user-data layout. Clamp the values at the application boundary and use the same snapshot for runtime decisions and dialogue context. An authenticated developer simulation may temporarily override its own context, but must not silently replace the persisted owner profile.

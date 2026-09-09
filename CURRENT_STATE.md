@@ -211,13 +211,13 @@ The existing prone-idle V3 animation remains a separate `runtime-candidate` and 
 ## WK-MAGIC-SPECIALS-CANDIDATE-v1
 
 - Added the integrated Wukong-only candidate action batch under `assets/action-batches/WK-MAGIC-SPECIALS-CANDIDATE-v1/` while retaining `WK-MAGIC-SPECIALS-MOCK-v1` as historical prototype evidence.
-- The active owner-preview batch contains 207 transparent RGBA PNG files: 195 reviewed 1024×1024 broom/invisibility/petrification/coin frames plus 12 existing 256×256 Scourgify mock frames pending replacement.
+- The active owner-facing magic catalog uses the 195 reviewed 1024×1024 broom, invisibility, petrification, and coin frames. The 12 legacy 256×256 Scourgify mock frames remain only as historical bytes and are excluded from the context menu, asset gallery, prototype whitelist, and runtime catalog.
 - The playable manifest records:
   - `wk.magic.accio_broom`
   - `wk.magic.apparate`
   - `wk.magic.petrificus_totalus`
   - `wk.magic.petrificus_release`
-  - `wk.magic.scourgify`
+  - `wk.magic.scourgify` (deprecated historical mock; not loadable)
 - Accio Broom packages all eight directional loops and preserves animation phase while the desktop path changes direction; the current showcase uses reviewed takeoff and seated landing sequences.
 - Apparate plays disappear, invisible relocation cut, and appear phases.
 - Petrificus Totalus plays the stone transition and enters an interactive coin hold. The coin starts vivid/front, settles to flat after 800 ms, fades after 10 minutes of inactivity, and reaches exhausted after 20 minutes. Timing is configurable through `PetrifiedCoinOptions`.
@@ -381,3 +381,21 @@ Before implementation, add or provide the reviewed UX artifact and a pinned Pupu
 - Road-gaze events are scheduled at irregular times and may start only when the full sequence fits inside a sufficiently long left/right cruise. They never start during a turn connector, offscreen transition, startup, or braking phase, and remain capped at two events per ride.
 - Car-ride routes now use four long cruise segments and three short turn connectors. Cruise segments use a substantially higher speed range than turn connectors, route geometry varies by seed, and the car no longer uses an offscreen teleport excursion.
 - Autonomous daily scheduling keeps the approved behavior allowlist unchanged. Standing is a brief transition posture: stand idle is reconsidered after 8-15 seconds, while a complete lifecycle holds its approved prone loop for 4-7 cycles. Stable prone idle is reconsidered after 48-76 seconds, so daily presentation spends substantially more time resting prone without inventing an unapproved posture bridge.
+## Food and water v5 approved owner runtime - 2026-09-08
+
+- Replaced the uncommitted v2 review batch with `WK-INTERACTION-FOOD-WATER-COAT-SEAM-CANDIDATE-v5` from the local `WK-FOOD-WATER-COAT-SEAM-v5` package. Its 74-entry `SHA256.json` is complete and has SHA-256 `db81cb11a0dd4e3bc3b10dd6f013c4a0d9cbc99561a7fd3e75f6fb9c6e860449`.
+- The repository stores the exact 48 source 1024x1024 RGBA PNG byte streams without re-encoding, scaling, cropping, alpha processing, or recoloring. The source manifest reuses 44 of those files across 194 timeline slots: 91 drinking slots (11.375 seconds) and 103 kibble-eating slots (12.875 seconds), each at 125 ms. Four pause frames remain in the provenance inventory but are not referenced by the timelines.
+- Source QA records five eat-lower colour-seam repairs and 43 byte-unchanged frames, with entry seam DeltaE76 reduced from 5.0839 to 0.8598. The import does not repeat or alter that source-side repair.
+- Owner approval enables the stable IDs `wk.interaction.drink_water` and `wk.interaction.eat_kibble` with `owner_preview_approved=true`, `visual_approved=true`, `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, `prototype_use=false`, `developer_preview=true`, `autonomous_binding_enabled=false`, and `normal_runtime_available=true`.
+- The desktop context menu exposes `吃一下 > 喝水 / 吃饭`; the control panel exposes the same two actions under the `吃一下` asset tab. Both submit a `Normal` `BehaviorRequest` from `OwnerContextMenu` or `ControlPanel` and use approved stand-up transitions when the current posture is sitting or prone.
+- Dialogue, model routing, autonomous scheduling, command routing, and startup autoplay remain forbidden. Eating updates hunger only after successful completion; drinking applies its bounded comfort/stress outcome only after successful completion. Developer preview remains isolated from formal runtime state.
+- Static colour inspection found 63 sparse blue-advantage visible pixels across the unchanged source set. The source README explicitly classifies prior alpha-edge artefacts as outside this colour-only repair. They are retained byte-for-byte and remain a Windows visual-review item rather than being silently retouched during import.
+- The owner approval covers the delivered v5 visual sequence and manual Windows playback path. Source-edge colour, nose integrity, alpha edges, subject scale, anchor continuity, bowl state, and exit continuity remain protected by byte/hash regression checks because the importer must never retouch this approved source.
+
+## Owner-facing naming, personality controls, and autonomous stability - 2026-09-09
+
+- Runtime and manifest identifiers remain stable technical keys. The desktop projects them through one owner-facing catalog so the owner page and asset library use concise Chinese action names without exposing batch versions or candidate terminology. Developer trace keeps the original behavior ID, asset batch, phase, and frame information.
+- The five temperament dimensions are editable with shared sliders and persist in the portable profile file `profile/personality-profile.json`. Values are clamped before use, loaded before desktop timers start, and feed both local behavior decisions and dialogue context. The authenticated developer mock override remains isolated and does not overwrite the saved owner profile.
+- Approved animation bytes, manifests, posture contracts, and runtime approval gates are unchanged by the naturalness pass. The runtime composes existing pose-compatible motions instead of splicing or resampling assets: a currently displayed stable idle is held without resubmission, each posture offers one preferred stable idle at a time, and posture changes use longer minimum dwell plus a recent-transition cooldown.
+- Developer login uses content-driven height and a wider minimum layout so password input and actions remain visible under Windows text scaling. The owner page keeps concise state language while detailed reason codes remain in developer trace.
+- This work remains local on `agent/food-water-runtime-v2` until its validation commit is published. `.asset-staging/`, portable user data, logs, screenshots, and build output are not repository content.

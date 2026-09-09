@@ -1,0 +1,18 @@
+{
+  "batch_id": "WK-INTERACTION-FOOD-WATER-COAT-SEAM-CANDIDATE-v5",
+  "source_package": "WK-FOOD-WATER-COAT-SEAM-v5",
+  "source_sha256_manifest_entries": 74,
+  "source_sha256_manifest_sha256": "db81cb11a0dd4e3bc3b10dd6f013c4a0d9cbc99561a7fd3e75f6fb9c6e860449",
+  "unique_rgba_frames": 48,
+  "timeline_references": 194,
+  "referenced_unique_frames": 44,
+  "unreferenced_source_frames": [
+    "frames/drink-pause/frame-05.png",
+    "frames/drink-pause/frame-06.png",
+    "frames/eat-pause/frame-05.png",
+    "frames/eat-pause/frame-06.png"
+  ],
+  "byte_preserving_copy": true,
+  "all_source_checksums_passed": true,
+  "runtime_validation": "passed_windows_renderer_qa"
+}

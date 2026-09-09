@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -29,6 +30,7 @@ var tests = new (string Name, Action Run)[]
     ("startup factory creates one main window", StartupFactoryCreatesOneMainWindow),
     ("desktop single instance rejects a duplicate process", DesktopSingleInstanceRejectsDuplicate),
     ("control panel xaml constructs", ControlPanelXamlConstructs),
+    ("owner-facing motion names are concise Chinese labels", OwnerFacingMotionNamesAreChinese),
     ("agent windows construct and desktop chat starts hidden", AgentWindowsConstructAndChatStartsHidden),
     ("desktop chat uses single-line enter send semantics", DesktopChatKeyboardSemantics),
     ("desktop chat sensor is limited to lower blank region", DesktopChatSensorIsLimited),
@@ -52,6 +54,9 @@ var tests = new (string Name, Action Run)[]
     ("sleep runtime v10 candidate manifest frames and gate are valid", SleepCandidateTests.ManifestFramesAndGateAreValid),
     ("sleep runtime v10 uses compatible autonomous routes and isolated developer preview", SleepCandidateTests.ApprovedSleepUsesCompatibleAutonomousRoutesAndIsolatedPreview),
     ("missing sleep runtime v10 fails closed without legacy fallback", SleepCandidateTests.MissingV10FramesFailClosedWithoutLegacyFallback),
+    ("food and water v5 manifest frames and owner runtime gate are valid", FoodWaterCandidateTests.ManifestFramesAndRuntimeGateAreValid),
+    ("food and water v5 owner routes use Normal while other sources stay closed", FoodWaterCandidateTests.OwnerRoutesUseNormalAndOtherSourcesStayClosed),
+    ("food and water v5 with missing frames fails closed", FoodWaterCandidateTests.MissingFramesFailClosed),
     ("patrol walk v1 approved manifest frames and gate are valid", PatrolWalkCandidateTests.ManifestFramesAndGateAreValid),
     ("patrol walk v1 uses autonomous allowlist and isolated developer preview", PatrolWalkCandidateTests.ApprovedGaitUsesAutonomousAllowlistAndDeveloperPreviewStaysIsolated),
     ("patrol walk v1 window travel is directional and work-area bounded", PatrolWalkCandidateTests.WindowTravelIsDirectionalAndWorkAreaBounded),
@@ -289,6 +294,8 @@ static int CapturePanelScreens(string outputRoot)
             CapturePanel(panel, outputRoot, "owner-current.png");
             ClickNavByTag(panel, "Profile");
             CapturePanel(panel, outputRoot, "profile-tabs.png");
+            ClickNamedButton(panel, "ProfileRelationTabButton");
+            CapturePanel(panel, outputRoot, "profile-personality-relationship.png");
             ClickNavByTag(panel, "Album");
             CapturePanel(panel, outputRoot, "album-all-media-list.png");
             if (panel.FindName("AlbumMediaList") is ListBox mediaList && mediaList.Items.Count > 1)
@@ -305,6 +312,8 @@ static int CapturePanelScreens(string outputRoot)
             CapturePanel(panel, outputRoot, "memory-config-toggle.png");
             ClickNavByTag(panel, "Assets");
             CapturePanel(panel, outputRoot, "assets-normal-base.png");
+            ClickNamedButton(panel, "FoodWaterAssetsTabButton");
+            CapturePanel(panel, outputRoot, "assets-food-water.png");
             ClickNamedButton(panel, "CommandAssetsTabButton");
             CapturePanel(panel, outputRoot, "assets-normal-command.png");
             if (panel.FindName("CommandAssetsPanel") is ScrollViewer commandAssetsPanel)
@@ -552,6 +561,12 @@ static void ControlPanelXamlConstructs()
             Assert(panel.FindName("DeleteSelectedAlbumButton") is Button, "independent album deletion button missing");
             Assert(panel.FindName("OwnerBirthdayPicker") is DatePicker, "owner birthday field missing");
             Assert(panel.FindName("OwnerPetCallNameText") is TextBox, "owner pet call name field missing");
+            Assert(panel.FindName("TemperamentActivitySlider") is Slider { Minimum: 0, Maximum: 100 }, "activity temperament slider missing");
+            Assert(panel.FindName("TemperamentAttachmentSlider") is Slider, "attachment temperament slider missing");
+            Assert(panel.FindName("TemperamentSensitivitySlider") is Slider, "sensitivity temperament slider missing");
+            Assert(panel.FindName("TemperamentIndependenceSlider") is Slider, "independence temperament slider missing");
+            Assert(panel.FindName("TemperamentMischiefSlider") is Slider, "mischief temperament slider missing");
+            Assert(panel.FindName("TemperamentSaveStatus") is TextBlock, "temperament persistence status missing");
             var prompt = panel.FindName("PetPromptText") as TextBox;
             Assert(prompt?.ContextMenu is not null, "pet prompt context menu missing");
             var promptCommands = prompt!.ContextMenu!.Items.OfType<MenuItem>().Select(x => x.Command).ToArray();
@@ -597,6 +612,8 @@ static void AgentWindowsConstructAndChatStartsHidden()
             Assert(chat.FindName("CancelButton") is null, "desktop input should not show a separate cancel button");
             var xaml = File.ReadAllText(Path.GetFullPath(Path.Combine("src", "Wukong.Desktop", "DesktopChatWindow.xaml")));
             Assert(!xaml.Contains("和悟空说话", StringComparison.Ordinal), "desktop input should not show a redundant title");
+            Assert(login.Width >= 480 && login.MinHeight >= 320 && login.SizeToContent == SizeToContent.Height, "developer login no longer protects its fields from DPI clipping");
+            Assert(login.FindName("PasswordInput") is PasswordBox { MinHeight: >= 42 }, "developer password field is too small");
             chat.Close();
             bubble.Close();
             login.Close();
@@ -612,6 +629,26 @@ static void AgentWindowsConstructAndChatStartsHidden()
     thread.Join();
     if (failure is not null)
         throw failure;
+}
+
+static void OwnerFacingMotionNamesAreChinese()
+{
+    var runtime = new DesktopRuntimeHost();
+    var mapped = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        [LifecycleCandidateBehaviorIds.LivelyDailyP2] = "走几步后趴下",
+        [ProneHeadCandidateBehaviorIds.HeadLowerTurnV4] = "趴着低头回头",
+        [FoodWaterCandidateBehaviorIds.DrinkWaterStandingV5] = "喝水",
+        [FoodWaterCandidateBehaviorIds.EatKibbleStandingV5] = "吃饭",
+        [CarRideBehaviorIds.CarRide] = "开车兜风",
+        [MagicBehaviorIds.AccioBroom] = "骑扫把飞行"
+    };
+    foreach (var expected in mapped)
+    {
+        var motion = runtime.Motions.Single(x => string.Equals(x.BehaviorId, expected.Key, StringComparison.OrdinalIgnoreCase));
+        Assert(motion.DisplayName == expected.Value, $"owner-facing name mismatch for {expected.Key}: {motion.DisplayName}");
+    }
+    Assert(runtime.Motions.All(x => !x.DisplayName.Contains("candidate", StringComparison.OrdinalIgnoreCase)), "candidate terminology leaked into owner-facing motion names");
 }
 
 static void DesktopChatKeyboardSemantics()
@@ -1268,7 +1305,16 @@ static void MagicCandidateAssetsAreIndexed()
     {
         Assert(!action.GetProperty("runtime_approved").GetBoolean(), "candidate action was runtime approved");
         Assert(!action.GetProperty("runtime_use").GetBoolean(), "candidate action enabled production runtime use");
-        Assert(action.GetProperty("prototype_use").GetBoolean(), "candidate action did not enable prototype preview");
+        var behaviorId = action.GetProperty("behavior_id").GetString();
+        if (string.Equals(behaviorId, MagicBehaviorIds.Scourgify, StringComparison.OrdinalIgnoreCase))
+        {
+            Assert(!action.GetProperty("prototype_use").GetBoolean(), "retired Scourgify mock retained prototype access");
+            Assert(action.GetProperty("deprecated").GetBoolean(), "retired Scourgify mock is not marked deprecated");
+        }
+        else
+        {
+            Assert(action.GetProperty("prototype_use").GetBoolean(), "active candidate action did not enable prototype preview");
+        }
         foreach (var phase in action.GetProperty("phases").EnumerateArray())
         {
             foreach (var frame in phase.GetProperty("frames").EnumerateArray())
@@ -1289,8 +1335,9 @@ static void MagicCandidateAssetsAreIndexed()
 
     var catalog = DesktopMotionCatalog.Load(output);
     var magic = catalog.Motions.Where(x => x.Category == "宠物魔法").ToArray();
-    Assert(magic.Length == 5, "magic candidate assets were not indexed");
-    Assert(magic.All(x => x.PrototypeUse), "all magic candidates must be prototype-use only");
+    Assert(magic.Length == 4, "active magic candidates were not indexed");
+    Assert(!magic.Any(x => x.BehaviorId == MagicBehaviorIds.Scourgify), "retired Scourgify mock entered the runtime catalog");
+    Assert(magic.All(x => x.PrototypeUse), "active magic candidates must be prototype-use only");
     Assert(magic.All(x => !x.RuntimeEnabled), "magic candidates must stay out of production runtime");
     Assert(magic.Single(x => x.BehaviorId == MagicBehaviorIds.AccioBroom).FrameCount == 24, "broom playback mapping is incomplete");
     Assert(magic.Single(x => x.BehaviorId == MagicBehaviorIds.AccioBroom).DirectionalFrames?.Count == 8, "broom eight-way frame map is incomplete");
@@ -1345,7 +1392,7 @@ static void CarRideCandidateAssetsAreIndexedAndGated()
     var catalog = DesktopMotionCatalog.Load(output);
     var motions = catalog.Motions.Where(x => string.Equals(x.BehaviorId, CarRideBehaviorIds.CarRide, StringComparison.OrdinalIgnoreCase)).ToArray();
     Assert(motions.Length == 1, "car ride candidate was not indexed exactly once");
-    Assert(motions[0].DisplayName == "Car ride v8", "car ride display name must not say candidate");
+    Assert(motions[0].DisplayName == "开车兜风", "car ride owner-facing name must be concise Chinese");
     Assert(motions[0].RuntimeEnabled, "car ride must be available to the approved manual runtime path");
     Assert(!motions[0].PrototypeUse, "car ride must not depend on prototype preview after approval");
     Assert(motions[0].Effect == DesktopMotionEffect.CarRide, "car ride effect mapping missing");
@@ -1456,7 +1503,7 @@ static void OwnerAndPanelMagicUsePrototypePreviewGate()
     runtime.MotionRequested += (_, item) => requests.Add(item);
 
     var ownerResult = runtime.SubmitMagicAsync(MagicBehaviorIds.AccioBroom, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
-    var panelResult = runtime.SubmitMagicAsync(MagicBehaviorIds.Scourgify, BehaviorRequestSource.ControlPanel).GetAwaiter().GetResult();
+    var panelResult = runtime.SubmitMagicAsync(MagicBehaviorIds.PetrificusTotalus, BehaviorRequestSource.ControlPanel).GetAwaiter().GetResult();
 
     Assert(ownerResult == PetActionResult.Accepted, "owner context menu magic was not accepted");
     Assert(panelResult == PetActionResult.Accepted, "control panel magic was not accepted");
@@ -1464,6 +1511,9 @@ static void OwnerAndPanelMagicUsePrototypePreviewGate()
     Assert(requests.All(x => x.ExecutionMode == BehaviorExecutionMode.PrototypePreview), "magic did not use prototype preview execution mode");
     Assert(requests[0].Source == BehaviorRequestSource.OwnerContextMenu, "owner menu source was not preserved");
     Assert(requests[1].Source == BehaviorRequestSource.ControlPanel, "control panel source was not preserved");
+    var retired = runtime.SubmitMagicAsync(MagicBehaviorIds.Scourgify, BehaviorRequestSource.OwnerContextMenu).GetAwaiter().GetResult();
+    Assert(retired is PetActionResult.MissingAsset or PetActionResult.Deferred, "retired Scourgify mock was still accepted");
+    Assert(requests.Count == 2, "retired Scourgify mock emitted playback");
 }
 
 static void NonOwnerSourcesCannotPrototypePreviewMagic()
@@ -1680,6 +1730,14 @@ static void MainWindowContextMenuMatchesContract()
             Assert(playChildren[0].Tag?.ToString() == CarRideBehaviorIds.CarRide, "car ride must be the first play submenu item");
             Assert(playChildren[1].IsEnabled == false, "walk should be shown as locked");
 
+            var foodMenu = topLevelItems.Single(x => x.Items.OfType<MenuItem>().Any(child => Equals(child.Tag?.ToString(), FoodWaterCandidateBehaviorIds.DrinkWaterStandingV5)));
+            var foodChildren = foodMenu.Items.OfType<MenuItem>().ToArray();
+            Assert(Equals(foodMenu.Header, "吃一下"), "food/water submenu title changed");
+            Assert(foodChildren.Select(x => x.Header?.ToString()).SequenceEqual(new[] { "喝水", "吃饭" }), "food/water submenu order changed");
+            Assert(foodChildren.Select(x => x.Tag?.ToString()).SequenceEqual(new[] { FoodWaterCandidateBehaviorIds.DrinkWaterStandingV5, FoodWaterCandidateBehaviorIds.EatKibbleStandingV5 }),
+                "food/water submenu behavior mapping changed");
+            Assert(foodChildren.All(x => x.IsEnabled), "approved food/water owner actions are disabled");
+
             var commands = topLevelItems.Single(x => Equals(x.Header, "口令"));
             var commandChildren = commands.Items.OfType<MenuItem>().ToArray();
             Assert(commandChildren.Select(x => x.Header?.ToString()).SequenceEqual(new[] { "坐", "卧", "手", "跳", "转圈", "吃" }), "command submenu order changed");
@@ -1687,7 +1745,8 @@ static void MainWindowContextMenuMatchesContract()
             Assert(!commandChildren.Any(x => Equals(x.Header, "停")), "command submenu must not include stop");
 
             var magic = topLevelItems.Single(x => x.Items.OfType<MenuItem>().Any(child => Equals(child.Header, "Accio Broom")));
-            Assert(magic.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).SequenceEqual(new[] { "Accio Broom", "Apparate", "Petrificus Totalus", "Scourgify" }), "magic submenu order changed");
+            Assert(magic.Items.OfType<MenuItem>().Select(x => x.Header?.ToString()).SequenceEqual(new[] { "Accio Broom", "Apparate", "Petrificus Totalus" }), "magic submenu order changed");
+            Assert(!magic.Items.OfType<MenuItem>().Any(x => Equals(x.Tag?.ToString(), MagicBehaviorIds.Scourgify)), "retired Scourgify mock remains in the context menu");
             var magicIndex = Array.IndexOf(topLevelItems, magic);
             Assert(magicIndex >= 0 && topLevelItems.Length > magicIndex + 2, "magic, stop, and open panel menu group is incomplete");
             Assert(topLevelItems[magicIndex + 1].Items.Count == 0 && topLevelItems[magicIndex + 2].Items.Count == 0, "stop must sit immediately above open panel");
@@ -1764,39 +1823,76 @@ static void ControlPanelExposesMagicSpecialsTab()
         try
         {
             _ = EnsureTestApplication();
-            var panel = new ControlPanelWindow(new DesktopRuntimeHost());
+            var runtime = new DesktopRuntimeHost();
+            runtime.UpdateBehaviorAgentMock(
+                new TemperamentProfile(71, 66, 43, 32, 54),
+                PetRuntimeState.Default with { CurrentPosture = StablePosture.Sit, MoodValence = 0.81, Arousal = 0.58 },
+                new RelationshipState(0.84, 0.73, 7, 2) { TouchAcceptance = 0.79, InitiativeAcceptance = 0.68 },
+                91);
+            var panel = new ControlPanelWindow(runtime);
             Assert(panel.FindName("NormalAssetsPanel") is ScrollViewer, "normal assets panel missing");
+            var baseList = panel.FindName("AssetList") as ItemsControl;
+            Assert(baseList is not null, "base asset list missing");
             Assert(panel.FindName("PlayAssetsPanel") is ScrollViewer, "play assets panel missing");
             var playList = panel.FindName("PlayAssetList") as ItemsControl;
             Assert(playList is not null, "play asset list missing");
             Assert(panel.FindName("CommandAssetsPanel") is ScrollViewer, "command assets panel missing");
             var commandList = panel.FindName("CommandAssetList") as ItemsControl;
             Assert(commandList is not null, "command asset list missing");
+            Assert(panel.FindName("FoodWaterAssetsPanel") is ScrollViewer, "food/water assets panel missing");
+            var foodList = panel.FindName("FoodWaterCandidateList") as ItemsControl;
+            Assert(foodList is not null && foodList.Items.Count == 2, "food/water assets tab must contain drinking and eating");
+            Assert(foodList!.Items.OfType<PlayableMotion>().All(x => x.RuntimeEnabled && x.RuntimeApproved && !x.AutonomousBindingEnabled),
+                "food/water assets tab does not reflect approved owner-only state");
             Assert(panel.FindName("MagicAssetsPanel") is ScrollViewer, "magic specials panel missing");
             Assert(panel.FindName("LifecycleCandidateList") is ItemsControl, "lifecycle candidate developer list missing");
-            Assert(panel.FindName("AutonomousDailyAssetsPanel") is ScrollViewer, "autonomous daily review panel missing");
-            var dailyList = panel.FindName("AutonomousDailyAssetList") as ItemsControl;
-            Assert(dailyList is not null, "autonomous daily review list missing");
-            Assert(dailyList!.Items.OfType<PlayableMotion>().Count(x => x.AssetBatch == AutonomousDailyCandidateBehaviorIds.AssetBatch) == 4,
-                "autonomous daily review list must preserve four posture-transition candidates");
-            Assert(dailyList.Items.OfType<PlayableMotion>().Any(x => x.BehaviorId == ProneHeadCandidateBehaviorIds.HeadLowerTurnV4),
-                "autonomous daily review list must display the prone head v4 candidate");
-            var interactionReview = panel.FindName("InteractionReviewAssetList") as ItemsControl;
-            Assert(interactionReview is not null && interactionReview.Items.Count == 0, "deprecated touch assets must be hidden by default");
+            Assert(baseList!.Items.OfType<PlayableMotion>().Count(x => x.AssetBatch == AutonomousDailyCandidateBehaviorIds.AssetBatch) == 4,
+                "base assets must include four approved posture transitions");
+            Assert(baseList.Items.OfType<PlayableMotion>().Any(x => x.BehaviorId == ProneHeadCandidateBehaviorIds.HeadLowerTurnV4),
+                "base assets must include the approved prone head action");
             var expiredFilter = panel.FindName("ShowDeprecatedAssetsCheckBox") as CheckBox;
             Assert(expiredFilter is not null, "expired-only asset filter is missing");
             expiredFilter!.IsChecked = true;
-            Assert(interactionReview!.Items.OfType<PlayableMotion>().Any(x => x.BehaviorId == Phase15BehaviorIds.ProneTouch && x.IsExpired), "owner-rejected prone touch is not visible in the expired-only filter");
+            Assert(baseList.Items.OfType<PlayableMotion>().Any(x => x.BehaviorId == Phase15BehaviorIds.ProneTouch && x.IsExpired), "owner-rejected prone touch is not visible in the expired-only base filter");
             expiredFilter.IsChecked = false;
-            Assert(panel.FindName("AutonomousDailyAssetsTabButton") is Button { Visibility: Visibility.Visible }, "autonomous daily developer tab must remain discoverable before authentication");
-            Assert(panel.FindName("AutonomousDailyAssetsPanel") is ScrollViewer { Visibility: Visibility.Collapsed }, "autonomous daily candidates must remain inaccessible before developer authentication");
+            var categories = panel.FindName("AssetCategoryTabs") as WrapPanel;
+            Assert(categories is not null, "asset category tab row missing");
+            Assert(categories!.Children.OfType<Button>().Select(x => x.Content?.ToString()).SequenceEqual(new[]
+            {
+                "基础动作", "玩一下", "吃一下", "口令", "魔法特辑", "节日特辑（待解锁）"
+            }), "asset categories no longer match owner-facing behavior groups");
+            Assert(panel.FindName("HolidayAssetsTabButton") is Button { IsEnabled: false }, "holiday specials should remain visibly locked");
+            Assert(panel.FindName("AgentDecisionFlow") is UniformGrid { Children.Count: 6 }, "developer page is missing the six-step Agent decision flow");
+            Assert(panel.FindName("PersonalityRelationshipProjection") is Grid, "personality and relationship runtime projection is missing");
+            Assert(runtime.TemperamentActivity == 71 && Math.Abs(runtime.RelationshipTrust - 0.84) < 0.001 && runtime.RecentPositiveInteractions == 7,
+                "personality and relationship projection is not backed by runtime state");
+            foreach (var name in new[]
+            {
+                "TemperamentActivitySlider", "TemperamentAttachmentSlider", "TemperamentSensitivitySlider",
+                "TemperamentIndependenceSlider", "TemperamentMischiefSlider"
+            })
+            {
+                var slider = panel.FindName(name) as Slider;
+                Assert(slider is not null && BindingOperations.GetBinding(slider, RangeBase.ValueProperty)?.Mode == BindingMode.OneWay,
+                    $"editable temperament slider is not initialized from runtime state: {name}");
+            }
+            foreach (var name in new[]
+            {
+                "RelationshipTrustBar", "RelationshipFamiliarityBar", "RelationshipTouchAcceptanceBar", "RelationshipInitiativeAcceptanceBar"
+            })
+            {
+                var bar = panel.FindName(name) as ProgressBar;
+                Assert(bar is not null && BindingOperations.GetBinding(bar, RangeBase.ValueProperty)?.Mode == BindingMode.OneWay,
+                    $"read-only relationship projection is not bound OneWay: {name}");
+            }
             Assert(panel.FindName("PreviewBackgroundButton") is Button, "light/dark preview background control missing");
             var list = panel.FindName("MagicSpecialList") as ItemsControl;
             Assert(list is not null, "magic specials list missing");
             Assert(commandList!.Items.Count == 8, "default command assets tab must hide four expired v3 references");
             Assert(commandList.Items.OfType<PlayableMotion>().Count(x => x.AssetBatch == CommandMockBehaviorIds.AssetBatch && x.RuntimeEnabled) == 8, "command assets tab must include eight approved v4 commands");
             Assert(commandList.Items.OfType<PlayableMotion>().All(x => !x.IsExpired), "default command list exposed expired references");
-            Assert(list!.Items.Count == 4, "magic specials must display four owner-facing cards");
+            Assert(list!.Items.Count == 3, "magic specials must display the three retained owner-facing cards");
+            Assert(!list.Items.OfType<PlayableMotion>().Any(x => x.BehaviorId == MagicBehaviorIds.Scourgify), "retired Scourgify mock remains in the asset gallery");
             Assert(playList!.Items.Count == 1, "play assets tab must display one car ride card");
             var carRideDeveloper = panel.FindName("CarRideCandidateList") as ItemsControl;
             Assert(carRideDeveloper is not null, "developer car ride candidate list missing");
@@ -1877,11 +1973,12 @@ static void ControlPanelTabButtonsShareVisualMetrics()
                 "ModelConfigTabButton",
                 "MemoryConfigTabButton",
                 "PetSettingTabButton",
-                "NormalAssetsTabButton",
-                "MagicAssetsTabButton",
                 "BaseAssetsTabButton",
                 "PlayAssetsTabButton",
-                "CommandAssetsTabButton"
+                "FoodWaterAssetsTabButton",
+                "CommandAssetsTabButton",
+                "MagicAssetsTabButton",
+                "HolidayAssetsTabButton"
             };
             foreach (var name in tabNames)
             {
@@ -1891,6 +1988,12 @@ static void ControlPanelTabButtonsShareVisualMetrics()
                 Assert(button.MinWidth >= 104 && button.MinHeight >= 40, $"tab button visual metrics are too small: {name}");
                 Assert(button.HorizontalContentAlignment == HorizontalAlignment.Center && button.VerticalContentAlignment == VerticalAlignment.Center, $"tab button alignment changed: {name}");
             }
+            var modelTabs = panel.FindName("ModelConfigTabs") as UniformGrid;
+            Assert(modelTabs is { Columns: 3, Width: 420 }, "model settings tabs are not hosted in a fixed three-column grid");
+            Assert(modelTabs!.Children.OfType<Button>().Select(x => x.Name).SequenceEqual(new[]
+            {
+                "ModelConfigTabButton", "MemoryConfigTabButton", "PetSettingTabButton"
+            }), "model settings tabs are not equal grid peers");
             panel.Close();
         }
         catch (Exception ex)
@@ -2037,7 +2140,8 @@ static void RuntimeRequestsTouchMotion()
     var result = runtime.SubmitGestureAsync(PetGestureKind.OwnerTouch, BehaviorRequestSource.OwnerUi).GetAwaiter().GetResult();
     Assert(result == PetActionResult.Deferred, "runtime-locked touch candidate was accepted");
     Assert(request is null, "runtime-locked touch candidate requested production playback");
-    Assert(runtime.CurrentReason.Contains("asset_deprecated_owner_rejected", StringComparison.Ordinal), "touch gate reason did not explain owner deprecation");
+    Assert(runtime.LastTrigger.Contains("asset_deprecated_owner_rejected", StringComparison.Ordinal), "touch gate trace did not explain owner deprecation");
+    Assert(!runtime.CurrentReason.Contains("asset_deprecated_owner_rejected", StringComparison.Ordinal), "internal reason code leaked into the owner-facing panel");
     var developer = runtime.SubmitDeveloperCandidateMotionAsync(Phase15BehaviorIds.ProneTouch).GetAwaiter().GetResult();
     Assert(developer == PetActionResult.Deferred, "owner-rejected touch asset was revived by DeveloperPreview");
     Assert(request is null, "owner-rejected touch asset emitted a developer motion request");
@@ -2445,9 +2549,14 @@ static void AutonomousTickCanRequestMotion()
     Assert(requests.All(x => x.Motion.BehaviorId is LifecycleCandidateBehaviorIds.StandIdleMicroloop or LifecycleReviewCandidateBehaviorIds.StandIdleV3R1 or LifecycleCandidateBehaviorIds.LivelyDailyP2 or LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1 or AutonomousDailyCandidateBehaviorIds.StandToSit), "autonomous tick selected an expired or out-of-scope behavior");
     var standDelays = Enumerable.Range(1, 64).Select(seed => DesktopRuntimeHost.ChooseAutonomousIdleDelay(StablePosture.Stand, new Random(seed))).ToArray();
     var proneDelays = Enumerable.Range(1, 64).Select(seed => DesktopRuntimeHost.ChooseAutonomousIdleDelay(StablePosture.Prone, new Random(seed))).ToArray();
-    Assert(standDelays.All(x => x >= TimeSpan.FromSeconds(8) && x < TimeSpan.FromSeconds(16)), "stand dwell left its brief scheduling window");
-    Assert(proneDelays.All(x => x >= TimeSpan.FromSeconds(48) && x < TimeSpan.FromSeconds(77)), "prone dwell left its preferred long scheduling window");
-    Assert(proneDelays.Average(x => x.TotalSeconds) >= standDelays.Average(x => x.TotalSeconds) * 4, "daily scheduling no longer prefers prone dwell over standing");
+    Assert(standDelays.All(x => x >= TimeSpan.FromSeconds(14) && x < TimeSpan.FromSeconds(26)), "stand dwell left its scheduling window");
+    Assert(proneDelays.All(x => x >= TimeSpan.FromSeconds(55) && x < TimeSpan.FromSeconds(96)), "prone dwell left its preferred long scheduling window");
+    Assert(proneDelays.Average(x => x.TotalSeconds) >= standDelays.Average(x => x.TotalSeconds) * 3, "daily scheduling no longer prefers prone dwell over standing");
+    Assert(DesktopRuntimeHost.MinimumAutonomousDwell(StablePosture.Stand) == TimeSpan.FromSeconds(14), "stand posture transition dwell changed");
+    Assert(DesktopRuntimeHost.MinimumAutonomousDwell(StablePosture.Sit) == TimeSpan.FromSeconds(24), "sit posture transition dwell changed");
+    Assert(DesktopRuntimeHost.MinimumAutonomousDwell(StablePosture.Prone) == TimeSpan.FromSeconds(35), "prone posture transition dwell changed");
+    Assert(DesktopRuntimeHost.ShouldKeepCurrentStableIdle(LifecycleCandidateBehaviorIds.ProneIdleMicroloop, LifecycleCandidateBehaviorIds.ProneIdleMicroloop), "same stable idle should be held without restarting the animation");
+    Assert(!DesktopRuntimeHost.ShouldKeepCurrentStableIdle(LifecycleCandidateBehaviorIds.ProneIdleMicroloop, ProneHeadCandidateBehaviorIds.HeadLowerTurnV4), "a real microevent was incorrectly treated as an idle hold");
 }
 
 static void BootstrapLogRedactsAndDoesNotThrow()

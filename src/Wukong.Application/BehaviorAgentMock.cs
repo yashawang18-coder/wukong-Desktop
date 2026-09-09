@@ -35,12 +35,33 @@ public sealed record TemperamentProfile(
     int Mischief)
 {
     public static TemperamentProfile Default { get; } = new(56, 62, 42, 38, 35);
+    public TemperamentProfile Clamp() => this with
+    {
+        Activity = Math.Clamp(Activity, 0, 100),
+        Attachment = Math.Clamp(Attachment, 0, 100),
+        Sensitivity = Math.Clamp(Sensitivity, 0, 100),
+        Independence = Math.Clamp(Independence, 0, 100),
+        Mischief = Math.Clamp(Mischief, 0, 100)
+    };
+    public PersonalitySnapshot ToSnapshot() => new(
+        Activity01,
+        Attachment01,
+        Sensitivity01,
+        Independence01,
+        Mischief01);
+    public static TemperamentProfile FromSnapshot(PersonalitySnapshot snapshot) => new(
+        ToPercent(snapshot.Liveliness),
+        ToPercent(snapshot.Affection),
+        ToPercent(snapshot.Sensitivity),
+        ToPercent(snapshot.Independence),
+        ToPercent(snapshot.Mischievousness));
     public double Activity01 => Clamp01(Activity);
     public double Attachment01 => Clamp01(Attachment);
     public double Sensitivity01 => Clamp01(Sensitivity);
     public double Independence01 => Clamp01(Independence);
     public double Mischief01 => Clamp01(Mischief);
     private static double Clamp01(int value) => Math.Clamp(value, 0, 100) / 100.0;
+    private static int ToPercent(double value) => (int)Math.Round(Math.Clamp(value, 0, 1) * 100, MidpointRounding.AwayFromZero);
 }
 
 public sealed record PetRuntimeState(

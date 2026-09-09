@@ -170,6 +170,11 @@ public interface IRuntimeContextStateProvider
     Task<(PersonalitySnapshot Personality, RelationshipSnapshot Relationship, PetRuntimeStateSnapshot RuntimeState)> GetStateAsync(CancellationToken cancellationToken = default);
 }
 
+public interface IRuntimeContextOverrideState
+{
+    bool HasDeveloperOverride { get; }
+}
+
 public interface IAlbumMemoryRetriever
 {
     Task<IReadOnlyList<RelevantAlbumMemory>> SearchAsync(string query, int maximumResults, CancellationToken cancellationToken = default);
@@ -183,6 +188,8 @@ public interface IAgentProfileStore
     Task SaveOwnerProfileAsync(OwnerProfileSnapshot profile, CancellationToken cancellationToken = default);
     Task<string> LoadPetPromptAsync(CancellationToken cancellationToken = default);
     Task SavePetPromptAsync(string prompt, CancellationToken cancellationToken = default);
+    Task<PersonalitySnapshot> LoadPersonalityAsync(CancellationToken cancellationToken = default);
+    Task SavePersonalityAsync(PersonalitySnapshot personality, CancellationToken cancellationToken = default);
 }
 
 public interface IAgentMemoryConfigurationStore

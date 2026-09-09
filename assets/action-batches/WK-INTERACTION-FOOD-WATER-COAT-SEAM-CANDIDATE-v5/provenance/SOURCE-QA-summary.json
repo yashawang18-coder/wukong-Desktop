@@ -1,0 +1,20 @@
+{
+  "status": "known_eat_entry_colour_seam_repaired_owner_qa_pending",
+  "unique_RGBA_frames": 48,
+  "modified_frames": 5,
+  "unchanged_frames": 43,
+  "approved_proofs_unchanged": true,
+  "alpha_and_geometry_unchanged": true,
+  "source_resolution_preserved": true,
+  "colour_seam_before_deltaE76": 5.083941023453462,
+  "colour_seam_after_deltaE76": 0.8597695701886761,
+  "entry_max_adjacent_deltaE76": 2.117223501308497,
+  "numeric_seam_check_passed": true,
+  "owner_visual_approved": false,
+  "EXE_tested": false,
+  "limitations": [
+    "No super-resolution or resampling; native source detail retained.",
+    "Previous alpha baseline edge artefacts remain outside this colour-only repair.",
+    "Numeric checks do not certify Windows visual rendering."
+  ]
+}

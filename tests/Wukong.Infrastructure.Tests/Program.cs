@@ -21,6 +21,8 @@ var tests = new (string Name, Func<Task> Run)[]
     ("missing and damaged album markdown degrades safely", AlbumMarkdownFailuresAreSafe),
     ("memory configuration store persists switches", MemoryConfigurationStorePersistsSwitches),
     ("portable data layout seeds defaults and migrates user files", PortableDataLayoutSeedsAndMigrates),
+    ("personality profile persists and clamps portable values", PersonalityProfilePersistsAndClamps),
+    ("saved personality drives dialogue context unless developer overrides it", SavedPersonalityDrivesDialogueContext),
     ("conversation history file is removed after final clear", ConversationHistoryFileIsRemovedAfterFinalClear),
     ("mock context editing requires developer session", MockContextRequiresDeveloperSession),
     ("live runtime context follows current posture action and mood", LiveRuntimeContextFollowsDesktopState)
@@ -42,6 +44,7 @@ static Task PortableDataLayoutSeedsAndMigrates()
         Directory.CreateDirectory(legacyProfile);
         Directory.CreateDirectory(legacyAgent);
         File.WriteAllText(Path.Combine(defaultsProfile, "pet-prompt.txt"), "default prompt", Encoding.UTF8);
+        File.WriteAllText(Path.Combine(defaultsProfile, "personality-profile.json"), "{\"liveliness\":0.56}", Encoding.UTF8);
         File.WriteAllText(Path.Combine(defaultsAgent, "memory-configuration.json"), "{}", Encoding.UTF8);
         File.WriteAllText(Path.Combine(legacyProfile, "owner-profile.json"), "{\"CallName\":\"owner\"}", Encoding.UTF8);
         File.WriteAllText(Path.Combine(legacyAgent, "conversation-history.json"), "{\"daily-companion\":[]}", Encoding.UTF8);
@@ -52,6 +55,7 @@ static Task PortableDataLayoutSeedsAndMigrates()
 
         Assert(layout.UsesExecutableDirectory, "portable root should stay beside the executable");
         Assert(File.ReadAllText(Path.Combine(layout.ProfileDirectory, "pet-prompt.txt"), Encoding.UTF8) == "default prompt", "default prompt was not seeded");
+        Assert(File.Exists(Path.Combine(layout.ProfileDirectory, "personality-profile.json")), "default personality profile was not seeded");
         Assert(File.Exists(Path.Combine(layout.ProfileDirectory, "owner-profile.json")), "legacy owner profile was not migrated");
         Assert(File.Exists(Path.Combine(layout.AgentDirectory, "conversation-history.json")), "conversation history was not migrated");
         Assert(Directory.Exists(layout.AlbumsDirectory), "portable albums directory was not created");
@@ -67,6 +71,58 @@ static Task PortableDataLayoutSeedsAndMigrates()
         TryDeleteDirectory(root);
     }
     return Task.CompletedTask;
+}
+
+static async Task PersonalityProfilePersistsAndClamps()
+{
+    var root = Path.Combine(Path.GetTempPath(), "wukong-personality-profile-" + Guid.NewGuid().ToString("N"));
+    try
+    {
+        var store = new LocalAgentProfileStore(root);
+        Assert(await store.LoadPersonalityAsync() == PersonalitySnapshot.Default, "missing personality profile did not use the safe default");
+        await store.SavePersonalityAsync(new PersonalitySnapshot(1.4, 0.62, -0.2, 0.38, 0.35));
+        var restarted = new LocalAgentProfileStore(root);
+        var loaded = await restarted.LoadPersonalityAsync();
+        Assert(Math.Abs(loaded.Liveliness - 1.0) < 0.001, "liveliness was not clamped before persistence");
+        Assert(Math.Abs(loaded.Sensitivity) < 0.001, "sensitivity was not clamped before persistence");
+        Assert(Math.Abs(loaded.Affection - 0.62) < 0.001, "personality value did not survive a restart");
+    }
+    finally
+    {
+        TryDeleteDirectory(root);
+    }
+}
+
+static async Task SavedPersonalityDrivesDialogueContext()
+{
+    var root = Path.Combine(Path.GetTempPath(), "wukong-personality-context-" + Guid.NewGuid().ToString("N"));
+    try
+    {
+        var profiles = new LocalAgentProfileStore(Path.Combine(root, "profile"));
+        await profiles.SavePersonalityAsync(new PersonalitySnapshot(0.24, 0.67, 0.31, 0.73, 0.18));
+        var developer = new DeveloperSession();
+        var runtime = new MockRuntimeContextStateProvider(developer);
+        var context = new LocalPetContextProvider(
+            profiles,
+            runtime,
+            new AlbumMarkdownMemoryRetriever(() => null),
+            new FileConversationMemoryStore(Path.Combine(root, "agent")));
+
+        var saved = await context.GetSnapshotAsync(new PetContextRequest("你好"));
+        Assert(Math.Abs(saved.Personality.Liveliness - 0.24) < 0.001, "saved personality did not enter normal dialogue context");
+
+        developer.Authenticate("0714");
+        runtime.Update(
+            PersonalitySnapshot.Default with { Liveliness = 0.91 },
+            RelationshipSnapshot.Default,
+            PetRuntimeStateSnapshot.Default);
+        var overridden = await context.GetSnapshotAsync(new PetContextRequest("你好"));
+        Assert(Math.Abs(overridden.Personality.Liveliness - 0.91) < 0.001, "authenticated developer personality override was ignored");
+    }
+    finally
+    {
+        TryDeleteDirectory(root);
+    }
 }
 
 static async Task ConversationHistoryFileIsRemovedAfterFinalClear()

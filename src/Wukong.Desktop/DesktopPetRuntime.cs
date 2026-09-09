@@ -281,6 +281,88 @@ public static class MotionVisualSizer
         => Math.Clamp(stageSize * RenderScaleFor(framePath, referenceFramePath, targetVisibleRatio), stageSize * 0.45, stageSize * 2.6);
 }
 
+public static class MotionDisplayNameCatalog
+{
+    private static readonly IReadOnlyDictionary<string, string> Names =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [Phase15BehaviorIds.ProneIdle] = "趴着休息",
+            [Phase15BehaviorIds.ProneBreath] = "趴着呼吸",
+            [Phase15BehaviorIds.ProneIdleV3Candidate] = "趴着休息（旧版）",
+            [Phase15BehaviorIds.LookAround] = "回头看看",
+            [Phase15BehaviorIds.SafeStand] = "安稳站立",
+            [Phase15BehaviorIds.StrokeEnjoy] = "享受摸摸",
+            [Phase15BehaviorIds.ProneTouch] = "趴着回应摸摸",
+            [LifecycleCandidateBehaviorIds.LivelyDailyP2] = "走几步后趴下",
+            [LifecycleCandidateBehaviorIds.StandIdleMicroloop] = "站着放松",
+            [LifecycleCandidateBehaviorIds.SitIdleMicroloop] = "坐着休息",
+            [LifecycleCandidateBehaviorIds.ProneIdleMicroloop] = "趴着休息",
+            [LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1] = "散步后趴下",
+            [LifecycleReviewCandidateBehaviorIds.LivelyDailyExitV3R1] = "从趴下起身",
+            [LifecycleReviewCandidateBehaviorIds.StandIdleV3R1] = "站着呼吸",
+            [LifecycleReviewCandidateBehaviorIds.SitIdleV3R1] = "坐着呼吸",
+            [LifecycleReviewCandidateBehaviorIds.LegacySideProneIdleV3R1] = "侧身趴着呼吸",
+            [LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4] = "正面趴着呼吸",
+            [LifecycleReviewCandidateBehaviorIds.FrontProneLickV4] = "趴着舔嘴",
+            [SideProneFrontBehaviorIds.ObserveV5] = "侧趴回头看看",
+            [ProneHeadCandidateBehaviorIds.HeadLowerTurnV4] = "趴着低头回头",
+            [SleepCandidateBehaviorIds.MainLifecycle] = "慢慢入睡",
+            [SleepCandidateBehaviorIds.ProneToSideRoll] = "翻身侧睡",
+            [SleepCandidateBehaviorIds.SprawledFrontBreath] = "摊开趴睡",
+            [SleepCandidateBehaviorIds.SprawledLeftSideBreath] = "左侧睡呼吸",
+            [SleepCandidateBehaviorIds.SprawledRightSideBreath] = "右侧睡呼吸",
+            [SleepCandidateBehaviorIds.CompactProneBreath] = "蜷身趴睡",
+            [SleepCandidateBehaviorIds.CurledSideBreath] = "蜷着侧睡",
+            [SleepCandidateBehaviorIds.TopDownProneBreath] = "俯视趴睡",
+            [FoodWaterCandidateBehaviorIds.DrinkWaterStandingV5] = "喝水",
+            [FoodWaterCandidateBehaviorIds.EatKibbleStandingV5] = "吃饭",
+            [PatrolWalkCandidateBehaviorIds.WalkLeft] = "向左走走",
+            [PatrolWalkCandidateBehaviorIds.WalkRight] = "向右走走",
+            [AutonomousDailyCandidateBehaviorIds.StandToSit] = "从站立坐下",
+            [AutonomousDailyCandidateBehaviorIds.SitToProne] = "从坐姿趴下",
+            [AutonomousDailyCandidateBehaviorIds.ProneToSit] = "从趴姿坐起",
+            [AutonomousDailyCandidateBehaviorIds.SitToStand] = "从坐姿站起",
+            [CommandBehaviorIds.Sit] = "坐下",
+            [CommandBehaviorIds.LieDown] = "卧下",
+            [CommandBehaviorIds.PawRise] = "抬手",
+            [CommandBehaviorIds.Jump] = "跳一下",
+            [CommandBehaviorIds.SpinApproachStopSit] = "转一圈",
+            [CommandBehaviorIds.PawEat] = "吃东西",
+            [MockCommandActionIds.PawSit] = "坐着抬手",
+            [MockCommandActionIds.PawProne] = "趴着抬手",
+            [MockCommandActionIds.EatSit] = "坐着吃",
+            [MockCommandActionIds.EatProne] = "趴着吃",
+            [MockCommandActionIds.MockStandToSit] = "从站立坐下",
+            [MockCommandActionIds.MockSitToProne] = "从坐姿趴下",
+            [MockCommandActionIds.MockProneToSit] = "从趴姿坐起",
+            [MockCommandActionIds.MockSitToStand] = "从坐姿站起",
+            [MockCommandActionIds.MaintainCurrentIdle] = "保持当前姿态",
+            [MockCommandActionIds.OrientToOwner] = "看向主人",
+            [MockCommandActionIds.QuietSit] = "安静坐着",
+            [MockCommandActionIds.QuietProne] = "安静趴着",
+            [MockCommandActionIds.RequestAttention] = "想要陪伴",
+            [MockCommandActionIds.PlayfulJump] = "想玩一下",
+            [MockCommandActionIds.PlayfulSpin] = "想转一圈",
+            [MockCommandActionIds.AskForFood] = "想吃东西",
+            [MockCommandActionIds.Rest] = "休息",
+            [MockCommandActionIds.Observe] = "观察周围",
+            [InteractionBehaviorIds.EatOnce] = "吃一下",
+            [InteractionBehaviorIds.PlayOnce] = "玩一下",
+            [CarRideBehaviorIds.CarRide] = "开车兜风",
+            [MagicBehaviorIds.AccioBroom] = "骑扫把飞行",
+            [MagicBehaviorIds.Apparate] = "消失再出现",
+            [MagicBehaviorIds.PetrificusTotalus] = "变成魔法金币",
+            [MagicBehaviorIds.PetrificusRelease] = "解除金币魔法",
+            [MagicBehaviorIds.PetrifiedCoin] = "魔法金币",
+            [MagicBehaviorIds.Scourgify] = "清扫魔法（已停用）"
+        };
+
+    public static string Resolve(string behaviorId, string currentName) =>
+        Names.TryGetValue(behaviorId, out var name)
+            ? name
+            : string.IsNullOrWhiteSpace(currentName) ? "动作预览" : currentName.Trim();
+}
+
 public sealed class DesktopMotionCatalog
 {
     private const double ApprovedPetVisualScale = 0.92;
@@ -294,7 +376,10 @@ public sealed class DesktopMotionCatalog
         string loadSummary,
         bool carRideRoadGazeReviewEnabled)
     {
-        _allMotions = motions.Where(x => x.IsUsable).ToArray();
+        _allMotions = motions
+            .Where(x => x.IsUsable)
+            .Select(x => x with { DisplayName = MotionDisplayNameCatalog.Resolve(x.BehaviorId, x.DisplayName) })
+            .ToArray();
         _motions = new Dictionary<string, PlayableMotion>(StringComparer.OrdinalIgnoreCase);
         foreach (var motion in _allMotions)
         {
@@ -478,6 +563,7 @@ public sealed class DesktopMotionCatalog
         var lifecycleReviewCandidates = LoadLifecycleReviewCandidates(root).ToArray();
         var proneHeadCandidates = LoadProneHeadCandidates(root).ToArray();
         var sleepCandidates = LoadSleepCandidates(root).ToArray();
+        var foodWaterCandidates = LoadFoodWaterCandidates(root).ToArray();
         var patrolWalkCandidates = LoadPatrolWalkCandidates(root).ToArray();
         var carRideCandidates = LoadCarRideCandidates(root, carRideRoadGazeReviewEnabled).ToArray();
         var commandMocks = LoadCommandMotionMocks(root).ToArray();
@@ -486,10 +572,10 @@ public sealed class DesktopMotionCatalog
             .FirstOrDefault(x => x.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop && x.RuntimeEnabled)?.FirstFrame
             ?? motions.FirstOrDefault(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle)?.FirstFrame
             ?? string.Empty;
-        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; lifecycle_review_candidates={lifecycleReviewCandidates.Length}; prone_head_candidates={proneHeadCandidates.Length}; sleep_candidates={sleepCandidates.Length}; patrol_walk_candidates={patrolWalkCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; car_ride_road_gaze_review={carRideRoadGazeReviewEnabled}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch}/runtime-review-manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V4AssetBatch}/runtime-review-manifest.json,action-batches/{ProneHeadCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{SleepCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{PatrolWalkCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{SideProneFrontBehaviorIds.AssetBatch}/manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.RoadGazeAssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; lifecycle_review_candidates={lifecycleReviewCandidates.Length}; prone_head_candidates={proneHeadCandidates.Length}; sleep_candidates={sleepCandidates.Length}; food_water_candidates={foodWaterCandidates.Length}; patrol_walk_candidates={patrolWalkCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; car_ride_road_gaze_review={carRideRoadGazeReviewEnabled}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch}/runtime-review-manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V4AssetBatch}/runtime-review-manifest.json,action-batches/{ProneHeadCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{SleepCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{FoodWaterCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{PatrolWalkCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{SideProneFrontBehaviorIds.AssetBatch}/manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.RoadGazeAssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
         BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
         return new DesktopMotionCatalog(
-            motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(lifecycleReviewCandidates).Concat(proneHeadCandidates).Concat(sleepCandidates).Concat(patrolWalkCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks),
+            motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(lifecycleReviewCandidates).Concat(proneHeadCandidates).Concat(sleepCandidates).Concat(foodWaterCandidates).Concat(patrolWalkCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks),
             summary,
             carRideRoadGazeReviewEnabled);
     }
@@ -1269,6 +1355,198 @@ public sealed class DesktopMotionCatalog
         }
     }
 
+    private static IEnumerable<PlayableMotion> LoadFoodWaterCandidates(string root)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", FoodWaterCandidateBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("food_water_candidate_manifest_missing");
+            yield break;
+        }
+
+        FoodWaterCandidateBatchManifest? manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<FoodWaterCandidateBatchManifest>(
+                File.ReadAllText(manifestPath),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Food/water candidate manifest parse failed", ex);
+            yield break;
+        }
+
+        if (manifest is null ||
+            !string.Equals(manifest.BatchId, FoodWaterCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal) ||
+            !string.Equals(manifest.AssetId, FoodWaterCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal))
+        {
+            BootstrapLog.WriteRaw("food_water_candidate_identity_invalid");
+            yield break;
+        }
+
+        var batchErrors = new List<string>();
+        if (!manifest.OwnerPreviewApproved ||
+            !manifest.VisualApproved ||
+            !manifest.RuntimeApproved ||
+            !manifest.RuntimeUse ||
+            !manifest.ProductionAsset ||
+            manifest.PrototypeUse ||
+            !manifest.DeveloperPreview ||
+            manifest.AutonomousBindingEnabled ||
+            !manifest.NormalRuntimeAvailable ||
+            !string.Equals(manifest.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal))
+            batchErrors.Add("runtime_batch_gate_invalid");
+        if (manifest.SourceFrameCount != 48 ||
+            manifest.RuntimeFrameCount != 48 ||
+            manifest.SequenceFrameReferenceCount != 194 ||
+            manifest.ReferencedUniqueFrameCount != 44 ||
+            manifest.SequenceCount != 2)
+            batchErrors.Add("candidate_inventory_contract_invalid");
+        if (manifest.AllowedSources is null ||
+            manifest.AllowedSources.Count != 3 ||
+            !manifest.AllowedSources.Contains("OwnerContextMenu", StringComparer.Ordinal) ||
+            !manifest.AllowedSources.Contains("ControlPanel", StringComparer.Ordinal) ||
+            !manifest.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
+            batchErrors.Add("source_policy_invalid");
+
+        var inventory = new Dictionary<string, ProneHeadCandidateInventoryFrame>(StringComparer.OrdinalIgnoreCase);
+        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        foreach (var item in manifest.FrameInventory ?? Array.Empty<ProneHeadCandidateInventoryFrame>())
+        {
+            if (string.IsNullOrWhiteSpace(item.Path) ||
+                Path.IsPathRooted(item.Path) ||
+                item.Path.Split('/', StringSplitOptions.RemoveEmptyEntries).Contains("..", StringComparer.Ordinal))
+            {
+                batchErrors.Add($"unsafe_path:{item.Path}");
+                continue;
+            }
+            if (!inventory.TryAdd(item.Path, item))
+            {
+                batchErrors.Add($"duplicate_inventory:{item.Path}");
+                continue;
+            }
+            if (item.Width != 1024 || item.Height != 1024 || !string.Equals(item.Mode, "RGBA", StringComparison.Ordinal))
+                batchErrors.Add($"frame_contract:{item.Path}");
+
+            var path = Path.Combine(batchRoot, item.Path.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(path))
+            {
+                batchErrors.Add($"missing:{item.Path}");
+                continue;
+            }
+            if (new FileInfo(path).Length != item.Bytes)
+                batchErrors.Add($"bytes:{item.Path}");
+            if (!string.Equals(Sha256(path), item.Sha256, StringComparison.OrdinalIgnoreCase))
+                batchErrors.Add($"sha256:{item.Path}");
+        }
+
+        if (inventory.Count != 48)
+            batchErrors.Add($"inventory_count:{inventory.Count}/48");
+        var actions = manifest.Actions ?? Array.Empty<FoodWaterCandidateActionManifest>();
+        if (actions.Count != 2)
+            batchErrors.Add($"action_count:{actions.Count}/2");
+        if (batchErrors.Count > 0)
+        {
+            BootstrapLog.WriteRaw($"food_water_candidate_invalid batch={manifest.BatchId} errors={string.Join(",", batchErrors)}");
+            yield break;
+        }
+
+        foreach (var action in actions)
+        {
+            var errors = new List<string>();
+            var expectedFrames = action.BehaviorId switch
+            {
+                FoodWaterCandidateBehaviorIds.DrinkWaterStandingV5 => 91,
+                FoodWaterCandidateBehaviorIds.EatKibbleStandingV5 => 103,
+                _ => 0
+            };
+            if (expectedFrames == 0)
+                errors.Add("behavior_id_invalid");
+            if (!action.OwnerPreviewApproved ||
+                !action.VisualApproved ||
+                !action.RuntimeApproved ||
+                !action.RuntimeUse ||
+                !action.ProductionAsset ||
+                action.PrototypeUse ||
+                !action.DeveloperPreview ||
+                action.AutonomousBindingEnabled ||
+                !action.NormalRuntimeAvailable ||
+                !string.Equals(action.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal))
+                errors.Add("runtime_action_gate_invalid");
+            if (action.AllowedSources is null ||
+                action.AllowedSources.Count != 3 ||
+                !action.AllowedSources.Contains("OwnerContextMenu", StringComparer.Ordinal) ||
+                !action.AllowedSources.Contains("ControlPanel", StringComparer.Ordinal) ||
+                !action.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
+                errors.Add("runtime_action_source_policy_invalid");
+            if (!string.Equals(action.FromPose, "stand.neutral.left_front", StringComparison.Ordinal) ||
+                !string.Equals(action.ToPose, "stand.neutral.left_front", StringComparison.Ordinal))
+                errors.Add("standing_pose_contract_invalid");
+            if (action.Interruptible || action.Loop || action.FrameDurationMs != 125)
+                errors.Add("playback_contract_invalid");
+
+            var phases = new List<MotionPhase>();
+            foreach (var phase in action.Phases ?? Array.Empty<SleepCandidatePhaseManifest>())
+            {
+                var frames = new List<string>();
+                var durations = new List<int>();
+                foreach (var frame in phase.Frames ?? Array.Empty<CommandActionFrameManifest>())
+                {
+                    if (!inventory.TryGetValue(frame.Path, out var inventoryFrame))
+                    {
+                        errors.Add($"unregistered_frame:{frame.Path}");
+                        continue;
+                    }
+                    if (frame.Bytes != inventoryFrame.Bytes ||
+                        !string.Equals(frame.Sha256, inventoryFrame.Sha256, StringComparison.OrdinalIgnoreCase))
+                        errors.Add($"frame_metadata_mismatch:{frame.Path}");
+                    frames.Add(Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar)));
+                    durations.Add(frame.DurationMs.GetValueOrDefault(action.FrameDurationMs));
+                }
+                if (phase.Loop || frames.Count != phase.FrameCount || frames.Count == 0 || durations.Any(x => x != 125))
+                    errors.Add($"phase_invalid:{phase.Name}:{frames.Count}/{phase.FrameCount}");
+                phases.Add(new MotionPhase(phase.Name, frames, Loop: false, durations));
+            }
+
+            if (phases.Count != 3 || phases.Sum(x => x.Frames.Count) != expectedFrames || action.FrameCount != expectedFrames)
+                errors.Add($"action_frame_count:{phases.Sum(x => x.Frames.Count)}/{expectedFrames}");
+            if (phases.Sum(x => x.DurationTotalMs(action.FrameDurationMs)) != action.TotalDurationMs ||
+                action.TotalDurationMs != expectedFrames * 125)
+                errors.Add("action_duration_total_invalid");
+            if (errors.Count > 0)
+            {
+                BootstrapLog.WriteRaw($"food_water_candidate_invalid behavior={action.BehaviorId} errors={string.Join(",", errors)}");
+                continue;
+            }
+
+            yield return new PlayableMotion(
+                action.BehaviorId,
+                action.DisplayName,
+                "吃一下",
+                action.Direction,
+                action.FrameDurationMs,
+                action.Interruptible,
+                phases,
+                batchRoot,
+                RuntimeEnabled: true,
+                Status: "已启用：仅允许主人手动触发",
+                MissingContent: string.Empty,
+                StartPose: action.FromPose,
+                EndPose: action.ToPose,
+                StyleGroup: "wukong-food-water-coat-seam-v5",
+                Disposition: "已启用",
+                PrototypeUse: false,
+                AssetBatch: manifest.BatchId,
+                Description: $"{action.Description} OwnerContextMenu and ControlPanel use Normal; autonomous, dialogue and model routes remain disabled.",
+                CandidateProfile: manifest.CandidateProfile,
+                VisualScale: ApprovedPetVisualScale,
+                VisualApproved: true,
+                RuntimeApproved: true,
+                AutonomousBindingEnabled: false);
+        }
+    }
+
     private static IEnumerable<PlayableMotion> LoadPatrolWalkCandidates(string root)
     {
         var manifestPath = Path.Combine(root, "action-batches", PatrolWalkCandidateBehaviorIds.AssetBatch, "manifest.json");
@@ -1925,6 +2203,12 @@ public sealed class DesktopMotionCatalog
 
         foreach (var action in manifest.Actions)
         {
+            if (string.Equals(action.BehaviorId, MagicBehaviorIds.Scourgify, StringComparison.OrdinalIgnoreCase))
+            {
+                BootstrapLog.WriteRaw("magic_action_excluded behavior=wk.magic.scourgify reason=owner_removed_mock");
+                continue;
+            }
+
             var phases = new List<MotionPhase>();
             var errors = new List<string>();
             if (string.Equals(action.BehaviorId, MagicBehaviorIds.AccioBroom, StringComparison.OrdinalIgnoreCase))
@@ -2372,6 +2656,19 @@ public static class SleepCandidateBehaviorIds
 
 }
 
+public static class FoodWaterCandidateBehaviorIds
+{
+    public const string AssetBatch = "WK-INTERACTION-FOOD-WATER-COAT-SEAM-CANDIDATE-v5";
+    public const string DrinkWaterStandingV5 = "wk.interaction.drink_water";
+    public const string EatKibbleStandingV5 = "wk.interaction.eat_kibble";
+
+    public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
+    {
+        DrinkWaterStandingV5,
+        EatKibbleStandingV5
+    };
+}
+
 public static class PatrolWalkCandidateBehaviorIds
 {
     public const string AssetBatch = "WK-AUTONOMOUS-PATROL-WALK-v1-candidate";
@@ -2440,8 +2737,7 @@ public static class MagicBehaviorIds{
             AccioBroom,
             Apparate,
             PetrificusTotalus,
-            PetrificusRelease,
-            Scourgify
+            PetrificusRelease
         };
 }
 
@@ -2680,6 +2976,54 @@ public sealed record SleepCandidatePhaseManifest(
     [property: JsonPropertyName("loop")] bool Loop,
     [property: JsonPropertyName("frame_count")] int FrameCount,
     [property: JsonPropertyName("frames")] IReadOnlyList<CommandActionFrameManifest> Frames);
+
+public sealed record FoodWaterCandidateBatchManifest(
+    [property: JsonPropertyName("batch_id")] string BatchId,
+    [property: JsonPropertyName("asset_id")] string AssetId,
+    [property: JsonPropertyName("candidate_profile")] string CandidateProfile,
+    [property: JsonPropertyName("source_frame_count")] int SourceFrameCount,
+    [property: JsonPropertyName("runtime_frame_count")] int RuntimeFrameCount,
+    [property: JsonPropertyName("sequence_frame_reference_count")] int SequenceFrameReferenceCount,
+    [property: JsonPropertyName("referenced_unique_frame_count")] int ReferencedUniqueFrameCount,
+    [property: JsonPropertyName("sequence_count")] int SequenceCount,
+    [property: JsonPropertyName("owner_preview_approved")] bool OwnerPreviewApproved,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("developer_preview")] bool DeveloperPreview,
+    [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
+    [property: JsonPropertyName("normal_runtime_available")] bool NormalRuntimeAvailable,
+    [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
+    [property: JsonPropertyName("frame_inventory")] IReadOnlyList<ProneHeadCandidateInventoryFrame> FrameInventory,
+    [property: JsonPropertyName("actions")] IReadOnlyList<FoodWaterCandidateActionManifest> Actions);
+
+public sealed record FoodWaterCandidateActionManifest(
+    [property: JsonPropertyName("behavior_id")] string BehaviorId,
+    [property: JsonPropertyName("display_name")] string DisplayName,
+    [property: JsonPropertyName("description")] string Description,
+    [property: JsonPropertyName("from_pose")] string FromPose,
+    [property: JsonPropertyName("to_pose")] string ToPose,
+    [property: JsonPropertyName("direction")] string Direction,
+    [property: JsonPropertyName("frame_count")] int FrameCount,
+    [property: JsonPropertyName("total_duration_ms")] int TotalDurationMs,
+    [property: JsonPropertyName("frame_duration_ms")] int FrameDurationMs,
+    [property: JsonPropertyName("interruptible")] bool Interruptible,
+    [property: JsonPropertyName("loop")] bool Loop,
+    [property: JsonPropertyName("owner_preview_approved")] bool OwnerPreviewApproved,
+    [property: JsonPropertyName("visual_approved")] bool VisualApproved,
+    [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
+    [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
+    [property: JsonPropertyName("runtime_use")] bool RuntimeUse,
+    [property: JsonPropertyName("production_asset")] bool ProductionAsset,
+    [property: JsonPropertyName("prototype_use")] bool PrototypeUse,
+    [property: JsonPropertyName("developer_preview")] bool DeveloperPreview,
+    [property: JsonPropertyName("autonomous_binding_enabled")] bool AutonomousBindingEnabled,
+    [property: JsonPropertyName("normal_runtime_available")] bool NormalRuntimeAvailable,
+    [property: JsonPropertyName("allowed_sources")] IReadOnlyList<string> AllowedSources,
+    [property: JsonPropertyName("phases")] IReadOnlyList<SleepCandidatePhaseManifest> Phases);
 
 public sealed record PatrolWalkCandidateBatchManifest(
     [property: JsonPropertyName("batch_id")] string BatchId,
@@ -3070,6 +3414,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private bool _frontProneProfileActive;
     private bool _patrolCanMoveLeft;
     private bool _patrolCanMoveRight;
+    private readonly Queue<string> _pendingFoodWaterSequence = new();
+    private BehaviorRequestSource _pendingFoodWaterSource = BehaviorRequestSource.OwnerContextMenu;
+    private string _pendingFoodWaterTarget = string.Empty;
 
     public DesktopRuntimeHost(PetrifiedCoinOptions? coinOptions = null, Func<DateTimeOffset>? now = null)
     {
@@ -3121,6 +3468,10 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             string.Equals(x.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
         .OrderBy(x => x.BehaviorId)
         .ToArray();
+    public IReadOnlyList<PlayableMotion> FoodWaterCandidateMotions => _catalog.Motions
+        .Where(x => string.Equals(x.AssetBatch, FoodWaterCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        .OrderBy(x => x.BehaviorId)
+        .ToArray();
     public IReadOnlyList<PlayableMotion> CarRideCandidateMotions => _catalog.Motions
         .Where(x => string.Equals(x.BehaviorId, CarRideBehaviorIds.CarRide, StringComparison.OrdinalIgnoreCase))
         .OrderBy(x => x.BehaviorId)
@@ -3158,6 +3509,18 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public double Stress => _agentState.Stress;
     public double Focus => _agentState.Focus;
     public double Comfort => _agentState.Comfort;
+    public int TemperamentActivity => _temperament.Activity;
+    public int TemperamentAttachment => _temperament.Attachment;
+    public int TemperamentSensitivity => _temperament.Sensitivity;
+    public int TemperamentIndependence => _temperament.Independence;
+    public int TemperamentMischief => _temperament.Mischief;
+    public double RelationshipTrust => _relationshipState.Trust01;
+    public double RelationshipFamiliarity => _relationshipState.Familiarity01;
+    public double RelationshipTouchAcceptance => _relationshipState.TouchAcceptance01;
+    public double RelationshipInitiativeAcceptance => _relationshipState.InitiativeAcceptance01;
+    public int RecentPositiveInteractions => _relationshipState.RecentPositiveInteractions;
+    public int RecentNegativeInteractions => _relationshipState.RecentNegativeInteractions;
+    public string AgentMoodProjection => $"{_agentState.CurrentPosture} · 心情 {_agentState.MoodValence:P0} · 唤醒度 {_agentState.Arousal:P0}";
 
     public void SetBehaviorAgentMockEnabled(bool enabled)
     {
@@ -3169,7 +3532,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public void UpdateBehaviorAgentMock(TemperamentProfile temperament, PetRuntimeState state, RelationshipState relationship, int seed)
     {
-        _temperament = temperament;
+        _temperament = temperament.Clamp();
         _agentState = state.Clamp();
         _relationshipState = relationship;
         _decisionSeed = seed;
@@ -3177,6 +3540,15 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         Trace("behavior_agent_state", $"seed={seed} posture={_agentState.CurrentPosture} energy={_agentState.Energy:0.00} hunger={_agentState.Hunger:0.00} social={_agentState.SocialNeed:0.00} boredom={_agentState.Boredom:0.00} stress={_agentState.Stress:0.00}");
         OnPropertyChanged(nameof(CurrentStablePosture));
         OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+        RaiseAgentProfileProjection();
+    }
+
+    public void UpdateTemperament(TemperamentProfile temperament)
+    {
+        _temperament = temperament.Clamp();
+        Trace("temperament_updated", $"activity={_temperament.Activity} attachment={_temperament.Attachment} sensitivity={_temperament.Sensitivity} independence={_temperament.Independence} mischief={_temperament.Mischief}");
+        OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+        RaiseAgentProfileProjection();
     }
 
     public PetActionResult StartIdle(string source = "Startup")
@@ -3383,6 +3755,84 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         }
     }
 
+    public Task<PetActionResult> SubmitFoodWaterAsync(string behaviorId, BehaviorRequestSource source)
+    {
+        if (source is not (BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel))
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "food_water_source_forbidden", "吃饭和喝水只允许主人从右键菜单或素材面板手动触发");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
+        if (!FoodWaterCandidateBehaviorIds.All.Contains(behaviorId))
+        {
+            UpdateDecision(PetActionResult.MissingAsset, source.ToString(), "food_water_behavior_unknown", $"缺少餐饮动作：{behaviorId}");
+            return Task.FromResult(PetActionResult.MissingAsset);
+        }
+        if (_pendingFoodWaterSequence.Count > 0 || FoodWaterCandidateBehaviorIds.All.Contains(_currentBehaviorId))
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "food_water_already_running", "悟空正在吃饭或喝水");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
+
+        var steps = _agentState.CurrentPosture switch
+        {
+            StablePosture.Prone => new[]
+            {
+                AutonomousDailyCandidateBehaviorIds.ProneToSit,
+                AutonomousDailyCandidateBehaviorIds.SitToStand,
+                behaviorId
+            },
+            StablePosture.Sit => new[]
+            {
+                AutonomousDailyCandidateBehaviorIds.SitToStand,
+                behaviorId
+            },
+            _ => new[] { behaviorId }
+        };
+        foreach (var step in steps)
+        {
+            if (_catalog.Find(step) is not { RuntimeEnabled: true })
+            {
+                UpdateDecision(PetActionResult.Deferred, source.ToString(), "food_water_posture_path_missing", "当前姿态缺少已批准的站立过渡，已延后餐饮动作");
+                return Task.FromResult(PetActionResult.Deferred);
+            }
+        }
+
+        _pendingFoodWaterSequence.Clear();
+        foreach (var step in steps)
+            _pendingFoodWaterSequence.Enqueue(step);
+        _pendingFoodWaterSource = source;
+        _pendingFoodWaterTarget = behaviorId;
+        Trace("food_water_sequence_planned", $"target={behaviorId} posture={_agentState.CurrentPosture} steps={string.Join(",", steps)} source={source}");
+        return Task.FromResult(SubmitNextFoodWaterStep());
+    }
+
+    private PetActionResult SubmitNextFoodWaterStep()
+    {
+        if (_pendingFoodWaterSequence.Count == 0)
+            return PetActionResult.Accepted;
+
+        var step = _pendingFoodWaterSequence.Dequeue();
+        var result = SubmitBehavior(
+            _pendingFoodWaterSource,
+            step,
+            $"owner_food_water:{_pendingFoodWaterTarget}:step:{step}",
+            priority: 12);
+        if (result != PetActionResult.Accepted)
+        {
+            Trace("food_water_sequence_stopped", $"target={_pendingFoodWaterTarget} step={step} result={result}");
+            _pendingFoodWaterSequence.Clear();
+            _pendingFoodWaterTarget = string.Empty;
+        }
+        return result;
+    }
+
+    private bool ContinueFoodWaterSequenceAfterTransition()
+    {
+        if (_pendingFoodWaterSequence.Count == 0)
+            return false;
+        return SubmitNextFoodWaterStep() == PetActionResult.Accepted;
+    }
+
     private PetActionResult SubmitBehaviorAgentCommand(OwnerCommandKind command, BehaviorRequestSource source, string trigger)
     {
         if (command == OwnerCommandKind.None)
@@ -3584,6 +4034,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public Task<PetActionResult> StopAsync(string reason = "stop")
     {
+        _pendingFoodWaterSequence.Clear();
+        _pendingFoodWaterTarget = string.Empty;
         CompletePendingAgentDecision(completed: false, "owner_stop");
         IsPetrified = false;
         ClearCoin();
@@ -3604,6 +4056,12 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             return Task.CompletedTask;
 
         var choice = ChooseAutonomousBehavior();
+        if (ShouldKeepCurrentStableIdle(_currentBehaviorId, choice.BehaviorId))
+        {
+            _nextAutonomousDecisionAt = now + ChooseAutonomousIdleDelay(_agentState.CurrentPosture, _random);
+            Trace("autonomous_idle_held", $"behavior={choice.BehaviorId} reason={choice.Reason}");
+            return Task.CompletedTask;
+        }
         var result = SubmitBehavior(BehaviorRequestSource.AutonomousTick, choice.BehaviorId, choice.Reason, priority: -5);
         _nextAutonomousDecisionAt = now + (result == PetActionResult.Accepted
             ? ChooseAutonomousIdleDelay(_agentState.CurrentPosture, _random)
@@ -3762,6 +4220,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             };
             Trace("autonomous_daily_completed", $"{behaviorId} phase={phase} posture={posture} runtime_approved=true");
             RaiseMetrics();
+            if (ContinueFoodWaterSequenceAfterTransition())
+                return;
             StartStablePostureIdle(posture, $"autonomous_daily_candidate_complete:{behaviorId}");
             return;
         }
@@ -3819,6 +4279,38 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             Trace("sleep_runtime_completed", $"{behaviorId} phase={phase} posture=Prone runtime_approved=true front_prone={_frontProneProfileActive}");
             RaiseMetrics();
             StartStablePostureIdle(StablePosture.Prone, $"sleep_runtime_complete:{behaviorId}");
+            return;
+        }
+
+        if (completedMotion is not null &&
+            string.Equals(completedMotion.AssetBatch, FoodWaterCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        {
+            if (_currentExecutionMode != BehaviorExecutionMode.Normal)
+            {
+                Trace("food_water_preview_completed", $"{behaviorId} phase={phase} state_write=false");
+                StartStablePostureIdle(_agentState.CurrentPosture, $"food_water_preview_complete:{behaviorId}");
+                return;
+            }
+
+            var ate = string.Equals(behaviorId, FoodWaterCandidateBehaviorIds.EatKibbleStandingV5, StringComparison.OrdinalIgnoreCase);
+            _agentState = _agentState with
+            {
+                CurrentPosture = StablePosture.Stand,
+                LastActionId = behaviorId,
+                RepeatedActionCount = string.Equals(_agentState.LastActionId, behaviorId, StringComparison.OrdinalIgnoreCase)
+                    ? _agentState.RepeatedActionCount + 1
+                    : 0,
+                IsBusy = false,
+                ActiveActionId = null,
+                Hunger = ate ? Clamp01(_agentState.Hunger - 0.30) : _agentState.Hunger,
+                Energy = ate ? Clamp01(_agentState.Energy - 0.02) : _agentState.Energy,
+                Stress = ate ? _agentState.Stress : Clamp01(_agentState.Stress - 0.01),
+                Comfort = Clamp01(_agentState.Comfort + (ate ? 0.03 : 0.02))
+            };
+            _pendingFoodWaterTarget = string.Empty;
+            Trace("food_water_completed", $"{behaviorId} phase={phase} posture=Stand source={_pendingFoodWaterSource} runtime_approved=true");
+            RaiseMetrics();
+            StartStablePostureIdle(StablePosture.Stand, $"food_water_complete:{behaviorId}");
             return;
         }
 
@@ -3903,7 +4395,12 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         var postureName = posture.ToString().ToLowerInvariant();
         var hold = new PlayableMotion(
             $"{StableHoldPrefix}{postureName}",
-            $"Command end hold ({postureName})",
+            posture switch
+            {
+                StablePosture.Stand => "站稳片刻",
+                StablePosture.Sit => "坐稳片刻",
+                _ => "趴稳片刻"
+            },
             "基础动作",
             completedMotion.Direction,
             450,
@@ -4058,6 +4555,11 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             source is not (BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel))
             return (false, "car_ride_source_forbidden", "兜风只允许主人从玩一下菜单或面板手动触发");
 
+        if (string.Equals(motion.AssetBatch, FoodWaterCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) &&
+            executionMode == BehaviorExecutionMode.Normal &&
+            source is not (BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.ControlPanel))
+            return (false, "food_water_source_forbidden", "吃饭和喝水只允许主人从吃一下菜单或素材面板手动触发");
+
         if (string.Equals(motion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) &&
             executionMode == BehaviorExecutionMode.Normal &&
             (source != BehaviorRequestSource.AutonomousTick ||
@@ -4211,11 +4713,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         switch (_agentState.CurrentPosture)
         {
             case StablePosture.Stand:
-                AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.StandIdleMicroloop,
+                AddCurrentOrPreferredStableIdle(candidates, LifecycleCandidateBehaviorIds.StandIdleMicroloop,
                     0.16 + Comfort * 0.08 + (1 - _agentState.Arousal) * 0.05 + (workQuiet ? 0.04 : 0.01), "autonomous:brief_stable_stand_microloop");
-                AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.StandIdleV3R1,
-                    0.12 + Comfort * 0.07 + (1 - _agentState.Arousal) * 0.04 + (workQuiet ? 0.03 : 0.01), "autonomous:brief_approved_v3r1_stand_microloop");
-                if (elapsed >= TimeSpan.FromSeconds(8) && Energy >= 0.18 && Stress < 0.85)
+                if (elapsed >= MinimumAutonomousDwell(StablePosture.Stand) && Energy >= 0.18 && Stress < 0.85)
                 {
                     AddIfEnabled(candidates, AutonomousDailyCandidateBehaviorIds.StandToSit,
                         0.42 + Comfort * 0.18 + (1 - Energy) * 0.14 + (workQuiet ? 0.08 : 0.02),
@@ -4240,11 +4740,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                 }
                 break;
             case StablePosture.Sit:
-                AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.SitIdleMicroloop,
+                AddCurrentOrPreferredStableIdle(candidates, LifecycleCandidateBehaviorIds.SitIdleMicroloop,
                     0.82 + Comfort * 0.12 + (workQuiet ? 0.14 : 0.03), "autonomous:stable_sit_microloop");
-                AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.SitIdleV3R1,
-                    0.72 + Comfort * 0.10 + (workQuiet ? 0.12 : 0.03), "autonomous:approved_v3r1_sit_microloop");
-                if (elapsed >= TimeSpan.FromSeconds(10))
+                if (elapsed >= MinimumAutonomousDwell(StablePosture.Sit))
                 {
                     AddIfEnabled(candidates, AutonomousDailyCandidateBehaviorIds.SitToProne,
                         0.58 + Comfort * 0.18 + (1 - Energy) * 0.16 + (workQuiet ? 0.10 : 0.03),
@@ -4257,7 +4755,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             default:
                 if (_frontProneProfileActive)
                 {
-                    AddIfEnabled(candidates, LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
+                    AddCurrentOrPreferredStableIdle(candidates, LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
                         0.90 + Comfort * 0.14 + (workQuiet ? 0.16 : 0.04), "autonomous:approved_v4_front_prone_calm");
                     var lickReady = !_lastAccepted.TryGetValue(LifecycleReviewCandidateBehaviorIds.FrontProneLickV4, out var lastLick) ||
                         _now() - lastLick >= TimeSpan.FromSeconds(45);
@@ -4274,9 +4772,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                 }
                 else
                 {
-                    AddIfEnabled(candidates, LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
+                    AddCurrentOrPreferredStableIdle(candidates, LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
                         0.86 + Comfort * 0.14 + (workQuiet ? 0.16 : 0.04), "autonomous:stable_prone_microloop");
-                    if (elapsed >= TimeSpan.FromSeconds(12) &&
+                    if (elapsed >= MinimumAutonomousDwell(StablePosture.Prone) &&
                         IsProneHeadAutonomousProfileAllowed(_agentState.CurrentPosture, _frontProneProfileActive))
                     {
                         AddIfEnabled(candidates, ProneHeadCandidateBehaviorIds.HeadLowerTurnV4,
@@ -4304,6 +4802,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             var repeated = string.Equals(candidate.BehaviorId, _currentBehaviorId, StringComparison.OrdinalIgnoreCase);
             var recent = _lastAccepted.TryGetValue(candidate.BehaviorId, out var last) && _now() - last < TimeSpan.FromSeconds(70);
             var penalty = repeated ? 0.62 : recent ? 0.78 : 1.0;
+            if (IsPostureTransitionBehavior(candidate.BehaviorId) &&
+                _lastAccepted.Any(x => IsPostureTransitionBehavior(x.Key) && _now() - x.Value < TimeSpan.FromSeconds(90)))
+                penalty *= 0.35;
             return candidate with { Score = Math.Max(0.05, candidate.Score * penalty) };
         }).ToArray();
         var total = adjusted.Sum(x => x.Score);
@@ -4324,10 +4825,29 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     public static TimeSpan ChooseAutonomousIdleDelay(StablePosture posture, Random random) => posture switch
     {
-        StablePosture.Stand => TimeSpan.FromSeconds(random.Next(8, 16)),
-        StablePosture.Sit => TimeSpan.FromSeconds(random.Next(26, 45)),
-        _ => TimeSpan.FromSeconds(random.Next(48, 77))
+        StablePosture.Stand => TimeSpan.FromSeconds(random.Next(14, 26)),
+        StablePosture.Sit => TimeSpan.FromSeconds(random.Next(30, 53)),
+        _ => TimeSpan.FromSeconds(random.Next(55, 96))
     };
+
+    public static TimeSpan MinimumAutonomousDwell(StablePosture posture) => posture switch
+    {
+        StablePosture.Stand => TimeSpan.FromSeconds(14),
+        StablePosture.Sit => TimeSpan.FromSeconds(24),
+        _ => TimeSpan.FromSeconds(35)
+    };
+
+    public static bool ShouldKeepCurrentStableIdle(string currentBehaviorId, string selectedBehaviorId) =>
+        string.Equals(currentBehaviorId, selectedBehaviorId, StringComparison.OrdinalIgnoreCase) &&
+        IsStableIdleBehavior(currentBehaviorId);
+
+    public static bool IsPostureTransitionBehavior(string behaviorId) => behaviorId is
+        AutonomousDailyCandidateBehaviorIds.StandToSit or
+        AutonomousDailyCandidateBehaviorIds.SitToProne or
+        AutonomousDailyCandidateBehaviorIds.ProneToSit or
+        AutonomousDailyCandidateBehaviorIds.SitToStand or
+        LifecycleCandidateBehaviorIds.LivelyDailyP2 or
+        LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1;
 
     public static int ChooseAutonomousProneLoopCycles(Random random) => random.Next(4, 8);
 
@@ -4373,6 +4893,19 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             candidates.Add((behaviorId, Math.Max(0.05, score), reason));
     }
 
+    private void AddCurrentOrPreferredStableIdle(
+        List<(string BehaviorId, double Score, string Reason)> candidates,
+        string preferredBehaviorId,
+        double score,
+        string reason)
+    {
+        var current = IsStableIdleBehavior(_currentBehaviorId) &&
+                      _catalog.Find(_currentBehaviorId) is { RuntimeEnabled: true, AutonomousBindingEnabled: true }
+            ? _currentBehaviorId
+            : preferredBehaviorId;
+        AddIfEnabled(candidates, current, score, reason);
+    }
+
     public static bool IsAutonomousRuntimeBehaviorAllowed(string behaviorId) =>
         AutonomousRuntimeAllowlist.Contains(behaviorId);
 
@@ -4389,14 +4922,28 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     private void UpdateDecision(PetActionResult result, string source, string reasonCode, string userFacing)
     {
-        CurrentDisposition = result.ToString();
-        CurrentReason = $"{reasonCode} · {userFacing}";
+        CurrentDisposition = result switch
+        {
+            PetActionResult.Accepted => "愿意",
+            PetActionResult.Deferred => "稍后",
+            PetActionResult.Rejected => "暂时不想",
+            PetActionResult.MissingAsset => "暂时做不到",
+            PetActionResult.Interrupted => "已经停下",
+            _ => "没有完成"
+        };
+        CurrentReason = userFacing;
         LastSource = source;
         LastTrigger = reasonCode;
         LastError = result == PetActionResult.MissingAsset ? userFacing : LastError;
-        Willingness = result == PetActionResult.Accepted
-            ? "悟空愿意回应，但动作结束后会回到安静趴卧"
-            : "悟空暂时不想动，或者缺少合适素材";
+        Willingness = result switch
+        {
+            PetActionResult.Accepted => $"悟空愿意回应，现在正{CurrentAction}",
+            PetActionResult.Deferred => "悟空想先保持现在的状态，过一会儿再回应",
+            PetActionResult.Rejected => "悟空现在想安静一会儿",
+            PetActionResult.MissingAsset => "这个动作暂时还不能完整展示",
+            PetActionResult.Interrupted => "悟空已经停下，回到舒服的姿态",
+            _ => "刚才的动作没有完成，悟空已经恢复稳定"
+        };
         OnPropertyChanged(nameof(CurrentDisposition));
         OnPropertyChanged(nameof(CurrentReason));
         OnPropertyChanged(nameof(LastSource));
@@ -4425,6 +4972,23 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         OnPropertyChanged(nameof(Stress));
         OnPropertyChanged(nameof(Focus));
         OnPropertyChanged(nameof(Comfort));
+        OnPropertyChanged(nameof(AgentMoodProjection));
+        RaiseAgentProfileProjection();
+    }
+
+    private void RaiseAgentProfileProjection()
+    {
+        OnPropertyChanged(nameof(TemperamentActivity));
+        OnPropertyChanged(nameof(TemperamentAttachment));
+        OnPropertyChanged(nameof(TemperamentSensitivity));
+        OnPropertyChanged(nameof(TemperamentIndependence));
+        OnPropertyChanged(nameof(TemperamentMischief));
+        OnPropertyChanged(nameof(RelationshipTrust));
+        OnPropertyChanged(nameof(RelationshipFamiliarity));
+        OnPropertyChanged(nameof(RelationshipTouchAcceptance));
+        OnPropertyChanged(nameof(RelationshipInitiativeAcceptance));
+        OnPropertyChanged(nameof(RecentPositiveInteractions));
+        OnPropertyChanged(nameof(RecentNegativeInteractions));
     }
 
     private static double Clamp01(double value) => Math.Clamp(value, 0, 1);

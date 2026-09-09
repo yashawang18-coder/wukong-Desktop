@@ -1,0 +1,2418 @@
+{
+  "batch_id": "WK-INTERACTION-FOOD-WATER-COAT-SEAM-CANDIDATE-v5",
+  "asset_id": "WK-INTERACTION-FOOD-WATER-COAT-SEAM-CANDIDATE-v5",
+  "asset_stage": "runtime_approved",
+  "candidate_profile": "food-water-coat-seam-v5-owner-approved-manual",
+  "source_package": "WK-FOOD-WATER-COAT-SEAM-v5",
+  "source_sha256_manifest": "SHA256.json",
+  "source_sha256_manifest_sha256": "db81cb11a0dd4e3bc3b10dd6f013c4a0d9cbc99561a7fd3e75f6fb9c6e860449",
+  "source_frame_count": 48,
+  "runtime_frame_count": 48,
+  "sequence_frame_reference_count": 194,
+  "referenced_unique_frame_count": 44,
+  "unreferenced_source_frames": [
+    "frames/drink-pause/frame-05.png",
+    "frames/drink-pause/frame-06.png",
+    "frames/eat-pause/frame-05.png",
+    "frames/eat-pause/frame-06.png"
+  ],
+  "sequence_count": 2,
+  "owner_preview_approved": true,
+  "visual_approved": true,
+  "runtime_validation": "passed_windows_renderer_qa",
+  "runtime_approved": true,
+  "runtime_use": true,
+  "production_asset": true,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": false,
+  "normal_runtime_available": true,
+  "allowed_sources": [
+    "OwnerContextMenu",
+    "ControlPanel",
+    "DeveloperPreview"
+  ],
+  "pixel_import_policy": "byte_for_byte_copy_no_reencode_no_rescale_no_recolor",
+  "known_source_limitations": [
+    "Sparse pre-existing edge-colour artefacts remain outside the source package's colour-seam repair scope.",
+    "Automated validation does not replace Windows transparent-renderer owner QA."
+  ],
+  "frame_inventory": [
+    {
+      "path": "frames/drink-finish/frame-01.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 183187,
+      "sha256": "7f595f42054df23aab43eda83879f21b19c631c01755b46befecef06b5747540",
+      "alpha_bbox": [
+        321,
+        312,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/drink-finish/frame-02.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 183172,
+      "sha256": "2fa5d7bf669e0d69d26cfaf7ee0652e53da0889355fbc1bf0c0b5c18a6e08b03",
+      "alpha_bbox": [
+        319,
+        312,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 1
+    },
+    {
+      "path": "frames/drink-finish/frame-03.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 183981,
+      "sha256": "81bcb9e2f30c6d4ec30d4bf74a0e47c5c38df0800b5f3a48739dbd160f7df690",
+      "alpha_bbox": [
+        317,
+        311,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 2
+    },
+    {
+      "path": "frames/drink-finish/frame-04.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 174886,
+      "sha256": "f96f0a849d6f7835ec68bac917898bc2c15ffc18b02538dd459e2ccc898e45c1",
+      "alpha_bbox": [
+        330,
+        320,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 1
+    },
+    {
+      "path": "frames/drink-finish/frame-05.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 172071,
+      "sha256": "91380e8115458480b3a028c3aa6f3d7f1a09fe2ad54a358f4481e23808cc3953",
+      "alpha_bbox": [
+        371,
+        315,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 3
+    },
+    {
+      "path": "frames/drink-finish/frame-06.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 190092,
+      "sha256": "a53c1b157f3c4b0e48761599869742bae5a2fa5c09a8d2609ae5877cef00cd7f",
+      "alpha_bbox": [
+        357,
+        297,
+        716,
+        709
+      ],
+      "visible_blue_advantage_pixels": 1
+    },
+    {
+      "path": "frames/drink-loop/frame-01.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 202577,
+      "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+      "alpha_bbox": [
+        302,
+        309,
+        716,
+        709
+      ],
+      "visible_blue_advantage_pixels": 1
+    },
+    {
+      "path": "frames/drink-loop/frame-02.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 203536,
+      "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+      "alpha_bbox": [
+        298,
+        308,
+        715,
+        708
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/drink-loop/frame-03.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 203242,
+      "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+      "alpha_bbox": [
+        300,
+        308,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 1
+    },
+    {
+      "path": "frames/drink-loop/frame-04.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 204851,
+      "sha256": "9a5d3780ff27ddb700f5797ae2d8267b01d5655263045955ce0697b3b417ea70",
+      "alpha_bbox": [
+        297,
+        307,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 1
+    },
+    {
+      "path": "frames/drink-lower/frame-01.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 219015,
+      "sha256": "689a8b5af52f7cb5e2a67d8be53b7e8718016042ff0728a3144fea3cea3d7fd6",
+      "alpha_bbox": [
+        336,
+        274,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 9
+    },
+    {
+      "path": "frames/drink-lower/frame-02.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 194878,
+      "sha256": "52b4d890539a60e55ac6b6b83fc674b1ea21ff8300d1be05017642bde147d16d",
+      "alpha_bbox": [
+        341,
+        298,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 5
+    },
+    {
+      "path": "frames/drink-lower/frame-03.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 206378,
+      "sha256": "38fb85b844fb565d4cc976cf736d6a9c354636801c8a5a3fac828bf9e02df454",
+      "alpha_bbox": [
+        307,
+        299,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 9
+    },
+    {
+      "path": "frames/drink-lower/frame-04.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 200682,
+      "sha256": "2a4f4110cf6f644a39df61a9d1fe9353570a2ce12a229170c1db76fb998a46da",
+      "alpha_bbox": [
+        307,
+        311,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 3
+    },
+    {
+      "path": "frames/drink-lower/frame-05.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 196412,
+      "sha256": "a3f4957d16606bb288ec2d609b1392abd558bd9fa7ac2a05db20f2edd7c9c561",
+      "alpha_bbox": [
+        316,
+        310,
+        715,
+        708
+      ],
+      "visible_blue_advantage_pixels": 7
+    },
+    {
+      "path": "frames/drink-lower/frame-06.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 199716,
+      "sha256": "9cbe3f793b787aab1c78a9524ef0842c4925deb7f455aa815afa722defc432cb",
+      "alpha_bbox": [
+        307,
+        311,
+        715,
+        708
+      ],
+      "visible_blue_advantage_pixels": 2
+    },
+    {
+      "path": "frames/drink-pause/frame-01.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 191347,
+      "sha256": "cda836cf3a60134700917fc3f8440dbd33356f110cf4d7ee7792821ad0a5cb5f",
+      "alpha_bbox": [
+        308,
+        313,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/drink-pause/frame-02.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 188314,
+      "sha256": "fa4c01e299cf3edf80fecd88b218edcec48ae36ce308d2353cfd6c0de00b6586",
+      "alpha_bbox": [
+        313,
+        313,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 2
+    },
+    {
+      "path": "frames/drink-pause/frame-03.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 186077,
+      "sha256": "c721f9709a686ab0f80fd8c24d07eb756af3173e4b02c2c9096af4f4ba6e234a",
+      "alpha_bbox": [
+        314,
+        314,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/drink-pause/frame-04.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 184034,
+      "sha256": "2259fe6fb5662ca2d476ee664f80e0f6f6da20eb4c915c61356c5f6085104254",
+      "alpha_bbox": [
+        312,
+        318,
+        715,
+        708
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/drink-pause/frame-05.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 184167,
+      "sha256": "ee869cb1a6c20bb55986fece1a0fa378c39cca59dca5fa8f47970f00675e0659",
+      "alpha_bbox": [
+        315,
+        316,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 2
+    },
+    {
+      "path": "frames/drink-pause/frame-06.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 186274,
+      "sha256": "270dc2b87f6632e9a089d0dddd0f7721af971d27ef214b64e9e6dcbfd11a2234",
+      "alpha_bbox": [
+        314,
+        316,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 1
+    },
+    {
+      "path": "frames/eat-finish/frame-01.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 180752,
+      "sha256": "55087f16c8c9e353dbde34661545ebf85ccc13c09958b12d8930553a7b5ac9be",
+      "alpha_bbox": [
+        319,
+        310,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 1
+    },
+    {
+      "path": "frames/eat-finish/frame-02.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 179842,
+      "sha256": "ed28e6fab235fddac5c4531b84eb9e4c81f84939a123cb6130f1b5a875d27dbf",
+      "alpha_bbox": [
+        319,
+        311,
+        716,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/eat-finish/frame-03.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 180220,
+      "sha256": "484259ff85a5aff38461b6cce23f250ae0c7bcfaf46f755e26eac1878f63e6df",
+      "alpha_bbox": [
+        316,
+        310,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 2
+    },
+    {
+      "path": "frames/eat-finish/frame-04.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 167994,
+      "sha256": "3115023215dab8f8cd12a3a0367a7e7ce9241ebe4817deaf4d987e572815184f",
+      "alpha_bbox": [
+        328,
+        316,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/eat-finish/frame-05.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 168280,
+      "sha256": "2238e2341ca3047cfbd0360e2849bd5df12a6bc0d2869c8c03eac748b9d8ee6c",
+      "alpha_bbox": [
+        374,
+        316,
+        715,
+        708
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/eat-finish/frame-06.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 189155,
+      "sha256": "d3b35423455b8d6e1906046f19d9d4b9e2ae529d5c63f51065a3f3db98a33ad2",
+      "alpha_bbox": [
+        353,
+        276,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/eat-loop/frame-01.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 190624,
+      "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+      "alpha_bbox": [
+        300,
+        308,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/eat-loop/frame-02.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 191570,
+      "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+      "alpha_bbox": [
+        297,
+        307,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/eat-loop/frame-03.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 190319,
+      "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+      "alpha_bbox": [
+        300,
+        310,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 1
+    },
+    {
+      "path": "frames/eat-loop/frame-04.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 189117,
+      "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+      "alpha_bbox": [
+        296,
+        309,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/eat-lower/frame-01.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 203090,
+      "sha256": "9d344cea6e48333abba3d2733ae12b577704f290469cf3f58304ff6258891a54",
+      "alpha_bbox": [
+        335,
+        274,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 2
+    },
+    {
+      "path": "frames/eat-lower/frame-02.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 182697,
+      "sha256": "d62704e8aa5ae26b271ff9e770d553f07afefb41e8789fbb6280744c77e25944",
+      "alpha_bbox": [
+        341,
+        298,
+        716,
+        709
+      ],
+      "visible_blue_advantage_pixels": 1
+    },
+    {
+      "path": "frames/eat-lower/frame-03.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 193167,
+      "sha256": "171521c964ed08695d69898b5a9cefc17094cf0ce4c887959a8c0ed87beb53cc",
+      "alpha_bbox": [
+        306,
+        299,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 1
+    },
+    {
+      "path": "frames/eat-lower/frame-04.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 188987,
+      "sha256": "f3566e83f27ed5247153cb5652a5433714c1a418960e682213e1968ae8fd2695",
+      "alpha_bbox": [
+        305,
+        311,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 2
+    },
+    {
+      "path": "frames/eat-lower/frame-05.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 184427,
+      "sha256": "8c74c3d3c16e728ebbefdc36074d1877a020e1b77313cc93c44bade0c4198f12",
+      "alpha_bbox": [
+        317,
+        310,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/eat-lower/frame-06.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 188989,
+      "sha256": "9d6e40e730fa5d38fff504e80be14aea2f14fdcfa3c5eab8f98c3f9ec63ef8bd",
+      "alpha_bbox": [
+        305,
+        310,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/eat-pause/frame-01.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 195694,
+      "sha256": "560be23d0901b2eec20846f538947bc8cd84b0a04aeb8a15e8cf2864cd9496f4",
+      "alpha_bbox": [
+        304,
+        297,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 1
+    },
+    {
+      "path": "frames/eat-pause/frame-02.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 193481,
+      "sha256": "3a05aa7ba73d1bfa391b5e927fdd2ced8a98b74c849be0fd8bcb65926a3e97f9",
+      "alpha_bbox": [
+        308,
+        297,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/eat-pause/frame-03.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 194164,
+      "sha256": "bc35edd51646a575c05b3b3aa53fc7b3bfcb3acd0162ff846db4cc1c3399136c",
+      "alpha_bbox": [
+        307,
+        297,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/eat-pause/frame-04.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 183117,
+      "sha256": "7c5ecaebacb08fbefac401a00b86458f4d5e2c4f29802410f3fc2f20f287f439",
+      "alpha_bbox": [
+        314,
+        318,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/eat-pause/frame-05.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 183423,
+      "sha256": "127488c0a7cc01d57d1f10c25872bab746edf7c34c23bc3be2bacc3a51cfa854",
+      "alpha_bbox": [
+        315,
+        320,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/eat-pause/frame-06.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 187962,
+      "sha256": "1b61779c94f9fdfa984a8ca311d44e30e6c85b6613955c2ea1bf8001a226f8c7",
+      "alpha_bbox": [
+        311,
+        315,
+        715,
+        709
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/shared-exit/frame-01.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 205857,
+      "sha256": "ca402d35fc1a550c0846f335c7fe45db5821aa9c990fbda40d204452ebd3fd82",
+      "alpha_bbox": [
+        333,
+        277,
+        715,
+        708
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/shared-exit/frame-02.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 207883,
+      "sha256": "072e0d921d139f696bdceb3d464e3510e7bdbe9d13239f4e0e784256fe75f1bb",
+      "alpha_bbox": [
+        294,
+        277,
+        679,
+        708
+      ],
+      "visible_blue_advantage_pixels": 1
+    },
+    {
+      "path": "frames/shared-exit/frame-03.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 198547,
+      "sha256": "6199a28bb341428601456c5110ec6e2b31d6396cc37d51fa08a84295c797e595",
+      "alpha_bbox": [
+        336,
+        262,
+        714,
+        682
+      ],
+      "visible_blue_advantage_pixels": 0
+    },
+    {
+      "path": "frames/shared-exit/frame-04.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 186974,
+      "sha256": "296910e294ff3c3d30ae1390139dcb286a43deaca8a33d837bf4325bef52710d",
+      "alpha_bbox": [
+        331,
+        267,
+        703,
+        682
+      ],
+      "visible_blue_advantage_pixels": 0
+    }
+  ],
+  "actions": [
+    {
+      "behavior_id": "wk.interaction.drink_water",
+      "display_name": "喝水",
+      "description": "Owner-triggered standing water-drinking sequence approved for Normal runtime.",
+      "frame_count": 91,
+      "from_pose": "stand.neutral.left_front",
+      "to_pose": "stand.neutral.left_front",
+      "direction": "left_front",
+      "total_duration_ms": 11375,
+      "frame_duration_ms": 125,
+      "interruptible": false,
+      "loop": false,
+      "owner_preview_approved": true,
+      "visual_approved": true,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "production_asset": true,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": false,
+      "normal_runtime_available": true,
+      "allowed_sources": [
+        "OwnerContextMenu",
+        "ControlPanel",
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "intro",
+          "loop": false,
+          "frame_count": 6,
+          "frames": [
+            {
+              "path": "frames/drink-lower/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "689a8b5af52f7cb5e2a67d8be53b7e8718016042ff0728a3144fea3cea3d7fd6",
+              "bytes": 219015,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-lower/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "52b4d890539a60e55ac6b6b83fc674b1ea21ff8300d1be05017642bde147d16d",
+              "bytes": 194878,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-lower/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "38fb85b844fb565d4cc976cf736d6a9c354636801c8a5a3fac828bf9e02df454",
+              "bytes": 206378,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-lower/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2a4f4110cf6f644a39df61a9d1fe9353570a2ce12a229170c1db76fb998a46da",
+              "bytes": 200682,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-lower/frame-05.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a3f4957d16606bb288ec2d609b1392abd558bd9fa7ac2a05db20f2edd7c9c561",
+              "bytes": 196412,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-lower/frame-06.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9cbe3f793b787aab1c78a9524ef0842c4925deb7f455aa815afa722defc432cb",
+              "bytes": 199716,
+              "duration_ms": 125
+            }
+          ]
+        },
+        {
+          "name": "action",
+          "loop": false,
+          "frame_count": 75,
+          "frames": [
+            {
+              "path": "frames/drink-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+              "bytes": 202577,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9a5d3780ff27ddb700f5797ae2d8267b01d5655263045955ce0697b3b417ea70",
+              "bytes": 204851,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+              "bytes": 202577,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9a5d3780ff27ddb700f5797ae2d8267b01d5655263045955ce0697b3b417ea70",
+              "bytes": 204851,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+              "bytes": 202577,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9a5d3780ff27ddb700f5797ae2d8267b01d5655263045955ce0697b3b417ea70",
+              "bytes": 204851,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+              "bytes": 202577,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9a5d3780ff27ddb700f5797ae2d8267b01d5655263045955ce0697b3b417ea70",
+              "bytes": 204851,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+              "bytes": 202577,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9a5d3780ff27ddb700f5797ae2d8267b01d5655263045955ce0697b3b417ea70",
+              "bytes": 204851,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+              "bytes": 202577,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9a5d3780ff27ddb700f5797ae2d8267b01d5655263045955ce0697b3b417ea70",
+              "bytes": 204851,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+              "bytes": 202577,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-pause/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "cda836cf3a60134700917fc3f8440dbd33356f110cf4d7ee7792821ad0a5cb5f",
+              "bytes": 191347,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-pause/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "fa4c01e299cf3edf80fecd88b218edcec48ae36ce308d2353cfd6c0de00b6586",
+              "bytes": 188314,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-pause/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c721f9709a686ab0f80fd8c24d07eb756af3173e4b02c2c9096af4f4ba6e234a",
+              "bytes": 186077,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-pause/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2259fe6fb5662ca2d476ee664f80e0f6f6da20eb4c915c61356c5f6085104254",
+              "bytes": 184034,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-pause/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c721f9709a686ab0f80fd8c24d07eb756af3173e4b02c2c9096af4f4ba6e234a",
+              "bytes": 186077,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-pause/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "fa4c01e299cf3edf80fecd88b218edcec48ae36ce308d2353cfd6c0de00b6586",
+              "bytes": 188314,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-pause/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "cda836cf3a60134700917fc3f8440dbd33356f110cf4d7ee7792821ad0a5cb5f",
+              "bytes": 191347,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+              "bytes": 202577,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9a5d3780ff27ddb700f5797ae2d8267b01d5655263045955ce0697b3b417ea70",
+              "bytes": 204851,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+              "bytes": 202577,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9a5d3780ff27ddb700f5797ae2d8267b01d5655263045955ce0697b3b417ea70",
+              "bytes": 204851,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+              "bytes": 202577,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9a5d3780ff27ddb700f5797ae2d8267b01d5655263045955ce0697b3b417ea70",
+              "bytes": 204851,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+              "bytes": 202577,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9a5d3780ff27ddb700f5797ae2d8267b01d5655263045955ce0697b3b417ea70",
+              "bytes": 204851,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+              "bytes": 202577,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9a5d3780ff27ddb700f5797ae2d8267b01d5655263045955ce0697b3b417ea70",
+              "bytes": 204851,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2c507c83f1c1e7c6b0638690ff1ad9f6af89a84b6947be1f95747c59512d303c",
+              "bytes": 203242,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "1d520cc5ec98fd1bf40b332382f2a0a8f49cad12939daa47a4c05fcee8c7dccc",
+              "bytes": 203536,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a9aa770a940ddc8a38505b4b8b8158cfaddbdbe62b1ed34a0b9926f97a3fe5a2",
+              "bytes": 202577,
+              "duration_ms": 125
+            }
+          ]
+        },
+        {
+          "name": "exit",
+          "loop": false,
+          "frame_count": 10,
+          "frames": [
+            {
+              "path": "frames/drink-finish/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "7f595f42054df23aab43eda83879f21b19c631c01755b46befecef06b5747540",
+              "bytes": 183187,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-finish/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2fa5d7bf669e0d69d26cfaf7ee0652e53da0889355fbc1bf0c0b5c18a6e08b03",
+              "bytes": 183172,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-finish/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "81bcb9e2f30c6d4ec30d4bf74a0e47c5c38df0800b5f3a48739dbd160f7df690",
+              "bytes": 183981,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-finish/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "f96f0a849d6f7835ec68bac917898bc2c15ffc18b02538dd459e2ccc898e45c1",
+              "bytes": 174886,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-finish/frame-05.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "91380e8115458480b3a028c3aa6f3d7f1a09fe2ad54a358f4481e23808cc3953",
+              "bytes": 172071,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/drink-finish/frame-06.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "a53c1b157f3c4b0e48761599869742bae5a2fa5c09a8d2609ae5877cef00cd7f",
+              "bytes": 190092,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/shared-exit/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "ca402d35fc1a550c0846f335c7fe45db5821aa9c990fbda40d204452ebd3fd82",
+              "bytes": 205857,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/shared-exit/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "072e0d921d139f696bdceb3d464e3510e7bdbe9d13239f4e0e784256fe75f1bb",
+              "bytes": 207883,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/shared-exit/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "6199a28bb341428601456c5110ec6e2b31d6396cc37d51fa08a84295c797e595",
+              "bytes": 198547,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/shared-exit/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "296910e294ff3c3d30ae1390139dcb286a43deaca8a33d837bf4325bef52710d",
+              "bytes": 186974,
+              "duration_ms": 125
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.interaction.eat_kibble",
+      "display_name": "吃饭",
+      "description": "Owner-triggered standing kibble-eating sequence approved for Normal runtime.",
+      "frame_count": 103,
+      "from_pose": "stand.neutral.left_front",
+      "to_pose": "stand.neutral.left_front",
+      "direction": "left_front",
+      "total_duration_ms": 12875,
+      "frame_duration_ms": 125,
+      "interruptible": false,
+      "loop": false,
+      "owner_preview_approved": true,
+      "visual_approved": true,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "production_asset": true,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": false,
+      "normal_runtime_available": true,
+      "allowed_sources": [
+        "OwnerContextMenu",
+        "ControlPanel",
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "intro",
+          "loop": false,
+          "frame_count": 6,
+          "frames": [
+            {
+              "path": "frames/eat-lower/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9d344cea6e48333abba3d2733ae12b577704f290469cf3f58304ff6258891a54",
+              "bytes": 203090,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-lower/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "d62704e8aa5ae26b271ff9e770d553f07afefb41e8789fbb6280744c77e25944",
+              "bytes": 182697,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-lower/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "171521c964ed08695d69898b5a9cefc17094cf0ce4c887959a8c0ed87beb53cc",
+              "bytes": 193167,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-lower/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "f3566e83f27ed5247153cb5652a5433714c1a418960e682213e1968ae8fd2695",
+              "bytes": 188987,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-lower/frame-05.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8c74c3d3c16e728ebbefdc36074d1877a020e1b77313cc93c44bade0c4198f12",
+              "bytes": 184427,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-lower/frame-06.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "9d6e40e730fa5d38fff504e80be14aea2f14fdcfa3c5eab8f98c3f9ec63ef8bd",
+              "bytes": 188989,
+              "duration_ms": 125
+            }
+          ]
+        },
+        {
+          "name": "action",
+          "loop": false,
+          "frame_count": 87,
+          "frames": [
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+              "bytes": 189117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+              "bytes": 189117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+              "bytes": 189117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+              "bytes": 189117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+              "bytes": 189117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+              "bytes": 189117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-pause/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "560be23d0901b2eec20846f538947bc8cd84b0a04aeb8a15e8cf2864cd9496f4",
+              "bytes": 195694,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-pause/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "3a05aa7ba73d1bfa391b5e927fdd2ced8a98b74c849be0fd8bcb65926a3e97f9",
+              "bytes": 193481,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-pause/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "bc35edd51646a575c05b3b3aa53fc7b3bfcb3acd0162ff846db4cc1c3399136c",
+              "bytes": 194164,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-pause/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "7c5ecaebacb08fbefac401a00b86458f4d5e2c4f29802410f3fc2f20f287f439",
+              "bytes": 183117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-pause/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "bc35edd51646a575c05b3b3aa53fc7b3bfcb3acd0162ff846db4cc1c3399136c",
+              "bytes": 194164,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-pause/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "3a05aa7ba73d1bfa391b5e927fdd2ced8a98b74c849be0fd8bcb65926a3e97f9",
+              "bytes": 193481,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-pause/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "560be23d0901b2eec20846f538947bc8cd84b0a04aeb8a15e8cf2864cd9496f4",
+              "bytes": 195694,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+              "bytes": 189117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+              "bytes": 189117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+              "bytes": 189117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+              "bytes": 189117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+              "bytes": 189117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+              "bytes": 189117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "54c583983479ceb445f7f6663e4a71906d22f8bd9ab70f178bf3e27815a41880",
+              "bytes": 189117,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "c97c16a68088e5edab96ce1cc3119e5e7afff7c02ae24455b1bbf09201e95ea2",
+              "bytes": 190319,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "89c697d07ea5ffa29407d3b076546adcb0744a29e5542833a16cfc372335d607",
+              "bytes": 191570,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-loop/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "8aa8af93bea99568cbcac63cc104c76b52a4f229f3a6138f022440a69b5dccd2",
+              "bytes": 190624,
+              "duration_ms": 125
+            }
+          ]
+        },
+        {
+          "name": "exit",
+          "loop": false,
+          "frame_count": 10,
+          "frames": [
+            {
+              "path": "frames/eat-finish/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "55087f16c8c9e353dbde34661545ebf85ccc13c09958b12d8930553a7b5ac9be",
+              "bytes": 180752,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-finish/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "ed28e6fab235fddac5c4531b84eb9e4c81f84939a123cb6130f1b5a875d27dbf",
+              "bytes": 179842,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-finish/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "484259ff85a5aff38461b6cce23f250ae0c7bcfaf46f755e26eac1878f63e6df",
+              "bytes": 180220,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-finish/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "3115023215dab8f8cd12a3a0367a7e7ce9241ebe4817deaf4d987e572815184f",
+              "bytes": 167994,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-finish/frame-05.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "2238e2341ca3047cfbd0360e2849bd5df12a6bc0d2869c8c03eac748b9d8ee6c",
+              "bytes": 168280,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/eat-finish/frame-06.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "d3b35423455b8d6e1906046f19d9d4b9e2ae529d5c63f51065a3f3db98a33ad2",
+              "bytes": 189155,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/shared-exit/frame-01.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "ca402d35fc1a550c0846f335c7fe45db5821aa9c990fbda40d204452ebd3fd82",
+              "bytes": 205857,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/shared-exit/frame-02.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "072e0d921d139f696bdceb3d464e3510e7bdbe9d13239f4e0e784256fe75f1bb",
+              "bytes": 207883,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/shared-exit/frame-03.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "6199a28bb341428601456c5110ec6e2b31d6396cc37d51fa08a84295c797e595",
+              "bytes": 198547,
+              "duration_ms": 125
+            },
+            {
+              "path": "frames/shared-exit/frame-04.png",
+              "width": 1024,
+              "height": 1024,
+              "sha256": "296910e294ff3c3d30ae1390139dcb286a43deaca8a33d837bf4325bef52710d",
+              "bytes": 186974,
+              "duration_ms": 125
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

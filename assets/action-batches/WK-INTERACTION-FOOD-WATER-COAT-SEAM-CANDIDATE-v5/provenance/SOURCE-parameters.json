@@ -1,0 +1,48 @@
+{
+  "base": {
+    "method": "shared Lab chroma gains; L unchanged; smooth colour selection",
+    "a_gain": 0.7424151271307133,
+    "b_gain": 0.8744835340488147,
+    "fit_source_frames": 48,
+    "fit_source_pixels": 653014,
+    "reference_sha256": "c2f6efc439d7393992aef510cb37407f7853898210ae8c76e67108d274f70bf5",
+    "fit_source_Lab_median": [
+      69.66940565904645,
+      19.94245384704968,
+      43.77558777985102
+    ],
+    "reference_Lab_median": [
+      67.78318509677447,
+      14.805579408155772,
+      38.28103070678823
+    ],
+    "quantiles": [
+      0.05,
+      0.25,
+      0.5,
+      0.75,
+      0.95
+    ],
+    "alpha_baseline": "previously extracted proof-raw-rgba; ZIP contains RGB blue frames"
+  },
+  "seam_repair": {
+    "source": "eat-lower/frame-06.png",
+    "target": "eat-loop/frame-01.png",
+    "Lab_ab_residual": [
+      1.8266953972556053,
+      4.677041528546951
+    ],
+    "envelope": [
+      0.0,
+      0.10400000000000002,
+      0.3520000000000001,
+      0.648,
+      0.8960000000000001,
+      1.0
+    ],
+    "curve": "smoothstep(i/5), i=0..5",
+    "lightness_offset": 0,
+    "method": "one shared residual, time envelope, original gold mask; no per-frame fitting",
+    "reason": "Owner requested repair of the remaining warm jump after approving v4 middle tone."
+  }
+}
