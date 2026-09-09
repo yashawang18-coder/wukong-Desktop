@@ -144,9 +144,12 @@ internal static class LifecycleReviewCandidateTests
         Assert(selected.Contains(LifecycleReviewCandidateBehaviorIds.StandIdleV3R1) ||
                selected.Contains(LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1),
             "approved V3R1 material never entered the autonomous pool");
-        Assert(selected.Contains(AutonomousDailyCandidateBehaviorIds.StandToSit) ||
-               selected.Overlaps(PatrolWalkCandidateBehaviorIds.All),
-            "newly approved daily transition or patrol gait never entered deterministic autonomous sampling");
+        var restingAllowlist = DesktopAutonomousEpisodeBindings.For(PetEpisodeKind.Resting)
+            ?? throw new InvalidOperationException("Resting rollout allowlist is missing");
+        Assert(selected.All(restingAllowlist.Contains),
+            "Resting authoritative rollout selected an action outside its explicit allowlist");
+        Assert(!selected.Overlaps(PatrolWalkCandidateBehaviorIds.All),
+            "Exploring patrol gait leaked into the Resting authoritative episode");
         Assert(!DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(MockCommandActionIds.Jump), "jump entered the autonomous allowlist");
         Assert(!DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(MockCommandActionIds.Spin), "spin entered the autonomous allowlist");
         Assert(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1), "V3R1 lifecycle is missing from the autonomous allowlist");

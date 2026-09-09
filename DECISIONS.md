@@ -613,3 +613,37 @@ Do not merge, split, resample, recolor, or rewrite approved frames to mask trans
 ## 2026-09-09 - persist owner temperament separately from developer simulation
 
 Store the five owner temperament dimensions in the portable profile defaults and user-data layout. Clamp the values at the application boundary and use the same snapshot for runtime decisions and dialogue context. An authenticated developer simulation may temporarily override its own context, but must not silently replace the persisted owner profile.
+
+## 2026-09-10 - promote only Resting through the unified Agent state and reducer
+
+Decision:
+
+Introduce one `PetAgentState`, elapsed-time evolution, explicit capability and
+participation policies, execution-ID-checked outcomes, and staged reducer ownership.
+Make `Resting` the only authoritative Agent v2 Episode. Keep `Observing` in Shadow
+until it passes an independent runtime review, and keep Exploring, Socializing, and
+Recovering on the legacy selector.
+
+Reason:
+
+The previous Agent mock could explain decisions, but the desktop still maintained
+parallel state and selected real autonomous actions through a separate random path.
+Moving all Episodes at once would combine state migration, pose compatibility,
+window motion, sleep recovery, and owner-interaction risk. Resting has the smallest
+safe allowlist and provides a reversible first production boundary.
+
+Restrictions:
+
+- An authoritative Episode is the only request source for that Episode; legacy is
+  comparison-only and cannot submit or mutate counters.
+- No eligible Agent candidate means hold the current stable idle. Do not fall back
+  to legacy randomness inside an authoritative Episode.
+- Keep Resting and Observing on explicit behavior-ID allowlists. Never infer access
+  from a tag, shared frame, filename, fallback, or high utility score.
+- Reject duplicate, stale, and mismatched completion callbacks by execution ID.
+- Only Normal execution settles formal state. Developer and prototype previews are
+  isolated and must restore the prior formal state.
+- Keep action-specific outcome values while migration is partial. Do not apply both
+  reducer and legacy completion updates to the same behavior.
+- Keep all asset bytes, manifest approval fields, menu routing, model permissions,
+  and desktop effect semantics unchanged.

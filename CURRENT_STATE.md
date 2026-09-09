@@ -416,3 +416,31 @@ Before implementation, add or provide the reviewed UX artifact and a pinned Pupu
 - Approved animation bytes, manifests, posture contracts, and runtime approval gates are unchanged by the naturalness pass. The runtime composes existing pose-compatible motions instead of splicing or resampling assets: a currently displayed stable idle is held without resubmission, each posture offers one preferred stable idle at a time, and posture changes use longer minimum dwell plus a recent-transition cooldown.
 - Developer login uses content-driven height and a wider minimum layout so password input and actions remain visible under Windows text scaling. The owner page keeps concise state language while detailed reason codes remain in developer trace.
 - Repository delivery is isolated to `agent/food-water-runtime-v2`; `main` and the integration baseline are not modified directly. `.asset-staging/`, portable user data, logs, screenshots, and build output are not repository content.
+
+## Behavior Agent core v2 Resting rollout - 2026-09-10
+
+- Branch: `agent/behavior-agent-core-v2`; baseline: `a5842a10eda0741ef670be9a1e457f459f92a0d4`.
+- `PetAgentState` is now the formal in-process source of truth for temperament,
+  relationship, posture, pose profile, needs, Episode, recent experience, active
+  execution, and elapsed-time accounting. Dialogue receives a projection from the
+  same state rather than a separate desktop snapshot.
+- State evolution is based on elapsed time with bounded offline catch-up. Animation
+  outcomes are matched by execution ID, and duplicate or stale callbacks do not
+  settle formal state twice.
+- `Resting` is the only authoritative Agent v2 Episode. It can select only its
+  explicit approved, pose-compatible lifecycle/idle/posture-transition allowlist.
+  `Observing` is implemented and recorded in Shadow only; all other Episodes remain
+  on the legacy selector.
+- The legacy selector remains a side-effect-free comparison source for migrated
+  Episodes and cannot submit a second request. An authoritative Episode with no
+  eligible candidate keeps the current stable idle and never falls back to legacy
+  random selection.
+- Reducer ownership is limited to the reviewed P2/V3R1 full lifecycle,
+  `StandToSit`, `SitToProne`, `HeadLowerTurnV4`, and `FrontProneLickV4`. Other
+  completion paths remain legacy-owned until their individual migration, so no
+  behavior can double-write state.
+- `DeveloperPreview` and `PrototypePreview` remain isolated. Stable idle display
+  loops do not set busy state or repeatedly apply outcome effects.
+- No PNG, asset manifest, runtime approval, owner menu, model permission, or
+  production asset mapping is changed in this rollout.
+- Detailed architecture and rollback guidance: `docs/behavior-agent-core-v2.md`.

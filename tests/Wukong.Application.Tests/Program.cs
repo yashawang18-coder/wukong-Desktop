@@ -35,7 +35,12 @@ var tests = new (string Name, Func<Task> Run)[]
     ("behavior agent plans posture transitions and keeps end posture", BehaviorAgentPlansTransitionsAndKeepsPosture),
     ("behavior agent busy state blocks autonomous interruption", BehaviorAgentBusyBlocksAutonomous),
     ("behavior agent dialogue context matches decision", BehaviorAgentDialogueContextMatchesState),
-    ("initiative speech uses state and respects suppressions", InitiativeSpeechUsesStateAndSuppressions)
+    ("initiative speech uses state and respects suppressions", InitiativeSpeechUsesStateAndSuppressions),
+    ("elapsed-time state evolution is tick-frequency independent", () => RunSync(BehaviorAgentCoreTests.ElapsedTimeEvolutionIsTickFrequencyIndependent)),
+    ("agent reducer ignores preview duplicate and stale completions", () => RunSync(BehaviorAgentCoreTests.ReducerIgnoresPreviewDuplicateAndStaleCompletion)),
+    ("episode policy applies dwell and urgent recovery", () => RunSync(BehaviorAgentCoreTests.EpisodePolicyUsesDwellAndImmediateRecovery)),
+    ("owner participation modes preserve command and magic boundaries", () => RunSync(BehaviorAgentCoreTests.ParticipationPolicyKeepsOwnerModesDistinct)),
+    ("agent decision is deterministic and respects hard gates", () => RunSync(BehaviorAgentCoreTests.DecisionEngineIsDeterministicAndHardGated))
 };
 
 var failures = new List<string>();
@@ -56,6 +61,12 @@ foreach (var test in tests)
 Console.WriteLine($"{tests.Length - failures.Count}/{tests.Length} tests passed.");
 foreach (var failure in failures) Console.Error.WriteLine(failure);
 return failures.Count == 0 ? 0 : 1;
+
+static Task RunSync(Action action)
+{
+    action();
+    return Task.CompletedTask;
+}
 
 static async Task ProductionClosedRegistryDefers()
 {

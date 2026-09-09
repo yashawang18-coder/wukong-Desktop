@@ -75,6 +75,10 @@ var tests = new (string Name, Action Run)[]
     ("reported commands keep rendered size at terminal hold", ReportedCommandTerminalHoldsKeepRenderScale),
     ("command groups share one batch visual scale", CommandGroupsShareOneBatchVisualScale),
     ("behavior agent mock closed keeps formal runtime unchanged", BehaviorAgentMockClosedKeepsFormalRuntime),
+    ("behavior agent rollout promotes only Resting", BehaviorAgentRolloutTests.DefaultRolloutPromotesOnlyResting),
+    ("Resting and Observing use explicit safe allowlists", BehaviorAgentRolloutTests.EpisodeBindingsUseExplicitSafeAllowlists),
+    ("ten thousand autonomous decisions never select forbidden capabilities", BehaviorAgentRolloutTests.TenThousandAutonomousDecisionsNeverSelectForbiddenCapabilities),
+    ("reducer-owned actions keep action-specific outcomes", BehaviorAgentRolloutTests.ReducerOwnedProfilesKeepActionSpecificOutcomes),
     ("developer forced command candidate can request playback", DeveloperForcedCommandCandidateCanRequestPlayback),
     ("magic candidate assets are indexed and validated", MagicCandidateAssetsAreIndexed),
     ("car ride candidate assets are indexed and gated", CarRideCandidateAssetsAreIndexedAndGated),
@@ -935,8 +939,8 @@ static void DeveloperLifecycleCandidateCanRequestPlayback()
     runtime.RequestPetPixelSize(192);
     Assert(requestedSize == 192, "developer size switch did not emit 192px request");
     runtime.CompleteMotion(LifecycleCandidateBehaviorIds.LivelyDailyP2, "exit");
-    Assert(runtime.CurrentStablePosture == StablePosture.Stand, "full lifecycle exit must finish in stable stand");
-    Assert(request.Motion.BehaviorId == LifecycleCandidateBehaviorIds.StandIdleMicroloop, "full lifecycle exit did not enter stand microloop");
+    Assert(runtime.CurrentStablePosture == StablePosture.Prone, "developer preview wrote its terminal posture into formal state");
+    Assert(request.Motion.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop, "developer preview did not restore the prior stable idle");
 }
 
 static void ApprovedAutonomousDailyTransitionsAreIndexedAndGated()
@@ -2610,6 +2614,7 @@ static void AutonomousTickCanRequestMotion()
         typeof(DesktopRuntimeHost)
             .GetField("_nextAutonomousDecisionAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
             .SetValue(runtime, now - TimeSpan.FromSeconds(1));
+        now = now.AddMinutes(1);
         runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
     }
 

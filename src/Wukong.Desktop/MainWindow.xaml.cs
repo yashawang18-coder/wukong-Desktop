@@ -561,7 +561,8 @@ public partial class MainWindow : Window
         if (_activeRequest is null)
             return;
 
-        var behaviorId = _activeRequest.Motion.BehaviorId;
+        var request = _activeRequest;
+        var behaviorId = request.Motion.BehaviorId;
         var phase = _runtime.CurrentPhase;
         _animationTimer.Stop();
         _coinSingleClickTimer.Stop();
@@ -569,7 +570,7 @@ public partial class MainWindow : Window
         var returnToIdle = _activeRequest.ReturnToIdle;
         _activeRequest = null;
         if (returnToIdle)
-            _runtime.CompleteMotion(behaviorId, phase);
+            _runtime.CompleteMotion(request.RequestId, behaviorId, phase);
     }
 
     private async Task StopCurrentBehaviorAsync(string reason)
@@ -1673,20 +1674,8 @@ public partial class MainWindow : Window
         ActualWidth > 0 ? ActualWidth : Width,
         ActualHeight > 0 ? ActualHeight : Height);
 
-    private PetRuntimeStateSnapshot BuildConversationRuntimeState() => new(
-        _runtime.CurrentBehaviorId,
-        Math.Clamp((_runtime.Energy + _runtime.Curiosity) / 2, 0, 1),
-        _runtime.Stress,
-        _runtime.Social,
-        _runtime.Curiosity,
-        _runtime.Curiosity,
-        1.0 - _runtime.Energy,
-        _runtime.Comfort)
-    {
-        CurrentPosture = _runtime.CurrentStablePosture.ToString(),
-        CurrentAction = _runtime.CurrentAction,
-        MoodValence = _runtime.Mood
-    };
+    private PetRuntimeStateSnapshot BuildConversationRuntimeState() =>
+        _runtime.BuildDialogueProjection().RuntimeState;
 
     private void ApplyVisiblePlacement(Point preferred)
     {

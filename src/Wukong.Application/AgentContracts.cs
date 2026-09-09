@@ -82,13 +82,16 @@ public sealed record OwnerProfileSnapshot(string CallName, string Schedule, stri
 
 public sealed record PersonalitySnapshot(double Liveliness, double Affection, double Sensitivity, double Independence, double Mischievousness)
 {
+    public double CommandCooperativeness { get; init; } = 0.82;
+
     public PersonalitySnapshot Clamp() => this with
     {
         Liveliness = Clamp01(Liveliness),
         Affection = Clamp01(Affection),
         Sensitivity = Clamp01(Sensitivity),
         Independence = Clamp01(Independence),
-        Mischievousness = Clamp01(Mischievousness)
+        Mischievousness = Clamp01(Mischievousness),
+        CommandCooperativeness = Clamp01(CommandCooperativeness)
     };
     public static PersonalitySnapshot Default { get; } = new(0.58, 0.76, 0.48, 0.62, 0.42);
     private static double Clamp01(double value) => Math.Clamp(value, 0, 1);
@@ -114,6 +117,11 @@ public sealed record PetRuntimeStateSnapshot(
     public string CurrentPosture { get; init; } = "prone";
     public string CurrentAction { get; init; } = "quiet_prone";
     public double MoodValence { get; init; } = 0.55;
+    public double Energy { get; init; } = 0.72;
+    public double Hunger { get; init; } = 0.26;
+    public double Thirst { get; init; } = 0.18;
+    public string Episode { get; init; } = "resting";
+    public bool IsBusy { get; init; }
 
     public PetRuntimeStateSnapshot Clamp() => this with
     {
@@ -123,6 +131,10 @@ public sealed record PetRuntimeStateSnapshot(
             ? (string.IsNullOrWhiteSpace(CurrentBehavior) ? "quiet_prone" : CurrentBehavior.Trim())
             : CurrentAction.Trim(),
         MoodValence = Clamp01(MoodValence),
+        Energy = Clamp01(Energy),
+        Hunger = Clamp01(Hunger),
+        Thirst = Clamp01(Thirst),
+        Episode = string.IsNullOrWhiteSpace(Episode) ? "resting" : Episode.Trim().ToLowerInvariant(),
         Arousal = Clamp01(Arousal),
         Stress = Clamp01(Stress),
         SocialDesire = Clamp01(SocialDesire),
