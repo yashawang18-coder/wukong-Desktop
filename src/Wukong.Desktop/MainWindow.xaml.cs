@@ -1610,7 +1610,7 @@ public partial class MainWindow : Window
                 return;
 
             var text = InitiativeSpeechSchedule.SelectMessage(_initiativeSpeechRandom, decision.Topic, _runtime.CurrentStablePosture);
-            _runtime.RecordInitiativeSpeech(decision.Topic);
+            _runtime.RecordInitiativeSpeech(decision.Topic, "state_rule");
             ShowSpeechBubble(text);
         }
         catch (Exception ex)

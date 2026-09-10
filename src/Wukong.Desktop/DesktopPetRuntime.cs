@@ -3758,12 +3758,19 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             IsPetrified,
             isChatExpanded,
             now.Hour is >= 23 or < 7,
-            _decisionSeed + _autonomousDecisionCount + (int)(now.Ticks % int.MaxValue)));
-        Trace("initiative_speech_decision", $"speak={decision.ShouldSpeak} topic={decision.Topic} reason={decision.ReasonCode}");
+            _decisionSeed + _autonomousDecisionCount + (int)(now.Ticks % int.MaxValue))
+        {
+            Episode = _petAgentState.Episode.Kind
+        });
+        var scores = string.Join(",", decision.Candidates
+            .OrderByDescending(candidate => candidate.Score)
+            .Take(3)
+            .Select(candidate => $"{candidate.Topic}:{candidate.Score:0.00}"));
+        Trace("initiative_speech_decision", $"speak={decision.ShouldSpeak} topic={decision.Topic} reason={decision.ReasonCode} episode={_petAgentState.Episode.Kind} next_seconds={decision.NextCheck.TotalSeconds:0} scores=[{scores}]");
         return decision;
     }
 
-    public void RecordInitiativeSpeech(InitiativeSpeechTopic topic)
+    public void RecordInitiativeSpeech(InitiativeSpeechTopic topic, string generationReason = "local_rule")
     {
         _lastInitiativeSpeechAt = _now();
         _agentState = _agentState with
@@ -3772,7 +3779,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             LastInteractionAt = _lastInitiativeSpeechAt
         };
         RaiseMetrics();
-        Trace("initiative_speech_shown", $"topic={topic}");
+        Trace("initiative_speech_shown", $"topic={topic} generation={generationReason}");
     }
 
     public Task<PetActionResult> SubmitContextMenuIntentAsync(SemanticIntent intent)

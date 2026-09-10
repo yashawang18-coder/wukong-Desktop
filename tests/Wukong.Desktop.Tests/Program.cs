@@ -775,8 +775,17 @@ static void DesktopChatAndInitiativeContract()
     Assert(!InitiativeSpeechSchedule.CanSpeakDuring("wk.interaction.car_ride", false), "car ride should suppress initiative speech");
     Assert(!InitiativeSpeechSchedule.CanSpeakDuring("wk.command.jump", false), "command motion should suppress initiative speech");
     Assert(InitiativeSpeechSchedule.CanSpeakDuring(LifecycleCandidateBehaviorIds.StandIdleMicroloop, false), "stable idle should allow initiative speech");
+    Assert(InitiativeSpeechSchedule.CanSpeakDuring(LifecycleReviewCandidateBehaviorIds.SitIdleV3R1, false), "approved V3R1 stable idle should allow initiative speech");
+    Assert(InitiativeSpeechSchedule.CanSpeakDuring(LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4, false), "approved V4 stable idle should allow initiative speech");
     var hungerText = InitiativeSpeechSchedule.SelectMessage(new Random(4), InitiativeSpeechTopic.Hunger, StablePosture.Sit);
     Assert(hungerText.Contains("饿", StringComparison.Ordinal) || hungerText.Contains("肚子", StringComparison.Ordinal) || hungerText.Contains("吃", StringComparison.Ordinal), "hunger initiative used unrelated copy");
+    var thirstText = InitiativeSpeechSchedule.SelectMessage(new Random(4), InitiativeSpeechTopic.Thirst, StablePosture.Sit);
+    Assert(thirstText.Contains("渴", StringComparison.Ordinal) || thirstText.Contains("水", StringComparison.Ordinal), "thirst initiative used unrelated copy");
+    foreach (var topic in Enum.GetValues<InitiativeSpeechTopic>().Where(x => x != InitiativeSpeechTopic.None))
+    {
+        var text = InitiativeSpeechSchedule.SelectMessage(new Random(11), topic, StablePosture.Prone);
+        Assert(PetReplyPolicy.Constrain(text) == text, $"initiative copy for {topic} exceeds the short pet reply policy");
+    }
 }
 
 static void MainWindowPetScaleChangesImageSize()

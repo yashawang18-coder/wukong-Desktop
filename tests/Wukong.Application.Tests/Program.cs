@@ -597,6 +597,43 @@ static Task InitiativeSpeechUsesStateAndSuppressions()
     Assert(service.Decide(hungry with { State = hungry.State with { Stress = 0.90 } }).ReasonCode == "stress_safety_limit", "stress did not suppress initiative speech");
     Assert(service.Decide(hungry with { Relationship = RelationshipState.Default with { InitiativeAcceptance = 0.10 } }).ReasonCode == "initiative_acceptance_low", "relationship acceptance did not suppress initiative speech");
     Assert(service.Decide(hungry with { LastSpokenAt = now - TimeSpan.FromMinutes(1) }).ReasonCode == "initiative_cooldown", "cooldown did not suppress repeated initiative speech");
+
+    var thirsty = hungry with
+    {
+        State = hungry.State with { Hunger = 0.12, Thirst = 0.98 },
+        RandomSeed = 17
+    };
+    var thirstDecision = service.Decide(thirsty);
+    Assert(thirstDecision.ShouldSpeak && thirstDecision.Topic == InitiativeSpeechTopic.Thirst, "high thirst did not select a drink-related initiative");
+    Assert(thirstDecision.NextCheck >= TimeSpan.FromSeconds(60) && thirstDecision.NextCheck <= TimeSpan.FromSeconds(120), "urgent needs did not use the short check interval");
+
+    var calm = hungry with
+    {
+        State = PetRuntimeState.Default with
+        {
+            Hunger = 0.12,
+            Thirst = 0.12,
+            SocialNeed = 0.20,
+            Boredom = 0.16,
+            Energy = 0.82,
+            Stress = 0.05,
+            IsBusy = false
+        },
+        RandomSeed = 17
+    };
+    Assert(service.Decide(calm).NextCheck >= TimeSpan.FromSeconds(150), "calm state checked initiative speech too frequently");
+
+    var observing = service.Decide(calm with { Episode = PetEpisodeKind.Observing });
+    var resting = service.Decide(calm with { Episode = PetEpisodeKind.Resting });
+    var observingCuriosity = observing.Candidates.Single(x => x.Topic == InitiativeSpeechTopic.Curiosity).Score;
+    var restingCuriosity = resting.Candidates.Single(x => x.Topic == InitiativeSpeechTopic.Curiosity).Score;
+    Assert(observingCuriosity > restingCuriosity, "Observing episode did not raise curiosity speech relevance");
+
+    var recentlyHandled = calm with { State = calm.State with { LastInteractionAt = now - TimeSpan.FromMinutes(2) } };
+    var longUnattended = calm with { State = calm.State with { LastInteractionAt = now - TimeSpan.FromMinutes(70) } };
+    var recentCompanionship = service.Decide(recentlyHandled).Candidates.Single(x => x.Topic == InitiativeSpeechTopic.Companionship).Score;
+    var unattendedCompanionship = service.Decide(longUnattended).Candidates.Single(x => x.Topic == InitiativeSpeechTopic.Companionship).Score;
+    Assert(unattendedCompanionship > recentCompanionship, "long inactivity did not raise restrained companionship speech relevance");
     return Task.CompletedTask;
 }
 
