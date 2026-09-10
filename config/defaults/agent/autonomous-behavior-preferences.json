@@ -1,0 +1,6 @@
+{
+  "WalkingWeight": 1.35,
+  "ProneRestWeight": 1.45,
+  "SleepingWeight": 1.25,
+  "StandingIdleWeight": 0.4
+}

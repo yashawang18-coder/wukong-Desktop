@@ -11,7 +11,7 @@
     },
     "OpenAICompatible": {
       "Provider": "OpenAICompatible",
-      "BaseUrl": "https://api.deepseek.com/v1",
+      "BaseUrl": "https://api.deepseek.com",
       "Model": "deepseek-chat",
       "TimeoutSeconds": 60,
       "Temperature": 0.7,

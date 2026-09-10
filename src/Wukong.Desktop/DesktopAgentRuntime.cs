@@ -16,6 +16,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         IChatModelRuntime models,
         IAgentProfileStore profiles,
         IAgentMemoryConfigurationStore memoryConfiguration,
+        IAutonomousBehaviorPreferencesStore autonomousBehaviorPreferences,
         IConversationHistoryStore history,
         IConversationMemoryStore memory,
         IDeveloperSession developerSession,
@@ -28,6 +29,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         Models = models;
         Profiles = profiles;
         MemoryConfiguration = memoryConfiguration;
+        AutonomousBehaviorPreferences = autonomousBehaviorPreferences;
         History = history;
         Memory = memory;
         DeveloperSession = developerSession;
@@ -40,6 +42,7 @@ public sealed class DesktopAgentRuntime : IDisposable
     public IChatModelRuntime Models { get; }
     public IAgentProfileStore Profiles { get; }
     public IAgentMemoryConfigurationStore MemoryConfiguration { get; }
+    public IAutonomousBehaviorPreferencesStore AutonomousBehaviorPreferences { get; }
     public IConversationHistoryStore History { get; }
     public IConversationMemoryStore Memory { get; }
     public IDeveloperSession DeveloperSession { get; }
@@ -66,6 +69,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         var models = new ConfiguredChatModelRuntime(configurations, secrets, providers);
         var profiles = new LocalAgentProfileStore(profileRoot);
         var memoryConfiguration = new FileAgentMemoryConfigurationStore(agentRoot);
+        var autonomousBehaviorPreferences = new FileAutonomousBehaviorPreferencesStore(agentRoot);
         var history = new FileConversationHistoryStore(agentRoot);
         var memory = new FileConversationMemoryStore(agentRoot);
         var developer = new DeveloperSession();
@@ -80,7 +84,8 @@ public sealed class DesktopAgentRuntime : IDisposable
             history,
             memory,
             diagnostics);
-        return new(httpClient, conversation, models, profiles, memoryConfiguration, history, memory, developer, diagnostics, mockState, dataPaths);
+        return new(httpClient, conversation, models, profiles, memoryConfiguration, autonomousBehaviorPreferences,
+            history, memory, developer, diagnostics, mockState, dataPaths);
     }
 
     public async Task AppendLocalAssistantMessageAsync(string text, CancellationToken cancellationToken = default)

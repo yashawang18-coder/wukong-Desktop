@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Import the eight v19 coin masters and derive deterministic flip frames.
 
-The source images already define the approved candidate artwork and shared alpha
-silhouette. This tool does not redraw or recolor visible pixels. It only clears
-RGB values under fully transparent pixels and derives the narrow flip views by
-premultiplied-alpha horizontal resampling.
+The four refined fronts are normalized as whole images to the established v19
+runtime footprint. The four canonical backs are preserved. No face artwork is
+redrawn or recolored; intermediate views are premultiplied-alpha horizontal
+compressions of the corresponding front/back pair.
 """
 
 from __future__ import annotations
@@ -25,10 +25,10 @@ VERSION_ROOT = COIN / "v19"
 FACE_BOUNDS = (62, 70, 962, 952)
 FLIP_WIDTHS = (900, 845, 672, 415, 112, 415, 672, 845, 900)
 STATE_FILES = {
-    "vivid": ("state-01-vivid.png", "dog_coin_front_state_01.png", "dog_coin_back_state_01.png"),
-    "flat": ("state-02-flat.png", "dog_coin_front_state_02.png", "dog_coin_back_state_02.png"),
-    "faded": ("state-03-faded.png", "dog_coin_front_state_03.png", "dog_coin_back_state_03.png"),
-    "exhausted": ("state-04-exhausted.png", "dog_coin_front_state_04.png", "dog_coin_back_state_04.png"),
+    "vivid": ("state-01-vivid.png", "dog-coin-transparent.png", "dog_coin_back_state_01.png"),
+    "flat": ("state-02-flat.png", "coin_front_narrow_outer_rim_transparent.png", "dog_coin_back_state_02.png"),
+    "faded": ("state-03-faded.png", "dog-coin-transparent(1).png", "dog_coin_back_state_03.png"),
+    "exhausted": ("state-04-exhausted.png", "dog-coin-01-transparent.png", "dog_coin_back_state_04.png"),
 }
 
 
@@ -47,17 +47,38 @@ def save_png(image: Image.Image, path: Path) -> None:
     temporary.replace(path)
 
 
-def canonical_face(source: Path) -> Image.Image:
+def canonical_face(source: Path) -> tuple[Image.Image, tuple[int, int], tuple[int, int, int, int], bool]:
     with Image.open(source) as opened:
         opened.load()
-        if opened.format != "PNG" or opened.mode != "RGBA" or opened.size != (1024, 1024):
-            raise ValueError(f"source must be a 1024x1024 RGBA PNG: {source}")
-        if opened.getchannel("A").getbbox() != FACE_BOUNDS:
-            raise ValueError(f"source visible bounds differ from {FACE_BOUNDS}: {source}")
+        if opened.format != "PNG" or opened.mode != "RGBA":
+            raise ValueError(f"source must be an RGBA PNG: {source}")
+        source_size = opened.size
+        source_bounds = opened.getchannel("A").getbbox()
+        if source_bounds is None:
+            raise ValueError(f"source has no visible pixels: {source}")
         rgba = np.asarray(opened).copy()
 
     rgba[rgba[:, :, 3] == 0, :3] = 0
-    return Image.fromarray(rgba, "RGBA")
+    cleaned = Image.fromarray(rgba, "RGBA")
+    if cleaned.size == (1024, 1024) and source_bounds == FACE_BOUNDS:
+        return cleaned, source_size, source_bounds, False
+
+    source_width = source_bounds[2] - source_bounds[0]
+    source_height = source_bounds[3] - source_bounds[1]
+    target_width = FACE_BOUNDS[2] - FACE_BOUNDS[0]
+    target_height = FACE_BOUNDS[3] - FACE_BOUNDS[1]
+    source_ratio = source_width / source_height
+    target_ratio = target_width / target_height
+    if abs(source_ratio - target_ratio) / target_ratio > 0.015:
+        raise ValueError(f"source aspect ratio cannot be normalized safely: {source}")
+
+    visible = cleaned.crop(source_bounds)
+    normalized_visible = resize_rgba_premultiplied(visible, (target_width, target_height))
+    normalized = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
+    normalized.paste(normalized_visible, FACE_BOUNDS[:2])
+    if normalized.getchannel("A").getbbox() != FACE_BOUNDS:
+        raise ValueError(f"normalized visible bounds differ from {FACE_BOUNDS}: {source}")
+    return normalized, source_size, source_bounds, True
 
 
 def resize_rgba_premultiplied(image: Image.Image, size: tuple[int, int]) -> Image.Image:
@@ -219,11 +240,11 @@ def update_manifests(
             "sha256": sha256(previews[1]),
         },
     ]
-    revision_id = "2026-09-07-v19-eight-master-import"
+    revision_id = "2026-09-10-v19-refined-front-import"
     revision = {
         "id": revision_id,
-        "date": "2026-09-07",
-        "change": "Imported eight v19 coin masters into a versioned candidate path, cleared hidden RGB under zero alpha, and derived four nine-frame flip sequences without redrawing visible artwork.",
+        "date": "2026-09-10",
+        "change": "Replaced the four v19 fronts with owner-supplied refined-edge masters, normalized each complete front to the established runtime footprint, preserved the four existing backs, and rebuilt all four nine-frame flip sequences without redrawing or recoloring artwork.",
         "visual_approved": False,
         "runtime_validation": "pending_windows_renderer_qa",
         "runtime_approved": False,
@@ -233,12 +254,14 @@ def update_manifests(
         item for item in coin_manifest.get("revision_notes", []) if item.get("id") != revision_id
     ] + [revision]
     coin_manifest["edge_baseline"] = {
-        "profile": "v19_source_shared_alpha",
+        "profile": "v19_refined_fronts_shared_bounds",
         "visible_bounds": {"x": 62, "y": 70, "width": 900, "height": 882},
-        "faces_share_exact_alpha": True,
+        "faces_share_exact_alpha": False,
+        "faces_share_exact_visible_bounds": True,
+        "refined_front_alpha_preserved": True,
         "transparent_rgb_zeroed": True,
         "flip_widths": list(FLIP_WIDTHS),
-        "repair_scope": "zero-alpha RGB sanitation and deterministic flip derivation only",
+        "repair_scope": "whole-front deterministic normalization, zero-alpha RGB sanitation, and deterministic flip derivation only",
     }
     write_json(coin_manifest_path, coin_manifest)
 
@@ -269,8 +292,8 @@ def update_manifests(
     batch_asset = json.loads(batch_asset_path.read_text(encoding="utf-8"))
     batch_revision = {
         "id": revision_id,
-        "date": "2026-09-07",
-        "change": "Pointed the owner-only petrified coin prototype at the versioned v19 eight-master set and deterministic flip derivatives. Existing magic gates remain closed.",
+        "date": "2026-09-10",
+        "change": "Updated the owner-only petrified coin v19 prototype with four refined fronts and rebuilt deterministic flip derivatives. Existing magic gates remain closed.",
         "visual_approved": False,
         "runtime_validation": "pending_windows_renderer_qa",
         "runtime_approved": False,
@@ -316,7 +339,7 @@ def update_manifests(
         },
         "runtime_checksums": "SHA256SUMS.txt",
         "validation_report": "IMPORT-VALIDATION-REPORT.json",
-        "notes": "Eight owner-supplied v19 masters plus deterministic flip derivatives. Windows WPF visual QA is still required before runtime approval.",
+        "notes": "Four refined owner-supplied v19 fronts, four preserved v19 backs, and deterministic flip derivatives. Windows WPF visual QA is still required before runtime approval.",
     }
     write_json(VERSION_ROOT / "asset.json", asset)
 
@@ -329,10 +352,13 @@ def update_manifests(
         "derived_flip_frame_count": len(runtime_records) - len(source_records),
         "all_png_decode": True,
         "all_png_rgba_1024": True,
-        "shared_face_alpha": True,
+        "shared_face_alpha": False,
+        "shared_face_visible_bounds": True,
         "shared_visible_bounds": [62, 70, 962, 952],
         "transparent_rgb_zeroed": True,
-        "visible_source_pixels_preserved": True,
+        "visible_source_pixels_preserved_exactly": False,
+        "visible_artwork_content_preserved": True,
+        "front_whole_image_normalization": True,
         "runtime_validation": "pending_windows_renderer_qa",
         "records": runtime_records,
     }
@@ -340,15 +366,16 @@ def update_manifests(
 
     readme = """# Petrified Coin v19 Candidate
 
-This versioned candidate contains eight owner-supplied coin masters: front and
-back faces for vivid, flat, faded, and exhausted states. It also contains four
-deterministically derived nine-frame front-to-back flip sequences.
+This versioned candidate contains four owner-supplied refined front masters and
+four preserved back masters for vivid, flat, faded, and exhausted states. It
+also contains four deterministically derived nine-frame front-to-back flips.
 
-The import does not redraw, recolor, crop, or resize visible master artwork.
-RGB is cleared only where alpha is exactly zero to avoid fringe during WPF
-resampling. Intermediate flip frames are horizontal compressions of the matching
-front/back pair using premultiplied-alpha Lanczos resampling. Frame 1 and frame 9
-are exact pixel copies of the canonical front and back faces.
+The refined 1254 px fronts are normalized as complete images to the established
+1024 px runtime canvas and shared visible bounds. The four 1024 px back masters
+retain their visible artwork; only hidden RGB under zero alpha is cleared. No
+face is locally patched, redrawn, recolored, sharpened, or blurred. Intermediate flip frames
+are premultiplied-alpha horizontal compressions of the matching face pair.
+Frame 1 and frame 9 exactly match the normalized front and canonical back.
 
 The active owner preview remains behind the existing magic PrototypePreview gate.
 This package is not production-approved and requires Windows transparent WPF
@@ -360,10 +387,9 @@ renderer review before `runtime_approved` or `runtime_use` can change.
 def validate_outputs(runtime_paths: list[Path], faces: dict[tuple[str, str], Image.Image]) -> None:
     if len(runtime_paths) != 44 or len(set(runtime_paths)) != 44:
         raise ValueError(f"expected 44 unique runtime PNGs, found {len(runtime_paths)}")
-    shared_alpha = faces[("vivid", "front")].getchannel("A").tobytes()
     for face in faces.values():
-        if face.getchannel("A").tobytes() != shared_alpha:
-            raise ValueError("v19 source masters do not share an exact alpha mask")
+        if face.getchannel("A").getbbox() != FACE_BOUNDS:
+            raise ValueError("v19 runtime faces do not share the canonical visible bounds")
     for path in runtime_paths:
         with Image.open(path) as image:
             image.load()
@@ -407,7 +433,15 @@ def main() -> None:
             source_records.append(
                 {"state": state, "side": side, "source_file": source_name, "bytes": source.stat().st_size, "sha256": sha256(source)}
             )
-            face = canonical_face(source)
+            face, source_size, source_bounds, normalized = canonical_face(source)
+            source_records[-1].update(
+                {
+                    "source_width": source_size[0],
+                    "source_height": source_size[1],
+                    "source_visible_bounds": list(source_bounds),
+                    "whole_image_normalized": normalized,
+                }
+            )
             target = VERSION_ROOT / side / target_name
             save_png(face, target)
             faces[(state, side)] = face

@@ -36,6 +36,7 @@ public partial class ControlPanelWindow : Window
     private bool _modelUiReady;
     private string _activeModelTab = "Model";
     private AgentMemoryConfiguration _memoryConfiguration = AgentMemoryConfiguration.Default;
+    private AutonomousBehaviorPreferences _autonomousBehaviorPreferences = AutonomousBehaviorPreferences.Default;
     private PetProfileSnapshot _loadedPetProfile = PetProfileSnapshot.Default;
     private OwnerProfileSnapshot _loadedOwnerProfile = OwnerProfileSnapshot.Default;
     private bool _changingDeveloperMode;
@@ -147,6 +148,12 @@ public partial class ControlPanelWindow : Window
         ModelPage.Visibility = page == "Model" ? Visibility.Visible : Visibility.Collapsed;
         AssetsPage.Visibility = page == "Assets" ? Visibility.Visible : Visibility.Collapsed;
         DeveloperPage.Visibility = page == "Developer" ? Visibility.Visible : Visibility.Collapsed;
+        OwnerNavButton.Style = NavButtonStyle(page == "Owner");
+        ProfileNavButton.Style = NavButtonStyle(page == "Profile");
+        AlbumNavButton.Style = NavButtonStyle(page == "Album");
+        ModelNavButton.Style = NavButtonStyle(page == "Model");
+        AssetsNavButton.Style = NavButtonStyle(page == "Assets");
+        DeveloperNavButton.Style = NavButtonStyle(page == "Developer");
     }
 
     private void ChooseAlbumRoot_Click(object sender, RoutedEventArgs e)
@@ -472,6 +479,26 @@ public partial class ControlPanelWindow : Window
         }
     }
 
+    private async void SaveAutonomousPreferences_Click(object sender, RoutedEventArgs e)
+    {
+        var preferences = new AutonomousBehaviorPreferences(
+            WalkingPreferenceSlider.Value / 100.0,
+            PronePreferenceSlider.Value / 100.0,
+            SleepPreferenceSlider.Value / 100.0,
+            StandingPreferenceSlider.Value / 100.0).Clamp();
+        try
+        {
+            await _agent.AutonomousBehaviorPreferences.SaveAsync(preferences);
+            _autonomousBehaviorPreferences = preferences;
+            _runtime.UpdateAutonomousBehaviorPreferences(preferences);
+            AutonomousPreferenceSaveStatus.Text = "已保存";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            AutonomousPreferenceSaveStatus.Text = $"保存失败：{ex.GetType().Name}";
+        }
+    }
+
     private async void SaveModelConfig_Click(object sender, RoutedEventArgs e) => await SaveModelConfigurationAsync();
 
     private async Task LoadAgentUiAsync()
@@ -483,7 +510,8 @@ public partial class ControlPanelWindow : Window
         var configurationsTask = _agent.Models.GetConfigurationsAsync();
         var activeTask = _agent.Models.GetActiveConfigurationAsync();
         var memoryConfigurationTask = _agent.MemoryConfiguration.LoadAsync();
-        await Task.WhenAll(petTask, ownerTask, personalityTask, promptTask, configurationsTask, activeTask, memoryConfigurationTask);
+        var autonomousPreferencesTask = _agent.AutonomousBehaviorPreferences.LoadAsync();
+        await Task.WhenAll(petTask, ownerTask, personalityTask, promptTask, configurationsTask, activeTask, memoryConfigurationTask, autonomousPreferencesTask);
 
         var pet = await petTask;
         _loadedPetProfile = pet;
@@ -504,6 +532,9 @@ public partial class ControlPanelWindow : Window
         PetPromptText.Text = await promptTask;
         _memoryConfiguration = await memoryConfigurationTask;
         ApplyMemoryConfigurationToUi(_memoryConfiguration);
+        _autonomousBehaviorPreferences = await autonomousPreferencesTask;
+        ApplyAutonomousPreferencesToUi(_autonomousBehaviorPreferences);
+        _runtime.UpdateAutonomousBehaviorPreferences(_autonomousBehaviorPreferences);
         LoadAvatarIfAvailable();
 
         _providerConfigurations.Clear();
@@ -519,6 +550,15 @@ public partial class ControlPanelWindow : Window
         await RefreshMemoryCandidatesAsync();
         UpdateDeveloperVisibility();
         SelectModelTab("Model");
+    }
+
+    private void ApplyAutonomousPreferencesToUi(AutonomousBehaviorPreferences preferences)
+    {
+        preferences = preferences.Clamp();
+        WalkingPreferenceSlider.Value = preferences.WalkingWeight * 100;
+        PronePreferenceSlider.Value = preferences.ProneRestWeight * 100;
+        SleepPreferenceSlider.Value = preferences.SleepingWeight * 100;
+        StandingPreferenceSlider.Value = preferences.StandingIdleWeight * 100;
     }
 
     private async void ModelProviderCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -641,7 +681,21 @@ public partial class ControlPanelWindow : Window
         {
             _agentRequestCancellation.Dispose();
             _agentRequestCancellation = null;
+            RestoreAgentInputFocus(input);
         }
+    }
+
+    private void RestoreAgentInputFocus(TextBox input)
+    {
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            if (!IsVisible || !input.IsVisible || !input.IsEnabled)
+                return;
+            Activate();
+            input.Focus();
+            System.Windows.Input.Keyboard.Focus(input);
+            input.CaretIndex = input.Text.Length;
+        }));
     }
 
     private async Task ReloadChatHistoryAsync()
@@ -792,6 +846,12 @@ public partial class ControlPanelWindow : Window
         ModelPage.Visibility = Visibility.Collapsed;
         AssetsPage.Visibility = Visibility.Collapsed;
         DeveloperPage.Visibility = Visibility.Visible;
+        OwnerNavButton.Style = NavButtonStyle(false);
+        ProfileNavButton.Style = NavButtonStyle(false);
+        AlbumNavButton.Style = NavButtonStyle(false);
+        ModelNavButton.Style = NavButtonStyle(false);
+        AssetsNavButton.Style = NavButtonStyle(false);
+        DeveloperNavButton.Style = NavButtonStyle(true);
         RefreshDiagnosticsView();
     }
 
@@ -806,6 +866,8 @@ public partial class ControlPanelWindow : Window
         {
             DeveloperPage.Visibility = Visibility.Collapsed;
             OwnerPage.Visibility = Visibility.Visible;
+            OwnerNavButton.Style = NavButtonStyle(true);
+            DeveloperNavButton.Style = NavButtonStyle(false);
         }
     }
 
@@ -1064,6 +1126,8 @@ public partial class ControlPanelWindow : Window
     }
 
     private Style PanelTabStyle(bool selected) => (Style)FindResource(selected ? "PanelTabButtonSelected" : "PanelTabButton");
+
+    private Style NavButtonStyle(bool selected) => (Style)FindResource(selected ? "NavButtonSelected" : "NavButton");
 
     private async void ShowMagic_Click(object sender, RoutedEventArgs e)
     {
@@ -1336,7 +1400,7 @@ public partial class ControlPanelWindow : Window
 
         if (!Directory.Exists(_albumRoot))
         {
-            AlbumStatusText.Text = "0 albums";
+            AlbumStatusText.Text = "0 个子相册";
             SelectAlbum(null);
             return;
         }
@@ -1346,7 +1410,7 @@ public partial class ControlPanelWindow : Window
                      .OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
             _albumFolders.Add(AlbumFolderItem.FromDirectory(directory));
 
-        AlbumStatusText.Text = $"{_albumFolders.Count} albums";
+        AlbumStatusText.Text = $"{_albumFolders.Count} 个子相册";
         SelectAlbum(_albumFolders.FirstOrDefault());
     }
 

@@ -125,24 +125,26 @@ class MagicSpecialsCandidateTests(unittest.TestCase):
 
     def test_coin_edge_baseline_is_shared_and_transparent_rgb_is_clean(self):
         baseline = self.coin["edge_baseline"]
-        self.assertEqual(baseline["profile"], "v19_source_shared_alpha")
-        self.assertTrue(baseline["faces_share_exact_alpha"])
+        self.assertEqual(baseline["profile"], "v19_refined_fronts_shared_bounds")
+        self.assertFalse(baseline["faces_share_exact_alpha"])
+        self.assertTrue(baseline["faces_share_exact_visible_bounds"])
+        self.assertTrue(baseline["refined_front_alpha_preserved"])
         self.assertTrue(baseline["transparent_rgb_zeroed"])
 
         face_relatives = [side for state in self.coin["states"] for side in (state["front"], state["back"])]
-        with Image.open(BATCH / face_relatives[0]) as image:
-            shared_face_alpha = image.getchannel("A").tobytes()
-        for relative in face_relatives[1:]:
+        shared = self.coin["canvas"]["shared_visible_bounds"]
+        expected_bounds = (shared["x"], shared["y"], shared["x"] + shared["width"], shared["y"] + shared["height"])
+        for relative in face_relatives:
             with Image.open(BATCH / relative) as image:
-                self.assertEqual(image.getchannel("A").tobytes(), shared_face_alpha, f"face alpha drift: {relative}")
+                self.assertEqual(image.getchannel("A").getbbox(), expected_bounds, f"face bounds drift: {relative}")
 
         for index in range(1, 10):
-            alphas = []
+            bounds = []
             for relative_directory in self.coin["flip"]["front_to_back"]["directories_by_state"].values():
                 relative = f"{relative_directory}/frame-{index:03d}.png"
                 with Image.open(BATCH / relative) as image:
-                    alphas.append(image.getchannel("A").tobytes())
-            self.assertTrue(all(alpha == alphas[0] for alpha in alphas[1:]), f"flip alpha drift at frame {index}")
+                    bounds.append(image.getchannel("A").getbbox())
+            self.assertTrue(all(bound == bounds[0] for bound in bounds[1:]), f"flip bounds drift at frame {index}")
 
         relatives = face_relatives + [
             f"{relative_directory}/frame-{index:03d}.png"
@@ -178,10 +180,10 @@ class MagicSpecialsCandidateTests(unittest.TestCase):
             "dog_coin_back_state_02.png": "8abb767ca556ce3d17e9f607bf5b42738b10105f0111592b58162e8e4d6fbaa0",
             "dog_coin_back_state_03.png": "692c9894a6f125308906d5a6103a16f6064022f2f94cb919eb807a22f2ff19a7",
             "dog_coin_back_state_04.png": "7ba408ae1c7b5cc19d91a46a50d2dedfef794e0eb938595b5c84b3424e3a8c34",
-            "dog_coin_front_state_01.png": "2586397f4e8719b367a768a4aefeb682c60ec4aa58982487604e1c6fd5bfb294",
-            "dog_coin_front_state_02.png": "193b0ebc01e4e83c849189cf45a22613beb93f434147c44949ea1f636e3ca749",
-            "dog_coin_front_state_03.png": "a6c127e342ece94696e7320535c72d9ab495a8ea79c944a16ffa849597eafa99",
-            "dog_coin_front_state_04.png": "61f753b177fd91959f0ce082ae06462e2c7b1733f2c78ab293e3a7f8b1622e6b",
+            "dog-coin-transparent.png": "5ac7a856230b104ded288fe4aabfa6b7ea47cce3744e653da9e0dabdb318b53a",
+            "coin_front_narrow_outer_rim_transparent.png": "ecf1fc2eb605537c81df18e9e5cce880701e2e6458295272acf2bed48f767112",
+            "dog-coin-transparent(1).png": "c368824e2549025c3e6e04a1ba3de56e1a458b43b2a0a0bfee3431dcf9d09379",
+            "dog-coin-01-transparent.png": "86a547d243dfdd6a0262ea3877f91a94e2fab255b02a521d39150a82c89e28a4",
         }
         actual = {}
         for line in (BATCH / "petrificus_coin/v19/SOURCE-SHA256SUMS.txt").read_text(encoding="utf-8").splitlines():

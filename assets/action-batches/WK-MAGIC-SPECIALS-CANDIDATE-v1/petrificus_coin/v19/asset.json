@@ -60,5 +60,5 @@
   },
   "runtime_checksums": "SHA256SUMS.txt",
   "validation_report": "IMPORT-VALIDATION-REPORT.json",
-  "notes": "Eight owner-supplied v19 masters plus deterministic flip derivatives. Windows WPF visual QA is still required before runtime approval."
+  "notes": "Four refined owner-supplied v19 fronts, four preserved v19 backs, and deterministic flip derivatives. Windows WPF visual QA is still required before runtime approval."
 }

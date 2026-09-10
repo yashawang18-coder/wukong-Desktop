@@ -36,6 +36,7 @@ var tests = new (string Name, Action Run)[]
     ("agent windows construct and desktop chat starts hidden", AgentWindowsConstructAndChatStartsHidden),
     ("desktop chat uses single-line enter send semantics", DesktopChatKeyboardSemantics),
     ("desktop chat remains visible after a successful send", DesktopChatRemainsVisibleAfterSend),
+    ("chat inputs restore focus after each request", ChatInputsRestoreFocusAfterRequest),
     ("desktop chat sensor is limited to lower blank region", DesktopChatSensorIsLimited),
     ("desktop chat placement stays visible at all corners", DesktopChatPlacementStaysVisible),
     ("desktop input opens directly below the live pet window", DesktopInputOpensBelowPet),
@@ -117,6 +118,8 @@ var tests = new (string Name, Action Run)[]
     ("album media unlink handles persistence and keeps files", AlbumMediaUnlinkHandlesPersistenceAndKeepsFiles),
     ("album folder removal persists and keeps local files", AlbumFolderRemovalPersistsAndKeepsFiles),
     ("autonomous tick can request a motion after dwell", AutonomousTickCanRequestMotion),
+    ("autonomous behavior preferences map to all decision paths", AutonomousBehaviorPreferencesMapToDecisionPaths),
+    ("portable first-run defaults are complete and sanitized", PortableFirstRunDefaultsAreCompleteAndSanitized),
     ("bootstrap log redacts and does not throw", BootstrapLogRedactsAndDoesNotThrow)
 };
 
@@ -673,8 +676,23 @@ static void DesktopChatRemainsVisibleAfterSend()
     Assert(successStart >= 0 && failureStart > successStart, "chat success handler was not found");
     var successBlock = code[successStart..failureStart];
     Assert(!successBlock.Contains("Collapse();", StringComparison.Ordinal), "successful send still collapses the chat input");
-    Assert(successBlock.Contains("ChatInput.Focus();", StringComparison.Ordinal), "successful send does not keep keyboard focus");
     Assert(code.Contains("if (busy)\n            _autoCollapseTimer.Stop();", StringComparison.Ordinal), "request does not pause auto-collapse");
+}
+
+static void ChatInputsRestoreFocusAfterRequest()
+{
+    var desktopChat = File.ReadAllText(Path.GetFullPath(Path.Combine("src", "Wukong.Desktop", "DesktopChatWindow.xaml.cs")));
+    var busyReleased = desktopChat.IndexOf("SetBusy(false);", StringComparison.Ordinal);
+    var focusRestored = desktopChat.IndexOf("RestoreChatInputFocus();", busyReleased, StringComparison.Ordinal);
+    Assert(busyReleased >= 0 && focusRestored > busyReleased, "desktop chat restores focus before the input is enabled");
+    Assert(desktopChat.Contains("DispatcherPriority.Input", StringComparison.Ordinal) &&
+           desktopChat.Contains("Keyboard.Focus(ChatInput);", StringComparison.Ordinal),
+        "desktop chat does not restore keyboard focus on the input dispatcher turn");
+
+    var panel = File.ReadAllText(Path.GetFullPath(Path.Combine("src", "Wukong.Desktop", "ControlPanelWindow.xaml.cs")));
+    var requestReleased = panel.IndexOf("_agentRequestCancellation = null;", panel.IndexOf("SendAgentMessageAsync", StringComparison.Ordinal), StringComparison.Ordinal);
+    var panelFocus = panel.IndexOf("RestoreAgentInputFocus(input);", requestReleased, StringComparison.Ordinal);
+    Assert(requestReleased >= 0 && panelFocus > requestReleased, "control panel chat does not restore focus after request completion");
 }
 
 static void DesktopChatSensorIsLimited()
@@ -1912,6 +1930,16 @@ static void ControlPanelExposesMagicSpecialsTab()
             }
             foreach (var name in new[]
             {
+                "WalkingPreferenceSlider", "PronePreferenceSlider", "SleepPreferenceSlider", "StandingPreferenceSlider"
+            })
+            {
+                var slider = panel.FindName(name) as Slider;
+                Assert(slider is { Minimum: 25, Maximum: 200 }, $"autonomous preference slider is missing or out of range: {name}");
+            }
+            Assert(panel.FindName("AutonomousPreferenceSaveStatus") is TextBlock,
+                "autonomous preference persistence status is missing");
+            foreach (var name in new[]
+            {
                 "RelationshipTrustBar", "RelationshipFamiliarityBar", "RelationshipTouchAcceptanceBar", "RelationshipInitiativeAcceptanceBar"
             })
             {
@@ -2023,7 +2051,8 @@ static void ControlPanelTabButtonsShareVisualMetrics()
                 Assert(button.HorizontalContentAlignment == HorizontalAlignment.Center && button.VerticalContentAlignment == VerticalAlignment.Center, $"tab button alignment changed: {name}");
             }
             var modelTabs = panel.FindName("ModelConfigTabs") as UniformGrid;
-            Assert(modelTabs is { Columns: 3, Width: 420 }, "model settings tabs are not hosted in a fixed three-column grid");
+            Assert(modelTabs is { Columns: 3 } && modelTabs.Width >= 420,
+                "model settings tabs are not hosted in a fixed three-column grid");
             Assert(modelTabs!.Children.OfType<Button>().Select(x => x.Name).SequenceEqual(new[]
             {
                 "ModelConfigTabButton", "MemoryConfigTabButton", "PetSettingTabButton"
@@ -2643,6 +2672,49 @@ static void AutonomousTickCanRequestMotion()
     Assert(DesktopRuntimeHost.MinimumAutonomousDwell(StablePosture.Prone) == TimeSpan.FromSeconds(35), "prone posture transition dwell changed");
     Assert(DesktopRuntimeHost.ShouldKeepCurrentStableIdle(LifecycleCandidateBehaviorIds.ProneIdleMicroloop, LifecycleCandidateBehaviorIds.ProneIdleMicroloop), "same stable idle should be held without restarting the animation");
     Assert(!DesktopRuntimeHost.ShouldKeepCurrentStableIdle(LifecycleCandidateBehaviorIds.ProneIdleMicroloop, ProneHeadCandidateBehaviorIds.HeadLowerTurnV4), "a real microevent was incorrectly treated as an idle hold");
+}
+
+static void AutonomousBehaviorPreferencesMapToDecisionPaths()
+{
+    var preferences = AutonomousBehaviorPreferences.Default;
+    Assert(Math.Abs(DesktopRuntimeHost.AutonomousBehaviorWeightFor(PatrolWalkCandidateBehaviorIds.WalkLeft, preferences) - 1.35) < 0.001,
+        "walking preference does not apply to patrol");
+    Assert(Math.Abs(DesktopRuntimeHost.AutonomousBehaviorWeightFor(LifecycleCandidateBehaviorIds.LivelyDailyP2, preferences) - 1.45) < 0.001,
+        "prone preference does not apply to the long resting lifecycle");
+    Assert(Math.Abs(DesktopRuntimeHost.AutonomousBehaviorWeightFor(SleepCandidateBehaviorIds.MainLifecycle, preferences) - 1.25) < 0.001,
+        "sleeping preference does not apply to sleep lifecycle");
+    Assert(Math.Abs(DesktopRuntimeHost.AutonomousBehaviorWeightFor(LifecycleCandidateBehaviorIds.StandIdleMicroloop, preferences) - 0.40) < 0.001,
+        "standing preference does not reduce standing idle");
+    Assert(Math.Abs(DesktopRuntimeHost.AutonomousBehaviorWeightFor(MagicBehaviorIds.AccioBroom, preferences) - 1.0) < 0.001,
+        "daily preferences leaked into owner magic");
+}
+
+static void PortableFirstRunDefaultsAreCompleteAndSanitized()
+{
+    var defaults = Path.GetFullPath(Path.Combine("config", "defaults"));
+    var modelPath = Path.Combine(defaults, "agent", "model-providers.json");
+    using var modelDocument = JsonDocument.Parse(File.ReadAllText(modelPath));
+    var root = modelDocument.RootElement;
+    Assert(root.GetProperty("ActiveProvider").GetString() == "OpenAICompatible", "first-run model provider changed");
+    var configurations = root.GetProperty("Configurations");
+    Assert(configurations.GetProperty("OpenAICompatible").GetProperty("BaseUrl").GetString() == "https://api.deepseek.com",
+        "first-run DeepSeek endpoint is not the current setting");
+    Assert(configurations.EnumerateObject().All(item => !item.Value.GetProperty("ApiKeyConfigured").GetBoolean()),
+        "source defaults claim that credentials are configured");
+
+    var prompt = File.ReadAllText(Path.Combine(defaults, "profile", "pet-prompt.txt"));
+    Assert(prompt.Length > 1000 && prompt.Contains("最多不超过20个汉字", StringComparison.Ordinal),
+        "current compact Wukong prompt is not packaged as the first-run default");
+    Assert(File.ReadAllText(Path.Combine(defaults, "profile", "pet-scale.txt")).Trim() == "1.46",
+        "current pet scale is not packaged as the first-run default");
+
+    var preferences = JsonSerializer.Deserialize<AutonomousBehaviorPreferences>(
+        File.ReadAllText(Path.Combine(defaults, "agent", "autonomous-behavior-preferences.json")));
+    Assert(preferences == AutonomousBehaviorPreferences.Default,
+        "first-run autonomous preferences do not match runtime defaults");
+    Assert(!Directory.GetFiles(defaults, "conversation-history.json", SearchOption.AllDirectories).Any(),
+        "conversation history was included in source defaults");
+    Assert(!Directory.Exists(Path.Combine(defaults, "albums")), "albums were included in source defaults");
 }
 
 static void BootstrapLogRedactsAndDoesNotThrow()

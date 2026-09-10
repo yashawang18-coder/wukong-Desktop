@@ -20,6 +20,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("album markdown retrieval is relevant and bounded", AlbumMarkdownRetrievalWorks),
     ("missing and damaged album markdown degrades safely", AlbumMarkdownFailuresAreSafe),
     ("memory configuration store persists switches", MemoryConfigurationStorePersistsSwitches),
+    ("autonomous behavior preferences persist and clamp", AutonomousBehaviorPreferencesPersistAndClamp),
     ("portable data layout seeds defaults and migrates user files", PortableDataLayoutSeedsAndMigrates),
     ("personality profile persists and clamps portable values", PersonalityProfilePersistsAndClamps),
     ("saved personality drives dialogue context unless developer overrides it", SavedPersonalityDrivesDialogueContext),
@@ -46,6 +47,7 @@ static Task PortableDataLayoutSeedsAndMigrates()
         File.WriteAllText(Path.Combine(defaultsProfile, "pet-prompt.txt"), "default prompt", Encoding.UTF8);
         File.WriteAllText(Path.Combine(defaultsProfile, "personality-profile.json"), "{\"liveliness\":0.56}", Encoding.UTF8);
         File.WriteAllText(Path.Combine(defaultsAgent, "memory-configuration.json"), "{}", Encoding.UTF8);
+        File.WriteAllText(Path.Combine(defaultsAgent, "autonomous-behavior-preferences.json"), "{\"WalkingWeight\":1.35}", Encoding.UTF8);
         File.WriteAllText(Path.Combine(legacyProfile, "owner-profile.json"), "{\"CallName\":\"owner\"}", Encoding.UTF8);
         File.WriteAllText(Path.Combine(legacyAgent, "conversation-history.json"), "{\"daily-companion\":[]}", Encoding.UTF8);
 
@@ -56,6 +58,7 @@ static Task PortableDataLayoutSeedsAndMigrates()
         Assert(layout.UsesExecutableDirectory, "portable root should stay beside the executable");
         Assert(File.ReadAllText(Path.Combine(layout.ProfileDirectory, "pet-prompt.txt"), Encoding.UTF8) == "default prompt", "default prompt was not seeded");
         Assert(File.Exists(Path.Combine(layout.ProfileDirectory, "personality-profile.json")), "default personality profile was not seeded");
+        Assert(File.Exists(Path.Combine(layout.AgentDirectory, "autonomous-behavior-preferences.json")), "default autonomous behavior preferences were not seeded");
         Assert(File.Exists(Path.Combine(layout.ProfileDirectory, "owner-profile.json")), "legacy owner profile was not migrated");
         Assert(File.Exists(Path.Combine(layout.AgentDirectory, "conversation-history.json")), "conversation history was not migrated");
         Assert(Directory.Exists(layout.AlbumsDirectory), "portable albums directory was not created");
@@ -384,6 +387,23 @@ static async Task MemoryConfigurationStorePersistsSwitches()
         var updated = new AgentMemoryConfiguration(false, true, false);
         await store.SaveAsync(updated);
         Assert(await store.LoadAsync() == updated, "memory configuration was not persisted");
+    }
+    finally { TryDeleteDirectory(root); }
+}
+
+static async Task AutonomousBehaviorPreferencesPersistAndClamp()
+{
+    var root = TestAgentRoot();
+    try
+    {
+        var store = new FileAutonomousBehaviorPreferencesStore(root);
+        Assert(await store.LoadAsync() == AutonomousBehaviorPreferences.Default, "missing preferences did not use defaults");
+        await store.SaveAsync(new AutonomousBehaviorPreferences(4, 1.55, double.NaN, 0));
+        var loaded = await new FileAutonomousBehaviorPreferencesStore(root).LoadAsync();
+        Assert(Math.Abs(loaded.WalkingWeight - 2.0) < 0.001, "walking preference was not clamped");
+        Assert(Math.Abs(loaded.ProneRestWeight - 1.55) < 0.001, "prone preference was not persisted");
+        Assert(Math.Abs(loaded.SleepingWeight - 1.0) < 0.001, "non-finite preference did not normalize safely");
+        Assert(Math.Abs(loaded.StandingIdleWeight - 0.25) < 0.001, "standing preference was not clamped");
     }
     finally { TryDeleteDirectory(root); }
 }

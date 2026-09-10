@@ -180,12 +180,16 @@ public partial class MainWindow : Window
     {
         try
         {
-            var personality = await _agentRuntime.Profiles.LoadPersonalityAsync();
+            var personalityTask = _agentRuntime.Profiles.LoadPersonalityAsync();
+            var preferencesTask = _agentRuntime.AutonomousBehaviorPreferences.LoadAsync();
+            await Task.WhenAll(personalityTask, preferencesTask);
+            var personality = await personalityTask;
             _runtime.UpdateTemperament(TemperamentProfile.FromSnapshot(personality));
+            _runtime.UpdateAutonomousBehaviorPreferences(await preferencesTask);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
         {
-            BootstrapLog.WriteRaw($"personality_profile_load_failed type={ex.GetType().Name}");
+            BootstrapLog.WriteRaw($"agent_initial_configuration_load_failed type={ex.GetType().Name}");
         }
         ApplyVisiblePlacement(WindowPlacement.BottomRight(
             SystemParameters.WorkArea,

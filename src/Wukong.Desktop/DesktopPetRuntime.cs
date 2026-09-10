@@ -3437,6 +3437,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private readonly InteractionDecisionService _interactionDecisions = new();
     private readonly InitiativeSpeechDecisionService _initiativeSpeechDecisions = new();
     private readonly AutonomousAgentRolloutOptions _rolloutOptions;
+    private AutonomousBehaviorPreferences _autonomousPreferences = AutonomousBehaviorPreferences.Default;
     private readonly Dictionary<string, DateTimeOffset> _lastAccepted = new(StringComparer.OrdinalIgnoreCase);
     private readonly RollingFileLogStore _logs = RollingFileLogStore.CreateDefault();
     private PetAgentState _petAgentState = PetAgentState.CreateDefault(DateTimeOffset.UnixEpoch);
@@ -3570,15 +3571,16 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public PetAgentState AgentStateSnapshot => _petAgentState.Clamp();
     public BehaviorAgentDecision? LastShadowDecision => _lastShadowDecision;
     public string BehaviorAgentSnapshot => BuildBehaviorAgentSnapshot();
+    public AutonomousBehaviorPreferences AutonomousPreferences => _autonomousPreferences;
     public string BroomFlightMetrics { get; private set; } = "Not measured";
 
     public string CurrentAction { get; private set; } = "安静趴卧";
     public string CurrentBehaviorId { get; private set; } = Phase15BehaviorIds.ProneIdle;
     public string CurrentPhase { get; private set; } = "loop";
     public string CurrentAsset { get; private set; } = string.Empty;
-    public string CurrentDisposition { get; private set; } = "Accepted";
+    public string CurrentDisposition { get; private set; } = "愿意";
     public string CurrentReason { get; private set; } = "启动后进入安静趴卧";
-    public string LastSource { get; private set; } = "Startup";
+    public string LastSource { get; private set; } = "启动";
     public string LastTrigger { get; private set; } = "startup";
     public string LastError { get; private set; } = "无";
     public string AgentStatus { get; private set; } = "本地 fallback runtime";
@@ -3672,6 +3674,15 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         Trace("temperament_updated", $"activity={_temperament.Activity} attachment={_temperament.Attachment} sensitivity={_temperament.Sensitivity} independence={_temperament.Independence} mischief={_temperament.Mischief}");
         OnPropertyChanged(nameof(BehaviorAgentSnapshot));
         RaiseAgentProfileProjection();
+    }
+
+    public void UpdateAutonomousBehaviorPreferences(AutonomousBehaviorPreferences preferences)
+    {
+        _autonomousPreferences = preferences.Clamp();
+        Trace("autonomous_preferences_updated",
+            $"walking={_autonomousPreferences.WalkingWeight:0.00} prone={_autonomousPreferences.ProneRestWeight:0.00} sleeping={_autonomousPreferences.SleepingWeight:0.00} standing={_autonomousPreferences.StandingIdleWeight:0.00}");
+        OnPropertyChanged(nameof(AutonomousPreferences));
+        OnPropertyChanged(nameof(BehaviorAgentSnapshot));
     }
 
     public PetActionResult StartIdle(string source = "Startup")
@@ -4217,7 +4228,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                     decisionSeed,
                     AllowInitiative: true,
                     WindowMotionAvailable: _patrolCanMoveLeft || _patrolCanMoveRight,
-                    CandidateBehaviorIds: episodeBindings));
+                    CandidateBehaviorIds: episodeBindings,
+                    BehaviorWeightMultipliers: BuildAutonomousBehaviorWeightMultipliers()));
         }
         catch (Exception ex)
         {
@@ -5193,7 +5205,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             if (IsPostureTransitionBehavior(candidate.BehaviorId) &&
                 _lastAccepted.Any(x => IsPostureTransitionBehavior(x.Key) && _now() - x.Value < TimeSpan.FromSeconds(90)))
                 penalty *= 0.35;
-            return candidate with { Score = Math.Max(0.05, candidate.Score * penalty) };
+            var ownerPreference = AutonomousBehaviorWeightFor(candidate.BehaviorId, _autonomousPreferences);
+            return candidate with { Score = Math.Max(0.05, candidate.Score * penalty * ownerPreference) };
         }).ToArray();
         var total = adjusted.Sum(x => x.Score);
         var decisionRandom = new Random(CombineDecisionSeed(
@@ -5236,6 +5249,34 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         AutonomousDailyCandidateBehaviorIds.SitToStand or
         LifecycleCandidateBehaviorIds.LivelyDailyP2 or
         LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1;
+
+    public static double AutonomousBehaviorWeightFor(
+        string behaviorId,
+        AutonomousBehaviorPreferences preferences)
+    {
+        var normalized = preferences.Clamp();
+        if (behaviorId is PatrolWalkCandidateBehaviorIds.WalkLeft or PatrolWalkCandidateBehaviorIds.WalkRight)
+            return normalized.WalkingWeight;
+        if (behaviorId is SleepCandidateBehaviorIds.MainLifecycle or SleepCandidateBehaviorIds.SprawledFrontBreath)
+            return normalized.SleepingWeight;
+        if (behaviorId is LifecycleCandidateBehaviorIds.StandIdleMicroloop or LifecycleReviewCandidateBehaviorIds.StandIdleV3R1)
+            return normalized.StandingIdleWeight;
+        if (behaviorId is Phase15BehaviorIds.ProneIdle or
+            LifecycleCandidateBehaviorIds.ProneIdleMicroloop or
+            LifecycleCandidateBehaviorIds.LivelyDailyP2 or
+            LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1 or
+            LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4 or
+            AutonomousDailyCandidateBehaviorIds.StandToSit or
+            AutonomousDailyCandidateBehaviorIds.SitToProne)
+            return normalized.ProneRestWeight;
+        return 1.0;
+    }
+
+    private IReadOnlyDictionary<string, double> BuildAutonomousBehaviorWeightMultipliers() =>
+        _behaviorCapabilities.Capabilities.ToDictionary(
+            item => item.BehaviorId,
+            item => AutonomousBehaviorWeightFor(item.BehaviorId, _autonomousPreferences),
+            StringComparer.OrdinalIgnoreCase);
 
     public static int ChooseAutonomousProneLoopCycles(Random random) => random.Next(4, 8);
 
@@ -5320,7 +5361,16 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             _ => "没有完成"
         };
         CurrentReason = userFacing;
-        LastSource = source;
+        LastSource = source switch
+        {
+            "OwnerContextMenu" => "右键菜单",
+            "ControlPanel" => "控制面板",
+            "Dialogue" => "对话",
+            "AutonomousTick" => "自主行为",
+            "DeveloperPreview" => "开发者预览",
+            "Startup" => "启动",
+            _ => source
+        };
         LastTrigger = reasonCode;
         LastError = result == PetActionResult.MissingAsset ? userFacing : LastError;
         Willingness = result switch
@@ -5386,7 +5436,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         var decision = _lastAgentDecision is null
             ? "none"
             : $"{_lastAgentDecision.SelectedActionId} {_lastAgentDecision.StartPosture}->{_lastAgentDecision.EndPosture} mood={_lastAgentDecision.MoodExpression} style={_lastAgentDecision.DialogueStyle}";
-        return $"enabled={EnableBehaviorAgentMock}; posture={_agentState.CurrentPosture}; energy={_agentState.Energy:0.00}; hunger={_agentState.Hunger:0.00}; social={_agentState.SocialNeed:0.00}; boredom={_agentState.Boredom:0.00}; stress={_agentState.Stress:0.00}; mood={_agentState.MoodValence:0.00}; arousal={_agentState.Arousal:0.00}; temperament=({_temperament.Activity},{_temperament.Attachment},{_temperament.Sensitivity},{_temperament.Independence},{_temperament.Mischief}); last_decision={decision}";
+        return $"enabled={EnableBehaviorAgentMock}; posture={_agentState.CurrentPosture}; energy={_agentState.Energy:0.00}; hunger={_agentState.Hunger:0.00}; social={_agentState.SocialNeed:0.00}; boredom={_agentState.Boredom:0.00}; stress={_agentState.Stress:0.00}; mood={_agentState.MoodValence:0.00}; arousal={_agentState.Arousal:0.00}; temperament=({_temperament.Activity},{_temperament.Attachment},{_temperament.Sensitivity},{_temperament.Independence},{_temperament.Mischief}); autonomous_preferences=(walk={_autonomousPreferences.WalkingWeight:0.00},prone={_autonomousPreferences.ProneRestWeight:0.00},sleep={_autonomousPreferences.SleepingWeight:0.00},stand={_autonomousPreferences.StandingIdleWeight:0.00}); last_decision={decision}";
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>

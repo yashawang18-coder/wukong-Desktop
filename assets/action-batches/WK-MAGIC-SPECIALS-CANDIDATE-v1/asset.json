@@ -56,6 +56,15 @@
       "runtime_validation": "pending_windows_renderer_qa",
       "runtime_approved": false,
       "runtime_use": false
+    },
+    {
+      "id": "2026-09-10-v19-refined-front-import",
+      "date": "2026-09-10",
+      "change": "Updated the owner-only petrified coin v19 prototype with four refined fronts and rebuilt deterministic flip derivatives. Existing magic gates remain closed.",
+      "visual_approved": false,
+      "runtime_validation": "pending_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false
     }
   ]
 }

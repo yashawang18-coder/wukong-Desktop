@@ -24,6 +24,7 @@ public sealed record PortableDataLayout(
     {
         "model-providers.json",
         "memory-configuration.json",
+        "autonomous-behavior-preferences.json",
         "conversation-history.json",
         "memory-candidates.json"
     };

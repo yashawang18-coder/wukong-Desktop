@@ -1,7 +1,8 @@
 {
-  "liveliness": 0.56,
-  "affection": 0.62,
-  "sensitivity": 0.42,
-  "independence": 0.38,
-  "mischievousness": 0.35
+  "Liveliness": 0.74,
+  "Affection": 0.29,
+  "Sensitivity": 0.65,
+  "Independence": 0.66,
+  "Mischievousness": 0.74,
+  "CommandCooperativeness": 0.82
 }

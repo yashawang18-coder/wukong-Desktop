@@ -402,6 +402,21 @@ public sealed class FileAgentMemoryConfigurationStore : IAgentMemoryConfiguratio
         AgentJson.WriteAsync(_path, configuration, cancellationToken);
 }
 
+public sealed class FileAutonomousBehaviorPreferencesStore : IAutonomousBehaviorPreferencesStore
+{
+    private readonly string _path;
+
+    public FileAutonomousBehaviorPreferencesStore(string rootDirectory) =>
+        _path = Path.Combine(rootDirectory, "autonomous-behavior-preferences.json");
+
+    public async Task<AutonomousBehaviorPreferences> LoadAsync(CancellationToken cancellationToken = default) =>
+        (await AgentJson.ReadAsync<AutonomousBehaviorPreferences>(_path, cancellationToken)
+         ?? AutonomousBehaviorPreferences.Default).Clamp();
+
+    public Task SaveAsync(AutonomousBehaviorPreferences preferences, CancellationToken cancellationToken = default) =>
+        AgentJson.WriteAsync(_path, preferences.Clamp(), cancellationToken);
+}
+
 public sealed class MockRuntimeContextStateProvider : IRuntimeContextStateProvider, IRuntimeContextOverrideState, IMockContextController
 {
     private readonly IDeveloperSession? _developerSession;

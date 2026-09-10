@@ -605,7 +605,8 @@ public sealed record BehaviorDecisionInput(
     int RandomSeed,
     bool AllowInitiative,
     bool WindowMotionAvailable,
-    IReadOnlySet<string>? CandidateBehaviorIds = null);
+    IReadOnlySet<string>? CandidateBehaviorIds = null,
+    IReadOnlyDictionary<string, double>? BehaviorWeightMultipliers = null);
 
 public sealed record BehaviorDecisionCandidate(
     string BehaviorId,
@@ -748,6 +749,12 @@ public sealed class BehaviorDecisionEngine
         var preference = state.Preferences.TryGetValue(capability.BehaviorId, out var learned)
             ? learned.EffectiveWeight
             : 0;
+        var ownerMultiplier = input.BehaviorWeightMultipliers is not null &&
+                              input.BehaviorWeightMultipliers.TryGetValue(capability.BehaviorId, out var configured) &&
+                              double.IsFinite(configured)
+            ? Math.Clamp(configured, AutonomousBehaviorPreferences.MinimumWeight, AutonomousBehaviorPreferences.MaximumWeight)
+            : 1.0;
+        var ownerPreference = capability.BaseWeight * (ownerMultiplier - 1.0);
         var episodeFit = capability.AllowedEpisodes.Contains(state.Episode.Kind) ? 0.18 : 0;
         var workQuiet = input.Now.Hour is >= 9 and <= 18;
         var timeContext = workQuiet && capability.Category is BehaviorSemanticCategory.Rest or BehaviorSemanticCategory.StableIdle
@@ -768,6 +775,7 @@ public sealed class BehaviorDecisionEngine
             new ScoreComponent("runtime_state", stateScore),
             new ScoreComponent("relationship", relationshipScore),
             new ScoreComponent("memory_preference", preference),
+            new ScoreComponent("owner_behavior_preference", ownerPreference),
             new ScoreComponent("episode_fit", episodeFit),
             new ScoreComponent("time_context", timeContext),
             new ScoreComponent("repetition_penalty", repetitionPenalty),

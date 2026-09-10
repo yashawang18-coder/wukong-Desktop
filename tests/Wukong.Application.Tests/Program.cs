@@ -40,7 +40,8 @@ var tests = new (string Name, Func<Task> Run)[]
     ("agent reducer ignores preview duplicate and stale completions", () => RunSync(BehaviorAgentCoreTests.ReducerIgnoresPreviewDuplicateAndStaleCompletion)),
     ("episode policy applies dwell and urgent recovery", () => RunSync(BehaviorAgentCoreTests.EpisodePolicyUsesDwellAndImmediateRecovery)),
     ("owner participation modes preserve command and magic boundaries", () => RunSync(BehaviorAgentCoreTests.ParticipationPolicyKeepsOwnerModesDistinct)),
-    ("agent decision is deterministic and respects hard gates", () => RunSync(BehaviorAgentCoreTests.DecisionEngineIsDeterministicAndHardGated))
+    ("agent decision is deterministic and respects hard gates", () => RunSync(BehaviorAgentCoreTests.DecisionEngineIsDeterministicAndHardGated)),
+    ("owner behavior preferences affect deterministic utility scores", () => RunSync(BehaviorAgentCoreTests.OwnerBehaviorPreferencesAffectScores))
 };
 
 var failures = new List<string>();

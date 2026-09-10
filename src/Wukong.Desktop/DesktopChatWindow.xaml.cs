@@ -92,7 +92,6 @@ public partial class DesktopChatWindow : Window
             if (result.Success && !string.IsNullOrWhiteSpace(result.AssistantText))
             {
                 AssistantReplyAvailable?.Invoke(this, result.AssistantText.Trim());
-                ChatInput.Focus();
             }
             else if (!result.Success)
             {
@@ -105,7 +104,21 @@ public partial class DesktopChatWindow : Window
             _requestCancellation = null;
             SetBusy(false);
             ResetAutoCollapse();
+            RestoreChatInputFocus();
         }
+    }
+
+    private void RestoreChatInputFocus()
+    {
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            if (!IsVisible || !ChatInput.IsEnabled)
+                return;
+            Activate();
+            ChatInput.Focus();
+            Keyboard.Focus(ChatInput);
+            ChatInput.CaretIndex = ChatInput.Text.Length;
+        }));
     }
 
     private void SetBusy(bool busy)

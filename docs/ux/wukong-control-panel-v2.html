@@ -1,0 +1,1193 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wukong 控制面板</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eef1ee;
+      --surface: #ffffff;
+      --surface-soft: #f7f8f6;
+      --surface-strong: #eef3ed;
+      --ink: #222723;
+      --muted: #69716b;
+      --line: #dce2dd;
+      --green: #3f6750;
+      --green-strong: #2f5540;
+      --green-soft: #e4eee6;
+      --amber: #a96325;
+      --amber-soft: #f9ead7;
+      --blue: #356d91;
+      --blue-soft: #e3eef6;
+      --red: #a34545;
+      --red-soft: #fae7e5;
+      --shadow: 0 16px 44px rgba(32, 46, 37, 0.12);
+      --radius: 8px;
+      --sidebar: 184px;
+      font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); }
+    button, input, textarea, select { font: inherit; letter-spacing: 0; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(53, 109, 145, 0.22);
+      outline-offset: 2px;
+    }
+
+    .app-shell {
+      width: min(1240px, calc(100vw - 32px));
+      min-height: min(820px, calc(100vh - 32px));
+      margin: 16px auto;
+      display: grid;
+      grid-template-columns: var(--sidebar) minmax(0, 1fr);
+      grid-template-rows: 72px minmax(0, 1fr);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .brand {
+      grid-column: 1;
+      grid-row: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: #26352d;
+      color: #fff;
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #f3ba59;
+      color: #26352d;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .brand strong { display: block; font-size: 17px; }
+    .brand small { display: block; margin-top: 2px; color: #c9d7ce; font-size: 11px; }
+
+    .topbar {
+      grid-column: 2;
+      grid-row: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.96);
+    }
+
+    .page-heading { min-width: 0; }
+    .page-heading h1 { margin: 0; font-size: 20px; line-height: 1.2; }
+    .page-heading p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .live-state {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 34px;
+      padding: 0 12px;
+      border: 1px solid #c9dacd;
+      background: var(--green-soft);
+      color: var(--green-strong);
+      border-radius: 18px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #4f8b61; box-shadow: 0 0 0 4px rgba(79,139,97,.12); }
+
+    .icon-button {
+      width: 38px;
+      height: 38px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      border-radius: 7px;
+    }
+    .icon-button:hover { background: var(--surface-soft); border-color: #c7d0c9; }
+    .icon-button svg { width: 18px; height: 18px; }
+
+    .sidebar {
+      grid-column: 1;
+      grid-row: 2;
+      padding: 16px 12px;
+      border-right: 1px solid var(--line);
+      background: #26352d;
+    }
+
+    .nav-list { display: grid; gap: 6px; }
+    .nav-button {
+      width: 100%;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: #d8e1da;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .nav-button svg { width: 18px; height: 18px; color: #aebdb3; }
+    .nav-button:hover { background: rgba(255,255,255,.07); color: #fff; }
+    .nav-button.active { background: #f2b951; color: #243128; }
+    .nav-button.active svg { color: #243128; }
+    .sidebar-foot {
+      margin-top: 24px;
+      padding: 14px 12px;
+      border-top: 1px solid rgba(255,255,255,.12);
+      color: #afbbb2;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    main {
+      grid-column: 2;
+      grid-row: 2;
+      min-width: 0;
+      background: #f5f7f5;
+      overflow: auto;
+    }
+
+    .page { display: none; padding: 22px 24px 28px; }
+    .page.active { display: block; }
+    .page-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr); gap: 18px; }
+    .stack { display: grid; gap: 16px; align-content: start; }
+
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+    .panel-head {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-head h2 { margin: 0; font-size: 15px; }
+    .panel-head p { margin: 3px 0 0; color: var(--muted); font-size: 11px; }
+    .panel-body { padding: 18px; }
+
+    .status-stage {
+      min-height: 306px;
+      display: grid;
+      grid-template-columns: minmax(240px, .9fr) minmax(280px, 1.1fr);
+      align-items: center;
+      gap: 20px;
+    }
+    .pet-visual {
+      position: relative;
+      min-height: 260px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border-right: 1px solid var(--line);
+      background: #f1f4f0;
+    }
+    .pet-visual::after {
+      content: "";
+      position: absolute;
+      left: 18%; right: 18%; bottom: 34px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(47, 58, 50, .10);
+      filter: blur(6px);
+    }
+    .pet-visual img {
+      position: relative;
+      z-index: 1;
+      width: 92%;
+      height: 250px;
+      object-fit: contain;
+      object-position: center bottom;
+    }
+    .status-copy { padding: 22px 22px 22px 0; }
+    .eyebrow { margin: 0 0 8px; color: var(--green); font-size: 12px; font-weight: 800; }
+    .status-copy h2 { margin: 0; font-size: 27px; line-height: 1.25; }
+    .status-copy .summary { margin: 10px 0 16px; color: #4d554f; font-size: 14px; line-height: 1.7; }
+    .mood-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 14px;
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      color: #4f5751;
+      font-size: 12px;
+    }
+    .chip.good { background: var(--green-soft); border-color: #cfddd2; color: var(--green-strong); }
+
+    details.status-details { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 13px; }
+    details summary { cursor: pointer; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-top: 14px; }
+    .metric { min-width: 0; }
+    .metric-label { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 11px; }
+    .meter { height: 6px; margin-top: 6px; overflow: hidden; border-radius: 3px; background: #e8ebe8; }
+    .meter span { display: block; height: 100%; border-radius: inherit; background: var(--green); }
+
+    .action-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .action-button {
+      min-height: 76px;
+      display: grid;
+      align-content: center;
+      justify-items: start;
+      gap: 6px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+      color: var(--ink);
+      text-align: left;
+    }
+    .action-button:hover { border-color: #9fb3a4; background: #f8faf8; }
+    .action-button strong { font-size: 13px; }
+    .action-button small { color: var(--muted); font-size: 10px; line-height: 1.35; }
+    .action-button.primary { background: var(--green); border-color: var(--green); color: #fff; }
+    .action-button.primary small { color: #deebe2; }
+    .action-button.stop { color: var(--red); }
+    .action-button.busy { opacity: .48; }
+    .busy-note { display: none; margin: 12px 0 0; padding: 10px 12px; background: var(--amber-soft); color: #754313; font-size: 12px; border-radius: 6px; }
+    .busy-note.show { display: block; }
+
+    .activity-list { display: grid; }
+    .activity-item {
+      display: grid;
+      grid-template-columns: 30px minmax(0,1fr) auto;
+      gap: 10px;
+      align-items: start;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .activity-item:last-child { border-bottom: 0; }
+    .activity-icon { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--green-soft); color: var(--green); }
+    .activity-item strong { display: block; font-size: 12px; }
+    .activity-item p { margin: 4px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .activity-time { color: #929892; font-size: 10px; white-space: nowrap; }
+    .empty-state { display: none; min-height: 178px; place-items: center; text-align: center; color: var(--muted); }
+    .empty-state.show { display: grid; }
+    .empty-state strong { display: block; margin-bottom: 6px; color: #4f5751; font-size: 13px; }
+
+    .text-button { padding: 5px 0; border: 0; background: transparent; color: var(--blue); font-size: 11px; font-weight: 700; }
+    .primary-button, .secondary-button, .danger-button {
+      min-height: 38px;
+      padding: 0 15px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .primary-button { border: 1px solid var(--green); background: var(--green); color: #fff; }
+    .primary-button:hover { background: var(--green-strong); }
+    .secondary-button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+    .secondary-button:hover { background: var(--surface-soft); }
+    .danger-button { border: 1px solid #e6c7c5; background: var(--red-soft); color: var(--red); }
+
+    .subtabs { display: flex; gap: 4px; min-height: 44px; padding: 5px; border: 1px solid var(--line); border-radius: 8px; background: #edf0ed; overflow-x: auto; }
+    .subtab {
+      min-width: 106px;
+      min-height: 32px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+    .subtab.active { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    .profile-layout { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(280px,.9fr); gap: 18px; margin-top: 16px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px 16px; }
+    .field { display: grid; gap: 7px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { color: #4f5751; font-size: 11px; font-weight: 750; }
+    .input, .textarea, .select {
+      width: 100%;
+      border: 1px solid #cfd6d0;
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+    }
+    .input, .select { height: 40px; padding: 0 11px; }
+    .textarea { min-height: 132px; padding: 10px 11px; line-height: 1.6; resize: vertical; }
+
+    .trait-list { display: grid; gap: 18px; }
+    .trait-row { display: grid; grid-template-columns: 82px minmax(0,1fr) 36px; align-items: center; gap: 12px; }
+    .trait-row label { font-size: 12px; font-weight: 700; }
+    input[type="range"] { width: 100%; accent-color: var(--green); }
+    .trait-value { color: var(--green); font-size: 12px; font-weight: 800; text-align: right; }
+
+    .summary-list { display: grid; }
+    .summary-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 48px; border-bottom: 1px solid var(--line); font-size: 11px; }
+    .summary-row:last-child { border-bottom: 0; }
+    .summary-row span { color: var(--muted); }
+    .summary-row strong { text-align: right; }
+    .memory-card-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    .memory-card { min-height: 112px; padding: 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); }
+    .memory-card strong { display: block; font-size: 12px; }
+    .memory-card p { margin: 7px 0 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
+
+    .album-source { margin-bottom: 16px; }
+    .album-source-grid { display: grid; grid-template-columns: minmax(260px,1.4fr) minmax(180px,.6fr) auto; gap: 12px; align-items: end; }
+    .path-input-wrap { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; }
+    .binding-state { display: inline-flex; align-items: center; gap: 7px; color: var(--green-strong); font-size: 10px; font-weight: 750; }
+    .binding-state::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #4f8b61; }
+    .album-layout { display: grid; grid-template-columns: minmax(520px, 1.55fr) minmax(280px, .65fr); gap: 16px; }
+    .album-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+    .album-tile { min-height: 132px; padding: 14px; border: 1px solid var(--line); border-radius: 7px; background: #fff; text-align: left; }
+    .album-tile.active { border-color: var(--green); background: var(--green-soft); }
+    .album-tile strong { display: block; font-size: 12px; }
+    .album-tile span { display: block; margin-top: 6px; color: var(--muted); font-size: 10px; }
+    .album-tile .album-cover { height: 56px; margin: -4px -4px 10px; display: grid; place-items: center; border-radius: 5px; background: #edf2ed; color: #7b887e; }
+    .photo-preview { min-height: 300px; display: grid; grid-template-rows: auto minmax(0,1fr) auto; background: #edf1ee; }
+    .photo-placeholder { display: grid; place-items: center; min-height: 210px; color: var(--muted); text-align: center; }
+    .photo-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; border-top: 1px solid var(--line); background: #fff; }
+    .photo-controls .photo-position { grid-column: 1 / -1; text-align: center; color: var(--muted); font-size: 10px; }
+    .photo-controls .wide { grid-column: 1 / -1; }
+
+    .model-layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(300px,.8fr); gap: 18px; margin-top: 16px; }
+    .memory-list { display: grid; }
+    .setting-row { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 16px; min-height: 74px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .setting-row:last-child { border-bottom: 0; }
+    .setting-row strong { display: block; font-size: 12px; }
+    .setting-row p { margin: 4px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .switch { position: relative; width: 42px; height: 24px; flex: 0 0 auto; }
+    .switch input { position: absolute; opacity: 0; pointer-events: none; }
+    .switch span { position: absolute; inset: 0; border-radius: 12px; background: #c9cfca; transition: .2s; }
+    .switch span::after { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.18); transition: .2s; }
+    .switch input:checked + span { background: var(--green); }
+    .switch input:checked + span::after { transform: translateX(18px); }
+    .debug-chat { min-height: 340px; display: grid; grid-template-rows: minmax(0,1fr) auto; }
+    .messages { padding: 16px; display: grid; align-content: start; gap: 10px; background: #f6f8f6; overflow: auto; }
+    .message { max-width: 84%; padding: 9px 11px; border-radius: 7px; font-size: 11px; line-height: 1.55; }
+    .message.pet { background: var(--green-soft); color: var(--green-strong); }
+    .message.owner { justify-self: end; background: var(--blue-soft); color: #2e5f7d; }
+    .composer { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; padding: 12px; border-top: 1px solid var(--line); background: #fff; }
+    .provider-row { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+    .connection-strip { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 12px; border: 1px solid #cfe0d3; border-radius: 7px; background: var(--green-soft); }
+    .connection-strip strong { display: block; font-size: 11px; }
+    .connection-strip span { display: block; margin-top: 3px; color: var(--green-strong); font-size: 9px; }
+    .prompt-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
+    .asset-toolbar { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 16px; }
+    .asset-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+    .asset-card { overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    .asset-card.deprecated { opacity: .58; filter: grayscale(.6); }
+    .asset-media { height: 168px; display: grid; place-items: center; background: #edf1ee; overflow: hidden; }
+    .asset-media img {
+      display: block;
+      width: 164px;
+      height: 164px;
+      min-width: 0;
+      min-height: 0;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
+    .asset-content { padding: 13px; }
+    .asset-title-row { display: flex; justify-content: space-between; gap: 10px; align-items: start; }
+    .asset-title-row h3 { margin: 0; font-size: 13px; }
+    .asset-content p { min-height: 34px; margin: 7px 0 11px; color: var(--muted); font-size: 10px; line-height: 1.6; }
+    .badge { display: inline-flex; align-items: center; min-height: 23px; padding: 0 8px; border-radius: 12px; font-size: 9px; font-weight: 800; white-space: nowrap; }
+    .badge.approved { background: var(--green-soft); color: var(--green-strong); }
+    .badge.candidate { background: var(--amber-soft); color: #7b481b; }
+    .badge.locked { background: #eceeed; color: #727873; }
+    .asset-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .asset-actions button { min-height: 35px; }
+
+    .dev-summary { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
+    .dev-stat { padding: 14px; border: 1px solid var(--line); border-radius: 7px; background: #fff; }
+    .dev-stat span { display: block; color: var(--muted); font-size: 10px; }
+    .dev-stat strong { display: block; margin-top: 6px; font-size: 15px; }
+    .pipeline { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 8px; }
+    .pipeline-step { position: relative; min-height: 82px; padding: 12px 10px; border: 1px solid var(--line); border-radius: 7px; background: #fff; }
+    .pipeline-step:not(:last-child)::after { content: "›"; position: absolute; right: -7px; top: 29px; z-index: 2; width: 14px; color: var(--muted); font-size: 20px; text-align: center; }
+    .pipeline-step b { display: block; color: var(--green); font-size: 10px; }
+    .pipeline-step strong { display: block; margin-top: 6px; font-size: 11px; }
+    .pipeline-step span { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .dev-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(320px,.88fr); gap: 16px; margin-top: 16px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; font-size: 10px; }
+    th { color: var(--muted); font-weight: 700; }
+    td code { font-family: Consolas, monospace; font-size: 9px; }
+    .score-bar { width: 86px; height: 5px; border-radius: 3px; background: #e8ece8; overflow: hidden; }
+    .score-bar span { display: block; height: 100%; background: var(--blue); }
+    .trace { min-height: 260px; max-height: 330px; overflow: auto; padding: 13px; background: #202622; color: #cce0d1; font: 10px/1.65 Consolas, monospace; }
+    .trace-line { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+    .trace-line em { color: #f2be68; font-style: normal; }
+
+    .modal-backdrop { position: fixed; inset: 0; z-index: 20; display: none; align-items: stretch; justify-content: flex-end; background: rgba(20,27,22,.38); }
+    .modal-backdrop.show { display: flex; }
+    .drawer { width: min(430px, 100vw); height: 100%; display: grid; grid-template-rows: auto minmax(0,1fr) auto; background: #fff; box-shadow: -12px 0 30px rgba(0,0,0,.16); }
+    .drawer-head, .drawer-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+    .drawer-head h2 { margin: 0; font-size: 17px; }
+    .drawer-body { overflow: auto; padding: 18px; }
+    .drawer-foot { border-top: 1px solid var(--line); border-bottom: 0; justify-content: flex-end; }
+    .settings-section { margin-bottom: 24px; }
+    .settings-section h3 { margin: 0 0 12px; font-size: 12px; }
+    .range-row { display: grid; grid-template-columns: minmax(0,1fr) 56px; gap: 12px; align-items: center; }
+    .quiet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .dialog-backdrop { position: fixed; inset: 0; z-index: 30; display: none; place-items: center; padding: 24px; background: rgba(20,27,22,.48); }
+    .dialog-backdrop.show { display: grid; }
+    .dialog { width: min(760px, 96vw); max-height: 90vh; overflow: auto; border-radius: 8px; background: #fff; box-shadow: var(--shadow); }
+    .dialog-media { min-height: 360px; display: grid; place-items: center; background: #edf1ee; }
+    .dialog-media img { width: 100%; height: 410px; object-fit: contain; }
+    .dialog-content { padding: 17px 18px; }
+    .dialog-content h2 { margin: 0; font-size: 17px; }
+    .dialog-meta { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 14px; }
+    .dialog-meta div { padding: 10px; border: 1px solid var(--line); border-radius: 6px; }
+    .dialog-meta span { display: block; color: var(--muted); font-size: 9px; }
+    .dialog-meta strong { display: block; margin-top: 5px; font-size: 10px; }
+
+    .toast { position: fixed; left: 50%; bottom: 28px; z-index: 50; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; min-width: 260px; padding: 11px 15px; border-radius: 7px; background: #202622; color: #fff; font-size: 12px; text-align: center; transition: .2s; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 980px) {
+      :root { --sidebar: 78px; }
+      .brand { justify-content: center; padding: 0; }
+      .brand-copy, .nav-button span, .sidebar-foot { display: none; }
+      .nav-button { justify-content: center; padding: 0; }
+      .page-grid, .profile-layout, .model-layout, .dev-grid { grid-template-columns: 1fr; }
+      .asset-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .pipeline { grid-template-columns: repeat(3, minmax(0,1fr)); }
+      .pipeline-step::after { display: none; }
+    }
+
+    @media (max-width: 900px) {
+      .album-source-grid { grid-template-columns: 1fr 1fr; }
+      .album-layout { grid-template-columns: 1fr; }
+      .photo-preview { width: min(420px, 100%); }
+    }
+
+    @media (max-width: 700px) {
+      .app-shell { width: 100%; min-height: 100vh; margin: 0; grid-template-columns: 1fr; grid-template-rows: 62px auto minmax(0,1fr); }
+      .brand { grid-column: 1; grid-row: 1; justify-content: flex-start; padding: 0 14px; border-right: 0; }
+      .brand-copy { display: block; }
+      .topbar { grid-column: 1; grid-row: 2; min-height: 66px; padding: 10px 14px; }
+      .sidebar { grid-column: 1; grid-row: 3; position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; padding: 7px; border: 0; }
+      .nav-list { grid-template-columns: repeat(6, 1fr); gap: 3px; }
+      .nav-button { min-height: 46px; }
+      main { grid-column: 1; grid-row: 3; padding-bottom: 64px; }
+      .page { padding: 14px; }
+      .status-stage { grid-template-columns: 1fr; }
+      .pet-visual { border-right: 0; border-bottom: 1px solid var(--line); }
+      .status-copy { padding: 18px; }
+      .action-grid, .metric-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .asset-grid, .album-layout, .album-grid, .album-source-grid, .provider-row, .memory-card-list { grid-template-columns: 1fr; }
+      .dev-summary { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .pipeline { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .live-state { display: none; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="brand">
+      <div class="brand-mark">悟</div>
+      <div class="brand-copy"><strong>Wukong</strong><small>陪伴型桌面宠物</small></div>
+    </div>
+
+    <header class="topbar">
+      <div class="page-heading">
+        <h1 id="pageTitle">主人</h1>
+        <p id="pageSubtitle">看看悟空现在的状态，选择合适的互动。</p>
+      </div>
+      <div class="top-actions">
+        <div class="live-state"><span class="live-dot"></span><span id="topStatus">正在休息</span></div>
+        <button class="icon-button" id="settingsButton" title="全局设置" aria-label="打开全局设置"><i data-lucide="settings"></i></button>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <nav class="nav-list" aria-label="控制面板导航">
+        <button class="nav-button active" data-page="owner"><i data-lucide="home"></i><span>主人</span></button>
+        <button class="nav-button" data-page="profile"><i data-lucide="contact"></i><span>档案</span></button>
+        <button class="nav-button" data-page="album"><i data-lucide="images"></i><span>相册</span></button>
+        <button class="nav-button" data-page="model"><i data-lucide="brain-circuit"></i><span>大模型</span></button>
+        <button class="nav-button" data-page="assets"><i data-lucide="clapperboard"></i><span>素材</span></button>
+        <button class="nav-button" data-page="developer"><i data-lucide="code-2"></i><span>开发者</span></button>
+      </nav>
+      <div class="sidebar-foot">主人页面保持简单。评分、门禁、素材版本与事件记录统一放在开发者页。</div>
+    </aside>
+
+    <main>
+      <section class="page active" id="page-owner">
+        <div class="page-grid">
+          <div class="stack">
+            <article class="panel">
+              <div class="status-stage">
+                <div class="pet-visual">
+                  <img id="ownerPetImage" src="../../assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED/frames/microloops/prone-idle-legacy-side/frame-001.png" alt="悟空当前姿态">
+                </div>
+                <div class="status-copy">
+                  <p class="eyebrow">悟空现在</p>
+                  <h2 id="ownerHeadline">正在安静休息</h2>
+                  <p class="summary" id="ownerSummary">刚巡视过房间，现在愿意陪你一会儿，但更想趴着。</p>
+                  <div class="mood-chips">
+                    <span class="chip good" id="moodChip">心情不错</span>
+                    <span class="chip" id="postureChip">趴着</span>
+                    <span class="chip" id="intentChip">愿意互动</span>
+                  </div>
+                  <details class="status-details">
+                    <summary>查看状态详情</summary>
+                    <div class="metric-grid">
+                      <div class="metric"><div class="metric-label"><span>精力</span><b>64</b></div><div class="meter"><span style="width:64%"></span></div></div>
+                      <div class="metric"><div class="metric-label"><span>心情</span><b>78</b></div><div class="meter"><span style="width:78%"></span></div></div>
+                      <div class="metric"><div class="metric-label"><span>社交需要</span><b>42</b></div><div class="meter"><span style="width:42%"></span></div></div>
+                      <div class="metric"><div class="metric-label"><span>压力</span><b>18</b></div><div class="meter"><span style="width:18%;background:#a96325"></span></div></div>
+                    </div>
+                  </details>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head"><div><h2>现在可以</h2><p id="actionHint">根据趴姿和当前状态给出的操作</p></div></div>
+              <div class="panel-body">
+                <div class="action-grid" id="contextActions">
+                  <button class="action-button primary" data-action="touch"><strong>摸摸</strong><small>轻轻回应你</small></button>
+                  <button class="action-button" data-action="call"><strong>叫过来</strong><small>先看看愿不愿起身</small></button>
+                  <button class="action-button" data-action="drink"><strong>喝水</strong><small>完整播放后再互动</small></button>
+                  <button class="action-button stop" data-action="stop"><strong>停下</strong><small>安全回到稳定状态</small></button>
+                </div>
+                <p class="busy-note" id="busyNote">悟空正在喝水，喝完再陪你。你也可以点“停下”。</p>
+              </div>
+            </article>
+          </div>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div><h2>最近活动</h2><p>真实发生过的动作和互动</p></div>
+              <button class="text-button" id="clearActivity">清空记录</button>
+            </div>
+            <div class="panel-body">
+              <div class="activity-list" id="activityList">
+                <div class="activity-item"><div class="activity-icon"><i data-lucide="footprints"></i></div><div><strong>巡视了一圈</strong><p>沿桌面走了走，回到了熟悉的位置。</p></div><span class="activity-time">2 分钟前</span></div>
+                <div class="activity-item"><div class="activity-icon"><i data-lucide="eye"></i></div><div><strong>回头看了你</strong><p>因为听到附近有动静。</p></div><span class="activity-time">8 分钟前</span></div>
+                <div class="activity-item"><div class="activity-icon"><i data-lucide="heart"></i></div><div><strong>接受了摸摸</strong><p>心情上升，社交需要降低。</p></div><span class="activity-time">上午 10:42</span></div>
+              </div>
+              <div class="empty-state" id="activityEmpty"><div><strong>还没有最近活动</strong><span>悟空开始活动后，这里会留下真实记录。</span></div></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="page" id="page-profile">
+        <div class="subtabs" data-tab-group="profile">
+          <button class="subtab active" data-tab="pet-profile">宠物档案</button>
+          <button class="subtab" data-tab="owner-profile">主人档案</button>
+          <button class="subtab" data-tab="personality">性格与关系</button>
+          <button class="subtab" data-tab="memory">记忆</button>
+        </div>
+        <div class="tab-pane active" data-pane-group="profile" data-pane="pet-profile">
+          <div class="profile-layout">
+            <article class="panel">
+              <div class="panel-head"><div><h2>宠物档案</h2><p>稳定身份信息，不与实时心情混在一起</p></div><button class="secondary-button save-demo">保存</button></div>
+              <div class="panel-body form-grid">
+                <div class="field"><label>名字</label><input class="input" value="悟空"></div>
+                <div class="field"><label>生日</label><input class="input" type="date" value="2023-03-18"></div>
+                <div class="field"><label>宠物称呼</label><input class="input" value="老爸的小悟空"></div>
+                <div class="field"><label>生活地点</label><input class="input" value="南京江宁"></div>
+                <div class="field full"><label>喜欢的事</label><textarea class="textarea">出门玩、草地、秋天、日落、拍照、旅行和吃好吃的。</textarea></div>
+              </div>
+            </article>
+            <article class="panel">
+              <div class="panel-head"><div><h2>身份摘要</h2><p>提供给对话上下文的稳定事实</p></div></div>
+              <div class="panel-body summary-list">
+                <div class="summary-row"><span>品种</span><strong>柴犬</strong></div>
+                <div class="summary-row"><span>年龄阶段</span><strong>成年</strong></div>
+                <div class="summary-row"><span>主要照顾者</span><strong>老爸</strong></div>
+                <div class="summary-row"><span>好朋友</span><strong>黄油、花花</strong></div>
+                <div class="summary-row"><span>资料完整度</span><strong style="color:var(--green)">完整</strong></div>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane-group="profile" data-pane="owner-profile">
+          <div class="profile-layout">
+            <article class="panel">
+              <div class="panel-head"><div><h2>主人档案</h2><p>只保存陪伴所需的信息</p></div><button class="secondary-button save-demo">保存</button></div>
+              <div class="panel-body form-grid">
+                <div class="field"><label>姓名</label><input class="input" value="老爸"></div>
+                <div class="field"><label>生日</label><input class="input" type="date"></div>
+                <div class="field"><label>常住城市</label><input class="input" value="南京"></div>
+                <div class="field"><label>通常休息时间</label><input class="input" value="23:30 后"></div>
+                <div class="field full"><label>生活偏好</label><textarea class="textarea">喜欢旅行、拍照、带悟空看草地和日落。</textarea></div>
+              </div>
+            </article>
+            <article class="panel">
+              <div class="panel-head"><div><h2>陪伴边界</h2><p>决定悟空何时适合主动靠近</p></div></div>
+              <div class="panel-body memory-list">
+                <label class="setting-row"><div><strong>工作时减少打扰</strong><p>保留重要提醒和主人主动互动。</p></div><span class="switch"><input type="checkbox" checked><span></span></span></label>
+                <label class="setting-row"><div><strong>疲惫时主动关心</strong><p>使用一句简短问候，不进入说教模式。</p></div><span class="switch"><input type="checkbox" checked><span></span></span></label>
+                <label class="setting-row"><div><strong>记住生活偏好</strong><p>只用于陪伴和日常对话。</p></div><span class="switch"><input type="checkbox" checked><span></span></span></label>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane-group="profile" data-pane="personality">
+          <div class="profile-layout">
+            <article class="panel">
+              <div class="panel-head"><div><h2>性格基线</h2><p>影响动作偏好和表达，不绕过安全门禁</p></div><button class="secondary-button save-demo">保存</button></div>
+              <div class="panel-body trait-list">
+                <div class="trait-row"><label>活泼</label><input type="range" min="0" max="100" value="72"><span class="trait-value">72</span></div>
+                <div class="trait-row"><label>黏人</label><input type="range" min="0" max="100" value="84"><span class="trait-value">84</span></div>
+                <div class="trait-row"><label>敏感</label><input type="range" min="0" max="100" value="48"><span class="trait-value">48</span></div>
+                <div class="trait-row"><label>独立</label><input type="range" min="0" max="100" value="36"><span class="trait-value">36</span></div>
+                <div class="trait-row"><label>淘气</label><input type="range" min="0" max="100" value="68"><span class="trait-value">68</span></div>
+              </div>
+            </article>
+            <article class="panel">
+              <div class="panel-head"><div><h2>关系状态</h2><p>缓慢变化，不由一次互动大幅改写</p></div></div>
+              <div class="panel-body summary-list">
+                <div class="summary-row"><span>信任</span><strong>很信任你</strong></div>
+                <div class="summary-row"><span>熟悉度</span><strong>家人</strong></div>
+                <div class="summary-row"><span>近期互动</span><strong>偏积极</strong></div>
+                <div class="summary-row"><span>口令合作度</span><strong>通常愿意配合</strong></div>
+                <div class="summary-row"><span>最近变化</span><strong style="color:var(--green)">摸摸后更放松</strong></div>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane-group="profile" data-pane="memory">
+          <div class="profile-layout">
+            <article class="panel">
+              <div class="panel-head"><div><h2>记忆分类</h2><p>这些内容可被对话检索，但不会直接触发动画</p></div><button class="secondary-button">管理记忆</button></div>
+              <div class="panel-body memory-card-list">
+                <div class="memory-card"><strong>共同经历</strong><p>旅行、第一次洗澡、掉进坑里等长期事件。</p></div>
+                <div class="memory-card"><strong>日常习惯</strong><p>喜欢的食物、散步时段和常去地点。</p></div>
+                <div class="memory-card"><strong>近期互动</strong><p>有限数量的触摸、对话和动作结果。</p></div>
+                <div class="memory-card"><strong>相册描述</strong><p>只读取已经保存文字描述的照片。</p></div>
+              </div>
+            </article>
+            <article class="panel">
+              <div class="panel-head"><div><h2>存储状态</h2><p>跟随 EXE 的可携带文件</p></div></div>
+              <div class="panel-body summary-list">
+                <div class="summary-row"><span>长期记忆</span><strong>已启用</strong></div>
+                <div class="summary-row"><span>短期保留</span><strong>最近 20 条</strong></div>
+                <div class="summary-row"><span>相册记忆</span><strong>已启用</strong></div>
+                <div class="summary-row"><span>存储目录</span><strong>Data/Memory</strong></div>
+                <div class="summary-row"><span>最近保存</span><strong>刚刚</strong></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-album">
+        <article class="panel album-source">
+          <div class="panel-head"><div><h2>相册目录</h2><p>绑定照片来源，描述与相册关系保存在可携带数据目录</p></div><span class="binding-state" id="albumBindingState">已绑定</span></div>
+          <div class="panel-body album-source-grid">
+            <div class="field"><label>照片目录</label><div class="path-input-wrap"><input class="input" id="albumPath" value=".\UserData\Albums" readonly><button class="secondary-button" id="chooseAlbumFolder">选择目录</button></div><input id="albumFolderPicker" type="file" webkitdirectory directory multiple hidden></div>
+            <div class="field"><label>管理方式</label><select class="select" id="albumMode"><option>引用原目录</option><option>复制到随 EXE 目录</option></select></div>
+            <button class="primary-button" id="rescanAlbum"><i data-lucide="refresh-cw" style="width:14px;height:14px;vertical-align:-2px"></i> 重新扫描</button>
+          </div>
+        </article>
+        <div class="album-layout">
+          <article class="panel">
+            <div class="panel-head"><div><h2>子相册</h2><p>以相册浏览为主，三列显示更多内容</p></div><button class="icon-button" title="新增子相册"><i data-lucide="plus"></i></button></div>
+            <div class="panel-body album-grid">
+              <button class="album-tile active" data-album="南京日常" data-count="12"><span class="album-cover"><i data-lucide="building-2"></i></span><strong>南京日常</strong><span>12 张照片 · 8 条描述</span></button>
+              <button class="album-tile" data-album="出门旅行" data-count="8"><span class="album-cover"><i data-lucide="map"></i></span><strong>出门旅行</strong><span>8 张照片 · 6 条描述</span></button>
+              <button class="album-tile" data-album="黄油和花花" data-count="5"><span class="album-cover"><i data-lucide="users"></i></span><strong>黄油和花花</strong><span>5 张照片 · 5 条描述</span></button>
+              <button class="album-tile" data-album="好吃的" data-count="7"><span class="album-cover"><i data-lucide="utensils"></i></span><strong>好吃的</strong><span>7 张照片 · 4 条描述</span></button>
+              <button class="album-tile" data-album="草地与日落" data-count="4"><span class="album-cover"><i data-lucide="sunset"></i></span><strong>草地与日落</strong><span>4 张照片 · 4 条描述</span></button>
+              <button class="album-tile" data-album="待整理" data-count="3"><span class="album-cover"><i data-lucide="inbox"></i></span><strong>待整理</strong><span>3 张照片 · 未描述</span></button>
+              <button class="album-tile" data-album="小时候" data-count="9"><span class="album-cover"><i data-lucide="sparkles"></i></span><strong>小时候</strong><span>9 张照片 · 7 条描述</span></button>
+              <button class="album-tile" data-album="秋天" data-count="6"><span class="album-cover"><i data-lucide="leaf"></i></span><strong>秋天</strong><span>6 张照片 · 3 条描述</span></button>
+              <button class="album-tile" data-album="玩具" data-count="5"><span class="album-cover"><i data-lucide="bone"></i></span><strong>玩具</strong><span>5 张照片 · 2 条描述</span></button>
+            </div>
+          </article>
+          <article class="panel photo-preview">
+            <div class="panel-head"><div><h2 id="albumPreviewTitle">南京日常</h2><p>单图快速检查</p></div></div>
+            <div class="photo-placeholder"><div><i data-lucide="image" style="width:32px;height:32px"></i><strong id="albumPreviewLabel" style="display:block;margin-top:10px">第 1 张</strong><span style="display:block;margin-top:5px;font-size:10px">保持原比例，不裁切</span></div></div>
+            <div class="photo-controls"><span class="photo-position" id="albumPhotoPosition">1 / 12</span><button class="secondary-button" id="previousPhoto">上一张</button><button class="secondary-button" id="nextPhoto">下一张</button><button class="secondary-button wide">解绑当前照片</button><button class="danger-button wide">删除当前记录</button></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="page" id="page-model">
+        <div class="subtabs" data-tab-group="model">
+          <button class="subtab active" data-tab="llm">大模型</button>
+          <button class="subtab" data-tab="model-memory">记忆配置</button>
+          <button class="subtab" data-tab="pet-prompt">宠物设定</button>
+        </div>
+        <div class="tab-pane active" data-pane-group="model" data-pane="llm">
+          <div class="model-layout">
+            <article class="panel">
+              <div class="panel-head"><div><h2>模型连接</h2><p>只管理文本生成，不允许模型直接选择素材</p></div><button class="secondary-button save-demo">保存配置</button></div>
+              <div class="panel-body">
+                <div class="provider-row"><div class="field"><label>服务商</label><select class="select"><option>DeepSeek</option><option>OpenAI Compatible</option><option>本地模型</option></select></div><div class="field"><label>模型</label><input class="input" value="deepseek-chat"></div></div>
+                <div class="field" style="margin-top:14px"><label>接口地址</label><input class="input" value="https://api.deepseek.com"></div>
+                <div class="field" style="margin-top:14px"><label>API Key</label><input class="input" type="password" value="sk-local-placeholder"></div>
+                <div class="connection-strip"><div><strong>连接正常</strong><span>最近检查：刚刚 · 响应 826 ms</span></div><button class="secondary-button">测试连接</button></div>
+              </div>
+            </article>
+            <article class="panel debug-chat">
+              <div class="panel-head"><div><h2>对话调试</h2><p>仅测试当前模型连接</p></div></div>
+              <div class="messages"><div class="message owner">你现在想做什么？</div><div class="message pet">想再趴一会儿呀。</div></div>
+              <div class="composer"><input class="input debug-input" placeholder="输入测试消息，Enter 发送"><button class="primary-button debug-send">发送</button></div>
+            </article>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane-group="model" data-pane="model-memory">
+          <div class="model-layout">
+            <article class="panel">
+              <div class="panel-head"><div><h2>记忆配置</h2><p>控制回答前允许读取的记忆范围</p></div><button class="secondary-button save-demo">保存配置</button></div>
+              <div class="panel-body memory-list">
+                <label class="setting-row"><div><strong>使用长期记忆</strong><p>回答前检索档案、互动和习惯记忆。</p></div><span class="switch"><input type="checkbox" checked><span></span></span></label>
+                <label class="setting-row"><div><strong>使用相册记忆</strong><p>允许检索已经保存描述的相册照片。</p></div><span class="switch"><input type="checkbox" checked><span></span></span></label>
+                <label class="setting-row"><div><strong>使用短期记忆</strong><p>保留有限轮次上下文，避免无限增长。</p></div><span class="switch"><input type="checkbox" checked><span></span></span></label>
+                <div class="field" style="margin-top:16px"><label>短期记忆轮次</label><select class="select"><option>最近 20 条消息</option><option>最近 12 条消息</option><option>最近 8 条消息</option></select></div>
+              </div>
+            </article>
+            <article class="panel debug-chat">
+              <div class="panel-head"><div><h2>对话调试</h2><p>检查不同记忆开关的检索结果</p></div></div>
+              <div class="messages"><div class="message owner">你还记得第一次洗澡吗？</div><div class="message pet">记得呀，我当时吓坏啦。</div></div>
+              <div class="composer"><input class="input debug-input" placeholder="输入记忆测试，Enter 发送"><button class="primary-button debug-send">发送</button></div>
+            </article>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane-group="model" data-pane="pet-prompt">
+          <div class="model-layout">
+            <article class="panel">
+              <div class="panel-head"><div><h2>宠物设定</h2><p>保存后重新注入下一次模型请求</p></div><button class="secondary-button save-demo">保存并应用</button></div>
+              <div class="panel-body">
+                <div class="field"><label>系统提示词</label><textarea class="textarea" style="height:272px;min-height:272px">你是一只名叫“悟空”的柴犬，不是人类助手。回复要简短、口语化，并且只描述当前状态中确实发生的动作。</textarea></div>
+                <div class="prompt-meta"><span class="chip good">已载入</span><span class="chip">UTF-8 文档</span><span class="chip">随 EXE 配置</span></div>
+                <div class="summary-list" style="margin-top:14px"><div class="summary-row"><span>配置文件</span><strong>Config/pet-prompt.txt</strong></div><div class="summary-row"><span>最近应用</span><strong>刚刚</strong></div></div>
+              </div>
+            </article>
+            <article class="panel debug-chat">
+              <div class="panel-head"><div><h2>对话调试</h2><p>只使用当前未保存的设定副本</p></div></div>
+              <div class="messages"><div class="message owner">你爱我吗？</div><div class="message pet">当然爱呀，最喜欢老爸啦。</div></div>
+              <div class="composer"><input class="input debug-input" placeholder="输入风格测试，Enter 发送"><button class="primary-button debug-send">发送</button></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-assets">
+        <div class="asset-toolbar">
+          <div class="subtabs" id="assetTabs">
+            <button class="subtab active" data-category="basic">基础动作</button>
+            <button class="subtab" data-category="play">玩一下</button>
+            <button class="subtab" data-category="food">吃一下</button>
+            <button class="subtab" data-category="command">口令</button>
+            <button class="subtab" data-category="magic">魔法特辑</button>
+            <button class="subtab" data-category="holiday">节日特辑（待解锁）</button>
+          </div>
+        </div>
+        <div class="asset-grid" id="assetGrid">
+          <article class="asset-card" data-category="basic" data-name="安静趴卧" data-status="已启用" data-id="wk.idle.prone" data-phase="loop" data-frames="6" data-img="../../assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED/frames/microloops/prone-idle-legacy-side/frame-001.png" data-frame-prefix="../../assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED/frames/microloops/prone-idle-legacy-side/frame-00" data-frame-count="6">
+            <div class="asset-media"><img src="../../assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED/frames/microloops/prone-idle-legacy-side/frame-001.png" alt="安静趴卧"></div>
+            <div class="asset-content"><div class="asset-title-row"><h3>安静趴卧</h3><span class="badge approved">已启用</span></div><p>稳定趴姿下的低频呼吸和轻微眨眼。</p><div class="asset-actions"><button class="secondary-button preview-asset">查看动画</button><button class="primary-button run-asset">让悟空执行</button></div></div>
+          </article>
+          <article class="asset-card" data-category="basic" data-name="坐着等你" data-status="已启用" data-id="wk.idle.sit" data-phase="loop" data-frames="6" data-img="../../assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED/frames/microloops/sit-idle/frame-001.png" data-frame-prefix="../../assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED/frames/microloops/sit-idle/frame-00" data-frame-count="6">
+            <div class="asset-media"><img src="../../assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED/frames/microloops/sit-idle/frame-001.png" alt="坐着等你"></div>
+            <div class="asset-content"><div class="asset-title-row"><h3>坐着等你</h3><span class="badge approved">已启用</span></div><p>稳定坐姿待机，适合观察主人和等待互动。</p><div class="asset-actions"><button class="secondary-button preview-asset">查看动画</button><button class="primary-button run-asset">让悟空执行</button></div></div>
+          </article>
+          <article class="asset-card" data-category="play" data-name="兜风" data-status="已启用" data-id="wk.interaction.car_ride" data-phase="intro / loop / exit" data-frames="222" data-img="../../assets/action-batches/WK-INTERACTION-CAR-RIDE-CANDIDATE-v8/sequences/directions/right/frame-001.png" data-frame-prefix="../../assets/action-batches/WK-INTERACTION-CAR-RIDE-CANDIDATE-v8/sequences/directions/right/frame-00" data-frame-count="6">
+            <div class="asset-media"><img src="../../assets/action-batches/WK-INTERACTION-CAR-RIDE-CANDIDATE-v8/sequences/directions/right/frame-001.png" alt="兜风"></div>
+            <div class="asset-content"><div class="asset-title-row"><h3>兜风</h3><span class="badge approved">已启用</span></div><p>主人手动邀请后，在安全工作区内驾驶和转向。</p><div class="asset-actions"><button class="secondary-button preview-asset">查看动画</button><button class="primary-button run-asset">让悟空执行</button></div></div>
+          </article>
+          <article class="asset-card" data-category="play" data-name="散步" data-status="待解锁" data-id="wk.interaction.walk" data-phase="unavailable" data-frames="0">
+            <div class="asset-media"><i data-lucide="lock" style="width:34px;height:34px;color:#8a918b"></i></div>
+            <div class="asset-content"><div class="asset-title-row"><h3>散步</h3><span class="badge locked">待解锁</span></div><p>缺少完整行走与窗口位移闭环，暂不提供执行入口。</p><div class="asset-actions"><button class="secondary-button" disabled>暂无动画</button><button class="secondary-button" disabled>尚未开放</button></div></div>
+          </article>
+          <article class="asset-card" data-category="food" data-name="吃饭" data-status="已启用" data-id="wk.interaction.eat_kibble" data-phase="intro / loop / exit" data-frames="24" data-img="../../assets/action-batches/WK-INTERACTION-FOOD-WATER-COAT-SEAM-CANDIDATE-v5/frames/eat-loop/frame-01.png" data-frame-prefix="../../assets/action-batches/WK-INTERACTION-FOOD-WATER-COAT-SEAM-CANDIDATE-v5/frames/eat-loop/frame-0" data-frame-count="4">
+            <div class="asset-media"><img src="../../assets/action-batches/WK-INTERACTION-FOOD-WATER-COAT-SEAM-CANDIDATE-v5/frames/eat-loop/frame-01.png" alt="吃饭"></div>
+            <div class="asset-content"><div class="asset-title-row"><h3>吃饭</h3><span class="badge approved">已启用</span></div><p>从站姿低头进食，吃完后安全回到站立。</p><div class="asset-actions"><button class="secondary-button preview-asset">查看动画</button><button class="primary-button run-asset">让悟空执行</button></div></div>
+          </article>
+          <article class="asset-card" data-category="food" data-name="喝水" data-status="已启用" data-id="wk.interaction.drink_water" data-phase="intro / loop / exit" data-frames="24" data-img="../../assets/action-batches/WK-INTERACTION-FOOD-WATER-COAT-SEAM-CANDIDATE-v5/frames/drink-loop/frame-01.png" data-frame-prefix="../../assets/action-batches/WK-INTERACTION-FOOD-WATER-COAT-SEAM-CANDIDATE-v5/frames/drink-loop/frame-0" data-frame-count="4">
+            <div class="asset-media"><img src="../../assets/action-batches/WK-INTERACTION-FOOD-WATER-COAT-SEAM-CANDIDATE-v5/frames/drink-loop/frame-01.png" alt="喝水"></div>
+            <div class="asset-content"><div class="asset-title-row"><h3>喝水</h3><span class="badge approved">已启用</span></div><p>站姿进入喝水循环，完成后恢复稳定姿态。</p><div class="asset-actions"><button class="secondary-button preview-asset">查看动画</button><button class="primary-button run-asset">让悟空执行</button></div></div>
+          </article>
+          <article class="asset-card" data-category="command" data-name="坐下" data-status="已启用" data-id="wk.command.sit" data-phase="intro" data-frames="8" data-img="../../assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED/frames/microloops/sit-idle/frame-001.png">
+            <div class="asset-media"><img src="../../assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED/frames/microloops/sit-idle/frame-001.png" alt="坐下"></div>
+            <div class="asset-content"><div class="asset-title-row"><h3>坐下</h3><span class="badge approved">已启用</span></div><p>听到主人指令后，从兼容姿态过渡到稳定坐姿。</p><div class="asset-actions"><button class="secondary-button preview-asset">查看动画</button><button class="primary-button run-asset">让悟空执行</button></div></div>
+          </article>
+          <article class="asset-card" data-category="magic" data-name="骑扫帚" data-status="已启用" data-id="wk.magic.accio_broom" data-phase="intro / flight / exit" data-frames="20" data-img="../../assets/action-batches/WK-MAGIC-SPECIALS-CANDIDATE-v1/accio_broom/takeoff/frame-001.png">
+            <div class="asset-media"><img src="../../assets/action-batches/WK-MAGIC-SPECIALS-CANDIDATE-v1/accio_broom/takeoff/frame-001.png" alt="骑扫帚"></div>
+            <div class="asset-content"><div class="asset-title-row"><h3>骑扫帚</h3><span class="badge approved">已启用</span></div><p>主人明确触发的魔法演出，不进入自主行为。</p><div class="asset-actions"><button class="secondary-button preview-asset">查看动画</button><button class="primary-button run-asset">让悟空执行</button></div></div>
+          </article>
+          <article class="asset-card" data-category="magic" data-name="瞬间移动" data-status="已启用" data-id="wk.magic.apparate" data-phase="disappear / wait / appear" data-frames="18" data-img="../../assets/action-batches/WK-MAGIC-SPECIALS-CANDIDATE-v1/apparate/appear/frame-001.png">
+            <div class="asset-media"><img src="../../assets/action-batches/WK-MAGIC-SPECIALS-CANDIDATE-v1/apparate/appear/frame-001.png" alt="瞬间移动"></div>
+            <div class="asset-content"><div class="asset-title-row"><h3>瞬间移动</h3><span class="badge approved">已启用</span></div><p>缓慢消失后移动到安全位置，再以魔法形态出现。</p><div class="asset-actions"><button class="secondary-button preview-asset">查看动画</button><button class="primary-button run-asset">让悟空执行</button></div></div>
+          </article>
+          <article class="asset-card" data-category="holiday" data-name="节日特辑" data-status="待解锁" data-id="wk.holiday.locked" data-phase="unavailable" data-frames="0">
+            <div class="asset-media"><i data-lucide="gift" style="width:34px;height:34px;color:#8a918b"></i></div>
+            <div class="asset-content"><div class="asset-title-row"><h3>节日特辑</h3><span class="badge locked">待解锁</span></div><p>后续按节日独立审批，不与日常素材混用。</p><div class="asset-actions"><button class="secondary-button" disabled>暂无动画</button><button class="secondary-button" disabled>尚未开放</button></div></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="page" id="page-developer">
+        <div class="dev-summary">
+          <div class="dev-stat"><span>Agent 状态</span><strong style="color:var(--green)">在线</strong></div>
+          <div class="dev-stat"><span>当前 Episode</span><strong>Resting</strong></div>
+          <div class="dev-stat"><span>活动播放器</span><strong>1</strong></div>
+          <div class="dev-stat"><span>最近结果</span><strong>Completed</strong></div>
+        </div>
+        <article class="panel">
+          <div class="panel-head"><div><h2>行为决策链</h2><p>普通页面隐藏的技术信息统一在这里展开</p></div><button class="primary-button" id="simulateDecision">模拟一次决策</button></div>
+          <div class="panel-body pipeline">
+            <div class="pipeline-step"><b>01</b><strong>BehaviorRequest</strong><span>来源、意图、执行模式</span></div>
+            <div class="pipeline-step"><b>02</b><strong>Hard Eligibility</strong><span>素材、姿态、权限门禁</span></div>
+            <div class="pipeline-step"><b>03</b><strong>Utility Scoring</strong><span>状态、性格、冷却与迟滞</span></div>
+            <div class="pipeline-step"><b>04</b><strong>Arbitration</strong><span>互斥、安全中断与优先级</span></div>
+            <div class="pipeline-step"><b>05</b><strong>Animation Lifecycle</strong><span>intro、loop、exit</span></div>
+            <div class="pipeline-step"><b>06</b><strong>PetStateReducer</strong><span>完成后统一回流状态</span></div>
+          </div>
+        </article>
+        <div class="dev-grid">
+          <article class="panel">
+            <div class="panel-head"><div><h2>候选评分</h2><p>固定输入与种子产生确定结果</p></div></div>
+            <div class="panel-body" style="padding-top:6px">
+              <table>
+                <thead><tr><th>候选</th><th>分数</th><th>状态</th><th>原因</th></tr></thead>
+                <tbody id="scoreRows">
+                  <tr><td><code>wk.idle.prone</code></td><td><div class="score-bar"><span style="width:84%"></span></div></td><td><span class="badge approved">84</span></td><td>posture_match, comfort</td></tr>
+                  <tr><td><code>wk.observe.head_turn</code></td><td><div class="score-bar"><span style="width:69%"></span></div></td><td><span class="badge candidate">69</span></td><td>curiosity, cooldown_ok</td></tr>
+                  <tr><td><code>wk.command.spin</code></td><td><div class="score-bar"><span style="width:0%"></span></div></td><td><span class="badge locked">Gate</span></td><td>command_only</td></tr>
+                  <tr><td><code>wk.magic.accio_broom</code></td><td><div class="score-bar"><span style="width:0%"></span></div></td><td><span class="badge locked">Gate</span></td><td>owner_only</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><h2>事件记录</h2><p>请求、门禁、生命周期和恢复结果</p></div></div>
+            <div class="trace" id="traceLog">
+              <div class="trace-line"><em>10:42:18.402</em> request source=AutonomousTick episode=Resting</div>
+              <div class="trace-line"><em>10:42:18.405</em> gate allowed=3 rejected=7</div>
+              <div class="trace-line"><em>10:42:18.408</em> selected behavior_id=wk.idle.prone score=84</div>
+              <div class="trace-line"><em>10:42:20.913</em> lifecycle phase=loop frame=4/6</div>
+              <div class="trace-line"><em>10:42:23.514</em> outcome=Completed reducer=applied</div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="settingsBackdrop" aria-hidden="true">
+    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="drawer-head"><div><h2 id="settingsTitle">全局设置</h2><p style="margin:4px 0 0;color:var(--muted);font-size:11px">影响所有动作的统一运行偏好</p></div><button class="icon-button close-settings" title="关闭"><i data-lucide="x"></i></button></div>
+      <div class="drawer-body">
+        <section class="settings-section"><h3>显示与活动</h3><div class="field"><label>宠物大小</label><div class="range-row"><input type="range" min="50" max="250" value="100" id="petSize"><output id="petSizeValue">100%</output></div></div><div class="field" style="margin-top:16px"><label>活动范围</label><select class="select"><option>当前屏幕工作区</option><option>仅桌面右下区域</option><option>全部显示器工作区</option></select></div></section>
+        <section class="settings-section"><h3>打扰与发言</h3><div class="field"><label>主动发言频率</label><div class="range-row"><input type="range" min="0" max="4" value="1" id="speechFrequency"><output id="speechValue">低频</output></div></div><label class="setting-row" style="margin-top:10px"><div><strong>忙碌时减少打扰</strong><p>全屏、会议或输入密集时降低主动表达。</p></div><span class="switch"><input type="checkbox" checked><span></span></span></label></section>
+        <section class="settings-section"><h3>安静时段</h3><div class="quiet-grid"><div class="field"><label>开始</label><input class="input" type="time" value="23:00"></div><div class="field"><label>结束</label><input class="input" type="time" value="07:00"></div></div><label class="setting-row"><div><strong>安静时段暂停主动发言</strong><p>主人手动互动仍然正常响应。</p></div><span class="switch"><input type="checkbox" checked><span></span></span></label></section>
+      </div>
+      <div class="drawer-foot"><button class="secondary-button close-settings">取消</button><button class="primary-button" id="saveSettings">保存设置</button></div>
+    </aside>
+  </div>
+
+  <div class="dialog-backdrop" id="assetDialogBackdrop" aria-hidden="true">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="assetDialogTitle">
+      <div class="panel-head"><div><h2 id="assetDialogTitle">动作预览</h2><p id="assetDialogStatus">已启用</p></div><button class="icon-button" id="closeAssetDialog" title="关闭"><i data-lucide="x"></i></button></div>
+      <div class="dialog-media"><img id="assetDialogImage" alt="动作预览"></div>
+      <div class="dialog-content"><p id="assetDialogDescription" style="margin:0;color:var(--muted);font-size:12px">面板预览不会驱动主桌宠窗口。</p><div class="dialog-meta"><div><span>Behavior ID</span><strong id="assetDialogId">-</strong></div><div><span>生命周期</span><strong id="assetDialogPhase">-</strong></div><div><span>帧数</span><strong id="assetDialogFrames">-</strong></div></div></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script>
+    const pageCopy = {
+      owner: ['主人', '看看悟空现在的状态，选择合适的互动。'],
+      profile: ['档案', '管理稳定身份、性格基线、关系与记忆。'],
+      album: ['相册', '整理照片与描述，原文件和相册关系彼此独立。'],
+      model: ['大模型', '配置模型、记忆范围与悟空的表达方式。'],
+      assets: ['素材', '先看动作，再决定是否让悟空实际执行。'],
+      developer: ['开发者', '查看评分、门禁、素材版本和完整事件记录。']
+    };
+
+    const navButtons = document.querySelectorAll('.nav-button');
+    const pages = document.querySelectorAll('.page');
+    navButtons.forEach(button => button.addEventListener('click', () => {
+      const page = button.dataset.page;
+      navButtons.forEach(item => item.classList.toggle('active', item === button));
+      pages.forEach(item => item.classList.toggle('active', item.id === `page-${page}`));
+      document.getElementById('pageTitle').textContent = pageCopy[page][0];
+      document.getElementById('pageSubtitle').textContent = pageCopy[page][1];
+    }));
+
+    document.querySelectorAll('.subtabs').forEach(group => {
+      group.addEventListener('click', event => {
+        const button = event.target.closest('.subtab');
+        if (!button) return;
+        group.querySelectorAll('.subtab').forEach(item => item.classList.toggle('active', item === button));
+        const groupName = group.dataset.tabGroup;
+        if (groupName && button.dataset.tab) {
+          document.querySelectorAll(`[data-pane-group="${groupName}"]`).forEach(pane => {
+            pane.classList.toggle('active', pane.dataset.pane === button.dataset.tab);
+          });
+        }
+      });
+    });
+
+    const toast = document.getElementById('toast');
+    let toastTimer;
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add('show');
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
+    const ownerHeadline = document.getElementById('ownerHeadline');
+    const ownerSummary = document.getElementById('ownerSummary');
+    const topStatus = document.getElementById('topStatus');
+    const postureChip = document.getElementById('postureChip');
+    const intentChip = document.getElementById('intentChip');
+    const busyNote = document.getElementById('busyNote');
+    let actionTimer = null;
+    let isBusy = false;
+
+    function addActivity(title, description) {
+      const list = document.getElementById('activityList');
+      document.getElementById('activityEmpty').classList.remove('show');
+      list.style.display = 'grid';
+      const item = document.createElement('div');
+      item.className = 'activity-item';
+      item.innerHTML = `<div class="activity-icon">•</div><div><strong>${title}</strong><p>${description}</p></div><span class="activity-time">刚刚</span>`;
+      list.prepend(item);
+    }
+
+    function setBusy(busy, message) {
+      isBusy = busy;
+      document.querySelectorAll('#contextActions .action-button:not(.stop)').forEach(button => button.classList.toggle('busy', busy));
+      busyNote.classList.toggle('show', busy);
+      if (message) busyNote.textContent = message;
+    }
+
+    document.getElementById('contextActions').addEventListener('click', event => {
+      const button = event.target.closest('[data-action]');
+      if (!button) return;
+      const action = button.dataset.action;
+      if (action === 'stop') {
+        clearTimeout(actionTimer);
+        setBusy(false);
+        ownerHeadline.textContent = '回到安静趴卧';
+        ownerSummary.textContent = '当前动作已经安全结束，悟空恢复稳定状态。';
+        topStatus.textContent = '正在休息';
+        postureChip.textContent = '趴着';
+        intentChip.textContent = '可以互动';
+        addActivity('停下了', '当前动作安全退出，恢复到稳定趴姿。');
+        showToast('悟空已经停下');
+        return;
+      }
+      if (isBusy) {
+        showToast('悟空还在完成当前动作');
+        return;
+      }
+      if (action === 'drink') {
+        setBusy(true, '悟空正在喝水，喝完再陪你。你也可以点“停下”。');
+        ownerHeadline.textContent = '正在认真喝水';
+        ownerSummary.textContent = '这个动作会完整结束，不会被普通自主行为打断。';
+        topStatus.textContent = '正在喝水';
+        postureChip.textContent = '站着';
+        intentChip.textContent = '忙碌中';
+        actionTimer = setTimeout(() => {
+          setBusy(false);
+          ownerHeadline.textContent = '喝完了，准备休息';
+          ownerSummary.textContent = '口渴已经缓解，现在可以继续陪你。';
+          topStatus.textContent = '刚喝完水';
+          intentChip.textContent = '愿意互动';
+          addActivity('喝完了水', '口渴状态降低，动作完整结束。');
+        }, 3200);
+      } else if (action === 'touch') {
+        ownerHeadline.textContent = '被摸得很开心';
+        ownerSummary.textContent = '悟空注意到了你的触摸，愿意继续靠近你。';
+        topStatus.textContent = '心情很好';
+        addActivity('接受了摸摸', '因为是主人触发，社交需要有所下降。');
+        showToast('悟空轻轻回应了你');
+      } else {
+        ownerHeadline.textContent = '抬头看向你';
+        ownerSummary.textContent = '他先回应了呼唤，再决定是否从趴姿起身。';
+        topStatus.textContent = '正在关注你';
+        addActivity('回应了呼唤', '保持姿态连续，没有直接从趴姿硬切站立。');
+        showToast('悟空听见了');
+      }
+    });
+
+    document.getElementById('clearActivity').addEventListener('click', () => {
+      document.getElementById('activityList').style.display = 'none';
+      document.getElementById('activityEmpty').classList.add('show');
+      showToast('最近活动已清空');
+    });
+
+    document.querySelectorAll('.trait-row input').forEach(input => input.addEventListener('input', () => {
+      input.nextElementSibling.textContent = input.value;
+    }));
+    document.querySelectorAll('.save-demo').forEach(button => button.addEventListener('click', () => showToast('设置已保存并应用')));
+
+    const albumPicker = document.getElementById('albumFolderPicker');
+    document.getElementById('chooseAlbumFolder').addEventListener('click', () => albumPicker.click());
+    albumPicker.addEventListener('change', () => {
+      if (!albumPicker.files.length) return;
+      const relativePath = albumPicker.files[0].webkitRelativePath || albumPicker.files[0].name;
+      const folderName = relativePath.split('/')[0];
+      document.getElementById('albumPath').value = `已选择：${folderName}`;
+      document.getElementById('albumBindingState').textContent = `已读取 ${albumPicker.files.length} 个文件`;
+      showToast('相册目录已绑定，等待保存');
+    });
+    document.getElementById('rescanAlbum').addEventListener('click', () => showToast('扫描完成：9 个子相册，59 张照片'));
+
+    let currentAlbumCount = 12;
+    let currentPhotoIndex = 1;
+    function updateAlbumPreview() {
+      document.getElementById('albumPreviewLabel').textContent = `第 ${currentPhotoIndex} 张`;
+      document.getElementById('albumPhotoPosition').textContent = `${currentPhotoIndex} / ${currentAlbumCount}`;
+      document.getElementById('previousPhoto').disabled = currentPhotoIndex <= 1;
+      document.getElementById('nextPhoto').disabled = currentPhotoIndex >= currentAlbumCount;
+    }
+    document.querySelectorAll('.album-tile').forEach(tile => tile.addEventListener('click', () => {
+      document.querySelectorAll('.album-tile').forEach(item => item.classList.toggle('active', item === tile));
+      currentAlbumCount = Number(tile.dataset.count || 0);
+      currentPhotoIndex = currentAlbumCount ? 1 : 0;
+      document.getElementById('albumPreviewTitle').textContent = tile.dataset.album;
+      updateAlbumPreview();
+    }));
+    document.getElementById('previousPhoto').addEventListener('click', () => { if (currentPhotoIndex > 1) currentPhotoIndex -= 1; updateAlbumPreview(); });
+    document.getElementById('nextPhoto').addEventListener('click', () => { if (currentPhotoIndex < currentAlbumCount) currentPhotoIndex += 1; updateAlbumPreview(); });
+    updateAlbumPreview();
+
+    const settingsBackdrop = document.getElementById('settingsBackdrop');
+    document.getElementById('settingsButton').addEventListener('click', () => {
+      settingsBackdrop.classList.add('show');
+      settingsBackdrop.setAttribute('aria-hidden', 'false');
+    });
+    document.querySelectorAll('.close-settings').forEach(button => button.addEventListener('click', () => {
+      settingsBackdrop.classList.remove('show');
+      settingsBackdrop.setAttribute('aria-hidden', 'true');
+    }));
+    settingsBackdrop.addEventListener('click', event => { if (event.target === settingsBackdrop) settingsBackdrop.classList.remove('show'); });
+    document.getElementById('petSize').addEventListener('input', event => document.getElementById('petSizeValue').textContent = `${event.target.value}%`);
+    document.getElementById('speechFrequency').addEventListener('input', event => {
+      document.getElementById('speechValue').textContent = ['关闭', '低频', '适中', '活跃', '频繁'][Number(event.target.value)];
+    });
+    document.getElementById('saveSettings').addEventListener('click', () => {
+      settingsBackdrop.classList.remove('show');
+      showToast('全局设置已保存');
+    });
+
+    const assetCards = [...document.querySelectorAll('.asset-card')];
+    document.getElementById('assetTabs').addEventListener('click', event => {
+      const button = event.target.closest('[data-category]');
+      if (!button) return;
+      const category = button.dataset.category;
+      assetCards.forEach(card => card.hidden = card.dataset.category !== category);
+    });
+    assetCards.forEach(card => { if (card.dataset.category !== 'basic') card.hidden = true; });
+
+    const assetDialog = document.getElementById('assetDialogBackdrop');
+    const assetDialogImage = document.getElementById('assetDialogImage');
+    let previewTimer = null;
+    function closePreview() {
+      clearInterval(previewTimer);
+      previewTimer = null;
+      assetDialog.classList.remove('show');
+      assetDialog.setAttribute('aria-hidden', 'true');
+    }
+    document.getElementById('closeAssetDialog').addEventListener('click', closePreview);
+    assetDialog.addEventListener('click', event => { if (event.target === assetDialog) closePreview(); });
+
+    document.getElementById('assetGrid').addEventListener('click', event => {
+      const card = event.target.closest('.asset-card');
+      if (!card) return;
+      if (event.target.closest('.preview-asset')) {
+        document.getElementById('assetDialogTitle').textContent = card.dataset.name;
+        document.getElementById('assetDialogStatus').textContent = card.dataset.status;
+        document.getElementById('assetDialogId').textContent = card.dataset.id;
+        document.getElementById('assetDialogPhase').textContent = card.dataset.phase;
+        document.getElementById('assetDialogFrames').textContent = card.dataset.frames;
+        assetDialogImage.src = card.dataset.img || '';
+        assetDialog.classList.add('show');
+        assetDialog.setAttribute('aria-hidden', 'false');
+        clearInterval(previewTimer);
+        const count = Number(card.dataset.frameCount || 1);
+        if (count > 1 && card.dataset.framePrefix) {
+          let index = 1;
+          previewTimer = setInterval(() => {
+            index = index % count + 1;
+            assetDialogImage.src = `${card.dataset.framePrefix}${index}.png`;
+          }, 650);
+        }
+      }
+      if (event.target.closest('.run-asset')) {
+        addActivity(`执行了“${card.dataset.name}”`, '由主人从素材页明确触发。');
+        showToast(`已提交“${card.dataset.name}”行为请求`);
+      }
+    });
+
+    function sendDebugMessage(input) {
+      const value = input.value.trim();
+      if (!value) return;
+      const messages = input.closest('.debug-chat').querySelector('.messages');
+      const owner = document.createElement('div');
+      owner.className = 'message owner'; owner.textContent = value;
+      const pet = document.createElement('div');
+      pet.className = 'message pet'; pet.textContent = '嗯，我听着呀。';
+      messages.append(owner, pet); input.value = ''; messages.scrollTop = messages.scrollHeight;
+    }
+    document.querySelectorAll('.debug-send').forEach(button => button.addEventListener('click', () => {
+      sendDebugMessage(button.closest('.composer').querySelector('.debug-input'));
+    }));
+    document.querySelectorAll('.debug-input').forEach(input => input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') sendDebugMessage(input);
+    }));
+
+    document.getElementById('simulateDecision').addEventListener('click', () => {
+      const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+      const trace = document.getElementById('traceLog');
+      trace.insertAdjacentHTML('beforeend', `<div class="trace-line"><em>${time}</em> shadow_compare legacy=prone_idle agent=observe_head_turn</div><div class="trace-line"><em>${time}</em> selected behavior_id=wk.observe.head_turn reason=curiosity,cooldown_ok</div>`);
+      trace.scrollTop = trace.scrollHeight;
+      showToast('已完成一次确定性决策');
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+  </script>
+</body>
+</html>

@@ -182,6 +182,15 @@
       "runtime_validation": "pending_windows_renderer_qa",
       "runtime_approved": false,
       "runtime_use": false
+    },
+    {
+      "id": "2026-09-10-v19-refined-front-import",
+      "date": "2026-09-10",
+      "change": "Replaced the four v19 fronts with owner-supplied refined-edge masters, normalized each complete front to the established runtime footprint, preserved the four existing backs, and rebuilt all four nine-frame flip sequences without redrawing or recoloring artwork.",
+      "visual_approved": false,
+      "runtime_validation": "pending_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false
     }
   ],
   "previews": [
@@ -190,25 +199,27 @@
       "path": "petrificus_coin/v19/previews/coin-v19-masters-light-dark.gif",
       "frames": 8,
       "frame_duration_ms": 700,
-      "sha256": "21f98e889ba8b825e77f40fa1e669a854dbaa94fc7d9a192b76ca242d81cc8e4"
+      "sha256": "0cbfced4af9c504b16270f2b27fb2cda2f32978ee928c10ce69e027695b31e09"
     },
     {
       "kind": "v19-flip-sequences-light-dark",
       "path": "petrificus_coin/v19/previews/coin-v19-flips-light-dark.gif",
       "frames": 36,
       "frame_duration_ms": 80,
-      "sha256": "8176c336b725f39db816874dd2ea5d538d4641def15cd07bff9d2e78ca4f8f85"
+      "sha256": "5f645bc6e968a746471b78ba867ac240e003651bf1e0b44d94108f23e39eebbd"
     }
   ],
   "edge_baseline": {
-    "profile": "v19_source_shared_alpha",
+    "profile": "v19_refined_fronts_shared_bounds",
     "visible_bounds": {
       "x": 62,
       "y": 70,
       "width": 900,
       "height": 882
     },
-    "faces_share_exact_alpha": true,
+    "faces_share_exact_alpha": false,
+    "faces_share_exact_visible_bounds": true,
+    "refined_front_alpha_preserved": true,
     "transparent_rgb_zeroed": true,
     "flip_widths": [
       900,
@@ -221,7 +232,7 @@
       845,
       900
     ],
-    "repair_scope": "zero-alpha RGB sanitation and deterministic flip derivation only"
+    "repair_scope": "whole-front deterministic normalization, zero-alpha RGB sanitation, and deterministic flip derivation only"
   },
   "display_name": "Petrified coin v19 candidate",
   "visual_approved": false,
@@ -237,58 +248,130 @@
       {
         "state": "vivid",
         "side": "front",
-        "source_file": "dog_coin_front_state_01.png",
-        "bytes": 1417749,
-        "sha256": "2586397f4e8719b367a768a4aefeb682c60ec4aa58982487604e1c6fd5bfb294"
+        "source_file": "dog-coin-transparent.png",
+        "bytes": 1859401,
+        "sha256": "5ac7a856230b104ded288fe4aabfa6b7ea47cce3744e653da9e0dabdb318b53a",
+        "source_width": 1254,
+        "source_height": 1254,
+        "source_visible_bounds": [
+          71,
+          82,
+          1178,
+          1167
+        ],
+        "whole_image_normalized": true
       },
       {
         "state": "vivid",
         "side": "back",
         "source_file": "dog_coin_back_state_01.png",
         "bytes": 1689902,
-        "sha256": "a55ff63db90600c7b194b1c55c9b7cef9f910c78d9e41315a0ab7f4903ca996a"
+        "sha256": "a55ff63db90600c7b194b1c55c9b7cef9f910c78d9e41315a0ab7f4903ca996a",
+        "source_width": 1024,
+        "source_height": 1024,
+        "source_visible_bounds": [
+          62,
+          70,
+          962,
+          952
+        ],
+        "whole_image_normalized": false
       },
       {
         "state": "flat",
         "side": "front",
-        "source_file": "dog_coin_front_state_02.png",
-        "bytes": 1462280,
-        "sha256": "193b0ebc01e4e83c849189cf45a22613beb93f434147c44949ea1f636e3ca749"
+        "source_file": "coin_front_narrow_outer_rim_transparent.png",
+        "bytes": 1581012,
+        "sha256": "ecf1fc2eb605537c81df18e9e5cce880701e2e6458295272acf2bed48f767112",
+        "source_width": 1254,
+        "source_height": 1254,
+        "source_visible_bounds": [
+          74,
+          80,
+          1180,
+          1173
+        ],
+        "whole_image_normalized": true
       },
       {
         "state": "flat",
         "side": "back",
         "source_file": "dog_coin_back_state_02.png",
         "bytes": 1533266,
-        "sha256": "8abb767ca556ce3d17e9f607bf5b42738b10105f0111592b58162e8e4d6fbaa0"
+        "sha256": "8abb767ca556ce3d17e9f607bf5b42738b10105f0111592b58162e8e4d6fbaa0",
+        "source_width": 1024,
+        "source_height": 1024,
+        "source_visible_bounds": [
+          62,
+          70,
+          962,
+          952
+        ],
+        "whole_image_normalized": false
       },
       {
         "state": "faded",
         "side": "front",
-        "source_file": "dog_coin_front_state_03.png",
-        "bytes": 1565222,
-        "sha256": "a6c127e342ece94696e7320535c72d9ab495a8ea79c944a16ffa849597eafa99"
+        "source_file": "dog-coin-transparent(1).png",
+        "bytes": 2209949,
+        "sha256": "c368824e2549025c3e6e04a1ba3de56e1a458b43b2a0a0bfee3431dcf9d09379",
+        "source_width": 1254,
+        "source_height": 1254,
+        "source_visible_bounds": [
+          75,
+          84,
+          1179,
+          1169
+        ],
+        "whole_image_normalized": true
       },
       {
         "state": "faded",
         "side": "back",
         "source_file": "dog_coin_back_state_03.png",
         "bytes": 1615626,
-        "sha256": "692c9894a6f125308906d5a6103a16f6064022f2f94cb919eb807a22f2ff19a7"
+        "sha256": "692c9894a6f125308906d5a6103a16f6064022f2f94cb919eb807a22f2ff19a7",
+        "source_width": 1024,
+        "source_height": 1024,
+        "source_visible_bounds": [
+          62,
+          70,
+          962,
+          952
+        ],
+        "whole_image_normalized": false
       },
       {
         "state": "exhausted",
         "side": "front",
-        "source_file": "dog_coin_front_state_04.png",
-        "bytes": 1531743,
-        "sha256": "61f753b177fd91959f0ce082ae06462e2c7b1733f2c78ab293e3a7f8b1622e6b"
+        "source_file": "dog-coin-01-transparent.png",
+        "bytes": 2209305,
+        "sha256": "86a547d243dfdd6a0262ea3877f91a94e2fab255b02a521d39150a82c89e28a4",
+        "source_width": 1254,
+        "source_height": 1254,
+        "source_visible_bounds": [
+          74,
+          84,
+          1180,
+          1172
+        ],
+        "whole_image_normalized": true
       },
       {
         "state": "exhausted",
         "side": "back",
         "source_file": "dog_coin_back_state_04.png",
         "bytes": 1684702,
-        "sha256": "7ba408ae1c7b5cc19d91a46a50d2dedfef794e0eb938595b5c84b3424e3a8c34"
+        "sha256": "7ba408ae1c7b5cc19d91a46a50d2dedfef794e0eb938595b5c84b3424e3a8c34",
+        "source_width": 1024,
+        "source_height": 1024,
+        "source_visible_bounds": [
+          62,
+          70,
+          962,
+          952
+        ],
+        "whole_image_normalized": false
       }
     ]
   },

@@ -12,7 +12,7 @@ public sealed record ChatProviderConfiguration(
     public static ChatProviderConfiguration Default(ChatProviderType provider) => provider switch
     {
         ChatProviderType.OpenAI => new(provider, "https://api.openai.com/v1", "gpt-4.1-mini", 60, 0.7, false),
-        ChatProviderType.OpenAICompatible => new(provider, "https://api.deepseek.com/v1", "deepseek-chat", 60, 0.7, false),
+        ChatProviderType.OpenAICompatible => new(provider, "https://api.deepseek.com", "deepseek-chat", 60, 0.7, false),
         ChatProviderType.Anthropic => new(provider, "https://api.anthropic.com", "claude-sonnet-4-5", 60, 0.7, false),
         ChatProviderType.Gemini => new(provider, "https://generativelanguage.googleapis.com", "gemini-2.5-flash", 60, 0.7, false),
         ChatProviderType.Ollama => new(provider, "http://127.0.0.1:11434", "llama3.2", 120, 0.7, false),
@@ -70,14 +70,18 @@ public interface IChatModelRuntime
 
 public sealed record PetProfileSnapshot(string Name, string EnglishName, string BirthDate, string Breed, string LifeStage, string Harness)
 {
-    public static PetProfileSnapshot Default { get; } = new("悟空", "Wukong", "", "日本柴犬", "成年", "橙色背带");
+    public static PetProfileSnapshot Default { get; } = new("悟空", "Wukong", "2024-09-10", "日本柴犬", "成年", "橙色背带");
 }
 
 public sealed record OwnerProfileSnapshot(string CallName, string Schedule, string CompanionPreference, string Tone, string Notes)
 {
     public string Birthday { get; init; } = "";
     public string PetCallName { get; init; } = "悟空";
-    public static OwnerProfileSnapshot Default { get; } = new("主人", "", "", "亲近自然", "") { PetCallName = "悟空" };
+    public static OwnerProfileSnapshot Default { get; } = new("老爸", "1点睡觉，8点起床", "", "亲近自然", "")
+    {
+        Birthday = "1994-10-10",
+        PetCallName = "老爸"
+    };
 }
 
 public sealed record PersonalitySnapshot(double Liveliness, double Affection, double Sensitivity, double Independence, double Mischievousness)
@@ -93,7 +97,10 @@ public sealed record PersonalitySnapshot(double Liveliness, double Affection, do
         Mischievousness = Clamp01(Mischievousness),
         CommandCooperativeness = Clamp01(CommandCooperativeness)
     };
-    public static PersonalitySnapshot Default { get; } = new(0.58, 0.76, 0.48, 0.62, 0.42);
+    public static PersonalitySnapshot Default { get; } = new(0.74, 0.29, 0.65, 0.66, 0.74)
+    {
+        CommandCooperativeness = 0.82
+    };
     private static double Clamp01(double value) => Math.Clamp(value, 0, 1);
 }
 
@@ -166,6 +173,33 @@ public sealed record AgentMemoryConfiguration(
     public static AgentMemoryConfiguration Default { get; } = new(true, true, true);
 }
 
+public sealed record AutonomousBehaviorPreferences(
+    double WalkingWeight,
+    double ProneRestWeight,
+    double SleepingWeight,
+    double StandingIdleWeight)
+{
+    public const double MinimumWeight = 0.25;
+    public const double MaximumWeight = 2.0;
+
+    public static AutonomousBehaviorPreferences Default { get; } = new(
+        WalkingWeight: 1.35,
+        ProneRestWeight: 1.45,
+        SleepingWeight: 1.25,
+        StandingIdleWeight: 0.40);
+
+    public AutonomousBehaviorPreferences Clamp() => this with
+    {
+        WalkingWeight = ClampWeight(WalkingWeight),
+        ProneRestWeight = ClampWeight(ProneRestWeight),
+        SleepingWeight = ClampWeight(SleepingWeight),
+        StandingIdleWeight = ClampWeight(StandingIdleWeight)
+    };
+
+    private static double ClampWeight(double value) =>
+        double.IsFinite(value) ? Math.Clamp(value, MinimumWeight, MaximumWeight) : 1.0;
+}
+
 public sealed record PetContextRequest(
     string UserMessage,
     int MaximumAlbumMemories = 5,
@@ -211,6 +245,12 @@ public interface IAgentMemoryConfigurationStore
 {
     Task<AgentMemoryConfiguration> LoadAsync(CancellationToken cancellationToken = default);
     Task SaveAsync(AgentMemoryConfiguration configuration, CancellationToken cancellationToken = default);
+}
+
+public interface IAutonomousBehaviorPreferencesStore
+{
+    Task<AutonomousBehaviorPreferences> LoadAsync(CancellationToken cancellationToken = default);
+    Task SaveAsync(AutonomousBehaviorPreferences preferences, CancellationToken cancellationToken = default);
 }
 
 public interface IConversationHistoryStore

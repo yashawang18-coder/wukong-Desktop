@@ -154,6 +154,53 @@ internal static class BehaviorAgentCoreTests
             "hard gate did not exclude command-only behavior");
     }
 
+    public static void OwnerBehaviorPreferencesAffectScores()
+    {
+        var now = new DateTimeOffset(2026, 9, 11, 10, 0, 0, TimeSpan.Zero);
+        var state = PetAgentState.CreateDefault(now) with
+        {
+            Runtime = PetRuntimeState.Default with
+            {
+                CurrentPosture = StablePosture.Stand,
+                CurrentPoseId = "stand.neutral.left_front"
+            }
+        };
+        var walk = Capability("walk", BehaviorParticipationMode.Autonomous, BehaviorEffortLevel.Low,
+            BehaviorRequestSource.AutonomousTick) with
+        {
+            Category = BehaviorSemanticCategory.Explore,
+            AutonomousBindingEnabled = true
+        };
+        var stand = Capability("stand", BehaviorParticipationMode.Autonomous, BehaviorEffortLevel.Low,
+            BehaviorRequestSource.AutonomousTick) with
+        {
+            Category = BehaviorSemanticCategory.StableIdle,
+            AutonomousBindingEnabled = true
+        };
+        var catalog = new BehaviorCapabilityCatalog(new[] { walk, stand });
+        var input = new BehaviorDecisionInput(
+            BehaviorRequestSource.AutonomousTick, now, "current", now.Subtract(TimeSpan.FromMinutes(1)), true,
+            new Dictionary<string, DateTimeOffset>(), Array.Empty<string>(), 73, false, true,
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "walk", "stand" },
+            new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["walk"] = 1.8,
+                ["stand"] = 0.3
+            });
+        var engine = new BehaviorDecisionEngine();
+        var first = engine.Decide(state, catalog, input);
+        var second = engine.Decide(state, catalog, input);
+        var walkPreference = first.Candidates.Single(x => x.BehaviorId == "walk").Components
+            .Single(x => x.Name == "owner_behavior_preference").Value;
+        var standPreference = first.Candidates.Single(x => x.BehaviorId == "stand").Components
+            .Single(x => x.Name == "owner_behavior_preference").Value;
+
+        Assert(walkPreference > 0 && standPreference < 0, "owner behavior preference did not adjust utility scores");
+        Assert(first.SelectedBehaviorId == "walk", "higher walking preference did not win the decision");
+        Assert(first.Candidates.Select(x => x.FinalScore).SequenceEqual(second.Candidates.Select(x => x.FinalScore)),
+            "behavior preferences made seeded decisions nondeterministic");
+    }
+
     private static PetBehaviorStarted Started(
         DateTimeOffset at,
         Guid executionId,
