@@ -40,8 +40,18 @@ var tests = new (string Name, Func<Task> Run)[]
     ("agent reducer ignores preview duplicate and stale completions", () => RunSync(BehaviorAgentCoreTests.ReducerIgnoresPreviewDuplicateAndStaleCompletion)),
     ("episode policy applies dwell and urgent recovery", () => RunSync(BehaviorAgentCoreTests.EpisodePolicyUsesDwellAndImmediateRecovery)),
     ("owner participation modes preserve command and magic boundaries", () => RunSync(BehaviorAgentCoreTests.ParticipationPolicyKeepsOwnerModesDistinct)),
+    ("capability catalog prefers approved runtime duplicate", () => RunSync(BehaviorAgentCoreTests.CapabilityCatalogPrefersApprovedRuntimeDuplicate)),
     ("agent decision is deterministic and respects hard gates", () => RunSync(BehaviorAgentCoreTests.DecisionEngineIsDeterministicAndHardGated)),
-    ("owner behavior preferences affect deterministic utility scores", () => RunSync(BehaviorAgentCoreTests.OwnerBehaviorPreferencesAffectScores))
+    ("owner behavior preferences affect deterministic utility scores", () => RunSync(BehaviorAgentCoreTests.OwnerBehaviorPreferencesAffectScores)),
+    ("relationship and long-term memory affect autonomous utility", () => RunSync(BehaviorAgentCoreTests.RelationshipAndLongTermMemoryAffectDecisionScores)),
+    ("reducer persists bounded relationship and behavior learning", () => RunSync(BehaviorAgentCoreTests.ReducerPersistsBoundedRelationshipAndBehaviorLearning)),
+    ("command willingness is cooperative deterministic and state-sensitive", () => RunSync(BehaviorAgentCoreTests.CommandWillingnessIsCooperativeDeterministicAndStateSensitive)),
+    ("initiative speech uses relationship memory and unanswered cooldown", () => RunSync(BehaviorAgentCoreTests.InitiativeSpeechUsesRelationshipMemoryAndUnansweredCooldown))
+    ,("owner action intent normalization is deterministic", () => RunSync(BehaviorContinuityTests.OwnerIntentNormalizationIsSharedAndDeterministic))
+    ,("dialogue claims cannot invent runtime facts", () => RunSync(BehaviorContinuityTests.DialogueClaimsCannotInventRuntimeFacts))
+    ,("preparing and completed claims require lifecycle evidence", () => RunSync(BehaviorContinuityTests.PreparingAndCompletedClaimsRequireEvidence))
+    ,("sleeping episode holds and evolves by elapsed time", () => RunSync(BehaviorContinuityTests.SleepingEpisodeHoldsAndUsesElapsedTime))
+    ,("episode definitions centralize duration and hysteresis", () => RunSync(BehaviorContinuityTests.EpisodeDefinitionsUseProductionDurationsAndHysteresis))
 };
 
 var failures = new List<string>();

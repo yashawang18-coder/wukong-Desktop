@@ -1,0 +1,770 @@
+{
+  "schema_version": 1,
+  "batch_id": "WK-AUTONOMOUS-PRONE-MICROEXPRESSIONS-v1",
+  "asset_id": "WK-AUTONOMOUS-PRONE-MICROEXPRESSIONS-v1",
+  "source_candidate_id": "WK-FRONT-PRONE-EXPRESSIONS-CANDIDATE-v3",
+  "source_zip": "WK-FRONT-PRONE-EXPRESSIONS-CANDIDATE-v3.zip",
+  "source_zip_sha256": "cc42ba06add043fd57ff2d3e748a888033f47ba5559e176db00e552b3e006bd9",
+  "source_anchor_sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+  "candidate_profile": "front_prone_expression_review_v1",
+  "owner_preview_approved": true,
+  "visual_approved": true,
+  "runtime_validation": "pending_windows_expression_strength_qa",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": false,
+  "candidate_exe_review_marker": "Wukong.FrontProneExpressionsReview.enabled",
+  "allowed_sources": [
+    "DeveloperPreview"
+  ],
+  "candidate_exe_allowed_sources": [
+    "DeveloperPreview",
+    "AutonomousTick"
+  ],
+  "posture_family": "prone.front",
+  "shared_cooldown_seconds": {
+    "min": 45,
+    "max": 120
+  },
+  "same_action_minimum_other_events": 2,
+  "runtime_frame_count": 36,
+  "frame_inventory": [
+    {
+      "path": "sequences/satisfied_smile/frame-001.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216166,
+      "sha256": "4daddbfbcb2c8f7e2785adcc1cb47bbe556f7fea0b1b148f82daec79fcae8aef",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/satisfied_smile/frame-002.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 215856,
+      "sha256": "b6ba1ac11cd53c03f763aa66ce236e9669d63bb165033497e5779f297ae9a144",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/satisfied_smile/frame-003.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 215703,
+      "sha256": "252826212bb25f281d3e9f1c637fbd357b5006514f0cf4dbba15b2957eaf8d0f",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/satisfied_smile/frame-004.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216140,
+      "sha256": "f8821d33013fb31527da8da8a190c3cba9c3a35c362e1b6535cf87d405067acf",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/satisfied_smile/frame-005.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216727,
+      "sha256": "b1b9fa8877b6af83da15cb1a57b48b601bc406ebe1aa90eb822bc28a4fb72886",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/satisfied_smile/frame-006.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216727,
+      "sha256": "b1b9fa8877b6af83da15cb1a57b48b601bc406ebe1aa90eb822bc28a4fb72886",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/satisfied_smile/frame-007.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216159,
+      "sha256": "559b8b3f906f3d12e565fece9d3cd54cf0e16743c69be751ca2eadbe7b0890b9",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/satisfied_smile/frame-008.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 215734,
+      "sha256": "1e4aa33259a75a408906169ce669c4bb0e31ba07533e1e2489445ba9e8103f59",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/satisfied_smile/frame-009.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 215831,
+      "sha256": "440772a27cbb958f6b1fde903daabdc32643680312288ca3a03d150fe6efa836",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/satisfied_smile/frame-010.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216166,
+      "sha256": "4daddbfbcb2c8f7e2785adcc1cb47bbe556f7fea0b1b148f82daec79fcae8aef",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/satisfied_smile/frame-011.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216166,
+      "sha256": "4daddbfbcb2c8f7e2785adcc1cb47bbe556f7fea0b1b148f82daec79fcae8aef",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/satisfied_smile/frame-012.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216166,
+      "sha256": "4daddbfbcb2c8f7e2785adcc1cb47bbe556f7fea0b1b148f82daec79fcae8aef",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/curious_observe/frame-001.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216166,
+      "sha256": "4daddbfbcb2c8f7e2785adcc1cb47bbe556f7fea0b1b148f82daec79fcae8aef",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/curious_observe/frame-002.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216026,
+      "sha256": "79fd7dbe1688c49ced99f60c74848e0b3b7f00cf19407287b0f0dbec94481232",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/curious_observe/frame-003.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216139,
+      "sha256": "a537408252e3db57ee0930f2f6c648e3decb8c2ff4c309c5dedaec41755a5aa7",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/curious_observe/frame-004.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216604,
+      "sha256": "447dcac084216728e72c116eaf49082ebe571bb3a8fb19f3113d4bfb9c4c6067",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/curious_observe/frame-005.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 217191,
+      "sha256": "c6a108bf853eb93144058de462bb44fad9fe8eb79b6c837bd392f798554add5f",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/curious_observe/frame-006.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 217191,
+      "sha256": "c6a108bf853eb93144058de462bb44fad9fe8eb79b6c837bd392f798554add5f",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/curious_observe/frame-007.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216646,
+      "sha256": "d1d2c17a9e61780e8135b1e4e4f2a3a982c9dd14ff8287770367c7c20686a7d6",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/curious_observe/frame-008.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216211,
+      "sha256": "a49bd3a5979db890d239b30349949bafffa1bd029a364f9477657ad820920c32",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/curious_observe/frame-009.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216001,
+      "sha256": "e40bb55b3b11ccc50e5c556ba02904f99d9cf2af74e55ea22e8cc251b622b5e4",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/curious_observe/frame-010.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216166,
+      "sha256": "4daddbfbcb2c8f7e2785adcc1cb47bbe556f7fea0b1b148f82daec79fcae8aef",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/curious_observe/frame-011.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216166,
+      "sha256": "4daddbfbcb2c8f7e2785adcc1cb47bbe556f7fea0b1b148f82daec79fcae8aef",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/curious_observe/frame-012.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216166,
+      "sha256": "4daddbfbcb2c8f7e2785adcc1cb47bbe556f7fea0b1b148f82daec79fcae8aef",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/knowing_look/frame-001.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216166,
+      "sha256": "4daddbfbcb2c8f7e2785adcc1cb47bbe556f7fea0b1b148f82daec79fcae8aef",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/knowing_look/frame-002.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 215694,
+      "sha256": "2e4bdac6367f740cb34c1b436bd6b56a564c0e4817d43ab5e7d7e9b866938d70",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/knowing_look/frame-003.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 215282,
+      "sha256": "51010b9bf3ccee79f8c1a1c82f5aebc312be39164297d0f81c79a7c26d09eebc",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/knowing_look/frame-004.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 215390,
+      "sha256": "914c7cd2db1915ddc7c37db4714558736b8e7ebee78ee464be9d2fe37fce1036",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/knowing_look/frame-005.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216004,
+      "sha256": "5d6007e8a92d662f3875abfdbf62e77cd9c12ad37b88d1bcfcba59b6e1d2fb3d",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/knowing_look/frame-006.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216004,
+      "sha256": "5d6007e8a92d662f3875abfdbf62e77cd9c12ad37b88d1bcfcba59b6e1d2fb3d",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/knowing_look/frame-007.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 215329,
+      "sha256": "46effe85d129aa84de403958023e18fb074103612171e7bfb437b2dc34ee6abe",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/knowing_look/frame-008.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 215233,
+      "sha256": "f8c817c1a51d15b6c68d7a65cf1592ce656c8c70548983e4c1c4e0b090ca390f",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/knowing_look/frame-009.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 215571,
+      "sha256": "79ea7ec5ebc36d9d620696a26fcb47a60a865dc49a7c76266a85e0fe2e7cb25b",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/knowing_look/frame-010.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216166,
+      "sha256": "4daddbfbcb2c8f7e2785adcc1cb47bbe556f7fea0b1b148f82daec79fcae8aef",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/knowing_look/frame-011.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216166,
+      "sha256": "4daddbfbcb2c8f7e2785adcc1cb47bbe556f7fea0b1b148f82daec79fcae8aef",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    },
+    {
+      "path": "sequences/knowing_look/frame-012.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 216166,
+      "sha256": "4daddbfbcb2c8f7e2785adcc1cb47bbe556f7fea0b1b148f82daec79fcae8aef",
+      "alpha_bounds": [
+        323,
+        477,
+        699,
+        899
+      ],
+      "ground_baseline_y": 899
+    }
+  ],
+  "actions": [
+    {
+      "behavior_id": "prone-satisfied-smile",
+      "display_name": "满足地笑一笑",
+      "description": "低压力、平静或正向心情下的满足微笑。",
+      "from_pose": "prone.awake.front",
+      "to_pose": "prone.awake.front",
+      "direction": "front",
+      "frame_count": 12,
+      "total_duration_ms": 3030,
+      "loop": false,
+      "interruptible": true,
+      "mirror_policy": "forbidden_front_facing_asset",
+      "weight": 0.5,
+      "frames": [
+        {
+          "path": "sequences/satisfied_smile/frame-001.png",
+          "duration_ms": 520
+        },
+        {
+          "path": "sequences/satisfied_smile/frame-002.png",
+          "duration_ms": 150
+        },
+        {
+          "path": "sequences/satisfied_smile/frame-003.png",
+          "duration_ms": 150
+        },
+        {
+          "path": "sequences/satisfied_smile/frame-004.png",
+          "duration_ms": 160
+        },
+        {
+          "path": "sequences/satisfied_smile/frame-005.png",
+          "duration_ms": 260
+        },
+        {
+          "path": "sequences/satisfied_smile/frame-006.png",
+          "duration_ms": 220
+        },
+        {
+          "path": "sequences/satisfied_smile/frame-007.png",
+          "duration_ms": 160
+        },
+        {
+          "path": "sequences/satisfied_smile/frame-008.png",
+          "duration_ms": 160
+        },
+        {
+          "path": "sequences/satisfied_smile/frame-009.png",
+          "duration_ms": 170
+        },
+        {
+          "path": "sequences/satisfied_smile/frame-010.png",
+          "duration_ms": 240
+        },
+        {
+          "path": "sequences/satisfied_smile/frame-011.png",
+          "duration_ms": 320
+        },
+        {
+          "path": "sequences/satisfied_smile/frame-012.png",
+          "duration_ms": 520
+        }
+      ]
+    },
+    {
+      "behavior_id": "prone-curious-observe",
+      "display_name": "好奇地看看",
+      "description": "清醒并注意到主人活动时的轻微好奇观察。",
+      "from_pose": "prone.awake.front",
+      "to_pose": "prone.awake.front",
+      "direction": "front",
+      "frame_count": 12,
+      "total_duration_ms": 3030,
+      "loop": false,
+      "interruptible": true,
+      "mirror_policy": "forbidden_front_facing_asset",
+      "weight": 0.3,
+      "frames": [
+        {
+          "path": "sequences/curious_observe/frame-001.png",
+          "duration_ms": 520
+        },
+        {
+          "path": "sequences/curious_observe/frame-002.png",
+          "duration_ms": 150
+        },
+        {
+          "path": "sequences/curious_observe/frame-003.png",
+          "duration_ms": 150
+        },
+        {
+          "path": "sequences/curious_observe/frame-004.png",
+          "duration_ms": 160
+        },
+        {
+          "path": "sequences/curious_observe/frame-005.png",
+          "duration_ms": 260
+        },
+        {
+          "path": "sequences/curious_observe/frame-006.png",
+          "duration_ms": 220
+        },
+        {
+          "path": "sequences/curious_observe/frame-007.png",
+          "duration_ms": 160
+        },
+        {
+          "path": "sequences/curious_observe/frame-008.png",
+          "duration_ms": 160
+        },
+        {
+          "path": "sequences/curious_observe/frame-009.png",
+          "duration_ms": 170
+        },
+        {
+          "path": "sequences/curious_observe/frame-010.png",
+          "duration_ms": 240
+        },
+        {
+          "path": "sequences/curious_observe/frame-011.png",
+          "duration_ms": 320
+        },
+        {
+          "path": "sequences/curious_observe/frame-012.png",
+          "duration_ms": 520
+        }
+      ]
+    },
+    {
+      "behavior_id": "prone-knowing-look",
+      "display_name": "若有所思地看着",
+      "description": "低压力且平静警觉时低频出现的稀有表情。",
+      "from_pose": "prone.awake.front",
+      "to_pose": "prone.awake.front",
+      "direction": "front",
+      "frame_count": 12,
+      "total_duration_ms": 3030,
+      "loop": false,
+      "interruptible": true,
+      "mirror_policy": "forbidden_front_facing_asset",
+      "weight": 0.2,
+      "frames": [
+        {
+          "path": "sequences/knowing_look/frame-001.png",
+          "duration_ms": 520
+        },
+        {
+          "path": "sequences/knowing_look/frame-002.png",
+          "duration_ms": 150
+        },
+        {
+          "path": "sequences/knowing_look/frame-003.png",
+          "duration_ms": 150
+        },
+        {
+          "path": "sequences/knowing_look/frame-004.png",
+          "duration_ms": 160
+        },
+        {
+          "path": "sequences/knowing_look/frame-005.png",
+          "duration_ms": 260
+        },
+        {
+          "path": "sequences/knowing_look/frame-006.png",
+          "duration_ms": 220
+        },
+        {
+          "path": "sequences/knowing_look/frame-007.png",
+          "duration_ms": 160
+        },
+        {
+          "path": "sequences/knowing_look/frame-008.png",
+          "duration_ms": 160
+        },
+        {
+          "path": "sequences/knowing_look/frame-009.png",
+          "duration_ms": 170
+        },
+        {
+          "path": "sequences/knowing_look/frame-010.png",
+          "duration_ms": 240
+        },
+        {
+          "path": "sequences/knowing_look/frame-011.png",
+          "duration_ms": 320
+        },
+        {
+          "path": "sequences/knowing_look/frame-012.png",
+          "duration_ms": 520
+        }
+      ]
+    }
+  ]
+}

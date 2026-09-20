@@ -7,13 +7,13 @@ foundation. It applies the useful parts of the Pupu-inspired design notes withou
 copying Pupu implementation details or replacing Wukong's existing behavior,
 asset-gate, animation, or desktop-effect pipeline.
 
-The first rollout is intentionally narrow:
+The current rollout keeps authority explicit rather than global:
 
-- `Resting` is authoritative.
-- `Observing` is implemented and evaluated in Shadow mode, but is not yet
-  authoritative.
-- `Exploring`, `Socializing`, and `Recovering` continue to use the legacy runtime
-  selector.
+- `Resting`, `Observing`, `Exploring`, and `Sleeping` use Agent v2 allowlists.
+- Lifecycle-created owner, eating, drinking, magic, and vehicle Episodes use the
+  same formal state and reducer, but are not autonomous decision pools.
+- `Socializing` and general `Recovering` selection remain outside the promoted
+  autonomous allowlists until their visual routes are reviewed.
 - No asset, manifest, approval flag, owner menu, model permission, or production
   routing is changed by this iteration.
 
@@ -60,8 +60,9 @@ into an unbounded hunger, thirst, stress, or energy jump.
 | Episode | Current authority | Current production allocation |
 | --- | --- | --- |
 | Resting | Agent v2 | Compatible P2/V3R1 stable idles, approved full daily lifecycle, `StandToSit`, `SitToProne` |
-| Observing | Shadow only | Compatible stable idles, `HeadLowerTurnV4`, `FrontProneLickV4`; rollout is not enabled yet |
-| Exploring | Legacy | Existing patrol behavior remains unchanged |
+| Observing | Agent v2 | Compatible stable idles, `HeadLowerTurnV4`, `FrontProneLickV4` |
+| Exploring | Agent v2 | Compatible standing idle and approved left/right patrol |
+| Sleeping | Agent v2 | Approved sleep entry and compatible front sleep breathing; no fabricated wake path |
 | Socializing | Legacy | Existing interaction routing remains unchanged |
 | Recovering | Legacy | Existing sleep/recovery routing remains unchanged |
 
@@ -74,7 +75,7 @@ eligible capability exists. It keeps the current compatible stable idle and logs
 the gate result. The legacy selector is still evaluated without side effects for
 Shadow comparison and cannot submit a second request.
 
-Rollback is configuration-only: remove `Resting` from
+Rollback is configuration-only: remove the affected Episode from
 `AutonomousAgentRolloutOptions.AuthoritativeEpisodes`. No asset or state migration
 is needed.
 
@@ -90,6 +91,13 @@ is needed.
 `CommandCooperativeness` defaults to `0.82`. It is a stable temperament baseline,
 not an alias for attachment or independence.
 
+Owner-command admission is deterministic. Low-effort commands normally accept;
+medium/high-effort commands combine cooperativeness, trust, familiarity, mood,
+available energy, stress, and recent repetition. Independence changes initiative
+style and frequency, not obedience. Severe low energy/high stress or excessive
+repetition can reject a high-effort command; the middle band returns `Deferred`
+with a retry time instead of randomly pretending to comply.
+
 ## Lifecycle and reducer ownership
 
 Every tracked Normal execution receives a unique `BehaviorRequest.RequestId`.
@@ -101,19 +109,17 @@ They do not change formal posture, needs, relationship, recent experience, or
 memory eligibility. Stable idle display loops do not set `IsBusy` and do not
 re-apply outcome effects on every loop.
 
-Reducer ownership is explicit during migration. The first owned behaviors are:
+All Normal non-idle motions now enter an execution-ID-checked reducer lifecycle.
+Reviewed daily, posture-transition, observing, sleep, patrol, food/water,
+front-prone expression, and owner-command behaviors have explicit outcome
+profiles. Other legacy motions receive a compatibility profile derived from their
+declared terminal pose and effect; they still settle through the reducer rather
+than writing formal state twice. Old completion branches remain in source as a
+rollback compatibility layer, but the Normal lifecycle intercepts them.
 
-- P2 full daily lifecycle
-- V3R1 full daily lifecycle
-- stand to sit
-- sit to prone
-- prone head-lower/turn V4
-- front-prone lick V4
-
-Each behavior keeps its existing action-specific end posture, pose ID, and state
-effects. Category defaults do not overwrite those values. All other actions retain
-their existing completion code until migrated in a later batch, preventing double
-state writes.
+Desktop-only effect cleanup still owns opacity, position, coins, temporary windows,
+and decoded image resources. Posture, pose, busy state, needs, mood, relationship,
+recent experience, and learned preferences are reducer-owned.
 
 ## Decision formula
 
@@ -123,6 +129,7 @@ final score = base weight
             + runtime-state fit
             + relationship fit
             + bounded learned preference
+            + recent outcome memory
             + Episode fit
             + time context
             - repetition penalty
@@ -136,19 +143,42 @@ cannot bypass source, approval, pose, Episode, cooldown, dwell, interruption, or
 window-motion requirements. Equal state, time, catalog, and seed produce equal
 scores and selection.
 
+## Relationship and long-term behavior memory
+
+The formal Agent state is saved atomically to
+`WukongData/agent/pet-agent-state.json` and restored on the next launch. Active
+execution and busy flags are deliberately cleared during recovery; relationship,
+needs, posture, recent bounded experience, and learned behavior preferences are
+retained. A maximum of 32 recent events is kept, and learned weights are clamped to
+`[-0.15, 0.15]`, so memory influences close choices without bypassing hard gates.
+
+Successful owner interactions slowly raise trust and familiarity. Touch feedback
+adjusts touch acceptance, and an owner response after spontaneous speech adjusts
+initiative acceptance. Completed, failed, interrupted, and rejected outcomes add
+small time-decayed utility components. Free-text conversation memory remains a
+dialogue input and cannot directly grant runtime capability or select an asset.
+
+## Initiative speech
+
+Spontaneous speech is evaluated only while the pet is in stable idle, outside quiet
+hours, not petrified, and without an expanded chat. Topic scores come from current
+needs, Episode, temperament, relationship, and recent topic history. The service
+uses randomized check intervals but deterministic admission for the same state and
+seed. It applies topic-repeat penalties, a longer cooldown when the previous line
+was not answered, and a budget of six initiatives per eight hours. Speech records
+`LastInitiativeSpeechAt`; it does not falsely count as an owner interaction.
+
 ## Next rollout
 
-1. Run independent Windows observation for Resting and inspect pose continuity,
-   stale callbacks, and long-lived busy state.
-2. Enable `Observing` only after its front-prone and non-front-prone pose routes
-   pass the same checks.
-3. Migrate Recovering sleep outcomes into the reducer without inventing a wake
-   sequence.
-4. Migrate Exploring patrol outcomes and window translation separately.
-5. Migrate owner command outcomes, then owner interaction outcomes.
-6. Keep magic, car ride, coin, and other desktop effects last; their visual cleanup
-   remains owned by the desktop effect controller while formal state settlement
-   moves to the reducer.
+1. Run long Windows observation for Episode continuity, stale callbacks, and
+   long-lived busy state.
+2. Add an approved sleep wake/interrupt bridge before enabling natural wake-up.
+3. Promote Socializing and general Recovering only with explicit visual routes and
+   allowlists.
+4. Replace compatibility outcome profiles with action-specific profiles as each
+   remaining legacy effect receives semantic state values.
+5. Keep free-text memory outside capability and asset gates; only validated,
+   structured preferences may affect behavior scoring.
 
 The final target is one reducer for posture, pose, needs, mood, relationship, and
 recent experience, while WPF-only position, opacity, effects, and resource cleanup

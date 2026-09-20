@@ -26,7 +26,8 @@ public sealed record PortableDataLayout(
         "memory-configuration.json",
         "autonomous-behavior-preferences.json",
         "conversation-history.json",
-        "memory-candidates.json"
+        "memory-candidates.json",
+        "pet-agent-state.json"
     };
 
     public static PortableDataLayout CreateDefault() => Initialize(

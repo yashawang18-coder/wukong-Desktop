@@ -15,6 +15,7 @@ public enum InputEventKind
 public enum BehaviorRequestSource
 {
     OwnerUi,
+    OwnerDialogue,
     OwnerContextMenu,
     ControlPanel,
     Dialogue,

@@ -444,3 +444,35 @@ Before implementation, add or provide the reviewed UX artifact and a pinned Pupu
 - No PNG, asset manifest, runtime approval, owner menu, model permission, or
   production asset mapping is changed in this rollout.
 - Detailed architecture and rollback guidance: `docs/behavior-agent-core-v2.md`.
+
+## 2026-09-16 front-prone microexpressions v1 local candidate
+
+- Imported 36 production PNGs byte-for-byte from `WK-FRONT-PRONE-EXPRESSIONS-CANDIDATE-v3.zip` into `WK-AUTONOMOUS-PRONE-MICROEXPRESSIONS-v1`; review images and alternate preview formats are excluded from runtime assets.
+- The three one-shot actions are `prone-satisfied-smile`, `prone-curious-observe`, and `prone-knowing-look`. Each is 12 frames / 3030 ms, begins and ends on the exact approved `prone.awake.front` anchor, and never changes posture, position, orientation, scale, or ground anchor.
+- Source visual review is accepted, but expression readability at actual desktop size remains pending. Formal state stays `runtime_validation=pending_windows_expression_strength_qa`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, `prototype_use=false`, and `autonomous_binding_enabled=false`.
+- DeveloperPreview can inspect the actions without formal state writes. A separately generated candidate EXE may contain `Wukong.FrontProneExpressionsReview.enabled`, which locally enables only these actions for low-frequency autonomous review while leaving formal manifest approval closed.
+- Candidate scheduling requires the stable front-prone pose, shares a randomized 45-120 second cooldown, suppresses either of the two most recent expression choices, and yields to owner commands and magic through the existing BehaviorRequest arbitration path.
+- This is local uncommitted candidate work. No remote branch, PR, production registry, or approved asset was changed.
+
+## 2026-09-16 behavior continuity v1 local candidate
+
+- Branch remains `agent/behavior-agent-core-v2`; this work is local and uncommitted.
+- Explicit owner chat now uses `OwnerDialogue`, while model/system `Dialogue` remains unable to cross owner-only command, food, car-ride, or prototype-magic gates.
+- Resting, Observing, Exploring, and Sleeping use authoritative Episode allowlists. The legacy selector runs only as a side-effect-free trace comparison for these Episodes.
+- Episode dwell, preferred/maximum duration, cooldown, and switch hysteresis are centralized in `BehaviorEpisodeCatalog`; state evolution uses real elapsed time.
+- Normal non-idle animation executions receive request IDs and settle through `PetStateReducer`. Duplicate and stale callbacks are ignored. Preview modes remain isolated.
+- Owner action replies are projected from the actual request result. Current, preparing, and completed claims are validated against live Episode/action/posture and recent lifecycle outcomes before display.
+- Command completion preserves the exact terminal frame and scale before entering a compatible stable idle.
+- Sleeping holds a compatible sleep presentation because no approved wake/interrupt-exit asset exists. No reversed entry animation or cross-camera hard cut is fabricated.
+- No PNG, asset approval field, manifest, menu, or `main` branch is changed by this behavior-continuity work.
+- Detailed design and remaining bridge gaps: `docs/behavior-continuity-v1.md`.
+
+## 2026-09-16 relationship, memory, initiative, and command policy local candidate
+
+- `PetAgentState` schema v2 persists atomically beside the executable at `WukongData/agent/pet-agent-state.json`. Relationship, bounded recent experience, learned preferences, posture, pose, and needs survive restart; active execution and busy state never do.
+- Trust, familiarity, recent positive/negative interactions, learned behavior preference, and time-decayed completed/failed/interrupted outcomes now contribute explicit score components after hard capability gates.
+- Successful owner actions and feedback update relationship and bounded preferences slowly. Free-text dialogue memory remains dialogue-only and cannot select behavior or assets.
+- Initiative speech now uses Episode, needs, temperament, relationship acceptance, and recent topic history. It suppresses repeated/unanswered speech, enforces quiet/busy/stress gates, and caps spontaneous lines to six per eight hours.
+- Owner commands use deterministic `CommandCooperativeness`, relationship, state, effort, and repetition scoring. Low-effort commands remain normally cooperative; severe state or repetition can defer/reject stronger commands. Independence does not become disobedience.
+- All Normal non-idle motions create a reducer-owned execution. Reviewed daily, sleep, patrol, food/water, expression, posture-transition, and owner-command actions have explicit outcome profiles; unreviewed legacy effects use a reducer compatibility profile rather than double-writing formal state.
+- No PNG, manifest approval, menu, runtime asset mapping, or `main` branch is changed. This remains local uncommitted Agent candidate work pending full Windows verification.

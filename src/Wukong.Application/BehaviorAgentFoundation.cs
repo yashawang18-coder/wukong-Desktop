@@ -5,8 +5,15 @@ namespace Wukong.Application;
 public enum PetEpisodeKind
 {
     Resting,
+    Sleeping,
     Observing,
     Exploring,
+    Eating,
+    Drinking,
+    Playing,
+    OwnerInteraction,
+    MagicActivity,
+    VehicleActivity,
     Socializing,
     Recovering
 }
@@ -55,9 +62,70 @@ public sealed record PetEpisodeState(
     string ReasonCode)
 {
     public static PetEpisodeState Resting(DateTimeOffset now) =>
-        new(PetEpisodeKind.Resting, now, TimeSpan.FromMinutes(1), "default_resting");
+        BehaviorEpisodeCatalog.Start(PetEpisodeKind.Resting, now, "default_resting");
+
+    public Guid EpisodeId { get; init; } = Guid.NewGuid();
+    public Guid CorrelationId { get; init; } = Guid.NewGuid();
+    public TimeSpan PreferredDuration { get; init; } = TimeSpan.FromMinutes(2);
+    public TimeSpan MaximumDuration { get; init; } = TimeSpan.FromMinutes(4);
 
     public bool CanSwitchAt(DateTimeOffset now) => now - StartedAt >= MinimumDwell;
+}
+
+public sealed record BehaviorEpisodeDefinition(
+    PetEpisodeKind EpisodeId,
+    IReadOnlySet<StablePosture> AllowedEntryPostures,
+    TimeSpan MinimumDuration,
+    TimeSpan PreferredDuration,
+    TimeSpan MaximumDuration,
+    double SwitchMargin,
+    TimeSpan Cooldown,
+    bool OrdinaryAutonomousInterruptible);
+
+public static class BehaviorEpisodeCatalog
+{
+    private static readonly IReadOnlyDictionary<PetEpisodeKind, BehaviorEpisodeDefinition> Definitions =
+        new[]
+        {
+            Define(PetEpisodeKind.Resting, 45, 120, 240, 0.16, 45, true, StablePosture.Stand, StablePosture.Sit, StablePosture.Prone),
+            Define(PetEpisodeKind.Sleeping, 180, 600, 1200, 0.30, 300, false, StablePosture.Prone),
+            Define(PetEpisodeKind.Observing, 20, 60, 120, 0.14, 30, true, StablePosture.Stand, StablePosture.Sit, StablePosture.Prone),
+            Define(PetEpisodeKind.Exploring, 20, 90, 180, 0.18, 60, true, StablePosture.Stand),
+            Define(PetEpisodeKind.Eating, 10, 15, 40, 0.30, 90, false, StablePosture.Stand),
+            Define(PetEpisodeKind.Drinking, 10, 15, 40, 0.30, 90, false, StablePosture.Stand),
+            Define(PetEpisodeKind.Playing, 15, 45, 120, 0.20, 60, true, StablePosture.Stand, StablePosture.Sit),
+            Define(PetEpisodeKind.OwnerInteraction, 1, 20, 120, 0.30, 0, false, StablePosture.Stand, StablePosture.Sit, StablePosture.Prone),
+            Define(PetEpisodeKind.MagicActivity, 1, 20, 180, 1.00, 0, false, StablePosture.Stand, StablePosture.Sit, StablePosture.Prone),
+            Define(PetEpisodeKind.VehicleActivity, 10, 15, 180, 0.50, 0, false, StablePosture.Stand, StablePosture.Sit, StablePosture.Prone),
+            Define(PetEpisodeKind.Socializing, 50, 90, 180, 0.18, 45, true, StablePosture.Stand, StablePosture.Sit, StablePosture.Prone),
+            Define(PetEpisodeKind.Recovering, 120, 240, 600, 0.24, 90, false, StablePosture.Sit, StablePosture.Prone)
+        }.ToDictionary(item => item.EpisodeId);
+
+    public static BehaviorEpisodeDefinition Get(PetEpisodeKind episode) => Definitions[episode];
+
+    public static PetEpisodeState Start(PetEpisodeKind episode, DateTimeOffset now, string reason, Guid? correlationId = null)
+    {
+        var definition = Get(episode);
+        return new PetEpisodeState(episode, now, definition.MinimumDuration, reason)
+        {
+            EpisodeId = Guid.NewGuid(),
+            CorrelationId = correlationId ?? Guid.NewGuid(),
+            PreferredDuration = definition.PreferredDuration,
+            MaximumDuration = definition.MaximumDuration
+        };
+    }
+
+    private static BehaviorEpisodeDefinition Define(
+        PetEpisodeKind kind,
+        int minimumSeconds,
+        int preferredSeconds,
+        int maximumSeconds,
+        double switchMargin,
+        int cooldownSeconds,
+        bool ordinaryAutonomousInterruptible,
+        params StablePosture[] postures) =>
+        new(kind, postures.ToHashSet(), TimeSpan.FromSeconds(minimumSeconds), TimeSpan.FromSeconds(preferredSeconds),
+            TimeSpan.FromSeconds(maximumSeconds), switchMargin, TimeSpan.FromSeconds(cooldownSeconds), ordinaryAutonomousInterruptible);
 }
 
 public sealed record PetEpisodeSelection(
@@ -73,6 +141,17 @@ public sealed record AutonomousAgentRolloutOptions(
     public static AutonomousAgentRolloutOptions RestingFirst { get; } = new(
         ShadowEnabled: true,
         new HashSet<PetEpisodeKind> { PetEpisodeKind.Resting },
+        LegacyFallbackOnInfrastructureFailure: false);
+
+    public static AutonomousAgentRolloutOptions ContinuityV1 { get; } = new(
+        ShadowEnabled: true,
+        new HashSet<PetEpisodeKind>
+        {
+            PetEpisodeKind.Resting,
+            PetEpisodeKind.Observing,
+            PetEpisodeKind.Exploring,
+            PetEpisodeKind.Sleeping
+        },
         LegacyFallbackOnInfrastructureFailure: false);
 
     public static AutonomousAgentRolloutOptions ShadowOnly { get; } = new(
@@ -93,15 +172,27 @@ public sealed class PetEpisodePolicy
         if (state.Runtime.IsBusy)
             return Keep(current, "active_behavior_holds_episode");
 
+        if (current.Kind == PetEpisodeKind.Sleeping && now - current.StartedAt < current.MinimumDwell)
+            return Keep(current, "sleeping_minimum_duration");
+
         var desired = DesiredEpisode(state);
         if (desired == current.Kind)
             return Keep(current, "episode_still_matches_state");
+        var currentDefinition = BehaviorEpisodeCatalog.Get(current.Kind);
+        var elapsed = now - current.StartedAt;
         if (!current.CanSwitchAt(now) && !RequiresImmediateRecovery(state.Runtime))
             return Keep(current, "episode_minimum_dwell");
 
+        var currentScore = Score(current.Kind, state);
+        var desiredScore = Score(desired, state);
+        if (elapsed < current.MaximumDuration &&
+            desiredScore <= currentScore + currentDefinition.SwitchMargin &&
+            !RequiresImmediateRecovery(state.Runtime))
+            return Keep(current, "episode_switch_margin");
+
         var reason = $"episode_transition:{current.Kind}->{desired}";
         return new PetEpisodeSelection(
-            new PetEpisodeState(desired, now, MinimumDwellFor(desired), reason),
+            BehaviorEpisodeCatalog.Start(desired, now, reason, current.CorrelationId),
             true,
             new[] { reason });
     }
@@ -109,6 +200,8 @@ public sealed class PetEpisodePolicy
     private static PetEpisodeKind DesiredEpisode(PetAgentState state)
     {
         var runtime = state.Runtime;
+        if (state.Episode.Kind == PetEpisodeKind.Sleeping)
+            return PetEpisodeKind.Sleeping;
         if (RequiresImmediateRecovery(runtime) || runtime.Energy < 0.26 || runtime.Stress > 0.68)
             return PetEpisodeKind.Recovering;
         if (runtime.SocialNeed > 0.72 &&
@@ -124,13 +217,17 @@ public sealed class PetEpisodePolicy
     private static bool RequiresImmediateRecovery(PetRuntimeState runtime) =>
         runtime.Energy < 0.10 || runtime.Stress > 0.88;
 
-    private static TimeSpan MinimumDwellFor(PetEpisodeKind episode) => episode switch
+    private static double Score(PetEpisodeKind episode, PetAgentState state) => episode switch
     {
-        PetEpisodeKind.Recovering => TimeSpan.FromMinutes(2),
-        PetEpisodeKind.Resting => TimeSpan.FromMinutes(1),
-        PetEpisodeKind.Socializing => TimeSpan.FromSeconds(50),
-        PetEpisodeKind.Exploring => TimeSpan.FromSeconds(45),
-        _ => TimeSpan.FromSeconds(35)
+        PetEpisodeKind.Sleeping => (1 - state.Runtime.Energy) * 0.70 + state.Runtime.Comfort * 0.20 - state.Runtime.Stress * 0.20,
+        PetEpisodeKind.Recovering => (1 - state.Runtime.Energy) * 0.58 + state.Runtime.Stress * 0.48,
+        PetEpisodeKind.Exploring => state.Runtime.Boredom * 0.48 + state.Runtime.Energy * 0.35 - state.Runtime.Stress * 0.40,
+        // A clear curiosity/focus signal must be able to cross Resting's hysteresis.
+        // Near-threshold signals still remain below the switch margin and keep the
+        // current episode stable.
+        PetEpisodeKind.Observing => state.Runtime.Curiosity * 0.60 + state.Runtime.Focus * 0.35,
+        PetEpisodeKind.Socializing => state.Runtime.SocialNeed * 0.48 + state.Temperament.Attachment01 * 0.20,
+        _ => state.Runtime.Comfort * 0.35 + (1 - state.Runtime.Arousal) * 0.20 + (1 - state.Runtime.Stress) * 0.20
     };
 
     private static PetEpisodeSelection Keep(PetEpisodeState current, string reason) =>
@@ -170,7 +267,7 @@ public sealed record PetAgentState(
     IReadOnlyDictionary<string, LearnedBehaviorPreference> Preferences,
     PetAgentClockState Clock)
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
 
     public static PetAgentState CreateDefault(DateTimeOffset now) => new(
         CurrentSchemaVersion,
@@ -199,8 +296,8 @@ public sealed record PetAgentState(
             Familiarity = Math.Clamp(Relationship.Familiarity, 0, 1),
             TouchAcceptance = Math.Clamp(Relationship.TouchAcceptance, 0, 1),
             InitiativeAcceptance = Math.Clamp(Relationship.InitiativeAcceptance, 0, 1),
-            RecentPositiveInteractions = Math.Max(0, Relationship.RecentPositiveInteractions),
-            RecentNegativeInteractions = Math.Max(0, Relationship.RecentNegativeInteractions)
+            RecentPositiveInteractions = Math.Clamp(Relationship.RecentPositiveInteractions, 0, 1000),
+            RecentNegativeInteractions = Math.Clamp(Relationship.RecentNegativeInteractions, 0, 1000)
         };
         return this with
         {
@@ -281,11 +378,16 @@ public sealed record PetOwnerInteractionObserved(
     int RepetitionCount,
     bool Positive) : PetAgentEvent(At);
 
+public sealed record PetInitiativeSpeechOccurred(
+    DateTimeOffset At,
+    string Topic) : PetAgentEvent(At);
+
 public sealed record PetEpisodeChanged(
     DateTimeOffset At,
     PetEpisodeKind Episode,
     TimeSpan MinimumDwell,
-    string ReasonCode) : PetAgentEvent(At);
+    string ReasonCode,
+    Guid? CorrelationId = null) : PetAgentEvent(At);
 
 public sealed class PetStateReducer
 {
@@ -303,9 +405,14 @@ public sealed class PetStateReducer
             PetBehaviorStarted started => StartBehavior(state, started),
             PetBehaviorFinished finished => FinishBehavior(state, finished),
             PetOwnerInteractionObserved interaction => ApplyInteraction(state, interaction),
+            PetInitiativeSpeechOccurred speech => ApplyInitiativeSpeech(state, speech),
             PetEpisodeChanged episode => state with
             {
-                Episode = new PetEpisodeState(episode.Episode, episode.At, episode.MinimumDwell, episode.ReasonCode)
+                Episode = BehaviorEpisodeCatalog.Start(
+                    episode.Episode,
+                    episode.At,
+                    episode.ReasonCode,
+                    episode.CorrelationId ?? state.Episode.CorrelationId)
             },
             _ => state
         };
@@ -320,16 +427,17 @@ public sealed class PetStateReducer
         var applied = rawElapsed <= MaximumContinuousElapsed ? rawElapsed : MaximumContinuousElapsed;
         var skipped = rawElapsed - applied;
         var seconds = applied.TotalSeconds;
+        var sleeping = state.Episode.Kind == PetEpisodeKind.Sleeping;
         var runtime = state.Runtime with
         {
-            Energy = state.Runtime.Energy - 0.000050 * seconds,
+            Energy = state.Runtime.Energy + (sleeping ? 0.00018 : -0.000050) * seconds,
             Hunger = state.Runtime.Hunger + 0.000030 * seconds,
             Thirst = state.Runtime.Thirst + 0.000040 * seconds,
-            SocialNeed = state.Runtime.SocialNeed + 0.000025 * seconds,
-            Boredom = state.Runtime.Boredom + 0.000040 * seconds,
-            Curiosity = state.Runtime.Curiosity + 0.000015 * seconds,
-            Stress = state.Runtime.Stress - 0.000045 * seconds,
-            Arousal = MoveToward(state.Runtime.Arousal, 0.35, 0.000025 * seconds),
+            SocialNeed = state.Runtime.SocialNeed + (sleeping ? 0.000010 : 0.000025) * seconds,
+            Boredom = state.Runtime.Boredom + (sleeping ? 0.000005 : 0.000040) * seconds,
+            Curiosity = state.Runtime.Curiosity + (sleeping ? 0 : 0.000015) * seconds,
+            Stress = state.Runtime.Stress - (sleeping ? 0.000090 : 0.000045) * seconds,
+            Arousal = MoveToward(state.Runtime.Arousal, sleeping ? 0.12 : 0.35, (sleeping ? 0.000080 : 0.000025) * seconds),
             MoodValence = MoveToward(state.Runtime.MoodValence, 0.58, 0.000012 * seconds)
         };
         return (state with
@@ -407,6 +515,7 @@ public sealed class PetStateReducer
             LastInteractionAt = completed && finished.OwnerInteraction ? finished.At : state.Runtime.LastInteractionAt
         };
         var relationship = state.Relationship;
+        var preferences = state.Preferences;
         if (completed && finished.OwnerInteraction)
         {
             relationship = relationship with
@@ -416,7 +525,9 @@ public sealed class PetStateReducer
                 RecentPositiveInteractions = relationship.RecentPositiveInteractions + 1
             };
         }
-        return Append((state with { Runtime = runtime.Clamp(), Relationship = relationship }).Clamp(), new PetRecentExperience(
+        if (finished.MemoryEligible)
+            preferences = ReinforcePreference(preferences, finished.BehaviorId, finished.Status, finished.OwnerInteraction, finished.At);
+        return Append((state with { Runtime = runtime.Clamp(), Relationship = relationship, Preferences = preferences }).Clamp(), new PetRecentExperience(
             finished.At, "behavior_finished", finished.BehaviorId, finished.Status,
             Math.Clamp(finished.CompletionRatio, 0, 1), finished.ReasonCode));
     }
@@ -435,16 +546,83 @@ public sealed class PetStateReducer
             MoodValence = state.Runtime.MoodValence + (interaction.Positive ? 0.008 : -0.004 * repetitions),
             Arousal = state.Runtime.Arousal + (interaction.Positive ? 0.005 : 0.008 * repetitions)
         };
-        return Append(state with { Runtime = runtime.Clamp() }, new PetRecentExperience(
+        var recentInitiative = state.Runtime.LastInitiativeSpeechAt is not null &&
+            interaction.At - state.Runtime.LastInitiativeSpeechAt.Value <= TimeSpan.FromMinutes(10);
+        var touchInteraction = interaction.Kind.Contains("Touch", StringComparison.OrdinalIgnoreCase) ||
+            interaction.Kind.Contains("Stroke", StringComparison.OrdinalIgnoreCase);
+        var relationship = state.Relationship with
+        {
+            Trust = state.Relationship.Trust + (interaction.Positive ? 0.0015 : -0.001 * repetitions),
+            Familiarity = state.Relationship.Familiarity + (interaction.Positive ? 0.002 : 0),
+            TouchAcceptance = state.Relationship.TouchAcceptance + (touchInteraction
+                ? interaction.Positive ? 0.003 : -0.006 * repetitions
+                : 0),
+            InitiativeAcceptance = state.Relationship.InitiativeAcceptance + (recentInitiative
+                ? interaction.Positive ? 0.003 : -0.004 * repetitions
+                : 0),
+            RecentPositiveInteractions = state.Relationship.RecentPositiveInteractions + (interaction.Positive ? 1 : 0),
+            RecentNegativeInteractions = state.Relationship.RecentNegativeInteractions + (interaction.Positive ? 0 : 1)
+        };
+        var preferenceTarget = state.Runtime.ActiveActionId ?? state.Runtime.LastActionId;
+        var preferences = string.IsNullOrWhiteSpace(preferenceTarget)
+            ? state.Preferences
+            : ReinforcePreference(
+                state.Preferences,
+                preferenceTarget,
+                interaction.Positive ? ExecutionStatus.Completed : ExecutionStatus.Rejected,
+                ownerInteraction: true,
+                interaction.At);
+        return Append((state with { Runtime = runtime.Clamp(), Relationship = relationship, Preferences = preferences }).Clamp(), new PetRecentExperience(
             interaction.At, "owner_interaction", interaction.Kind,
             interaction.Positive ? ExecutionStatus.Completed : ExecutionStatus.Rejected,
             1, interaction.Positive ? "positive_interaction" : "repeated_or_negative_interaction"));
+    }
+
+    private static PetAgentState ApplyInitiativeSpeech(PetAgentState state, PetInitiativeSpeechOccurred speech)
+    {
+        var companionship = string.Equals(speech.Topic, "Companionship", StringComparison.OrdinalIgnoreCase);
+        var runtime = state.Runtime with
+        {
+            SocialNeed = state.Runtime.SocialNeed - (companionship ? 0.025 : 0.008),
+            LastInitiativeSpeechAt = speech.At
+        };
+        return Append(state with { Runtime = runtime.Clamp() }, new PetRecentExperience(
+            speech.At, "initiative_speech", speech.Topic, ExecutionStatus.Completed, 1, "initiative_spoken"));
     }
 
     private static PetAgentState Append(PetAgentState state, PetRecentExperience experience) => state with
     {
         RecentExperience = state.RecentExperience.Append(experience).TakeLast(MaximumRecentExperience).ToArray()
     };
+
+    private static IReadOnlyDictionary<string, LearnedBehaviorPreference> ReinforcePreference(
+        IReadOnlyDictionary<string, LearnedBehaviorPreference> source,
+        string behaviorId,
+        ExecutionStatus status,
+        bool ownerInteraction,
+        DateTimeOffset at)
+    {
+        var result = new Dictionary<string, LearnedBehaviorPreference>(source, StringComparer.OrdinalIgnoreCase);
+        result.TryGetValue(behaviorId, out var current);
+        current ??= new LearnedBehaviorPreference(behaviorId, 0, 0, "runtime_feedback", at);
+        var delta = status switch
+        {
+            ExecutionStatus.Completed when ownerInteraction => 0.008,
+            ExecutionStatus.Completed => 0.001,
+            ExecutionStatus.Failed => -0.010,
+            ExecutionStatus.Rejected => -0.012,
+            ExecutionStatus.Interrupted => -0.003,
+            _ => 0
+        };
+        result[behaviorId] = current with
+        {
+            Weight = Math.Clamp(current.Weight + delta, -0.15, 0.15),
+            Confidence = Math.Clamp(current.Confidence + (ownerInteraction ? 0.08 : 0.02), 0, 1),
+            Source = ownerInteraction ? "owner_feedback" : "runtime_outcome",
+            UpdatedAt = at
+        };
+        return result;
+    }
 
     private static PetStateEffects Scale(PetStateEffects value, double factor) => new(
         value.Energy * factor,
@@ -528,7 +706,15 @@ public sealed class BehaviorCapabilityCatalog : IBehaviorCapabilityCatalog
         ArgumentNullException.ThrowIfNull(capabilities);
         _byId = capabilities
             .GroupBy(item => item.BehaviorId, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+            .ToDictionary(
+                group => group.Key,
+                group => group
+                    .OrderByDescending(item => item.ProductionApproved && item.RuntimeUse && item.ProductionAsset)
+                    .ThenByDescending(item => item.ProductionApproved)
+                    .ThenByDescending(item => item.RuntimeUse)
+                    .ThenByDescending(item => item.ProductionAsset)
+                    .First(),
+                StringComparer.OrdinalIgnoreCase);
         Capabilities = _byId.Values.OrderBy(item => item.BehaviorId, StringComparer.Ordinal).ToArray();
     }
 
@@ -542,7 +728,12 @@ public sealed record ParticipationDecision(
     RequestDisposition Disposition,
     string ReasonCode,
     string UserFacingReason,
-    DateTimeOffset? RetryAt = null);
+    DateTimeOffset? RetryAt = null)
+{
+    public double WillingnessScore { get; init; } = 1;
+    public IReadOnlyDictionary<string, double> Components { get; init; } =
+        new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+}
 
 public sealed class BehaviorParticipationPolicy
 {
@@ -573,25 +764,83 @@ public sealed class BehaviorParticipationPolicy
 
         var runtime = state.Runtime;
         var cooperation = state.Temperament.CommandCooperativeness01;
+        var recentRepeats = state.RecentExperience
+            .Where(item => now - item.At <= TimeSpan.FromMinutes(10) &&
+                           string.Equals(item.BehaviorId, capability.BehaviorId, StringComparison.OrdinalIgnoreCase) &&
+                           item.Status == ExecutionStatus.Completed)
+            .Count();
+        var repeatCount = Math.Max(runtime.RepeatedActionCount, recentRepeats);
         if (capability.Effort == BehaviorEffortLevel.High && runtime.Energy < 0.16)
             return Reject("energy_too_low", "悟空现在太累了，想先休息一下");
         if (capability.Effort == BehaviorEffortLevel.High && runtime.Stress > 0.82)
             return Reject("stress_too_high", "悟空现在有些紧张，不想做强烈动作");
-        if (runtime.RepeatedActionCount >= 4 && runtime.Stress + state.Temperament.Sensitivity01 * 0.20 > 0.72)
+        if (repeatCount >= 5 ||
+            (repeatCount >= 4 && runtime.Stress + state.Temperament.Sensitivity01 * 0.20 > 0.72))
             return Reject("repeated_command_tolerance_exceeded", "这个动作已经连续做了很多次，让悟空缓一缓");
-        if (capability.ParticipationMode == BehaviorParticipationMode.StateSensitive &&
-            cooperation < 0.35 && runtime.Stress > 0.65)
-            return Reject("state_sensitive_refusal", "悟空现在更想保持安静");
 
-        return Accept("normally_cooperative", "悟空愿意响应主人");
+        var effortEnergy = capability.Effort switch
+        {
+            BehaviorEffortLevel.Low => 1.0,
+            BehaviorEffortLevel.Medium => runtime.Energy,
+            _ => Math.Max(0, (runtime.Energy - 0.12) / 0.88)
+        };
+        var components = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["command_cooperativeness"] = cooperation * 0.50,
+            ["relationship_trust"] = state.Relationship.Trust01 * 0.14,
+            ["relationship_familiarity"] = state.Relationship.Familiarity01 * 0.06,
+            ["current_mood"] = runtime.MoodValence * 0.08,
+            ["available_energy"] = effortEnergy * 0.12,
+            ["stress_safety"] = (1 - runtime.Stress) * 0.10,
+            ["repetition_penalty"] = -Math.Min(0.30, repeatCount * (0.035 + state.Temperament.Sensitivity01 * 0.015))
+        };
+        var willingness = Math.Clamp(components.Values.Sum(), 0, 1);
+
+        // Low-effort commands are intentionally highly cooperative. Independence
+        // affects style and initiative, never obedience to an explicit owner command.
+        if (capability.Effort == BehaviorEffortLevel.Low && runtime.Stress < 0.94)
+            return Accept("low_effort_cooperative", "悟空愿意响应主人", willingness, components);
+
+        var acceptThreshold = capability.Effort == BehaviorEffortLevel.High ? 0.58 : 0.46;
+        var rejectThreshold = capability.Effort == BehaviorEffortLevel.High ? 0.34 : 0.26;
+        if (willingness >= acceptThreshold)
+            return Accept("normally_cooperative", "悟空愿意响应主人", willingness, components);
+        if (willingness >= rejectThreshold)
+            return Defer("command_state_delay", "悟空需要先缓一缓", now.AddSeconds(20), willingness, components);
+        return Reject("command_state_refusal", "悟空现在状态不太好，想先休息", willingness, components);
     }
 
-    private static ParticipationDecision Accept(string reason, string message) =>
-        new(RequestDisposition.Accepted, reason, message);
-    private static ParticipationDecision Reject(string reason, string message) =>
-        new(RequestDisposition.Rejected, reason, message);
-    private static ParticipationDecision Defer(string reason, string message) =>
-        new(RequestDisposition.Deferred, reason, message);
+    private static ParticipationDecision Accept(
+        string reason,
+        string message,
+        double willingness = 1,
+        IReadOnlyDictionary<string, double>? components = null) =>
+        new(RequestDisposition.Accepted, reason, message)
+        {
+            WillingnessScore = willingness,
+            Components = components ?? new Dictionary<string, double>()
+        };
+    private static ParticipationDecision Reject(
+        string reason,
+        string message,
+        double willingness = 0,
+        IReadOnlyDictionary<string, double>? components = null) =>
+        new(RequestDisposition.Rejected, reason, message)
+        {
+            WillingnessScore = willingness,
+            Components = components ?? new Dictionary<string, double>()
+        };
+    private static ParticipationDecision Defer(
+        string reason,
+        string message,
+        DateTimeOffset? retryAt = null,
+        double willingness = 0,
+        IReadOnlyDictionary<string, double>? components = null) =>
+        new(RequestDisposition.Deferred, reason, message, retryAt)
+        {
+            WillingnessScore = willingness,
+            Components = components ?? new Dictionary<string, double>()
+        };
 }
 
 public sealed record BehaviorDecisionInput(
@@ -743,12 +992,24 @@ public sealed class BehaviorDecisionEngine
             BehaviorSemanticCategory.PostureTransition => runtime.Comfort * 0.08,
             _ => 0
         };
-        var relationshipScore = capability.Category == BehaviorSemanticCategory.Social
-            ? state.Relationship.Trust01 * 0.08 + state.Relationship.Familiarity01 * 0.06
-            : 0;
+        var relationshipBalance = RelationshipBalance(state.Relationship);
+        var relationshipScore = capability.Category switch
+        {
+            BehaviorSemanticCategory.Social =>
+                state.Relationship.Trust01 * 0.10 + state.Relationship.Familiarity01 * 0.08 + relationshipBalance * 0.06,
+            BehaviorSemanticCategory.Observe =>
+                state.Relationship.Familiarity01 * 0.05 + state.Relationship.Trust01 * 0.03 + relationshipBalance * 0.03,
+            BehaviorSemanticCategory.Explore =>
+                state.Relationship.Trust01 * 0.05 + relationshipBalance * 0.03,
+            BehaviorSemanticCategory.Rest or BehaviorSemanticCategory.StableIdle =>
+                state.Relationship.Familiarity01 * 0.035 + relationshipBalance * 0.02,
+            BehaviorSemanticCategory.PostureTransition => state.Relationship.Trust01 * 0.02,
+            _ => 0
+        };
         var preference = state.Preferences.TryGetValue(capability.BehaviorId, out var learned)
             ? learned.EffectiveWeight
             : 0;
+        var experienceMemory = ExperienceMemoryScore(state, capability.BehaviorId, input.Now);
         var ownerMultiplier = input.BehaviorWeightMultipliers is not null &&
                               input.BehaviorWeightMultipliers.TryGetValue(capability.BehaviorId, out var configured) &&
                               double.IsFinite(configured)
@@ -775,6 +1036,7 @@ public sealed class BehaviorDecisionEngine
             new ScoreComponent("runtime_state", stateScore),
             new ScoreComponent("relationship", relationshipScore),
             new ScoreComponent("memory_preference", preference),
+            new ScoreComponent("experience_memory", experienceMemory),
             new ScoreComponent("owner_behavior_preference", ownerPreference),
             new ScoreComponent("episode_fit", episodeFit),
             new ScoreComponent("time_context", timeContext),
@@ -783,6 +1045,37 @@ public sealed class BehaviorDecisionEngine
             new ScoreComponent("interruption_risk", interruptionRisk),
             new ScoreComponent("seeded_jitter", jitter)
         };
+    }
+
+    private static double RelationshipBalance(RelationshipState relationship)
+    {
+        var total = relationship.RecentPositiveInteractions + relationship.RecentNegativeInteractions;
+        if (total <= 0)
+            return 0;
+        return Math.Clamp(
+            (relationship.RecentPositiveInteractions - relationship.RecentNegativeInteractions) / (double)Math.Min(20, total),
+            -1,
+            1);
+    }
+
+    private static double ExperienceMemoryScore(PetAgentState state, string behaviorId, DateTimeOffset now)
+    {
+        var score = 0.0;
+        foreach (var item in state.RecentExperience.Where(item =>
+                     string.Equals(item.BehaviorId, behaviorId, StringComparison.OrdinalIgnoreCase)))
+        {
+            var ageHours = Math.Max(0, (now - item.At).TotalHours);
+            var recency = Math.Exp(-ageHours / 12.0);
+            score += item.Status switch
+            {
+                ExecutionStatus.Completed => 0.018 * recency,
+                ExecutionStatus.Interrupted => -0.025 * recency,
+                ExecutionStatus.Failed => -0.060 * recency,
+                ExecutionStatus.Rejected => -0.040 * recency,
+                _ => 0
+            };
+        }
+        return Math.Clamp(score, -0.12, 0.08);
     }
 }
 

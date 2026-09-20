@@ -272,6 +272,12 @@ public interface IConversationMemoryStore
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }
 
+public interface IPetAgentStateStore
+{
+    Task<PetAgentState?> LoadAsync(CancellationToken cancellationToken = default);
+    Task SaveAsync(PetAgentState state, CancellationToken cancellationToken = default);
+}
+
 public sealed record ContextAssemblyDiagnostics(
     IReadOnlyList<string> PetFields, IReadOnlyList<string> OwnerFields, string PetPromptSummary,
     PersonalitySnapshot Personality, RelationshipSnapshot Relationship, PetRuntimeStateSnapshot RuntimeState,

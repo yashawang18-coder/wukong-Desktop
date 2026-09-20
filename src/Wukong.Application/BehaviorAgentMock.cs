@@ -101,6 +101,7 @@ public sealed record PetRuntimeState(
     public string CurrentPoseId { get; init; } = "prone.awake.left_front";
     public Guid? ActiveExecutionId { get; init; }
     public DateTimeOffset? ActiveActionStartedAt { get; init; }
+    public DateTimeOffset? LastInitiativeSpeechAt { get; init; }
     public bool IsInterruptible { get; init; } = true;
 
     public PetRuntimeState Clamp() => this with

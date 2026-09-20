@@ -647,3 +647,85 @@ Restrictions:
   reducer and legacy completion updates to the same behavior.
 - Keep all asset bytes, manifest approval fields, menu routing, model permissions,
   and desktop effect semantics unchanged.
+
+## 2026-09-16 - review front-prone microexpressions through an isolated candidate marker
+
+Decision:
+
+Keep the three owner-accepted source expressions formally runtime-pending, while
+allowing a dedicated local candidate EXE to load and autonomously schedule them
+only when `Wukong.FrontProneExpressionsReview.enabled` is present beside the EXE.
+
+Reason:
+
+The source frames are byte-exact derivatives of the approved front-prone anchor,
+and offline alpha, size, baseline, order, timing, and checksum checks pass. Those
+facts do not prove that the subtle eyes and mouth changes remain readable at the
+actual transparent-WPF desktop size. The marker allows that final observation
+without falsely converting source approval into Windows runtime approval.
+
+Restrictions:
+
+- Keep the manifest at `runtime_approved=false`, `runtime_use=false`,
+  `production_asset=false`, `prototype_use=false`, and autonomous binding false.
+- Permit DeveloperPreview in ordinary builds; enable autonomous review only in a
+  marked candidate output and only from stable `prone.awake.front`.
+- Do not mirror, recolor, rescale, crop, interpolate, or rebuild the PNGs.
+- Use a shared 45-120 second cooldown and two-event repeat suppression; no eligible
+  expression means holding the existing front-prone idle.
+- Owner commands and magic retain higher priority, and preview completion must not
+  write formal state, relationship, or memory.
+
+## 2026-09-16 - make runtime lifecycle facts authoritative for language and daily continuity
+
+Decision:
+
+Use one execution-ID-based `PetStateReducer` path for Normal non-idle motions and make Resting, Observing, Exploring, and Sleeping authoritative Episode rollouts. Treat explicit owner text as `OwnerDialogue`; keep model/system `Dialogue` outside owner-only gates. Produce action-related language only after behavior admission and validate all current/preparing/completed claims against runtime facts.
+
+Reason:
+
+Prompt instructions alone cannot prevent a model from claiming an action that was rejected, delayed, interrupted, or never started. Per-tick random selection also cannot preserve sleep/rest continuity. A request/outcome fact chain plus minimum duration and hysteresis makes both behavior and language deterministic, observable, and testable.
+
+Restrictions:
+
+- Do not let model/system dialogue, autonomous ticks, or memory invoke owner-only prototype or manual routes.
+- Do not commit target posture before a matching lifecycle completion.
+- Do not apply production state effects from DeveloperPreview or PrototypePreview.
+- Do not hard-cut between incompatible prone camera families.
+- Do not synthesize a wake transition by reversing sleep-entry frames or using legacy art.
+- Keep PNGs, manifests, approval status, menus, and `main` unchanged.
+
+## 2026-09-16 - use structured relationship and bounded memory in Agent decisions
+
+Decision:
+
+Persist one formal `PetAgentState` and let relationship, bounded learned behavior
+preferences, and recent lifecycle outcomes influence behavior utility only after
+hard capability gates. Use the same state for deterministic command willingness
+and rate-limited initiative speech. Route every Normal non-idle execution through
+the execution-ID reducer lifecycle, while keeping desktop visual-effect cleanup in
+the desktop adapter.
+
+Reason:
+
+Previously relationship and memory were mostly display/dialogue context, initiative
+speech had only shallow state checks, command response exceptions were incomplete,
+and legacy completion branches could remain conceptual state owners. A persisted,
+bounded structured state makes these effects observable and testable without giving
+free text or the model control over assets.
+
+Restrictions:
+
+- Relationship and memory never bypass approval, source, pose, Episode, cooldown,
+  interruption, or runtime-use gates.
+- Free-text long-term memory remains untrusted dialogue context; only validated
+  structured preferences affect behavior scores.
+- Keep preference weights bounded and recent experience finite; do not create an
+  ever-growing event log.
+- Independence affects initiative style/frequency, not obedience to explicit owner
+  commands.
+- Initiative speech must respect quiet hours, stable-idle, stress, unanswered-line,
+  repeated-topic, and eight-hour budget limits.
+- Preview modes never persist formal state, relationship, or learned memory.
+- Do not change assets, manifest approvals, menus, or `main` as part of this Agent
+  policy migration.

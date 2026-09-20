@@ -16,6 +16,7 @@ public partial class ControlPanelWindow : Window
 {
     private readonly DesktopRuntimeHost _runtime;
     private readonly DesktopAgentRuntime _agent;
+    private readonly DesktopDialogueCoordinator _dialogue;
     private readonly bool _ownsAgent;
     private readonly DispatcherTimer _previewTimer;
     private readonly ObservableCollection<AlbumFolderItem> _albumFolders = new();
@@ -56,6 +57,7 @@ public partial class ControlPanelWindow : Window
     {
         _runtime = runtime;
         _agent = agent;
+        _dialogue = new DesktopDialogueCoordinator(agent, runtime);
         _ownsAgent = ownsAgent;
         _albumRoot = AlbumFolderItem.GetDefaultAlbumRoot(
             _agent.DataPaths.AlbumsDirectory,
@@ -664,9 +666,11 @@ public partial class ControlPanelWindow : Window
         _agentRequestCancellation = new CancellationTokenSource();
         try
         {
-            var result = await _agent.Conversation.SendAsync(
-                new ConversationRequest(SessionIdForInput(input), text, _memoryConfiguration),
-                _agentRequestCancellation.Token);
+            var result = ReferenceEquals(input, ModelInput)
+                ? await _dialogue.SendAsync(text, _agentRequestCancellation.Token)
+                : await _agent.Conversation.SendAsync(
+                    new ConversationRequest(SessionIdForInput(input), text, _memoryConfiguration),
+                    _agentRequestCancellation.Token);
             chatItems.Add(result.Success
                 ? ChatDisplayItem.Assistant(result.AssistantText ?? string.Empty)
                 : ChatDisplayItem.Error(result.UserFacingError ?? "请求失败，请检查模型配置。"));

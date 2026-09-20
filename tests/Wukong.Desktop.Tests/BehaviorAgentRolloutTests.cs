@@ -4,14 +4,19 @@ using Wukong.Domain;
 
 internal static class BehaviorAgentRolloutTests
 {
-    public static void DefaultRolloutPromotesOnlyResting()
+    public static void DefaultRolloutPromotesDailyContinuityEpisodes()
     {
         var runtime = new DesktopRuntimeHost();
         Assert(runtime.EnableBehaviorAgentShadow, "agent shadow comparison is disabled");
-        Assert(runtime.AuthoritativeAgentEpisodes.SetEquals(new[] { PetEpisodeKind.Resting }),
-            "default rollout must make only Resting authoritative");
-        Assert(!runtime.AuthoritativeAgentEpisodes.Contains(PetEpisodeKind.Observing),
-            "Observing was promoted before its independent acceptance gate");
+        Assert(runtime.AuthoritativeAgentEpisodes.SetEquals(new[]
+        {
+            PetEpisodeKind.Resting,
+            PetEpisodeKind.Observing,
+            PetEpisodeKind.Exploring,
+            PetEpisodeKind.Sleeping
+        }), "default rollout does not own the reviewed daily continuity episodes");
+        Assert(!runtime.AuthoritativeAgentEpisodes.Contains(PetEpisodeKind.OwnerInteraction),
+            "owner interaction was incorrectly promoted into autonomous rollout");
     }
 
     public static void EpisodeBindingsUseExplicitSafeAllowlists()
@@ -114,9 +119,33 @@ internal static class BehaviorAgentRolloutTests
             LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1,
             AutonomousDailyCandidateBehaviorIds.StandToSit,
             AutonomousDailyCandidateBehaviorIds.SitToProne,
+            AutonomousDailyCandidateBehaviorIds.ProneToSit,
+            AutonomousDailyCandidateBehaviorIds.SitToStand,
             ProneHeadCandidateBehaviorIds.HeadLowerTurnV4,
-            LifecycleReviewCandidateBehaviorIds.FrontProneLickV4
-        }), "reducer ownership expanded beyond the reviewed Resting/Observing batch");
+            LifecycleReviewCandidateBehaviorIds.FrontProneLickV4,
+            SleepCandidateBehaviorIds.MainLifecycle,
+            SleepCandidateBehaviorIds.SprawledFrontBreath,
+            PatrolWalkCandidateBehaviorIds.WalkLeft,
+            PatrolWalkCandidateBehaviorIds.WalkRight,
+            FoodWaterCandidateBehaviorIds.EatKibbleStandingV5,
+            FoodWaterCandidateBehaviorIds.DrinkWaterStandingV5,
+            MockCommandActionIds.Sit,
+            MockCommandActionIds.Down,
+            MockCommandActionIds.PawSit,
+            MockCommandActionIds.PawProne,
+            MockCommandActionIds.Jump,
+            MockCommandActionIds.Spin,
+            MockCommandActionIds.EatSit,
+            MockCommandActionIds.EatProne,
+            FrontProneExpressionBehaviorIds.SatisfiedSmile,
+            FrontProneExpressionBehaviorIds.CuriousObserve,
+            FrontProneExpressionBehaviorIds.KnowingLook
+        }), "reviewed lifecycle outcomes are not fully reducer-owned");
+
+        var paw = DesktopBehaviorOutcomeProfiles.Find(MockCommandActionIds.PawSit)
+            ?? throw new InvalidOperationException("owner command reducer profile missing");
+        Assert(paw.OwnerInteraction && paw.MemoryEligibility,
+            "owner command result does not update relationship and long-term preference memory");
     }
 
     private static void AssertBindings(

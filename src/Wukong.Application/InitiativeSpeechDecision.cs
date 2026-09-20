@@ -24,6 +24,7 @@ public sealed record InitiativeSpeechContext(
     int RandomSeed)
 {
     public PetEpisodeKind Episode { get; init; } = PetEpisodeKind.Resting;
+    public IReadOnlyList<PetRecentExperience> RecentExperience { get; init; } = Array.Empty<PetRecentExperience>();
 }
 
 public sealed record InitiativeSpeechCandidate(
@@ -50,14 +51,18 @@ public sealed class InitiativeSpeechDecisionService
 
         var state = context.State.Clamp();
         var candidates = BuildCandidates(context with { State = state })
+            .Select(candidate => ApplyMemoryAndRelationship(context, candidate))
             .OrderByDescending(candidate => candidate.Score)
             .ThenBy(candidate => candidate.Topic)
             .ToArray();
         var selected = candidates[0];
 
-        // A seeded gate prevents every scheduler check from becoming speech while
-        // retaining deterministic tests and state-driven topic selection.
-        var gate = 0.74 + new Random(context.RandomSeed ^ 0x51A7).NextDouble() * 0.18;
+        // The gate is deterministic for a fixed state/seed. Relationship affects
+        // willingness to initiate, while independence affects frequency, not facts.
+        var gate = 0.76 + new Random(context.RandomSeed ^ 0x51A7).NextDouble() * 0.14
+            + context.Temperament.Independence01 * 0.08
+            - context.Relationship.InitiativeAcceptance01 * 0.08
+            - context.Relationship.Trust01 * 0.04;
         return selected.Score >= gate
             ? new InitiativeSpeechDecision(true, selected.Topic, "state_threshold_met", nextCheck, candidates)
             : new InitiativeSpeechDecision(false, InitiativeSpeechTopic.None, "initiative_threshold_not_met", nextCheck, candidates);
@@ -79,6 +84,13 @@ public sealed class InitiativeSpeechDecisionService
         if (context.Relationship.InitiativeAcceptance01 < 0.25)
             return "initiative_acceptance_low";
 
+        var recentInitiatives = context.RecentExperience
+            .Where(item => item.EventKind == "initiative_speech" && context.Now - item.At <= TimeSpan.FromHours(8))
+            .OrderByDescending(item => item.At)
+            .ToArray();
+        if (recentInitiatives.Length >= 6)
+            return "initiative_budget_exhausted";
+
         var urgency = NeedUrgency(state);
         var cooldownMinutes = 16.0
             - context.Relationship.InitiativeAcceptance01 * 3.0
@@ -87,7 +99,12 @@ public sealed class InitiativeSpeechDecisionService
             + state.Stress * 4.0
             - urgency * 4.0;
         var cooldown = TimeSpan.FromMinutes(Math.Clamp(cooldownMinutes, 7, 20));
-        if (context.LastSpokenAt is not null && context.Now - context.LastSpokenAt.Value < cooldown)
+        var lastSpeechAt = context.LastSpokenAt ?? recentInitiatives.FirstOrDefault()?.At;
+        var unanswered = lastSpeechAt is not null &&
+            (state.LastInteractionAt is null || state.LastInteractionAt.Value <= lastSpeechAt.Value);
+        if (unanswered && urgency < 0.82)
+            cooldown = TimeSpan.FromTicks((long)(cooldown.Ticks * 1.6));
+        if (lastSpeechAt is not null && context.Now - lastSpeechAt.Value < cooldown)
             return "initiative_cooldown";
         return null;
     }
@@ -155,6 +172,41 @@ public sealed class InitiativeSpeechDecisionService
             >= 30 => 0.12,
             >= 15 => 0.06,
             _ => 0
+        };
+    }
+
+    private static InitiativeSpeechCandidate ApplyMemoryAndRelationship(
+        InitiativeSpeechContext context,
+        InitiativeSpeechCandidate candidate)
+    {
+        var lastSameTopic = context.RecentExperience
+            .Where(item => item.EventKind == "initiative_speech" &&
+                           string.Equals(item.BehaviorId, candidate.Topic.ToString(), StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(item => item.At)
+            .FirstOrDefault();
+        var repeatPenalty = lastSameTopic is null
+            ? 0
+            : (context.Now - lastSameTopic.At).TotalMinutes switch
+            {
+                < 20 => 0.34,
+                < 45 => 0.20,
+                < 90 => 0.08,
+                _ => 0
+            };
+        var relationshipBonus = candidate.Topic switch
+        {
+            InitiativeSpeechTopic.Companionship =>
+                context.Relationship.Trust01 * 0.06 + context.Relationship.Familiarity01 * 0.06,
+            InitiativeSpeechTopic.Play or InitiativeSpeechTopic.Curiosity => context.Relationship.Trust01 * 0.03,
+            _ => 0
+        };
+        return candidate with
+        {
+            Score = Math.Clamp(candidate.Score + relationshipBonus - repeatPenalty, 0, 1.5),
+            ReasonCodes = candidate.ReasonCodes
+                .Append($"relationship={relationshipBonus:0.00}")
+                .Append($"topic_repeat_penalty={repeatPenalty:0.00}")
+                .ToArray()
         };
     }
 

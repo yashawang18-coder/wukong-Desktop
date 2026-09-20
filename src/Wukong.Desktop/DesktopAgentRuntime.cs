@@ -19,6 +19,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         IAutonomousBehaviorPreferencesStore autonomousBehaviorPreferences,
         IConversationHistoryStore history,
         IConversationMemoryStore memory,
+        IPetAgentStateStore agentState,
         IDeveloperSession developerSession,
         IDeveloperDiagnostics diagnostics,
         IMockContextController mockContext,
@@ -32,6 +33,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         AutonomousBehaviorPreferences = autonomousBehaviorPreferences;
         History = history;
         Memory = memory;
+        AgentState = agentState;
         DeveloperSession = developerSession;
         Diagnostics = diagnostics;
         MockContext = mockContext;
@@ -45,6 +47,7 @@ public sealed class DesktopAgentRuntime : IDisposable
     public IAutonomousBehaviorPreferencesStore AutonomousBehaviorPreferences { get; }
     public IConversationHistoryStore History { get; }
     public IConversationMemoryStore Memory { get; }
+    public IPetAgentStateStore AgentState { get; }
     public IDeveloperSession DeveloperSession { get; }
     public IDeveloperDiagnostics Diagnostics { get; }
     public IMockContextController MockContext { get; }
@@ -72,6 +75,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         var autonomousBehaviorPreferences = new FileAutonomousBehaviorPreferencesStore(agentRoot);
         var history = new FileConversationHistoryStore(agentRoot);
         var memory = new FileConversationMemoryStore(agentRoot);
+        var agentState = new FilePetAgentStateStore(agentRoot);
         var developer = new DeveloperSession();
         var diagnostics = new DeveloperDiagnostics(developer);
         var mockState = new MockRuntimeContextStateProvider(developer, liveRuntimeState);
@@ -85,7 +89,7 @@ public sealed class DesktopAgentRuntime : IDisposable
             memory,
             diagnostics);
         return new(httpClient, conversation, models, profiles, memoryConfiguration, autonomousBehaviorPreferences,
-            history, memory, developer, diagnostics, mockState, dataPaths);
+            history, memory, agentState, developer, diagnostics, mockState, dataPaths);
     }
 
     public async Task AppendLocalAssistantMessageAsync(string text, CancellationToken cancellationToken = default)
@@ -94,6 +98,25 @@ public sealed class DesktopAgentRuntime : IDisposable
             return;
         var messages = (await History.ReadAsync(DailySessionId, cancellationToken)).ToList();
         messages.Add(new AgentChatMessage(AgentChatRole.Assistant, text.Trim(), DateTimeOffset.Now));
+        await History.ReplaceAsync(DailySessionId, messages, cancellationToken);
+    }
+
+    public async Task AppendLocalConversationTurnAsync(string ownerText, string assistantText, CancellationToken cancellationToken = default)
+    {
+        var messages = (await History.ReadAsync(DailySessionId, cancellationToken)).ToList();
+        var now = DateTimeOffset.Now;
+        messages.Add(new AgentChatMessage(AgentChatRole.User, ownerText.Trim(), now));
+        messages.Add(new AgentChatMessage(AgentChatRole.Assistant, assistantText.Trim(), now));
+        await History.ReplaceAsync(DailySessionId, messages.TakeLast(20).ToArray(), cancellationToken);
+    }
+
+    public async Task ReplaceLatestAssistantMessageAsync(string text, CancellationToken cancellationToken = default)
+    {
+        var messages = (await History.ReadAsync(DailySessionId, cancellationToken)).ToList();
+        var index = messages.FindLastIndex(message => message.Role == AgentChatRole.Assistant);
+        if (index < 0)
+            return;
+        messages[index] = messages[index] with { Content = text.Trim() };
         await History.ReplaceAsync(DailySessionId, messages, cancellationToken);
     }
 

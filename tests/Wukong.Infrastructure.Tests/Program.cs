@@ -21,6 +21,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("missing and damaged album markdown degrades safely", AlbumMarkdownFailuresAreSafe),
     ("memory configuration store persists switches", MemoryConfigurationStorePersistsSwitches),
     ("autonomous behavior preferences persist and clamp", AutonomousBehaviorPreferencesPersistAndClamp),
+    ("pet agent state persists relationship memory and runtime state", PetAgentStatePersistsAcrossRestart),
     ("portable data layout seeds defaults and migrates user files", PortableDataLayoutSeedsAndMigrates),
     ("personality profile persists and clamps portable values", PersonalityProfilePersistsAndClamps),
     ("saved personality drives dialogue context unless developer overrides it", SavedPersonalityDrivesDialogueContext),
@@ -89,6 +90,61 @@ static async Task PersonalityProfilePersistsAndClamps()
         Assert(Math.Abs(loaded.Liveliness - 1.0) < 0.001, "liveliness was not clamped before persistence");
         Assert(Math.Abs(loaded.Sensitivity) < 0.001, "sensitivity was not clamped before persistence");
         Assert(Math.Abs(loaded.Affection - 0.62) < 0.001, "personality value did not survive a restart");
+    }
+    finally
+    {
+        TryDeleteDirectory(root);
+    }
+}
+
+static async Task PetAgentStatePersistsAcrossRestart()
+{
+    var root = Path.Combine(Path.GetTempPath(), "wukong-agent-state-" + Guid.NewGuid().ToString("N"));
+    try
+    {
+        var now = new DateTimeOffset(2026, 9, 16, 14, 0, 0, TimeSpan.Zero);
+        var store = new FilePetAgentStateStore(root);
+        var state = PetAgentState.CreateDefault(now) with
+        {
+            Relationship = RelationshipState.Default with
+            {
+                Trust = 0.87,
+                Familiarity = 0.79,
+                TouchAcceptance = 0.81,
+                InitiativeAcceptance = 0.74,
+                RecentPositiveInteractions = 9,
+                RecentNegativeInteractions = 2
+            },
+            Runtime = PetRuntimeState.Default with
+            {
+                CurrentPosture = StablePosture.Sit,
+                CurrentPoseId = "sit.neutral.left_front",
+                Energy = 0.52,
+                LastInitiativeSpeechAt = now.AddMinutes(-20)
+            },
+            Preferences = new Dictionary<string, LearnedBehaviorPreference>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["wk.daily.observe"] = new("wk.daily.observe", 0.08, 0.75, "owner_feedback", now.AddMinutes(-3))
+            },
+            RecentExperience = new[]
+            {
+                new PetRecentExperience(now.AddMinutes(-3), "behavior_finished", "wk.daily.observe",
+                    ExecutionStatus.Completed, 1, "completed")
+            }
+        };
+
+        await store.SaveAsync(state);
+        var restarted = new FilePetAgentStateStore(root);
+        var loaded = await restarted.LoadAsync() ?? throw new InvalidOperationException("persisted agent state was not loaded");
+        Assert(Math.Abs(loaded.Relationship.Trust - 0.87) < 0.0001, "relationship trust did not survive restart");
+        Assert(loaded.Runtime.CurrentPosture == StablePosture.Sit, "runtime posture did not survive restart");
+        Assert(loaded.Preferences.TryGetValue("wk.daily.observe", out var preference) && preference.EffectiveWeight > 0,
+            "learned behavior preference did not survive restart");
+        Assert(loaded.RecentExperience.Single().BehaviorId == "wk.daily.observe",
+            "bounded recent experience did not survive restart");
+
+        await File.WriteAllTextAsync(Path.Combine(root, "pet-agent-state.json"), "{ damaged", Encoding.UTF8);
+        Assert(await restarted.LoadAsync() is null, "damaged state file did not degrade safely");
     }
     finally
     {

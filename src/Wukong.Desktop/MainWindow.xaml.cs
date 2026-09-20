@@ -115,6 +115,7 @@ public partial class MainWindow : Window
 
         _runtime = new DesktopRuntimeHost();
         _agentRuntime = DesktopAgentRuntime.CreateDefault(BuildConversationRuntimeState);
+        _runtime.AttachAgentStateStore(_agentRuntime.AgentState);
         _runtime.MotionRequested += Runtime_MotionRequested;
         _runtime.PetPixelSizeRequested += Runtime_PetPixelSizeRequested;
         _runtime.PetScaleRequested += Runtime_PetScaleRequested;
@@ -137,6 +138,14 @@ public partial class MainWindow : Window
             {
                 _imageCache.Clear();
                 _imageCacheOrder.Clear();
+            }
+            try
+            {
+                _runtime.FlushAgentStateAsync().GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                BootstrapLog.WriteRaw($"agent_state_flush_failed:{ex.GetType().Name}");
             }
             _agentRuntime.Dispose();
         };
@@ -1592,7 +1601,7 @@ public partial class MainWindow : Window
     {
         if (_chatWindow is not null)
             return;
-        _chatWindow = new DesktopChatWindow(_agentRuntime);
+        _chatWindow = new DesktopChatWindow(_agentRuntime, _runtime);
         _chatWindow.AssistantReplyAvailable += (_, text) => ShowSpeechBubble(text);
     }
 
@@ -1613,7 +1622,8 @@ public partial class MainWindow : Window
             if (!decision.ShouldSpeak)
                 return;
 
-            var text = InitiativeSpeechSchedule.SelectMessage(_initiativeSpeechRandom, decision.Topic, _runtime.CurrentStablePosture);
+            var candidate = InitiativeSpeechSchedule.SelectMessage(_initiativeSpeechRandom, decision.Topic, _runtime.CurrentStablePosture);
+            var text = _runtime.ValidateDialogueReply(candidate).Text;
             _runtime.RecordInitiativeSpeech(decision.Topic, "state_rule");
             ShowSpeechBubble(text);
         }

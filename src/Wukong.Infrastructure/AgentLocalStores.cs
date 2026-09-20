@@ -387,6 +387,34 @@ public sealed class FileConversationMemoryStore : IConversationMemoryStore
         ?? Array.Empty<ConversationMemoryCandidate>();
 }
 
+public sealed class FilePetAgentStateStore : IPetAgentStateStore
+{
+    private readonly string _path;
+    private readonly SemaphoreSlim _gate = new(1, 1);
+
+    public FilePetAgentStateStore(string rootDirectory) =>
+        _path = Path.Combine(rootDirectory, "pet-agent-state.json");
+
+    public async Task<PetAgentState?> LoadAsync(CancellationToken cancellationToken = default)
+    {
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            var state = await AgentJson.ReadAsync<PetAgentState>(_path, cancellationToken);
+            return state?.Clamp();
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task SaveAsync(PetAgentState state, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        await _gate.WaitAsync(cancellationToken);
+        try { await AgentJson.WriteAsync(_path, state.Clamp(), cancellationToken); }
+        finally { _gate.Release(); }
+    }
+}
+
 public sealed class FileAgentMemoryConfigurationStore : IAgentMemoryConfigurationStore
 {
     private readonly string _path;

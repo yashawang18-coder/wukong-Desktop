@@ -9,12 +9,19 @@ namespace Wukong.Desktop;
 public partial class DesktopChatWindow : Window
 {
     private readonly DesktopAgentRuntime _agent;
+    private readonly DesktopDialogueCoordinator? _dialogue;
     private readonly DispatcherTimer _autoCollapseTimer;
     private CancellationTokenSource? _requestCancellation;
 
     public DesktopChatWindow(DesktopAgentRuntime agent)
+        : this(agent, null)
+    {
+    }
+
+    public DesktopChatWindow(DesktopAgentRuntime agent, DesktopRuntimeHost? runtime)
     {
         _agent = agent;
+        _dialogue = runtime is null ? null : new DesktopDialogueCoordinator(agent, runtime);
         InitializeComponent();
         _autoCollapseTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(45) };
         _autoCollapseTimer.Tick += (_, _) => Collapse();
@@ -86,9 +93,11 @@ public partial class DesktopChatWindow : Window
         _requestCancellation = new CancellationTokenSource();
         try
         {
-            var result = await _agent.Conversation.SendAsync(
-                new ConversationRequest(DesktopAgentRuntime.DailySessionId, input),
-                _requestCancellation.Token);
+            var result = _dialogue is null
+                ? await _agent.Conversation.SendAsync(
+                    new ConversationRequest(DesktopAgentRuntime.DailySessionId, input),
+                    _requestCancellation.Token)
+                : await _dialogue.SendAsync(input, _requestCancellation.Token);
             if (result.Success && !string.IsNullOrWhiteSpace(result.AssistantText))
             {
                 AssistantReplyAvailable?.Invoke(this, result.AssistantText.Trim());

@@ -110,6 +110,33 @@ internal static class BehaviorAgentCoreTests
             "dialogue bypassed owner-only source gate");
     }
 
+    public static void CapabilityCatalogPrefersApprovedRuntimeDuplicate()
+    {
+        var legacy = Capability("wk.command.jump", BehaviorParticipationMode.UsuallyCooperative,
+            BehaviorEffortLevel.High, BehaviorRequestSource.OwnerContextMenu) with
+        {
+            ProductionApproved = false,
+            RuntimeUse = false,
+            ProductionAsset = false
+        };
+        var approved = legacy with
+        {
+            ProductionApproved = true,
+            RuntimeUse = true,
+            ProductionAsset = true,
+            EndPoseId = "stand.neutral.left_front"
+        };
+
+        var catalog = new BehaviorCapabilityCatalog(new[] { legacy, approved });
+        var selected = catalog.Find("wk.command.jump")
+            ?? throw new InvalidOperationException("approved duplicate capability was not indexed");
+
+        Assert(selected.ProductionApproved && selected.RuntimeUse && selected.ProductionAsset,
+            "duplicate behavior id resolved to a superseded runtime candidate");
+        Assert(selected.EndPoseId == "stand.neutral.left_front",
+            "duplicate behavior id did not preserve the approved runtime capability");
+    }
+
     public static void DecisionEngineIsDeterministicAndHardGated()
     {
         var now = new DateTimeOffset(2026, 9, 10, 13, 0, 0, TimeSpan.Zero);
@@ -201,6 +228,195 @@ internal static class BehaviorAgentCoreTests
             "behavior preferences made seeded decisions nondeterministic");
     }
 
+    public static void RelationshipAndLongTermMemoryAffectDecisionScores()
+    {
+        var now = new DateTimeOffset(2026, 9, 16, 10, 0, 0, TimeSpan.Zero);
+        var observe = Capability("observe.owner", BehaviorParticipationMode.Autonomous, BehaviorEffortLevel.Low,
+            BehaviorRequestSource.AutonomousTick) with
+        {
+            Category = BehaviorSemanticCategory.Observe,
+            AutonomousBindingEnabled = true,
+            StartPostures = new HashSet<StablePosture> { StablePosture.Prone },
+            EndPosture = StablePosture.Prone,
+            StartPoseFamily = "prone.non_front",
+            EndPoseId = "prone.awake.left_front"
+        };
+        var catalog = new BehaviorCapabilityCatalog(new[] { observe });
+        var baseState = PetAgentState.CreateDefault(now) with
+        {
+            Episode = new PetEpisodeState(PetEpisodeKind.Resting, now.AddMinutes(-2), TimeSpan.Zero, "test"),
+            Runtime = PetRuntimeState.Default with
+            {
+                CurrentPosture = StablePosture.Prone,
+                CurrentPoseId = "prone.awake.left_front"
+            },
+            Relationship = new RelationshipState(0.10, 0.10, 0, 8),
+            Preferences = new Dictionary<string, LearnedBehaviorPreference>(StringComparer.OrdinalIgnoreCase)
+        };
+        var learnedState = baseState with
+        {
+            Relationship = new RelationshipState(0.95, 0.90, 12, 0),
+            Preferences = new Dictionary<string, LearnedBehaviorPreference>(StringComparer.OrdinalIgnoreCase)
+            {
+                [observe.BehaviorId] = new(observe.BehaviorId, 0.12, 1, "owner_feedback", now.AddMinutes(-1))
+            },
+            RecentExperience = new[]
+            {
+                new PetRecentExperience(now.AddMinutes(-4), "behavior_finished", observe.BehaviorId,
+                    ExecutionStatus.Completed, 1, "completed"),
+                new PetRecentExperience(now.AddMinutes(-2), "behavior_finished", observe.BehaviorId,
+                    ExecutionStatus.Completed, 1, "completed")
+            }
+        };
+        var input = new BehaviorDecisionInput(
+            BehaviorRequestSource.AutonomousTick, now, "idle", now.AddMinutes(-2), true,
+            new Dictionary<string, DateTimeOffset>(), Array.Empty<string>(), 108, false, true,
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { observe.BehaviorId });
+        var engine = new BehaviorDecisionEngine();
+        var baseline = engine.Decide(baseState, catalog, input).Candidates.Single();
+        var learned = engine.Decide(learnedState, catalog, input).Candidates.Single();
+
+        Assert(Component(learned, "relationship") > Component(baseline, "relationship"),
+            "relationship did not affect the behavior score");
+        Assert(Component(learned, "memory_preference") > 0,
+            "persisted learned preference did not affect the behavior score");
+        Assert(Component(learned, "experience_memory") > 0,
+            "recent completed experience did not affect the behavior score");
+        Assert(learned.FinalScore > baseline.FinalScore,
+            "relationship and memory did not change the final utility score");
+    }
+
+    public static void ReducerPersistsBoundedRelationshipAndBehaviorLearning()
+    {
+        var now = new DateTimeOffset(2026, 9, 16, 11, 0, 0, TimeSpan.Zero);
+        var reducer = new PetStateReducer();
+        var executionId = Guid.NewGuid();
+        var initial = PetAgentState.CreateDefault(now) with
+        {
+            Runtime = PetRuntimeState.Default with
+            {
+                CurrentPosture = StablePosture.Sit,
+                CurrentPoseId = "sit.neutral.left_front"
+            }
+        };
+        var started = reducer.Reduce(initial, new PetBehaviorStarted(
+            now, executionId, "wk.command.paw_sit", "intro", false,
+            BehaviorRequestSource.OwnerContextMenu, BehaviorExecutionMode.Normal));
+        var completed = reducer.Reduce(started, new PetBehaviorFinished(
+            now.AddSeconds(2), executionId, "wk.command.paw_sit", ExecutionStatus.Completed, 1,
+            StablePosture.Sit, "sit.neutral.left_front", new PetStateEffects(SocialNeed: -0.04),
+            OwnerInteraction: true, MemoryEligible: true, PartialEffectPolicy.Proportional,
+            BehaviorRequestSource.OwnerContextMenu, BehaviorExecutionMode.Normal, "completed"));
+
+        Assert(completed.Relationship.Trust > initial.Relationship.Trust, "successful owner action did not increase trust");
+        Assert(completed.Relationship.Familiarity > initial.Relationship.Familiarity, "successful owner action did not increase familiarity");
+        Assert(completed.Preferences.TryGetValue("wk.command.paw_sit", out var preference) && preference.EffectiveWeight > 0,
+            "successful behavior was not retained as bounded long-term preference");
+
+        var spoken = reducer.Reduce(completed, new PetInitiativeSpeechOccurred(now.AddMinutes(1), "Companionship"));
+        Assert(spoken.Runtime.LastInitiativeSpeechAt == now.AddMinutes(1), "initiative speech time was not recorded");
+        Assert(spoken.Runtime.LastInteractionAt == completed.Runtime.LastInteractionAt,
+            "initiative speech incorrectly counted as an owner response");
+        var answered = reducer.Reduce(spoken, new PetOwnerInteractionObserved(now.AddMinutes(2), "OwnerTouch", 1, true));
+        Assert(answered.Relationship.TouchAcceptance > spoken.Relationship.TouchAcceptance,
+            "positive touch did not update touch acceptance");
+        Assert(answered.Relationship.InitiativeAcceptance > spoken.Relationship.InitiativeAcceptance,
+            "response to recent initiative did not update initiative acceptance");
+        Assert(answered.RecentExperience.Count <= PetStateReducer.MaximumRecentExperience,
+            "recent experience exceeded its bounded capacity");
+    }
+
+    public static void CommandWillingnessIsCooperativeDeterministicAndStateSensitive()
+    {
+        var now = new DateTimeOffset(2026, 9, 16, 12, 0, 0, TimeSpan.Zero);
+        var policy = new BehaviorParticipationPolicy();
+        var lowEffort = Capability("wk.command.sit", BehaviorParticipationMode.UsuallyCooperative,
+            BehaviorEffortLevel.Low, BehaviorRequestSource.OwnerContextMenu);
+        var highEffort = Capability("wk.command.jump", BehaviorParticipationMode.UsuallyCooperative,
+            BehaviorEffortLevel.High, BehaviorRequestSource.OwnerContextMenu);
+        var independent = PetAgentState.CreateDefault(now) with
+        {
+            Temperament = TemperamentProfile.Default with { Independence = 100, CommandCooperativeness = 0.82 },
+            Runtime = PetRuntimeState.Default with
+            {
+                CurrentPosture = StablePosture.Stand,
+                CurrentPoseId = "stand.neutral.left_front",
+                Energy = 0.55,
+                Stress = 0.30
+            }
+        };
+        var first = policy.Evaluate(lowEffort, independent, BehaviorRequestSource.OwnerContextMenu, now);
+        var second = policy.Evaluate(lowEffort, independent, BehaviorRequestSource.OwnerContextMenu, now);
+        Assert(first.Disposition == RequestDisposition.Accepted, "independence incorrectly caused low-effort disobedience");
+        Assert(first.Disposition == second.Disposition && first.ReasonCode == second.ReasonCode &&
+               Math.Abs(first.WillingnessScore - second.WillingnessScore) < 0.0000001 &&
+               first.Components.Count == second.Components.Count &&
+               first.Components.All(pair => second.Components.TryGetValue(pair.Key, out var value) && value == pair.Value),
+            "owner command willingness was nondeterministic");
+
+        var exhausted = independent with { Runtime = independent.Runtime with { Energy = 0.05, Stress = 0.90 } };
+        Assert(policy.Evaluate(highEffort, exhausted, BehaviorRequestSource.OwnerContextMenu, now).Disposition == RequestDisposition.Rejected,
+            "high-effort command ignored severe energy and stress state");
+        var lowTrust = independent with { Relationship = new RelationshipState(0.10, 0.10, 0, 4) };
+        var highTrust = independent with { Relationship = new RelationshipState(0.95, 0.90, 12, 0) };
+        Assert(policy.Evaluate(highEffort, highTrust, BehaviorRequestSource.OwnerContextMenu, now).WillingnessScore >
+               policy.Evaluate(highEffort, lowTrust, BehaviorRequestSource.OwnerContextMenu, now).WillingnessScore,
+            "relationship did not influence command willingness");
+    }
+
+    public static void InitiativeSpeechUsesRelationshipMemoryAndUnansweredCooldown()
+    {
+        var now = new DateTimeOffset(2026, 9, 16, 13, 0, 0, TimeSpan.Zero);
+        var service = new InitiativeSpeechDecisionService();
+        var state = PetRuntimeState.Default with
+        {
+            SocialNeed = 0.96,
+            Boredom = 0.20,
+            Hunger = 0.10,
+            Thirst = 0.10,
+            Stress = 0.05,
+            LastInitiativeSpeechAt = now.AddMinutes(-5),
+            LastInteractionAt = now.AddHours(-2)
+        };
+        var context = new InitiativeSpeechContext(
+            state, TemperamentProfile.Default,
+            RelationshipState.Default with { InitiativeAcceptance = 0.92, Trust = 0.90, Familiarity = 0.90 },
+            now, now.AddMinutes(-5), true, false, false, false, 45)
+        {
+            RecentExperience = new[]
+            {
+                new PetRecentExperience(now.AddMinutes(-5), "initiative_speech", "Companionship",
+                    ExecutionStatus.Completed, 1, "initiative_spoken")
+            }
+        };
+        var unanswered = service.Decide(context);
+        Assert(!unanswered.ShouldSpeak && unanswered.ReasonCode == "initiative_cooldown",
+            $"unanswered initiative did not extend the cooldown: {unanswered.ReasonCode}");
+
+        var answeredContext = context with
+        {
+            State = state with { LastInteractionAt = now.AddMinutes(-5) },
+            LastSpokenAt = now.AddMinutes(-30),
+            RecentExperience = context.RecentExperience.Select(item => item with { At = now.AddMinutes(-30) }).ToArray()
+        };
+        var answered = service.Decide(answeredContext);
+        var companionship = answered.Candidates.Single(x => x.Topic == InitiativeSpeechTopic.Companionship);
+        Assert(companionship.ReasonCodes.Any(x => x.StartsWith("relationship=", StringComparison.Ordinal)),
+            "initiative candidate did not expose relationship scoring");
+        Assert(companionship.ReasonCodes.Any(x => x.StartsWith("topic_repeat_penalty=", StringComparison.Ordinal)),
+            "initiative candidate did not expose topic-memory suppression");
+
+        var exhaustedBudget = answeredContext with
+        {
+            RecentExperience = Enumerable.Range(0, 6)
+                .Select(index => new PetRecentExperience(now.AddMinutes(-index * 20), "initiative_speech", "Curiosity",
+                    ExecutionStatus.Completed, 1, "initiative_spoken"))
+                .ToArray()
+        };
+        Assert(service.Decide(exhaustedBudget).ReasonCode == "initiative_budget_exhausted",
+            "initiative speech budget did not suppress excessive spontaneous speech");
+    }
+
     private static PetBehaviorStarted Started(
         DateTimeOffset at,
         Guid executionId,
@@ -252,6 +468,9 @@ internal static class BehaviorAgentCoreTests
         if (Math.Abs(expected - actual) > 0.0000001)
             throw new InvalidOperationException($"{message}: expected {expected}, actual {actual}");
     }
+
+    private static double Component(BehaviorDecisionCandidate candidate, string name) =>
+        candidate.Components.Single(item => item.Name == name).Value;
 
     private static void AssertEquivalentState(PetAgentState expected, PetAgentState actual, string message)
     {
