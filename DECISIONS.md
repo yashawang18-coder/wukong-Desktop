@@ -729,3 +729,83 @@ Restrictions:
 - Preview modes never persist formal state, relationship, or learned memory.
 - Do not change assets, manifest approvals, menus, or `main` as part of this Agent
   policy migration.
+## 2026-09-21 - project memory into bounded preferences, never capabilities
+
+Decision:
+
+- Confirmed dialogue memories and album Markdown descriptions may influence behavior categories and initiative topics only through a deterministic structured projection.
+- Decision-memory category weights are capped at `0.10` and initiative-topic weights at `0.12`.
+- Pending/rejected memories, image pixels, embedded instructions, and raw model text cannot select assets, grant runtime approval, bypass pose/source gates, or trigger a behavior directly.
+- Actual interaction outcomes remain a separate, decayed memory component so preferences from stories/photos do not masquerade as observed behavior success.
+- Initiative speech uses pending-response feedback to reduce frequency after unanswered lines. Owner command participation must display accepted/deferred/rejected status and the real reason; missing assets and unsafe transitions are not personality refusals.
+
+Reason:
+
+Memory should make Wukong's close choices and conversation topics feel personal without turning private free text into executable policy. Separating bounded preference, observed interaction outcome, and hard capability gates keeps the result explainable and fail-closed.
+## 2026-09-22 - omit the rejected side-prone anchor from rise sequences
+
+Decision:
+
+- Remove the rejected front-prone recomposition candidate rather than trying to bridge incompatible poses.
+- Keep the old backward-looking side-prone PNG as immutable source/history, but do not use it as the first frame of P2/V3R1 rise and prone-to-sit playback.
+- Begin those effective exit sequences at the former second frame. Do not create, redraw, cross-fade, interpolate, or rescale transition pixels.
+
+Reason:
+
+The recomposed candidate produced visibly erratic motion. The owner accepted the former second frame as the new transition start, which removes the unwanted pose without inventing an unverified bridge or changing source pixels.
+
+Restrictions:
+
+- This decision changes only effective exit timelines and their reference ranges.
+- Intro and stable-idle uses of the historical source frame remain unchanged.
+- Existing runtime approvals, autonomous behavior permissions, and source SHA records are not broadened.
+
+## 2026-09-22 - review standing happy-expectant through an isolated candidate gate
+
+Decision:
+
+- Preserve the 16 approved source frames byte-for-byte as `wk.expression.stand_happy_expectant`.
+- Keep formal runtime approval closed until the owner reviews actual Windows WPF playback.
+- Reuse the existing candidate-EXE marker pattern so DeveloperPreview, structured positive-expression requests, and low-frequency autonomous review all use the normal BehaviorRequest, lifecycle, and reducer chain.
+
+Reason:
+
+The source package has passed static visual review and returns to the exact current stand anchor, but desktop-size expression readability and transition continuity still require real renderer inspection. A local marker permits that inspection without misrepresenting the asset as production-approved.
+
+Restrictions:
+
+- No text-keyword trigger, direct frame playback, mirror, interpolation, image modification, or unapproved stand transition.
+- The expression is valid only for `stand.neutral.left_front`, cannot interrupt higher-priority owner or scene actions, and must return to the same stand pose.
+- Without the review marker it remains visible to DeveloperPreview only and cannot enter autonomous or owner dialogue runtime selection.
+
+## 2026-09-25 - review prone happy hot-panting v6 through the existing front-prone lifecycle
+
+Decision:
+
+- Preserve the 17 owner-approved source frames byte-for-byte as `prone_happy_hot_panting`, including the original per-frame timing and frame 04-13 tongue pixels.
+- Keep formal runtime approval closed until the Release candidate is reviewed in the Windows transparent WPF renderer for anchor continuity, desktop-size readability, and tongue-edge quality.
+- Reuse the front-prone microevent request, arbitration, cooldown, reducer, and stable-idle return path. A dedicated candidate-EXE marker may enable only DeveloperPreview and low-frequency autonomous review without changing manifest approval.
+
+Reason:
+
+The source sequence has passed owner visual review and deterministic static QA, but its neutral anchor is not byte-identical to the current approved front-prone idle and is about 3.5% wider at the same baseline. Only real WPF playback can determine whether that small delta is visible. A fail-closed review marker allows end-to-end validation without using runtime scaling to conceal the difference or falsely marking the asset production-ready.
+
+Restrictions:
+
+- Do not rescale, crop, mirror, interpolate, recolor, re-encode, or alter any source PNG.
+- Require the exact stable `prone.awake.front` pose, positive mood, low stress, no busy/transition state, and the existing shared expression cooldown.
+- Stable front-prone breathing remains the dominant behavior. Owner commands and magic retain higher priority, and preview execution cannot write production state or memory.
+- Keep `runtime_approved=false` and `runtime_use=false` until explicit Windows owner QA authorizes promotion.
+
+## 2026-09-28 - isolate asset-panel execution from personality memory
+
+Decision:
+
+- Keep `查看动画` as an in-panel preview and make `让悟空执行` use the real main-pet BehaviorRequest and animation lifecycle in an isolated preview context.
+- Require visual review, reject deprecated assets, and preserve the existing pose-compatibility and safe-interruption gates.
+- Treat `ControlPanel` playback as an inspection action rather than evidence of owner preference: it must not update relationship, preferences, recent experience, repetition history, mood, needs, or interaction learning.
+- Lock all effective rise paths to the already accepted second-frame starts. Source PNGs and historical manifests remain available for audit, but old candidate EXEs are not retained as active local versions.
+
+Reason:
+
+The panel previously mixed two meanings: internal card preview and production `Normal` execution. Pending candidates could be viewed but failed the runtime gate, while approved panel actions could influence Agent learning even though the owner was only inspecting animation. Isolated main-window execution preserves the full renderer and lifecycle path without turning QA clicks into personality evidence. Consolidating the publish output also prevents launching a pre-2026-09-22 EXE that still contains the rejected side-prone first frame.

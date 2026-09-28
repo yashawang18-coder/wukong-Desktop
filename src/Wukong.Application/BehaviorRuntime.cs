@@ -134,7 +134,7 @@ public sealed class BehaviorRequestService
             return EligibilityDecision.Rejected("source_policy", "Developer sources require an isolated runtime mode.");
 
         if (state.Stress >= _options.StressRejectThreshold &&
-            request.Intent.Kind is SemanticIntentKind.Touch or SemanticIntentKind.ModelSuggested)
+            request.Intent.Kind is SemanticIntentKind.Touch or SemanticIntentKind.PositiveExpression or SemanticIntentKind.ModelSuggested)
             return EligibilityDecision.Rejected("stress_safety_limit", "Wukong is too stressed for this interaction.");
 
         if (_currentBehaviorId is not null && _currentStartedAt != DateTimeOffset.MinValue)

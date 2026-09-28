@@ -70,6 +70,7 @@ public static class DesktopBehaviorCapabilityCatalog
         if (string.Equals(motion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
             return BehaviorSemanticCategory.Rest;
         if (string.Equals(motion.AssetBatch, ProneHeadCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(motion.AssetBatch, StandingHappyExpectantBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(motion.BehaviorId, LifecycleReviewCandidateBehaviorIds.FrontProneLickV4, StringComparison.OrdinalIgnoreCase))
             return BehaviorSemanticCategory.Observe;
         if (string.Equals(motion.AssetBatch, AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
@@ -222,6 +223,10 @@ public static class DesktopAutonomousEpisodeBindings
         ProneHeadCandidateBehaviorIds.HeadLowerTurnV4,
         LifecycleReviewCandidateBehaviorIds.FrontProneLickV4);
 
+    private static readonly IReadOnlySet<string> Socializing = Set(
+        LifecycleCandidateBehaviorIds.StandIdleMicroloop,
+        LifecycleReviewCandidateBehaviorIds.StandIdleV3R1);
+
     private static readonly IReadOnlySet<string> Sleeping = Set(
         SleepCandidateBehaviorIds.MainLifecycle,
         SleepCandidateBehaviorIds.SprawledFrontBreath);
@@ -238,6 +243,7 @@ public static class DesktopAutonomousEpisodeBindings
         PetEpisodeKind.Observing => Observing,
         PetEpisodeKind.Sleeping => Sleeping,
         PetEpisodeKind.Exploring => Exploring,
+        PetEpisodeKind.Socializing => Socializing,
         _ => null
     };
 
@@ -323,7 +329,11 @@ public static class DesktopBehaviorOutcomeProfiles
             Profile(FrontProneExpressionBehaviorIds.CuriousObserve, StablePosture.Prone, "prone.awake.front",
                 new PetStateEffects(Boredom: -0.008)),
             Profile(FrontProneExpressionBehaviorIds.KnowingLook, StablePosture.Prone, "prone.awake.front",
-                new PetStateEffects(Boredom: -0.006))
+                new PetStateEffects(Boredom: -0.006)),
+            Profile(ProneHappyHotPantingBehaviorIds.HappyHotPanting, StablePosture.Prone, "prone.awake.front",
+                new PetStateEffects(Energy: -0.006, Boredom: -0.014, Stress: -0.006, MoodValence: 0.006)),
+            Profile(StandingHappyExpectantBehaviorIds.HappyExpectant, StablePosture.Stand, "stand.neutral.left_front",
+                new PetStateEffects(SocialNeed: -0.012, Boredom: -0.012, Stress: -0.004, MoodValence: 0.006))
         }.ToDictionary(item => item.BehaviorId, StringComparer.OrdinalIgnoreCase);
 
     public static IReadOnlySet<string> ReducerOwnedBehaviorIds { get; } =

@@ -49,6 +49,7 @@ public enum SemanticIntentKind
     Touch,
     Stop,
     Quiet,
+    PositiveExpression,
     ModelSuggested,
     AutonomousRest
 }

@@ -19,6 +19,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ("provider timeout network and empty response map safely", ProviderTransportFailuresMapSafely),
     ("album markdown retrieval is relevant and bounded", AlbumMarkdownRetrievalWorks),
     ("missing and damaged album markdown degrades safely", AlbumMarkdownFailuresAreSafe),
+    ("confirmed dialogue and album memory project into bounded decision weights", DecisionMemorySourceProjectsEnabledEvidence),
     ("memory configuration store persists switches", MemoryConfigurationStorePersistsSwitches),
     ("autonomous behavior preferences persist and clamp", AutonomousBehaviorPreferencesPersistAndClamp),
     ("pet agent state persists relationship memory and runtime state", PetAgentStatePersistsAcrossRestart),
@@ -130,7 +131,14 @@ static async Task PetAgentStatePersistsAcrossRestart()
             {
                 new PetRecentExperience(now.AddMinutes(-3), "behavior_finished", "wk.daily.observe",
                     ExecutionStatus.Completed, 1, "completed")
-            }
+            },
+            DecisionMemory = new PetDecisionMemoryProfile(
+                new Dictionary<string, double> { [BehaviorSemanticCategory.Observe.ToString()] = 0.08 },
+                new Dictionary<string, double> { [InitiativeSpeechTopic.Curiosity.ToString()] = 0.09 },
+                new Dictionary<string, int> { ["album_description"] = 4 },
+                now,
+                "abc123"),
+            InitiativeSpeechFeedback = new InitiativeSpeechFeedbackState("Curiosity", now.AddMinutes(-5), 2, null)
         };
 
         await store.SaveAsync(state);
@@ -142,6 +150,11 @@ static async Task PetAgentStatePersistsAcrossRestart()
             "learned behavior preference did not survive restart");
         Assert(loaded.RecentExperience.Single().BehaviorId == "wk.daily.observe",
             "bounded recent experience did not survive restart");
+        Assert(Math.Abs(loaded.DecisionMemory.CategoryWeight(BehaviorSemanticCategory.Observe) - 0.08) < 0.0001,
+            "decision-memory weights did not survive restart");
+        Assert(loaded.InitiativeSpeechFeedback.ConsecutiveUnanswered == 2 &&
+               loaded.InitiativeSpeechFeedback.PendingTopic == "Curiosity",
+            "initiative feedback did not survive restart");
 
         await File.WriteAllTextAsync(Path.Combine(root, "pet-agent-state.json"), "{ damaged", Encoding.UTF8);
         Assert(await restarted.LoadAsync() is null, "damaged state file did not degrade safely");
@@ -408,12 +421,18 @@ static async Task AlbumMarkdownRetrievalWorks()
         Directory.CreateDirectory(album);
         await File.WriteAllTextAsync(Path.Combine(album, "home.md"), "---\ntitle: \"第一次回家\"\ntime: \"2025-12-13\"\nmedia:\n  - \"car.webp\"\n---\n## 正文\n第一次坐车回南京，头晕晕。", Encoding.UTF8);
         await File.WriteAllTextAsync(Path.Combine(album, "other.md"), "---\ntitle: \"无关记录\"\ntime: \"2026-01-01\"\n---\n## 正文\n今天在家睡觉。", Encoding.UTF8);
+        var hiddenAlbum = Path.Combine(root, "hidden-day");
+        Directory.CreateDirectory(hiddenAlbum);
+        await File.WriteAllTextAsync(Path.Combine(hiddenAlbum, ".wukong-album-hidden"), "hidden", Encoding.UTF8);
+        await File.WriteAllTextAsync(Path.Combine(hiddenAlbum, "hidden.md"), "---\ntitle: \"隐藏的回家记录\"\n---\n## 正文\n第一次坐车回南京。", Encoding.UTF8);
         var retriever = new AlbumMarkdownMemoryRetriever(() => root);
         var result = await retriever.SearchAsync("第一次坐车回南京", 3);
         Assert(result.Count == 1, "retrieval returned unrelated markdown");
         Assert(result[0].AlbumTitle == "第一次回家" && result[0].Date == "2025-12-13", "retrieval metadata wrong");
         Assert(result[0].MediaReferences.SequenceEqual(new[] { "car.webp" }), "media references missing");
         Assert(result[0].RelevanceScore > 0, "relevance score missing");
+        Assert(result.All(item => !item.AlbumTitle.Contains("隐藏", StringComparison.Ordinal)),
+            "album hidden from the catalog still influenced memory retrieval");
     }
     finally { TryDeleteDirectory(root); }
 }
@@ -445,6 +464,50 @@ static async Task MemoryConfigurationStorePersistsSwitches()
         Assert(await store.LoadAsync() == updated, "memory configuration was not persisted");
     }
     finally { TryDeleteDirectory(root); }
+}
+
+static async Task DecisionMemorySourceProjectsEnabledEvidence()
+{
+    var root = Path.Combine(Path.GetTempPath(), "wukong-decision-memory-" + Guid.NewGuid().ToString("N"));
+    try
+    {
+        var agentRoot = Path.Combine(root, "agent");
+        var albumRoot = Path.Combine(root, "albums");
+        Directory.CreateDirectory(agentRoot);
+        Directory.CreateDirectory(albumRoot);
+        await File.WriteAllTextAsync(Path.Combine(albumRoot, "一起出去玩.md"),
+            "---\ntitle: 和老爸去草地玩\ndate: 2026-09-01\n---\n## 正文\n一起出门拍照，还看了日落。\n");
+        var configuration = new FileAgentMemoryConfigurationStore(agentRoot);
+        var memory = new FileConversationMemoryStore(agentRoot);
+        await memory.SaveAsync(new ConversationMemoryCandidate(
+            Guid.NewGuid(), "daily", "我喜欢陪老爸出去玩。", "test", DateTimeOffset.UtcNow,
+            ConversationMemoryStatus.Confirmed));
+        await memory.SaveAsync(new ConversationMemoryCandidate(
+            Guid.NewGuid(), "daily", "这条待确认内容不应参与决策。", "test", DateTimeOffset.UtcNow,
+            ConversationMemoryStatus.Pending));
+        var source = new LocalPetDecisionMemorySource(
+            configuration,
+            memory,
+            new AlbumMarkdownMemoryRetriever(() => albumRoot),
+            now: () => new DateTimeOffset(2026, 9, 21, 12, 0, 0, TimeSpan.Zero));
+        var profile = await source.LoadAsync();
+        Assert(profile.EvidenceCounts.GetValueOrDefault("confirmed_conversation") == 1,
+            "pending conversation memory entered decision projection");
+        Assert(profile.EvidenceCounts.GetValueOrDefault("album_description") > 0,
+            "album descriptions did not enter decision projection");
+        Assert(profile.CategoryWeight(BehaviorSemanticCategory.Explore) is > 0 and <= 0.10,
+            "projected explore memory weight was missing or unbounded");
+
+        await configuration.SaveAsync(new AgentMemoryConfiguration(false, false, true));
+        var disabled = await source.LoadAsync();
+        Assert(disabled.EvidenceCounts.GetValueOrDefault("confirmed_conversation") == 0 &&
+               disabled.EvidenceCounts.GetValueOrDefault("album_description") == 0,
+            "disabled memory sources still influenced decision projection");
+    }
+    finally
+    {
+        TryDeleteDirectory(root);
+    }
 }
 
 static async Task AutonomousBehaviorPreferencesPersistAndClamp()

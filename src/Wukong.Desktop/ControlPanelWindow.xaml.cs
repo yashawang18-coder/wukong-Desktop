@@ -158,7 +158,7 @@ public partial class ControlPanelWindow : Window
         DeveloperNavButton.Style = NavButtonStyle(page == "Developer");
     }
 
-    private void ChooseAlbumRoot_Click(object sender, RoutedEventArgs e)
+    private async void ChooseAlbumRoot_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFolderDialog
         {
@@ -173,10 +173,15 @@ public partial class ControlPanelWindow : Window
             _albumRoot = dialog.FolderName;
             AlbumFolderItem.SaveAlbumRootPreference(_albumRoot, _agent.DataPaths.ProfileDirectory);
             RefreshAlbumView();
+            await _runtime.RefreshDecisionMemoryAsync("album_root_changed");
         }
     }
 
-    private void RefreshAlbum_Click(object sender, RoutedEventArgs e) => RefreshAlbumView();
+    private async void RefreshAlbum_Click(object sender, RoutedEventArgs e)
+    {
+        RefreshAlbumView();
+        await _runtime.RefreshDecisionMemoryAsync("album_refreshed");
+    }
 
     private void OpenAlbumRoot_Click(object sender, RoutedEventArgs e) => OpenFolder(_albumRoot);
 
@@ -186,9 +191,10 @@ public partial class ControlPanelWindow : Window
             SelectAlbum(item);
     }
 
-    private void SaveAlbumDescription_Click(object sender, RoutedEventArgs e)
+    private async void SaveAlbumDescription_Click(object sender, RoutedEventArgs e)
     {
         SaveSelectedAlbumMarkdown();
+        await _runtime.RefreshDecisionMemoryAsync("album_description_saved");
     }
 
     private void OpenSelectedAlbum_Click(object sender, RoutedEventArgs e)
@@ -197,7 +203,7 @@ public partial class ControlPanelWindow : Window
             OpenFolder(_selectedAlbum.DirectoryPath);
     }
 
-    private void DeleteSelectedAlbum_Click(object sender, RoutedEventArgs e)
+    private async void DeleteSelectedAlbum_Click(object sender, RoutedEventArgs e)
     {
         if (_albumUnbindInProgress)
             return;
@@ -229,6 +235,7 @@ public partial class ControlPanelWindow : Window
         }
 
         RefreshAlbumView();
+        await _runtime.RefreshDecisionMemoryAsync("album_removed");
         AlbumStatusText.Text = result.UserMessage;
     }
 
@@ -413,6 +420,15 @@ public partial class ControlPanelWindow : Window
         ScrollChatToEnd();
     }
 
+    private void DeveloperTab_Click(object sender, RoutedEventArgs e)
+    {
+        var showGuide = sender is Button { Tag: "Guide" };
+        DeveloperRuntimeTab.Visibility = showGuide ? Visibility.Collapsed : Visibility.Visible;
+        DeveloperGuideTab.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        DeveloperRuntimeTabButton.Style = PanelTabStyle(!showGuide);
+        DeveloperGuideTabButton.Style = PanelTabStyle(showGuide);
+    }
+
     private async void MemoryConfig_Changed(object sender, RoutedEventArgs e)
     {
         if (!_modelUiReady)
@@ -420,7 +436,8 @@ public partial class ControlPanelWindow : Window
 
         _memoryConfiguration = ReadMemoryConfigurationFromUi();
         await _agent.MemoryConfiguration.SaveAsync(_memoryConfiguration);
-        SetChatStatus("记忆配置已保存，将用于下一轮对话。");
+        await _runtime.RefreshDecisionMemoryAsync("memory_configuration_changed");
+        SetChatStatus("记忆配置已保存，并已刷新对话与行为决策权重。");
     }
 
     private async void SavePetPrompt_Click(object sender, RoutedEventArgs e)
@@ -826,6 +843,7 @@ public partial class ControlPanelWindow : Window
         if (sender is Button { Tag: ConversationMemoryCandidate candidate })
         {
             await _agent.Memory.SetStatusAsync(candidate.Id, status);
+            await _runtime.RefreshDecisionMemoryAsync("memory_status_changed");
             await RefreshMemoryCandidatesAsync();
         }
     }
@@ -835,6 +853,7 @@ public partial class ControlPanelWindow : Window
         if (sender is Button { Tag: ConversationMemoryCandidate candidate })
         {
             await _agent.Memory.DeleteAsync(candidate.Id);
+            await _runtime.RefreshDecisionMemoryAsync("memory_deleted");
             await RefreshMemoryCandidatesAsync();
         }
     }
@@ -1088,6 +1107,7 @@ public partial class ControlPanelWindow : Window
             .OrderBy(x => x.DisplayName)
             .ToList();
         LifecycleCandidateList.ItemsSource = Filter(_runtime.LifecycleCandidateMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
+        StandingExpressionCandidateList.ItemsSource = Filter(_runtime.StandingExpressionCandidateMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
         LifecycleReviewCandidateList.ItemsSource = Filter(_runtime.LifecycleReviewCandidateMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
         CarRideCandidateList.ItemsSource = Filter(_runtime.CarRideCandidateMotions, expiredOnly).ToList();
     }
@@ -1181,6 +1201,24 @@ public partial class ControlPanelWindow : Window
         MagicShowStatus.Text = $"{motion.DisplayName}: 暂未接入右键互动";
     }
 
+    private async void ShowBaseAsset_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: PlayableMotion motion })
+            return;
+
+        MagicShowStatus.Text = $"正在准备 {motion.DisplayName}...";
+        var result = await _runtime.SubmitBaseMotionAsync(motion.BehaviorId, BehaviorRequestSource.ControlPanel);
+        MagicShowStatus.Text = result switch
+        {
+            PetActionResult.Accepted => $"{motion.DisplayName}：正在主窗口执行（不写入性格记忆）",
+            PetActionResult.Deferred => $"{motion.DisplayName}：{_runtime.CurrentReason}",
+            PetActionResult.MissingAsset => $"{motion.DisplayName}：素材缺失",
+            PetActionResult.Interrupted => $"{motion.DisplayName}：已停止",
+            PetActionResult.Failed => $"{motion.DisplayName}：执行失败并已恢复",
+            _ => $"{motion.DisplayName}：{result}"
+        };
+    }
+
     private async void ShowCommandAsset_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not Button { Tag: PlayableMotion motion })
@@ -1245,7 +1283,7 @@ public partial class ControlPanelWindow : Window
         string.Equals(motion.BehaviorId, CarRideBehaviorIds.CarRide, StringComparison.OrdinalIgnoreCase);
 
     private static bool IsBaseMotion(PlayableMotion motion) =>
-        !IsCommandMotion(motion) && !IsMagicMotion(motion) && !IsCarRideMotion(motion);
+        DesktopRuntimeHost.IsBaseAssetMotion(motion);
 
     private void LoadAvatarIfAvailable()
     {

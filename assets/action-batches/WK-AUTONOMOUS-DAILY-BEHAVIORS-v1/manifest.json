@@ -90,7 +90,7 @@
       "daily_role": "posture_transition",
       "from_posture": "Prone",
       "to_posture": "Sit",
-      "frame_count": 4,
+      "frame_count": 3,
       "loop": false,
       "source_motion_design_approved": true,
       "autonomous_semantics_owner_approved": true,
@@ -108,8 +108,8 @@
         "behavior_id": "wk.candidate.lifecycle.lively_daily_p2",
         "phase": "exit",
         "start_frame": 1,
-        "frame_count": 4,
-        "sequence_sha256": "1d37a3c051266c16079bdb164be3622e797f8983815d5d80b81873f31c3e0b13"
+        "frame_count": 3,
+        "sequence_sha256": "ca87521e827ed8fd29f2c22ed749d1e9a33c631d7c777e9417cd123a1f2bf88c"
       }
     },
     {
@@ -136,7 +136,7 @@
         "asset_batch": "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2",
         "behavior_id": "wk.candidate.lifecycle.lively_daily_p2",
         "phase": "exit",
-        "start_frame": 4,
+        "start_frame": 3,
         "frame_count": 5,
         "sequence_sha256": "b20baf5122b43d006cc3f2a212d7885a5df6a17ca2685656f6ce2fa798cdd807"
       }
@@ -146,6 +146,7 @@
     "This batch stores behavior semantics only; every candidate resolves an immutable range from an approved source motion.",
     "Owner removed the command-derived playful hop and spin from autonomous daily review; the original command actions remain unchanged.",
     "The four posture transitions passed owner Windows renderer QA on 2026-09-05 and are enabled for low-frequency AutonomousTick selection and DeveloperPreview.",
+    "Owner rejected the old side-prone look-back anchor on 2026-09-22; prone-to-sit and lifecycle exits now begin at the former second frame without changing PNG bytes.",
     "No expired red/standard-Shiba asset contributes pixels, color, identity, or fur style."
   ]
 }

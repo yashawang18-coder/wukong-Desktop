@@ -135,6 +135,7 @@
                 <TextBlock Text="意愿" FontWeight="SemiBold" />
                 <TextBlock Text="{Binding CurrentDisposition}" FontSize="24" Margin="0,8,0,0" />
                 <TextBlock Text="{Binding CurrentReason}" Style="{StaticResource SubText}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                <TextBlock Text="{Binding CurrentDecisionDetail}" Style="{StaticResource SubText}" TextWrapping="Wrap" Margin="0,8,0,0" />
               </StackPanel>
             </Border>
             <Border Grid.Column="1" Grid.RowSpan="2" Style="{StaticResource Card}" Margin="16,0,0,16" MinHeight="568">
@@ -600,8 +601,11 @@
                           <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
                           <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding StatusSummary}" /></Border>
                         </DockPanel>
-                        <TextBlock Text="点击查看动作效果。" Style="{StaticResource SubText}" Margin="0,7,0,0" />
-                        <Button Content="查看动画" Style="{StaticResource PrimaryButton}" Tag="{Binding}" Click="PreviewAsset_Click" Margin="0,10,0,0" />
+                        <TextBlock Text="可查看动画，也可以让悟空执行。" Style="{StaticResource SubText}" Margin="0,7,0,0" />
+                        <WrapPanel Margin="0,10,0,0">
+                          <Button Content="查看动画" Style="{StaticResource SecondaryButton}" Tag="{Binding}" Click="PreviewAsset_Click" />
+                          <Button Content="让悟空执行" Style="{StaticResource PrimaryButton}" Tag="{Binding}" Click="ShowBaseAsset_Click" />
+                        </WrapPanel>
                       </StackPanel>
                     </Border>
                   </DataTemplate>
@@ -743,9 +747,14 @@
           <TextBlock Text="How Wukong works" Style="{StaticResource Eyebrow}" />
           <TextBlock Text="开发者" Style="{StaticResource PageTitle}" />
           <TextBlock Text="脱敏的运行时、Agent、素材和错误诊断。退出开发者模式后服务层会拒绝读取这些数据。" Style="{StaticResource SubText}" Margin="0,2,0,16" />
+          <WrapPanel Margin="0,0,0,10">
+            <Button x:Name="DeveloperRuntimeTabButton" Content="运行诊断" Tag="Runtime" Style="{StaticResource PanelTabButtonSelected}" Click="DeveloperTab_Click" />
+            <Button x:Name="DeveloperGuideTabButton" Content="Agent 机制说明" Tag="Guide" Style="{StaticResource PanelTabButton}" Click="DeveloperTab_Click" />
+          </WrapPanel>
+          <StackPanel x:Name="DeveloperRuntimeTab">
           <UniformGrid Columns="3">
             <Border Style="{StaticResource Card}" Margin="0,0,8,16"><StackPanel><TextBlock Text="Agent 状态" FontWeight="SemiBold" /><TextBlock Text="{Binding AgentStatus}" TextWrapping="Wrap" /></StackPanel></Border>
-            <Border Style="{StaticResource Card}" Margin="8,0,8,16"><StackPanel><TextBlock Text="当前动作" FontWeight="SemiBold" /><TextBlock Text="{Binding CurrentAction}" /><TextBlock Text="{Binding CurrentBehaviorId}" TextWrapping="Wrap" /></StackPanel></Border>
+            <Border Style="{StaticResource Card}" Margin="8,0,8,16"><StackPanel><TextBlock Text="当前动作" FontWeight="SemiBold" /><TextBlock Text="{Binding CurrentAction}" /><TextBlock Text="{Binding CurrentBehaviorId}" TextWrapping="Wrap" /><TextBlock Text="{Binding CurrentDecisionDetail}" Style="{StaticResource SubText}" TextWrapping="Wrap" Margin="0,6,0,0" /></StackPanel></Border>
             <Border Style="{StaticResource Card}" Margin="8,0,0,16"><StackPanel><TextBlock Text="动作 phase" FontWeight="SemiBold" /><TextBlock Text="{Binding CurrentPhase, StringFormat=phase: {0}}" /></StackPanel></Border>
             <Border Style="{StaticResource Card}" Margin="0,0,8,16"><StackPanel><TextBlock Text="最近触发" FontWeight="SemiBold" /><TextBlock Text="{Binding LastSource, StringFormat=source: {0}}" /><TextBlock Text="{Binding LastTrigger, StringFormat=trigger: {0}}" TextWrapping="Wrap" /></StackPanel></Border>
             <Border Style="{StaticResource Card}" Margin="8,0,8,16"><StackPanel><TextBlock Text="当前素材" FontWeight="SemiBold" /><TextBlock Text="{Binding CurrentAsset}" TextWrapping="Wrap" /></StackPanel></Border>
@@ -922,6 +931,29 @@
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
+              <TextBlock Text="站姿表情候选" FontWeight="SemiBold" Margin="0,12,0,4" />
+              <TextBlock Text="正式门禁保持关闭；可预览动画或通过统一行为链让桌面悟空展示。" Style="{StaticResource SubText}" Margin="0,0,0,10" TextWrapping="Wrap" />
+              <ItemsControl x:Name="StandingExpressionCandidateList">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Background="#F7F5F0" CornerRadius="12" Padding="10" Margin="0,0,10,10" Width="290">
+                      <StackPanel>
+                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding BehaviorId}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding PhaseSummary}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Status}" Style="{StaticResource SubText}" TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,8,0,0">
+                          <Button Content="预览" Tag="{Binding}" Style="{StaticResource SecondaryButton}" Click="PreviewAsset_Click" />
+                          <Button Content="立即展示" Tag="{Binding}" Style="{StaticResource PrimaryButton}" Click="ForceLifecycleCandidate_Click" />
+                        </WrapPanel>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
             </StackPanel>
           </Border>
           <Border Style="{StaticResource Card}" Visibility="{Binding ElementName=DeveloperDiagnosticsPanel, Path=Visibility}">
@@ -965,6 +997,139 @@
               <ListBox x:Name="TraceList" Visibility="Collapsed" FontFamily="Consolas" FontSize="12" MinHeight="220" Margin="0,10,0,0" />
             </StackPanel>
           </Border>
+          </StackPanel>
+          <StackPanel x:Name="DeveloperGuideTab" Visibility="Collapsed">
+            <Border Style="{StaticResource Card}" Background="#E8EDE3">
+              <StackPanel>
+                <TextBlock Text="Wukong Agent 机制说明书" FontSize="21" FontWeight="SemiBold" />
+                <TextBlock Text="目标是让悟空的动作、状态、记忆和说话保持一致。系统使用本地、可测试的决策引擎选择行为；大模型只在事实与动作意图已经确定后组织短句，不直接选择素材或改写状态。" Style="{StaticResource SubText}" FontSize="13" Margin="0,8,0,0" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+
+            <TextBlock Text="一、不可绕过的边界" FontSize="18" FontWeight="SemiBold" Margin="0,4,0,10" />
+            <UniformGrid Columns="3">
+              <Border Style="{StaticResource Card}" Margin="0,0,8,16">
+                <StackPanel>
+                  <TextBlock Text="确定性核心" FontWeight="SemiBold" />
+                  <TextBlock Text="姿态规划、硬门禁、候选评分、仲裁、生命周期和状态回流均由本地代码负责。相同状态、时钟和随机种子应产生相同决策。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                </StackPanel>
+              </Border>
+              <Border Style="{StaticResource Card}" Margin="4,0,4,16">
+                <StackPanel>
+                  <TextBlock Text="模型边界" FontWeight="SemiBold" />
+                  <TextBlock Text="模型可以生成回复、SemanticIntent 和 MemoryCandidate；不能返回素材路径、强制执行、直接状态修改或 PrototypePreview。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                </StackPanel>
+              </Border>
+              <Border Style="{StaticResource Card}" Margin="8,0,0,16">
+                <StackPanel>
+                  <TextBlock Text="素材门禁" FontWeight="SemiBold" />
+                  <TextBlock Text="记忆、关系和性格只能调整合格候选的权重，不能让未批准、已过期、来源不允许或姿态不兼容的素材进入执行。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                </StackPanel>
+              </Border>
+            </UniformGrid>
+
+            <TextBlock Text="二、从事件到结果的统一链路" FontSize="18" FontWeight="SemiBold" Margin="0,4,0,10" />
+            <UniformGrid Columns="4">
+              <Border Style="{StaticResource Card}" Margin="0,0,6,12"><StackPanel><TextBlock Text="1 事件输入" FontWeight="SemiBold" /><TextBlock Text="右键、控制面板、对话意图、自主 Tick 或开发者预览。" Style="{StaticResource SubText}" Margin="0,5,0,0" /></StackPanel></Border>
+              <Border Style="{StaticResource Card}" Margin="6,0,6,12"><StackPanel><TextBlock Text="2 状态快照" FontWeight="SemiBold" /><TextBlock Text="读取姿态、精力、需求、心情、关系、记忆、冷却和当前执行。" Style="{StaticResource SubText}" Margin="0,5,0,0" /></StackPanel></Border>
+              <Border Style="{StaticResource Card}" Margin="6,0,6,12"><StackPanel><TextBlock Text="3 能力目录" FontWeight="SemiBold" /><TextBlock Text="确认行为存在、素材审批、允许来源、起止姿态和中断策略。" Style="{StaticResource SubText}" Margin="0,5,0,0" /></StackPanel></Border>
+              <Border Style="{StaticResource Card}" Margin="6,0,0,12"><StackPanel><TextBlock Text="4 硬门禁" FontWeight="SemiBold" /><TextBlock Text="先排除 Busy、姿态不兼容、冷却、缺帧和运行资格不满足的候选。" Style="{StaticResource SubText}" Margin="0,5,0,0" /></StackPanel></Border>
+              <Border Style="{StaticResource Card}" Margin="0,0,6,16"><StackPanel><TextBlock Text="5 效用评分" FontWeight="SemiBold" /><TextBlock Text="只有自主候选参与性格、状态、关系、记忆、重复和转换成本评分。" Style="{StaticResource SubText}" Margin="0,5,0,0" /></StackPanel></Border>
+              <Border Style="{StaticResource Card}" Margin="6,0,6,16"><StackPanel><TextBlock Text="6 仲裁" FontWeight="SemiBold" /><TextBlock Text="按来源和优先级选择唯一动作，并请求当前动作到安全中断点。" Style="{StaticResource SubText}" Margin="0,5,0,0" /></StackPanel></Border>
+              <Border Style="{StaticResource Card}" Margin="6,0,6,16"><StackPanel><TextBlock Text="7 动画生命周期" FontWeight="SemiBold" /><TextBlock Text="执行 intro、loop、exit、interrupt_exit 和 fallback，保持 execution id。" Style="{StaticResource SubText}" Margin="0,5,0,0" /></StackPanel></Border>
+              <Border Style="{StaticResource Card}" Margin="6,0,0,16"><StackPanel><TextBlock Text="8 Reducer 回流" FontWeight="SemiBold" /><TextBlock Text="仅匹配当前 execution id 的结果可以更新姿态、需求、关系和近期经历。" Style="{StaticResource SubText}" Margin="0,5,0,0" /></StackPanel></Border>
+            </UniformGrid>
+
+            <TextBlock Text="三、状态、性格、关系和记忆" FontSize="18" FontWeight="SemiBold" Margin="0,4,0,10" />
+            <Grid>
+              <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
+              <Border Style="{StaticResource Card}" Margin="0,0,8,16">
+                <StackPanel>
+                  <TextBlock Text="唯一 PetAgentState" FontWeight="SemiBold" />
+                  <TextBlock Text="稳定姿态：Stand / Sit / Prone；CurrentPoseId 继续区分正面趴姿、侧身趴姿等视觉兼容状态。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                  <TextBlock Text="实时状态：Energy、Hunger、Thirst、SocialNeed、Boredom、Stress、MoodValence、Arousal、Focus、Comfort。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                  <TextBlock Text="长期性格：Activity、Attachment、Sensitivity、Independence、Mischief 和 CommandCooperativeness。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                  <TextBlock Text="关系：Trust、Familiarity、TouchAcceptance、InitiativeAcceptance，以及近期正负互动。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                </StackPanel>
+              </Border>
+              <Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,0,16">
+                <StackPanel>
+                  <TextBlock Text="决策记忆投影" FontWeight="SemiBold" />
+                  <TextBlock Text="只读取已确认的对话记忆、启用的相册 Markdown 描述和有限近期互动；待确认、已拒绝、已删除或隐藏相册不参与。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                  <TextBlock Text="证据被投影为 Companionship、Play、Explore、Food、Drink、Rest、Observe 主题，再映射为有上限的行为与主动发言权重。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                  <TextBlock Text="行为类别加权上限为 0.10，主动话题加权上限为 0.12；只改变相近合格候选的排序，不创造能力。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                  <TextBlock Text="配置开关、相册描述、相册删除及记忆确认状态变化后会立即刷新；日志只记录指纹和数量，不记录私人正文。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                </StackPanel>
+              </Border>
+            </Grid>
+
+            <Border Style="{StaticResource Card}" Background="#F7F5F0">
+              <StackPanel>
+                <TextBlock Text="自主候选评分" FontWeight="SemiBold" />
+                <TextBlock Text="finalScore = baseWeight + temperament + runtimeState + relationship + decisionMemory + learnedPreference + recentExperience + context - cooldown - repetition - transitionCost + boundedRandomness" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Margin="0,8,0,0" />
+                <TextBlock Text="随机扰动仅用于分数接近的候选，不能突破硬门禁。Episode allowlist 先限制行为语义，避免日常自主选到口令、魔法、兜风或未批准素材。" Style="{StaticResource SubText}" Margin="0,8,0,0" />
+              </StackPanel>
+            </Border>
+
+            <TextBlock Text="四、四种参与策略" FontSize="18" FontWeight="SemiBold" Margin="0,4,0,10" />
+            <Grid Margin="0,0,0,16">
+              <Grid.ColumnDefinitions><ColumnDefinition Width="190" /><ColumnDefinition Width="170" /><ColumnDefinition Width="180" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+              <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+              <Border Grid.ColumnSpan="4" Background="#E4EEE6" CornerRadius="8" Padding="12,9"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="190" /><ColumnDefinition Width="170" /><ColumnDefinition Width="180" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><TextBlock Text="参与模式" FontWeight="SemiBold" /><TextBlock Grid.Column="1" Text="典型来源" FontWeight="SemiBold" /><TextBlock Grid.Column="2" Text="是否判断意愿" FontWeight="SemiBold" /><TextBlock Grid.Column="3" Text="执行规则" FontWeight="SemiBold" /></Grid></Border>
+              <TextBlock Grid.Row="1" Margin="12,10" Text="ForcedByOwner" FontFamily="Consolas" /><TextBlock Grid.Row="1" Grid.Column="1" Margin="12,10" Text="魔法特辑" /><TextBlock Grid.Row="1" Grid.Column="2" Margin="12,10" Text="否" /><TextBlock Grid.Row="1" Grid.Column="3" Margin="12,10" Text="仍检查素材资格和安全中断，不允许模型或自主系统触发。" TextWrapping="Wrap" />
+              <TextBlock Grid.Row="2" Margin="12,10" Text="UsuallyCooperative" FontFamily="Consolas" /><TextBlock Grid.Row="2" Grid.Column="1" Margin="12,10" Text="主人口令" /><TextBlock Grid.Row="2" Grid.Column="2" Margin="12,10" Text="高服从、状态例外" /><TextBlock Grid.Row="2" Grid.Column="3" Margin="12,10" Text="默认接受；高强度动作在低能量、高压力或过度重复时延后或拒绝。" TextWrapping="Wrap" />
+              <TextBlock Grid.Row="3" Margin="12,10" Text="StateSensitive" FontFamily="Consolas" /><TextBlock Grid.Row="3" Grid.Column="1" Margin="12,10" Text="兜风等邀请" /><TextBlock Grid.Row="3" Grid.Column="2" Margin="12,10" Text="可配置" /><TextBlock Grid.Row="3" Grid.Column="3" Margin="12,10" Text="先检查当前状态与安全退出，再决定接受、延后或关闭能力。" TextWrapping="Wrap" />
+              <TextBlock Grid.Row="4" Margin="12,10" Text="Autonomous" FontFamily="Consolas" /><TextBlock Grid.Row="4" Grid.Column="1" Margin="12,10" Text="日常 Episode" /><TextBlock Grid.Row="4" Grid.Column="2" Margin="12,10" Text="不涉及服从" /><TextBlock Grid.Row="4" Grid.Column="3" Margin="12,10" Text="从当前 Episode 的明确 allowlist 中评分；无合格候选时保持稳定 Idle。" TextWrapping="Wrap" />
+            </Grid>
+
+            <Grid>
+              <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
+              <Border Style="{StaticResource Card}" Margin="0,0,8,16">
+                <StackPanel>
+                  <TextBlock Text="五、口令：接受、延后与拒绝" FontSize="17" FontWeight="SemiBold" />
+                  <TextBlock Text="先检查素材、来源、姿态路径和安全中断；缺素材属于 Deferred，不是假装拒绝，也不使用其他动作冒充。" Style="{StaticResource SubText}" Margin="0,7,0,0" />
+                  <TextBlock Text="低强度口令通常接受；中高强度动作综合服从基线、信任、熟悉度、心情、精力、压力和重复惩罚。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                  <TextBlock Text="主人页展示接受／延后／拒绝、原因、意愿比例、主要因素和可重试时间；停止命令永远优先，不参与意愿评分。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                </StackPanel>
+              </Border>
+              <Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,0,16">
+                <StackPanel>
+                  <TextBlock Text="六、主动说话" FontSize="17" FontWeight="SemiBold" />
+                  <TextBlock Text="仅在稳定 Idle、非安静时段、非高压力、聊天框未展开且预算允许时评估；不会每个自主 Tick 调用模型。" Style="{StaticResource SubText}" Margin="0,7,0,0" />
+                  <TextBlock Text="话题来自饥饿、口渴、陪伴、玩耍、好奇和休息，结合姿态、Episode、性格、关系及记忆主题生成短句。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                  <TextBlock Text="连续未回应会提高冷却、拉长下一次检查并收紧八小时预算；主人对话或正向互动会结束待回应状态并恢复频率。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                </StackPanel>
+              </Border>
+            </Grid>
+
+            <Grid>
+              <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
+              <Border Style="{StaticResource Card}" Margin="0,0,8,16">
+                <StackPanel>
+                  <TextBlock Text="七、生命周期与状态回流" FontSize="17" FontWeight="SemiBold" />
+                  <TextBlock Text="每次 BehaviorRequest 具有唯一 execution id。Started 设置 Busy；Completed 写入声明的 EndPosture / EndPoseId 和行为效果；Interrupted / Failed 只应用允许的部分效果。" Style="{StaticResource SubText}" Margin="0,7,0,0" />
+                  <TextBlock Text="重复或迟到的完成回调会被忽略并写入 Trace，防止前一个动画覆盖当前姿态。稳定 Idle 是显示状态，不重复结算收益。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                  <TextBlock Text="窗口位置、透明度、金币和特效由 Desktop effect controller 清理；姿态、需求、心情、关系和经历由 Reducer 结算。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                </StackPanel>
+              </Border>
+              <Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,0,16">
+                <StackPanel>
+                  <TextBlock Text="八、Preview 隔离与调试" FontSize="17" FontWeight="SemiBold" />
+                  <TextBlock Text="Normal 可以写正式状态；DeveloperPreview 和 PrototypePreview 使用隔离上下文，不写正式关系、记忆或学习偏好。" Style="{StaticResource SubText}" Margin="0,7,0,0" />
+                  <TextBlock Text="诊断时依次查看 request source、execution mode、能力门禁、候选评分、选择理由、生命周期、outcome 和 recovery result。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                  <TextBlock Text="素材缺失、哈希失败、姿态不兼容或来源不允许应明确 Deferred / Rejected / Failed，不能静默回退到语义不符素材。" Style="{StaticResource SubText}" Margin="0,6,0,0" />
+                </StackPanel>
+              </Border>
+            </Grid>
+
+            <Border Style="{StaticResource Card}" BorderBrush="#C6903F" Background="#FFF8E9">
+              <StackPanel>
+                <TextBlock Text="当前实现边界" FontWeight="SemiBold" Foreground="#7B531D" />
+                <TextBlock Text="当前记忆投影采用本地、确定性的主题词与有限权重，不是向量检索或自由模型推理；主动发言以规则短句为主；Agent 仍按 Episode 分批迁移到统一 Reducer。上述限制不会削弱素材审批、来源权限或状态安全门禁。" Style="{StaticResource SubText}" Margin="0,7,0,0" />
+                <TextBlock Text="{Binding BehaviorAgentSnapshot, StringFormat=当前脱敏快照：{0}}" FontFamily="Consolas" FontSize="11" TextWrapping="Wrap" Margin="0,10,0,0" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
         </StackPanel>
       </Grid>
     </ScrollViewer>

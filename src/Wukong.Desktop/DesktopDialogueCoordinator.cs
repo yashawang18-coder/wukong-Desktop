@@ -15,6 +15,7 @@ public sealed class DesktopDialogueCoordinator
 
     public async Task<ConversationTurnResult> SendAsync(string text, CancellationToken cancellationToken = default)
     {
+        _runtime.RecordOwnerDialogueResponse();
         var behavior = await _runtime.SubmitDialogueIntentAsync(text);
         if (behavior.Recognized && behavior.Act is not null)
         {

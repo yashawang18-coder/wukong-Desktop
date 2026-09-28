@@ -326,6 +326,54 @@ internal static class BehaviorAgentCoreTests
             "recent experience exceeded its bounded capacity");
     }
 
+    public static void ControlPanelExecutionDoesNotTeachPersonalityOrMemory()
+    {
+        var now = new DateTimeOffset(2026, 9, 28, 10, 0, 0, TimeSpan.Zero);
+        var reducer = new PetStateReducer();
+        var executionId = Guid.NewGuid();
+        var initial = PetAgentState.CreateDefault(now) with
+        {
+            Runtime = PetRuntimeState.Default with
+            {
+                CurrentPosture = StablePosture.Stand,
+                CurrentPoseId = "stand.neutral.left_front",
+                Energy = 0.65,
+                MoodValence = 0.55
+            }
+        };
+        var started = reducer.Reduce(initial, new PetBehaviorStarted(
+            now, executionId, "panel.review.motion", "intro", true,
+            BehaviorRequestSource.ControlPanel, BehaviorExecutionMode.Normal));
+        Assert(started.Runtime.ActiveExecutionId == executionId && started.Runtime.IsBusy,
+            "control-panel execution did not enter the shared lifecycle");
+        Assert(started.RecentExperience.SequenceEqual(initial.RecentExperience),
+            "control-panel start entered recent behavior memory");
+
+        var completed = reducer.Reduce(started, new PetBehaviorFinished(
+            now.AddSeconds(2), executionId, "panel.review.motion", ExecutionStatus.Completed, 1,
+            StablePosture.Sit, "sit.neutral.left_front",
+            new PetStateEffects(Energy: -0.20, SocialNeed: -0.15, MoodValence: 0.20),
+            OwnerInteraction: true, MemoryEligible: true, PartialEffectPolicy.Proportional,
+            BehaviorRequestSource.ControlPanel, BehaviorExecutionMode.Normal, "panel_review_complete"));
+
+        Assert(completed.Runtime.CurrentPosture == StablePosture.Sit &&
+               completed.Runtime.CurrentPoseId == "sit.neutral.left_front" &&
+               !completed.Runtime.IsBusy,
+            "control-panel completion did not preserve physical lifecycle coherence");
+        AssertClose(initial.Runtime.Energy, completed.Runtime.Energy,
+            "control-panel execution changed decision-state energy");
+        AssertClose(initial.Runtime.MoodValence, completed.Runtime.MoodValence,
+            "control-panel execution changed decision-state mood");
+        Assert(completed.Runtime.LastActionId == initial.Runtime.LastActionId,
+            "control-panel execution entered repetition memory");
+        Assert(completed.Relationship == initial.Relationship,
+            "control-panel execution changed relationship state");
+        Assert(completed.Preferences.Count == initial.Preferences.Count,
+            "control-panel execution reinforced a learned preference");
+        Assert(completed.RecentExperience.SequenceEqual(initial.RecentExperience),
+            "control-panel completion entered recent behavior memory");
+    }
+
     public static void CommandWillingnessIsCooperativeDeterministicAndStateSensitive()
     {
         var now = new DateTimeOffset(2026, 9, 16, 12, 0, 0, TimeSpan.Zero);
@@ -417,6 +465,110 @@ internal static class BehaviorAgentCoreTests
             "initiative speech budget did not suppress excessive spontaneous speech");
     }
 
+    public static void DialogueAlbumAndInteractionMemoryBecomeBoundedDecisionWeights()
+    {
+        var now = new DateTimeOffset(2026, 9, 21, 10, 0, 0, TimeSpan.Zero);
+        var projector = new PetDecisionMemoryProjector();
+        var profile = projector.Project(new[]
+        {
+            new PetMemoryEvidence("conversation-1", PetMemoryEvidenceSource.ConfirmedConversation, "老爸常带我去草地玩，我很喜欢一起出门。"),
+            new PetMemoryEvidence("album-1", PetMemoryEvidenceSource.AlbumDescription, "和老爸出去玩", PetMemoryTheme.Play),
+            new PetMemoryEvidence("album-2", PetMemoryEvidenceSource.AlbumDescription, "南京日落旅行", PetMemoryTheme.Explore)
+        }, now);
+        Assert(profile.CategoryWeight(BehaviorSemanticCategory.Explore) > 0,
+            "album and conversation evidence did not produce an explore weight");
+        Assert(profile.CategoryWeight(BehaviorSemanticCategory.Explore) <= 0.10,
+            "decision-memory category weight exceeded its safety bound");
+        Assert(profile.InitiativeTopicWeight(InitiativeSpeechTopic.Play) > 0,
+            "memory evidence did not influence initiative topic weight");
+
+        var capability = Capability("wk.observe.memory", BehaviorParticipationMode.Autonomous,
+            BehaviorEffortLevel.Low, BehaviorRequestSource.AutonomousTick) with
+        {
+            Category = BehaviorSemanticCategory.Explore
+        };
+        var state = PetAgentState.CreateDefault(now) with
+        {
+            Runtime = PetRuntimeState.Default with
+            {
+                CurrentPosture = StablePosture.Stand,
+                CurrentPoseId = "stand.neutral.left_front"
+            },
+            DecisionMemory = profile
+        };
+        var decision = new BehaviorDecisionEngine().Decide(
+            state,
+            new BehaviorCapabilityCatalog(new[] { capability }),
+            new BehaviorDecisionInput(
+                BehaviorRequestSource.AutonomousTick,
+                now,
+                "stable_stand_idle",
+                now.AddMinutes(-2),
+                true,
+                new Dictionary<string, DateTimeOffset>(),
+                Array.Empty<string>(),
+                77,
+                true,
+                true));
+        Assert(Component(decision.Candidates.Single(), "decision_memory") > 0,
+            "projected memory was not included in the behavior utility score");
+
+        var unavailable = capability with { ProductionApproved = false, RuntimeUse = false };
+        var gated = new BehaviorDecisionEngine().Decide(
+            state,
+            new BehaviorCapabilityCatalog(new[] { unavailable }),
+            new BehaviorDecisionInput(
+                BehaviorRequestSource.AutonomousTick, now, "stable_stand_idle", now.AddMinutes(-2), true,
+                new Dictionary<string, DateTimeOffset>(), Array.Empty<string>(), 77, true, true));
+        Assert(gated.Disposition == RequestDisposition.Deferred &&
+               gated.Candidates.Single().GateReasons.Contains("runtime_capability_unavailable"),
+            "decision memory bypassed the runtime asset gate");
+    }
+
+    public static void InitiativeFeedbackTracksUnansweredAndExplicitDialogueResponse()
+    {
+        var now = new DateTimeOffset(2026, 9, 21, 11, 0, 0, TimeSpan.Zero);
+        var reducer = new PetStateReducer();
+        var initial = PetAgentState.CreateDefault(now);
+        var first = reducer.Reduce(initial, new PetInitiativeSpeechOccurred(now, "Play"));
+        var second = reducer.Reduce(first, new PetInitiativeSpeechOccurred(now.AddMinutes(20), "Curiosity"));
+        Assert(second.InitiativeSpeechFeedback.ConsecutiveUnanswered == 1,
+            "a second initiative did not record the unanswered previous initiative");
+        var answered = reducer.Reduce(second, new PetOwnerDialogueObserved(now.AddMinutes(21)));
+        Assert(answered.InitiativeSpeechFeedback.PendingTopic is null &&
+               answered.InitiativeSpeechFeedback.ConsecutiveUnanswered == 0,
+            "an explicit owner dialogue response did not clear pending initiative feedback");
+        Assert(answered.Relationship.InitiativeAcceptance > second.Relationship.InitiativeAcceptance,
+            "an explicit response did not improve bounded initiative acceptance");
+    }
+
+    public static void CommandDeferralIncludesRetryAndExplainableComponents()
+    {
+        var now = new DateTimeOffset(2026, 9, 21, 12, 0, 0, TimeSpan.Zero);
+        var capability = Capability("wk.command.jump", BehaviorParticipationMode.UsuallyCooperative,
+            BehaviorEffortLevel.High, BehaviorRequestSource.OwnerContextMenu);
+        var state = PetAgentState.CreateDefault(now) with
+        {
+            Temperament = TemperamentProfile.Default with { CommandCooperativeness = 0.50 },
+            Relationship = RelationshipState.Default with { Trust = 0.35, Familiarity = 0.30 },
+            Runtime = PetRuntimeState.Default with
+            {
+                CurrentPosture = StablePosture.Stand,
+                CurrentPoseId = "stand.neutral.left_front",
+                Energy = 0.35,
+                Stress = 0.62,
+                MoodValence = 0.42
+            }
+        };
+        var decision = new BehaviorParticipationPolicy().Evaluate(
+            capability, state, BehaviorRequestSource.OwnerContextMenu, now);
+        Assert(decision.Disposition == RequestDisposition.Deferred,
+            $"moderately unavailable command should defer rather than fake acceptance: {decision.Disposition}");
+        Assert(decision.RetryAt > now, "deferred command did not expose a retry time");
+        Assert(decision.Components.ContainsKey("available_energy") && decision.Components.ContainsKey("stress_safety"),
+            "deferred command did not expose explainable state components");
+    }
+
     private static PetBehaviorStarted Started(
         DateTimeOffset at,
         Guid executionId,
@@ -479,6 +631,18 @@ internal static class BehaviorAgentCoreTests
         Assert(expected.Temperament == actual.Temperament, message);
         Assert(expected.Episode == actual.Episode, message);
         Assert(expected.Clock == actual.Clock, message);
+        Assert(expected.DecisionMemory.Fingerprint == actual.DecisionMemory.Fingerprint &&
+               expected.DecisionMemory.CategoryWeights.Count == actual.DecisionMemory.CategoryWeights.Count &&
+               expected.DecisionMemory.CategoryWeights.All(pair =>
+                   actual.DecisionMemory.CategoryWeights.TryGetValue(pair.Key, out var value) && value == pair.Value) &&
+               expected.DecisionMemory.InitiativeTopicWeights.Count == actual.DecisionMemory.InitiativeTopicWeights.Count &&
+               expected.DecisionMemory.InitiativeTopicWeights.All(pair =>
+                   actual.DecisionMemory.InitiativeTopicWeights.TryGetValue(pair.Key, out var value) && value == pair.Value) &&
+               expected.DecisionMemory.EvidenceCounts.Count == actual.DecisionMemory.EvidenceCounts.Count &&
+               expected.DecisionMemory.EvidenceCounts.All(pair =>
+                   actual.DecisionMemory.EvidenceCounts.TryGetValue(pair.Key, out var value) && value == pair.Value),
+            message);
+        Assert(expected.InitiativeSpeechFeedback == actual.InitiativeSpeechFeedback, message);
         Assert(expected.RecentExperience.SequenceEqual(actual.RecentExperience), message);
         Assert(expected.Preferences.Count == actual.Preferences.Count &&
                expected.Preferences.All(pair => actual.Preferences.TryGetValue(pair.Key, out var value) && value == pair.Value),

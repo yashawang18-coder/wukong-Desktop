@@ -51,12 +51,16 @@ var tests = new (string Name, Action Run)[]
     ("lifecycle manifests and panel show approved runtime state", LifecycleReviewCandidateTests.ManifestsAndPanelShowApprovedRuntimeState),
     ("autonomous ticks use approved daily actions without commands", LifecycleReviewCandidateTests.AutonomousTicksUseApprovedDailyAllowlistWithoutCommands),
     ("forward-prone profile requires the matching approved anchor", LifecycleReviewCandidateTests.ForwardProneProfileRequiresMatchingApprovedAnchor),
+    ("standing happy-expectant frames and manifest stay byte exact", StandingHappyExpectantCandidateTests.ManifestAndFramesStayByteExact),
+    ("standing happy-expectant candidate gate posture and cooldown stay isolated", StandingHappyExpectantCandidateTests.CandidateGatePostureAndCooldownStayIsolated),
     ("road-gaze and side-prone v5 extensions pass Windows WPF decode", LifecycleReviewCandidateTests.RuntimeExtensionsPassWindowsWpfDecode),
     ("road-gaze local review marker opens only the pending candidate", LifecycleReviewCandidateTests.RoadGazeReviewMarkerOpensOnlyPendingCandidate),
     ("prone head v4 approved manifest frames and gate are valid", ProneHeadCandidateTests.ManifestFramesAndGateAreValid),
     ("prone head v4 uses autonomous allowlist and isolated developer preview", ProneHeadCandidateTests.ApprovedMicroeventUsesAutonomousAllowlistAndDeveloperPreviewStaysIsolated),
     ("front-prone expression frames and manifest stay byte exact", FrontProneExpressionCandidateTests.ManifestAndFramesStayByteExact),
     ("front-prone expression candidate gate and autonomous rules stay isolated", FrontProneExpressionCandidateTests.CandidateReviewGateAndAutonomousRulesAreIsolated),
+    ("front-prone happy hot-panting frames and timing stay byte exact", ProneHappyHotPantingCandidateTests.ManifestFramesAndTimingStayByteExact),
+    ("front-prone happy hot-panting gate pose cooldown and preview stay isolated", ProneHappyHotPantingCandidateTests.CandidateGatePoseCooldownAndPreviewStayIsolated),
     ("sleep runtime v10 candidate manifest frames and gate are valid", SleepCandidateTests.ManifestFramesAndGateAreValid),
     ("sleep runtime v10 uses compatible autonomous routes and isolated developer preview", SleepCandidateTests.ApprovedSleepUsesCompatibleAutonomousRoutesAndIsolatedPreview),
     ("missing sleep runtime v10 fails closed without legacy fallback", SleepCandidateTests.MissingV10FramesFailClosedWithoutLegacyFallback),
@@ -73,6 +77,7 @@ var tests = new (string Name, Action Run)[]
     ("behavior agent command mock assets are indexed and gated", BehaviorAgentCommandMockAssetsAreIndexedAndGated),
     ("command candidates stay out of autonomous and production commands", CommandCandidatesStayGated),
     ("behavior agent mock owner command uses posture branch", BehaviorAgentMockOwnerCommandUsesPostureBranch),
+    ("desktop refreshes decision memory and exposes command reasons", DesktopDecisionMemoryAndCommandReasonFeedback),
     ("approved owner commands tolerate missing posture bridge assets", ApprovedOwnerCommandsTolerateMissingPostureBridgeAssets),
     ("command completion holds the exact terminal frame", CommandCompletionHoldsExactTerminalFrame),
     ("reported commands keep rendered size at terminal hold", ReportedCommandTerminalHoldsKeepRenderScale),
@@ -111,6 +116,8 @@ var tests = new (string Name, Action Run)[]
     ("broom route has visible work-area travel", BroomRouteHasVisibleWorkAreaTravel),
     ("apparate target stays visible and relocates", ApparateTargetStaysVisibleAndRelocates),
     ("control panel exposes magic specials tab", ControlPanelExposesMagicSpecialsTab),
+    ("base asset cards expose preview and owner execution", BaseAssetExecutionTests.BaseCardsExposePreviewAndOwnerExecution),
+    ("base asset owner execution uses isolated main-pet path", BaseAssetExecutionTests.BaseExecutionUsesIsolatedMainPetPath),
     ("expired asset cards are gray but remain previewable", ExpiredAssetCardsAreGrayButRemainPreviewable),
     ("control panel car ride copy matches approved runtime state", ControlPanelCarRideCopyMatchesApprovedRuntimeState),
     ("control panel tab buttons share visual metrics", ControlPanelTabButtonsShareVisualMetrics),
@@ -126,6 +133,7 @@ var tests = new (string Name, Action Run)[]
     ("album folder removal persists and keeps local files", AlbumFolderRemovalPersistsAndKeepsFiles),
     ("autonomous tick can request a motion after dwell", AutonomousTickCanRequestMotion),
     ("autonomous behavior preferences map to all decision paths", AutonomousBehaviorPreferencesMapToDecisionPaths),
+    ("agent state attachment never blocks window construction", AgentStateAttachmentNeverBlocksWindowConstruction),
     ("portable first-run defaults are complete and sanitized", PortableFirstRunDefaultsAreCompleteAndSanitized),
     ("bootstrap log redacts and does not throw", BootstrapLogRedactsAndDoesNotThrow)
 };
@@ -584,6 +592,19 @@ static void ControlPanelXamlConstructs()
             Assert(panel.FindName("TemperamentIndependenceSlider") is Slider, "independence temperament slider missing");
             Assert(panel.FindName("TemperamentMischiefSlider") is Slider, "mischief temperament slider missing");
             Assert(panel.FindName("TemperamentSaveStatus") is TextBlock, "temperament persistence status missing");
+            var runtimeTabButton = panel.FindName("DeveloperRuntimeTabButton") as Button;
+            var guideTabButton = panel.FindName("DeveloperGuideTabButton") as Button;
+            Assert(runtimeTabButton is not null, "developer runtime diagnostics tab missing");
+            Assert(guideTabButton is not null, "developer Agent guide tab missing");
+            var runtimeTab = panel.FindName("DeveloperRuntimeTab") as StackPanel;
+            var guideTab = panel.FindName("DeveloperGuideTab") as StackPanel;
+            Assert(runtimeTab is not null && guideTab is not null, "developer tab content panels missing");
+            guideTabButton!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert(guideTab!.Visibility == Visibility.Visible && runtimeTab!.Visibility == Visibility.Collapsed,
+                "developer Agent guide does not open as an isolated tab");
+            runtimeTabButton!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert(runtimeTab.Visibility == Visibility.Visible && guideTab.Visibility == Visibility.Collapsed,
+                "developer runtime diagnostics tab does not restore");
             var prompt = panel.FindName("PetPromptText") as TextBox;
             Assert(prompt?.ContextMenu is not null, "pet prompt context menu missing");
             var promptCommands = prompt!.ContextMenu!.Items.OfType<MenuItem>().Select(x => x.Command).ToArray();
@@ -932,6 +953,17 @@ static void LifecycleMicroloopCandidatesAreIndexedAndGated()
         }
     }
 
+    var lively = actions.Single(x => x.GetProperty("behavior_id").GetString() == LifecycleCandidateBehaviorIds.LivelyDailyP2);
+    foreach (var phaseName in new[] { "exit", "interrupt_exit" })
+    {
+        var phase = lively.GetProperty("phases").EnumerateArray()
+            .Single(x => x.GetProperty("name").GetString() == phaseName);
+        var frames = phase.GetProperty("frames").EnumerateArray().ToArray();
+        Assert(frames.Length == 7, $"{phaseName} must omit the rejected side-prone first frame");
+        Assert(frames[0].GetProperty("path").GetString() == "frames/intro/12-sit-to-prone-late.png",
+            $"{phaseName} did not start from the former second frame");
+    }
+
     var microCycles = actions.Where(x => x.TryGetProperty("cycle_ms", out _)).Select(x => x.GetProperty("cycle_ms").GetInt32()).OrderBy(x => x).ToArray();
     Assert(microCycles.SequenceEqual(new[] { 7240, 7680, 8900 }), "microloop cycle durations changed");
 
@@ -1004,7 +1036,7 @@ static void ApprovedAutonomousDailyTransitionsAreIndexedAndGated()
     {
         [AutonomousDailyCandidateBehaviorIds.StandToSit] = 10,
         [AutonomousDailyCandidateBehaviorIds.SitToProne] = 12,
-        [AutonomousDailyCandidateBehaviorIds.ProneToSit] = 4,
+        [AutonomousDailyCandidateBehaviorIds.ProneToSit] = 3,
         [AutonomousDailyCandidateBehaviorIds.SitToStand] = 5
     };
     var actions = root.GetProperty("actions").EnumerateArray().ToArray();
@@ -1035,7 +1067,7 @@ static void ApprovedAutonomousDailyTransitionsAreIndexedAndGated()
     var catalog = DesktopMotionCatalog.Load(output);
     var candidates = catalog.Motions.Where(x => x.AssetBatch == AutonomousDailyCandidateBehaviorIds.AssetBatch).ToArray();
     Assert(candidates.Length == expected.Count, "autonomous daily candidates were not indexed for review");
-    Assert(candidates.Sum(x => x.FrameCount) == 31, "autonomous daily review set must contain 31 referenced frames");
+    Assert(candidates.Sum(x => x.FrameCount) == 30, "autonomous daily review set must contain 30 referenced frames");
     Assert(candidates.All(x => x.Category == "自主日常"), "approved daily transitions must use the autonomous daily category");
     Assert(candidates.All(x => x.RuntimeEnabled && x.RuntimeApproved && x.AutonomousBindingEnabled && !x.PrototypeUse), "daily transition runtime gate is incomplete");
     Assert(candidates.All(x => x.Disposition == "已启用"), "daily cards must display enabled disposition");
@@ -1043,6 +1075,9 @@ static void ApprovedAutonomousDailyTransitionsAreIndexedAndGated()
     Assert(candidates.All(x => x.VisualScale is > 0.91 and < 0.93), "daily candidates must inherit the approved 0.92 visual scale");
     Assert(candidates.All(x => x.Phases.Single().FrameDurationsMs?.Count == x.FrameCount), "daily candidate per-frame durations were not loaded");
     Assert(candidates.All(x => !x.FirstFrame.Contains(AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase)), "daily candidates must resolve source frames instead of duplicate PNGs");
+    var proneToSit = candidates.Single(x => x.BehaviorId == AutonomousDailyCandidateBehaviorIds.ProneToSit);
+    Assert(proneToSit.FirstFrame.EndsWith("12-sit-to-prone-late.png", StringComparison.OrdinalIgnoreCase),
+        "daily prone-to-sit must start from the former second frame");
     Assert(candidates.All(x => x.Description.Contains("no duplicate PNG", StringComparison.Ordinal)), "daily candidate cards must disclose shared source binding");
     Assert(candidates.All(x => x.BehaviorId is not "wk.daily.playful_hop" and not "wk.daily.playful_spin"), "owner-rejected playful command reuse must not remain in autonomous daily review");
     Assert(candidates.All(x => DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(x.BehaviorId)), "approved daily transition is missing from autonomous allowlist");
@@ -1206,6 +1241,41 @@ static void BehaviorAgentMockOwnerCommandUsesPostureBranch()
     Assert(request!.Motion.BehaviorId == MockCommandActionIds.PawProne, "prone paw command did not choose PawProne branch");
     Assert(runtime.CurrentStablePosture == StablePosture.Prone, "paw prone should keep prone posture");
     Assert(runtime.BehaviorAgentSnapshot.Contains(MockCommandActionIds.PawProne, StringComparison.Ordinal), "developer snapshot missing selected mock action");
+}
+
+static void DesktopDecisionMemoryAndCommandReasonFeedback()
+{
+    var now = new DateTimeOffset(2026, 9, 21, 14, 0, 0, TimeSpan.Zero);
+    var runtime = new DesktopRuntimeHost(now: () => now);
+    var profile = new PetDecisionMemoryProfile(
+        new Dictionary<string, double> { [BehaviorSemanticCategory.Observe.ToString()] = 0.07 },
+        new Dictionary<string, double> { [InitiativeSpeechTopic.Curiosity.ToString()] = 0.08 },
+        new Dictionary<string, int> { ["album_description"] = 3 },
+        now,
+        "desktop-test");
+    runtime.AttachDecisionMemorySource(new FixedDecisionMemorySource(profile));
+    runtime.RefreshDecisionMemoryAsync("desktop_test").GetAwaiter().GetResult();
+    Assert(Math.Abs(runtime.AgentStateSnapshot.DecisionMemory.CategoryWeight(BehaviorSemanticCategory.Observe) - 0.07) < 0.0001,
+        "desktop runtime did not apply refreshed decision-memory profile");
+
+    runtime.UpdateBehaviorAgentMock(
+        TemperamentProfile.Default with { CommandCooperativeness = 0.45 },
+        PetRuntimeState.Default with
+        {
+            CurrentPosture = StablePosture.Stand,
+            CurrentPoseId = "stand.neutral.left_front",
+            Energy = 0.05,
+            Stress = 0.90
+        },
+        RelationshipState.Default,
+        42);
+    var result = runtime.SubmitBehaviorAgentCommandAsync(OwnerCommandKind.Jump, BehaviorRequestSource.ControlPanel)
+        .GetAwaiter().GetResult();
+    Assert(result == PetActionResult.Rejected, "severely exhausted jump command should be rejected");
+    Assert(runtime.CurrentDisposition == "暂时不想", "owner-facing command disposition was not updated");
+    Assert(runtime.CurrentDecisionDetail.Contains("意愿", StringComparison.Ordinal) &&
+           runtime.CurrentDecisionDetail.Contains("口令", StringComparison.Ordinal),
+        "owner-facing command decision did not expose concise willingness details");
 }
 
 static void ApprovedOwnerCommandsTolerateMissingPostureBridgeAssets()
@@ -2696,6 +2766,20 @@ static void AutonomousBehaviorPreferencesMapToDecisionPaths()
         "daily preferences leaked into owner magic");
 }
 
+static void AgentStateAttachmentNeverBlocksWindowConstruction()
+{
+    var completion = new TaskCompletionSource<PetAgentState?>(TaskCreationOptions.RunContinuationsAsynchronously);
+    var runtime = new DesktopRuntimeHost();
+    var started = System.Diagnostics.Stopwatch.StartNew();
+    var loadTask = runtime.AttachAgentStateStoreAsync(new DeferredPetAgentStateStore(completion.Task));
+
+    Assert(started.Elapsed < TimeSpan.FromMilliseconds(500), "agent state attachment blocked the caller");
+    Assert(!loadTask.IsCompleted, "deferred state load unexpectedly completed synchronously");
+
+    completion.SetResult(PetAgentState.CreateDefault(DateTimeOffset.Now));
+    Assert(loadTask.GetAwaiter().GetResult(), "attached state was not restored");
+}
+
 static void PortableFirstRunDefaultsAreCompleteAndSanitized()
 {
     var defaults = Path.GetFullPath(Path.Combine("config", "defaults"));
@@ -2779,4 +2863,17 @@ static void TryDeleteDirectory(string path)
     catch
     {
     }
+}
+
+sealed class FixedDecisionMemorySource(PetDecisionMemoryProfile profile) : IPetDecisionMemorySource
+{
+    public Task<PetDecisionMemoryProfile> LoadAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(profile);
+}
+
+sealed class DeferredPetAgentStateStore(Task<PetAgentState?> loadTask) : IPetAgentStateStore
+{
+    public Task<PetAgentState?> LoadAsync(CancellationToken cancellationToken = default) => loadTask;
+
+    public Task SaveAsync(PetAgentState state, CancellationToken cancellationToken = default) => Task.CompletedTask;
 }

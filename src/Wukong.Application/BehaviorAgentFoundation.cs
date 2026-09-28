@@ -257,6 +257,21 @@ public sealed record PetAgentClockState(
     TimeSpan AppliedElapsed,
     TimeSpan SkippedOfflineElapsed);
 
+public sealed record InitiativeSpeechFeedbackState(
+    string? PendingTopic,
+    DateTimeOffset? PendingSince,
+    int ConsecutiveUnanswered,
+    DateTimeOffset? LastOwnerResponseAt)
+{
+    public static InitiativeSpeechFeedbackState Empty { get; } = new(null, null, 0, null);
+
+    public InitiativeSpeechFeedbackState Clamp() => this with
+    {
+        PendingTopic = string.IsNullOrWhiteSpace(PendingTopic) ? null : PendingTopic.Trim(),
+        ConsecutiveUnanswered = Math.Clamp(ConsecutiveUnanswered, 0, 8)
+    };
+}
+
 public sealed record PetAgentState(
     int SchemaVersion,
     TemperamentProfile Temperament,
@@ -267,7 +282,10 @@ public sealed record PetAgentState(
     IReadOnlyDictionary<string, LearnedBehaviorPreference> Preferences,
     PetAgentClockState Clock)
 {
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
+
+    public PetDecisionMemoryProfile DecisionMemory { get; init; } = PetDecisionMemoryProfile.Empty;
+    public InitiativeSpeechFeedbackState InitiativeSpeechFeedback { get; init; } = InitiativeSpeechFeedbackState.Empty;
 
     public static PetAgentState CreateDefault(DateTimeOffset now) => new(
         CurrentSchemaVersion,
@@ -305,6 +323,8 @@ public sealed record PetAgentState(
             Temperament = temperament,
             Relationship = relationship,
             Runtime = Runtime.Clamp(),
+            DecisionMemory = (DecisionMemory ?? PetDecisionMemoryProfile.Empty).Clamp(),
+            InitiativeSpeechFeedback = (InitiativeSpeechFeedback ?? InitiativeSpeechFeedbackState.Empty).Clamp(),
             RecentExperience = RecentExperience.TakeLast(PetStateReducer.MaximumRecentExperience).ToArray(),
             Preferences = Preferences
                 .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
@@ -382,6 +402,10 @@ public sealed record PetInitiativeSpeechOccurred(
     DateTimeOffset At,
     string Topic) : PetAgentEvent(At);
 
+public sealed record PetOwnerDialogueObserved(
+    DateTimeOffset At,
+    bool Positive = true) : PetAgentEvent(At);
+
 public sealed record PetEpisodeChanged(
     DateTimeOffset At,
     PetEpisodeKind Episode,
@@ -406,6 +430,7 @@ public sealed class PetStateReducer
             PetBehaviorFinished finished => FinishBehavior(state, finished),
             PetOwnerInteractionObserved interaction => ApplyInteraction(state, interaction),
             PetInitiativeSpeechOccurred speech => ApplyInitiativeSpeech(state, speech),
+            PetOwnerDialogueObserved dialogue => ApplyOwnerDialogue(state, dialogue),
             PetEpisodeChanged episode => state with
             {
                 Episode = BehaviorEpisodeCatalog.Start(
@@ -470,8 +495,11 @@ public sealed class PetStateReducer
             IsInterruptible = started.Interruptible,
             IsBusy = true
         };
-        return Append(state with { Runtime = runtime.Clamp() }, new PetRecentExperience(
-            started.At, "behavior_started", started.BehaviorId, ExecutionStatus.Started, 0, "started"));
+        var next = state with { Runtime = runtime.Clamp() };
+        return ShouldRecordBehaviorLearning(started.Source)
+            ? Append(next, new PetRecentExperience(
+                started.At, "behavior_started", started.BehaviorId, ExecutionStatus.Started, 0, "started"))
+            : next.Clamp();
     }
 
     private static PetAgentState FinishBehavior(PetAgentState state, PetBehaviorFinished finished)
@@ -487,16 +515,17 @@ public sealed class PetStateReducer
             : finished.PartialEffectPolicy == PartialEffectPolicy.Proportional
                 ? Math.Clamp(finished.CompletionRatio, 0, 1)
                 : 0;
-        var effects = Scale(finished.Effects, partialFactor);
-        var repeated = completed && string.Equals(state.Runtime.LastActionId, finished.BehaviorId, StringComparison.OrdinalIgnoreCase)
+        var recordsLearning = ShouldRecordBehaviorLearning(finished.Source);
+        var effects = recordsLearning ? Scale(finished.Effects, partialFactor) : new PetStateEffects();
+        var repeated = recordsLearning && completed && string.Equals(state.Runtime.LastActionId, finished.BehaviorId, StringComparison.OrdinalIgnoreCase)
             ? state.Runtime.RepeatedActionCount + 1
             : 0;
         var runtime = state.Runtime with
         {
             CurrentPosture = completed ? finished.EndPosture : state.Runtime.CurrentPosture,
             CurrentPoseId = completed ? finished.EndPoseId : state.Runtime.CurrentPoseId,
-            LastActionId = completed ? finished.BehaviorId : state.Runtime.LastActionId,
-            RepeatedActionCount = completed ? repeated : state.Runtime.RepeatedActionCount,
+            LastActionId = completed && recordsLearning ? finished.BehaviorId : state.Runtime.LastActionId,
+            RepeatedActionCount = completed && recordsLearning ? repeated : state.Runtime.RepeatedActionCount,
             ActiveExecutionId = null,
             ActiveActionId = null,
             ActiveActionStartedAt = null,
@@ -512,11 +541,11 @@ public sealed class PetStateReducer
             MoodValence = state.Runtime.MoodValence + effects.MoodValence,
             Arousal = state.Runtime.Arousal + effects.Arousal,
             Comfort = state.Runtime.Comfort + effects.Comfort,
-            LastInteractionAt = completed && finished.OwnerInteraction ? finished.At : state.Runtime.LastInteractionAt
+            LastInteractionAt = completed && recordsLearning && finished.OwnerInteraction ? finished.At : state.Runtime.LastInteractionAt
         };
         var relationship = state.Relationship;
         var preferences = state.Preferences;
-        if (completed && finished.OwnerInteraction)
+        if (recordsLearning && completed && finished.OwnerInteraction)
         {
             relationship = relationship with
             {
@@ -525,12 +554,18 @@ public sealed class PetStateReducer
                 RecentPositiveInteractions = relationship.RecentPositiveInteractions + 1
             };
         }
-        if (finished.MemoryEligible)
+        if (recordsLearning && finished.MemoryEligible)
             preferences = ReinforcePreference(preferences, finished.BehaviorId, finished.Status, finished.OwnerInteraction, finished.At);
-        return Append((state with { Runtime = runtime.Clamp(), Relationship = relationship, Preferences = preferences }).Clamp(), new PetRecentExperience(
-            finished.At, "behavior_finished", finished.BehaviorId, finished.Status,
-            Math.Clamp(finished.CompletionRatio, 0, 1), finished.ReasonCode));
+        var next = (state with { Runtime = runtime.Clamp(), Relationship = relationship, Preferences = preferences }).Clamp();
+        return recordsLearning
+            ? Append(next, new PetRecentExperience(
+                finished.At, "behavior_finished", finished.BehaviorId, finished.Status,
+                Math.Clamp(finished.CompletionRatio, 0, 1), finished.ReasonCode))
+            : next;
     }
+
+    private static bool ShouldRecordBehaviorLearning(BehaviorRequestSource source) =>
+        source != BehaviorRequestSource.ControlPanel;
 
     private static PetAgentState ApplyInteraction(PetAgentState state, PetOwnerInteractionObserved interaction)
     {
@@ -546,8 +581,7 @@ public sealed class PetStateReducer
             MoodValence = state.Runtime.MoodValence + (interaction.Positive ? 0.008 : -0.004 * repetitions),
             Arousal = state.Runtime.Arousal + (interaction.Positive ? 0.005 : 0.008 * repetitions)
         };
-        var recentInitiative = state.Runtime.LastInitiativeSpeechAt is not null &&
-            interaction.At - state.Runtime.LastInitiativeSpeechAt.Value <= TimeSpan.FromMinutes(10);
+        var initiativeResponse = interaction.Positive && HasPendingInitiative(state, interaction.At);
         var touchInteraction = interaction.Kind.Contains("Touch", StringComparison.OrdinalIgnoreCase) ||
             interaction.Kind.Contains("Stroke", StringComparison.OrdinalIgnoreCase);
         var relationship = state.Relationship with
@@ -557,9 +591,7 @@ public sealed class PetStateReducer
             TouchAcceptance = state.Relationship.TouchAcceptance + (touchInteraction
                 ? interaction.Positive ? 0.003 : -0.006 * repetitions
                 : 0),
-            InitiativeAcceptance = state.Relationship.InitiativeAcceptance + (recentInitiative
-                ? interaction.Positive ? 0.003 : -0.004 * repetitions
-                : 0),
+            InitiativeAcceptance = state.Relationship.InitiativeAcceptance + (initiativeResponse ? 0.002 : 0),
             RecentPositiveInteractions = state.Relationship.RecentPositiveInteractions + (interaction.Positive ? 1 : 0),
             RecentNegativeInteractions = state.Relationship.RecentNegativeInteractions + (interaction.Positive ? 0 : 1)
         };
@@ -572,7 +604,22 @@ public sealed class PetStateReducer
                 interaction.Positive ? ExecutionStatus.Completed : ExecutionStatus.Rejected,
                 ownerInteraction: true,
                 interaction.At);
-        return Append((state with { Runtime = runtime.Clamp(), Relationship = relationship, Preferences = preferences }).Clamp(), new PetRecentExperience(
+        var feedback = initiativeResponse
+            ? state.InitiativeSpeechFeedback with
+            {
+                PendingTopic = null,
+                PendingSince = null,
+                ConsecutiveUnanswered = 0,
+                LastOwnerResponseAt = interaction.At
+            }
+            : state.InitiativeSpeechFeedback;
+        return Append((state with
+        {
+            Runtime = runtime.Clamp(),
+            Relationship = relationship,
+            Preferences = preferences,
+            InitiativeSpeechFeedback = feedback
+        }).Clamp(), new PetRecentExperience(
             interaction.At, "owner_interaction", interaction.Kind,
             interaction.Positive ? ExecutionStatus.Completed : ExecutionStatus.Rejected,
             1, interaction.Positive ? "positive_interaction" : "repeated_or_negative_interaction"));
@@ -581,14 +628,69 @@ public sealed class PetStateReducer
     private static PetAgentState ApplyInitiativeSpeech(PetAgentState state, PetInitiativeSpeechOccurred speech)
     {
         var companionship = string.Equals(speech.Topic, "Companionship", StringComparison.OrdinalIgnoreCase);
+        var previousPending = state.InitiativeSpeechFeedback.PendingSince is not null;
         var runtime = state.Runtime with
         {
             SocialNeed = state.Runtime.SocialNeed - (companionship ? 0.025 : 0.008),
             LastInitiativeSpeechAt = speech.At
         };
-        return Append(state with { Runtime = runtime.Clamp() }, new PetRecentExperience(
+        var feedback = state.InitiativeSpeechFeedback with
+        {
+            PendingTopic = speech.Topic,
+            PendingSince = speech.At,
+            ConsecutiveUnanswered = previousPending
+                ? Math.Min(8, state.InitiativeSpeechFeedback.ConsecutiveUnanswered + 1)
+                : state.InitiativeSpeechFeedback.ConsecutiveUnanswered
+        };
+        return Append(state with { Runtime = runtime.Clamp(), InitiativeSpeechFeedback = feedback }, new PetRecentExperience(
             speech.At, "initiative_speech", speech.Topic, ExecutionStatus.Completed, 1, "initiative_spoken"));
     }
+
+    private static PetAgentState ApplyOwnerDialogue(PetAgentState state, PetOwnerDialogueObserved dialogue)
+    {
+        var answeredInitiative = dialogue.Positive && HasPendingInitiative(state, dialogue.At);
+        var runtime = state.Runtime with
+        {
+            LastInteractionAt = dialogue.At,
+            SocialNeed = state.Runtime.SocialNeed - (dialogue.Positive ? 0.025 : 0),
+            Stress = state.Runtime.Stress + (dialogue.Positive ? -0.006 : 0.004),
+            MoodValence = state.Runtime.MoodValence + (dialogue.Positive ? 0.006 : -0.003)
+        };
+        var relationship = state.Relationship with
+        {
+            Trust = state.Relationship.Trust + (dialogue.Positive ? 0.001 : 0),
+            Familiarity = state.Relationship.Familiarity + (dialogue.Positive ? 0.002 : 0),
+            InitiativeAcceptance = state.Relationship.InitiativeAcceptance + (answeredInitiative ? 0.006 : 0),
+            RecentPositiveInteractions = state.Relationship.RecentPositiveInteractions + (dialogue.Positive ? 1 : 0),
+            RecentNegativeInteractions = state.Relationship.RecentNegativeInteractions + (dialogue.Positive ? 0 : 1)
+        };
+        var feedback = answeredInitiative
+            ? state.InitiativeSpeechFeedback with
+            {
+                PendingTopic = null,
+                PendingSince = null,
+                ConsecutiveUnanswered = 0,
+                LastOwnerResponseAt = dialogue.At
+            }
+            : state.InitiativeSpeechFeedback;
+        return Append((state with
+        {
+            Runtime = runtime.Clamp(),
+            Relationship = relationship,
+            InitiativeSpeechFeedback = feedback
+        }).Clamp(), new PetRecentExperience(
+            dialogue.At,
+            "owner_dialogue",
+            answeredInitiative ? "initiative_response" : "conversation",
+            dialogue.Positive ? ExecutionStatus.Completed : ExecutionStatus.Rejected,
+            1,
+            answeredInitiative ? "initiative_answered" : "owner_dialogue_observed"));
+    }
+
+    private static bool HasPendingInitiative(PetAgentState state, DateTimeOffset at) =>
+        state.InitiativeSpeechFeedback.PendingSince is { } pending &&
+        at >= pending &&
+        at - pending <= TimeSpan.FromMinutes(15);
 
     private static PetAgentState Append(PetAgentState state, PetRecentExperience experience) => state with
     {
@@ -1010,6 +1112,7 @@ public sealed class BehaviorDecisionEngine
             ? learned.EffectiveWeight
             : 0;
         var experienceMemory = ExperienceMemoryScore(state, capability.BehaviorId, input.Now);
+        var decisionMemory = state.DecisionMemory.CategoryWeight(capability.Category);
         var ownerMultiplier = input.BehaviorWeightMultipliers is not null &&
                               input.BehaviorWeightMultipliers.TryGetValue(capability.BehaviorId, out var configured) &&
                               double.IsFinite(configured)
@@ -1037,6 +1140,7 @@ public sealed class BehaviorDecisionEngine
             new ScoreComponent("relationship", relationshipScore),
             new ScoreComponent("memory_preference", preference),
             new ScoreComponent("experience_memory", experienceMemory),
+            new ScoreComponent("decision_memory", decisionMemory),
             new ScoreComponent("owner_behavior_preference", ownerPreference),
             new ScoreComponent("episode_fit", episodeFit),
             new ScoreComponent("time_context", timeContext),

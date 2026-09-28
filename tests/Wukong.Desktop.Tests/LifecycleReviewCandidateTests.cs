@@ -33,7 +33,7 @@ internal static class LifecycleReviewCandidateTests
 
         Assert(candidates.Length == 7, "review catalog must expose exactly seven lifecycle review cards");
         Assert(candidates.Select(x => x.BehaviorId).OrderBy(x => x).SequenceEqual(ExpectedIds.OrderBy(x => x)), "review behavior IDs changed");
-        Assert(candidates.Sum(x => x.FrameCount) == (v5Enabled ? 140 : 116), "approved runtime composition frame total does not match the v5 promotion gate");
+        Assert(candidates.Sum(x => x.FrameCount) == (v5Enabled ? 138 : 114), "approved runtime composition frame total does not match the v5 promotion gate");
         Assert(candidates.All(x => x.Category == "基础动作"), "approved lifecycle material escaped the basic-action category");
         Assert(candidates.All(x => x.RuntimeEnabled && x.RuntimeApproved && !x.PrototypeUse), "approved runtime gates were not loaded");
         Assert(candidates.All(x => x.AutonomousBindingEnabled), "an approved lifecycle entry is missing its autonomous binding");
@@ -55,8 +55,25 @@ internal static class LifecycleReviewCandidateTests
             ? new[] { "intro", "bridge-to-front", "side-prone-front-calm", "bridge-to-legacy", "exit" }
             : new[] { "intro", "loop", "exit" };
         Assert(full.Phases.Select(x => x.Name).SequenceEqual(expectedPhases), "V3R1 full lifecycle composition does not match the v5 promotion gate");
-        Assert(full.FrameCount == (v5Enabled ? 68 : 44), "V3R1 lifecycle frame count does not match the v5 promotion gate");
+        Assert(full.FrameCount == (v5Enabled ? 67 : 43), "V3R1 lifecycle frame count does not match the v5 promotion gate");
         Assert(v5Enabled ? full.Phases[2].Loop : full.Phases[1].Loop, "V3R1 lifecycle calm phase must loop");
+        var exit = candidates.Single(x => x.BehaviorId == LifecycleReviewCandidateBehaviorIds.LivelyDailyExitV3R1);
+        Assert(exit.FrameCount == 11, "V3R1 exit must omit the rejected side-prone first frame");
+        Assert(exit.FirstFrame.EndsWith("frame-002.png", StringComparison.OrdinalIgnoreCase),
+            "V3R1 exit did not start from the former second frame");
+
+        var p2 = catalog.Find(LifecycleCandidateBehaviorIds.LivelyDailyP2)
+            ?? throw new InvalidOperationException("P2 lifecycle is missing");
+        var p2Exit = p2.Phases.Single(x => x.Name == "exit");
+        var p2InterruptExit = p2.Phases.Single(x => x.Name == "interrupt_exit");
+        Assert(p2Exit.Frames.First().EndsWith("12-sit-to-prone-late.png", StringComparison.OrdinalIgnoreCase),
+            "P2 exit still starts on the rejected backward-looking side-prone frame");
+        Assert(p2InterruptExit.Frames.First().EndsWith("12-sit-to-prone-late.png", StringComparison.OrdinalIgnoreCase),
+            "P2 interrupt exit still starts on the rejected backward-looking side-prone frame");
+        var dailyProneToSit = catalog.Find(AutonomousDailyCandidateBehaviorIds.ProneToSit)
+            ?? throw new InvalidOperationException("daily prone-to-sit motion is missing");
+        Assert(dailyProneToSit.FirstFrame.EndsWith("12-sit-to-prone-late.png", StringComparison.OrdinalIgnoreCase),
+            "daily prone-to-sit still resolves to the rejected first frame");
     }
 
     public static void DeveloperPreviewUsesTheExistingBehaviorRequestPath()

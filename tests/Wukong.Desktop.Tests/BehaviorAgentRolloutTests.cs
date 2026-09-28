@@ -139,7 +139,9 @@ internal static class BehaviorAgentRolloutTests
             MockCommandActionIds.EatProne,
             FrontProneExpressionBehaviorIds.SatisfiedSmile,
             FrontProneExpressionBehaviorIds.CuriousObserve,
-            FrontProneExpressionBehaviorIds.KnowingLook
+            FrontProneExpressionBehaviorIds.KnowingLook,
+            ProneHappyHotPantingBehaviorIds.HappyHotPanting,
+            StandingHappyExpectantBehaviorIds.HappyExpectant
         }), "reviewed lifecycle outcomes are not fully reducer-owned");
 
         var paw = DesktopBehaviorOutcomeProfiles.Find(MockCommandActionIds.PawSit)

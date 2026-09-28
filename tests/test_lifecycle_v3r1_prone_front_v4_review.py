@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BATCH_ROOT = ROOT / "assets" / "action-batches"
 V3 = BATCH_ROOT / "WK-RUNTIME-LIFECYCLE-MICROLOOPS-PRODUCTION-CANDIDATE-v3R1-RECOVERED"
 V4 = BATCH_ROOT / "WK-AUTONOMOUS-PRONE-IDLE-FRONT-CANDIDATE-v4"
-V2_MANIFEST_SHA256 = "bc6cb9ed8c41d72f0d21c30e827ea487271d716f193064b1fabf609cf118467b"
+V2_MANIFEST_SHA256 = "ed1abbb781da8b3301d2d5d1e9f4214bf155da4d190c822807a804770992184a"
 
 
 def sha256(path: Path) -> str:
@@ -101,7 +101,7 @@ class LifecycleV3R1ProneFrontV4ReviewTests(unittest.TestCase):
         self.assertTrue(all(action["from_pose"] == "prone.awake.front" for action in v4_review["actions"]))
         self.assertTrue(all(not action["legacy_side_prone"] for action in v4_review["actions"]))
 
-    def test_v2_runtime_manifest_content_is_unchanged_across_git_line_endings(self):
+    def test_v2_runtime_manifest_matches_owner_approved_exit_timeline(self):
         current = BATCH_ROOT / "WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2" / "manifest.json"
         self.assertEqual(V2_MANIFEST_SHA256, sha256_canonical_crlf_text(current))
 

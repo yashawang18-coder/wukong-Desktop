@@ -103,8 +103,8 @@ def main() -> None:
     actions = [
         command_action(command_manifest, "sit", "stand-to-sit", "wk.daily.stand_to_sit", "日常站立转坐下", "posture_transition"),
         command_action(command_manifest, "down", "sit-to-prone", "wk.daily.sit_to_prone", "日常坐姿转趴卧", "posture_transition"),
-        lifecycle_action(lifecycle_manifest, exit_frames[:4], 1, "prone-to-sit", "wk.daily.prone_to_sit", "日常趴卧转坐起", "Prone", "Sit", "posture_transition"),
-        lifecycle_action(lifecycle_manifest, exit_frames[3:], 4, "sit-to-stand", "wk.daily.sit_to_stand", "日常坐姿转站立", "Sit", "Stand", "posture_transition"),
+        lifecycle_action(lifecycle_manifest, exit_frames[:3], 1, "prone-to-sit", "wk.daily.prone_to_sit", "日常趴卧转坐起", "Prone", "Sit", "posture_transition"),
+        lifecycle_action(lifecycle_manifest, exit_frames[2:], 3, "sit-to-stand", "wk.daily.sit_to_stand", "日常坐姿转站立", "Sit", "Stand", "posture_transition"),
     ]
 
     manifest = {

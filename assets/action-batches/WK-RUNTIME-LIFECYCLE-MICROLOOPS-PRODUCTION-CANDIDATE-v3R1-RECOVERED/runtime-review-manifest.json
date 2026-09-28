@@ -242,7 +242,7 @@
       "description": "Recovered legacy-side-prone-to-stand exit.",
       "source_action_name": "exit",
       "source_folder": "frames/exit",
-      "frame_count": 12,
+      "frame_count": 11,
       "frame_duration_ms": 180,
       "from_pose": "prone.awake.legacy_side",
       "to_pose": "stand.neutral.left_front",
@@ -266,17 +266,8 @@
         {
           "name": "exit",
           "loop": false,
-          "frame_count": 12,
+          "frame_count": 11,
           "frames": [
-            {
-              "path": "frames/exit/frame-001.png",
-              "width": 1024,
-              "height": 1024,
-              "mode": "RGBA",
-              "sha256": "106483d70c6513a821a186a6f70e2d217acfb4ada8377656e226e4b361668d88",
-              "bytes": 316952,
-              "duration_ms": 420
-            },
             {
               "path": "frames/exit/frame-002.png",
               "width": 1024,

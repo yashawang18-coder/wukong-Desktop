@@ -595,6 +595,8 @@ public sealed class AlbumMarkdownMemoryRetriever : IAlbumMemoryRetriever
         foreach (var path in files)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (File.Exists(Path.Combine(Path.GetDirectoryName(path)!, ".wukong-album-hidden")))
+                continue;
             var document = TryRead(path);
             if (document is null)
                 continue;

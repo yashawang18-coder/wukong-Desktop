@@ -33,7 +33,7 @@ class AutonomousDailyV1Tests(unittest.TestCase):
         expected = {
             "wk.daily.stand_to_sit": 10,
             "wk.daily.sit_to_prone": 12,
-            "wk.daily.prone_to_sit": 4,
+            "wk.daily.prone_to_sit": 3,
             "wk.daily.sit_to_stand": 5,
         }
         actual = {action["behavior_id"]: action["frame_count"] for action in self.manifest["actions"]}
@@ -45,6 +45,17 @@ class AutonomousDailyV1Tests(unittest.TestCase):
         self.assertTrue(all(action["autonomous_semantics_owner_approved"] for action in self.manifest["actions"]))
         self.assertNotIn("wk.daily.playful_hop", actual)
         self.assertNotIn("wk.daily.playful_spin", actual)
+
+        prone_to_sit = next(
+            action for action in self.manifest["actions"]
+            if action["behavior_id"] == "wk.daily.prone_to_sit"
+        )
+        binding = prone_to_sit["source_binding"]
+        source_root = ROOT / "assets/action-batches/WK-RUNTIME-LIFECYCLE-MICROLOOPS-CANDIDATE-v2"
+        source_manifest = json.loads((source_root / "manifest.json").read_text(encoding="utf-8"))
+        source_action = next(item for item in source_manifest["actions"] if item["behavior_id"] == binding["behavior_id"])
+        exit_phase = next(phase for phase in source_action["phases"] if phase["name"] == "exit")
+        self.assertEqual(exit_phase["frames"][binding["start_frame"] - 1]["path"], "frames/intro/12-sit-to-prone-late.png")
 
     def test_bindings_resolve_exact_approved_source_ranges_without_duplicate_png(self):
         approved_batches = {

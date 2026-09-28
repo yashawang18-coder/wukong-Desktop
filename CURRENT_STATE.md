@@ -1,3 +1,10 @@
+## Side-prone rise first-frame removal - 2026-09-22
+
+- Owner rejected the front-prone recomposition review candidate; its manifest, loader, developer card, tests, and local review publish were removed.
+- The approved P2 `exit` and `interrupt_exit`, the V3R1 `exit`, and the shared `wk.daily.prone_to_sit` binding now begin with the former second frame instead of the backward-looking side-prone anchor.
+- Source PNG files remain byte-identical and retained for intro/history. No PNG was deleted, regenerated, recolored, resized, or re-encoded.
+- Runtime approval fields and autonomous allowlists are unchanged. A new local Windows candidate build is required for continuity review.
+
 ## Horizontal orientation expansion local candidate - 2026-09-09
 
 - Current non-directional lifecycle, posture, sleep, food/water, daily-transition, prone-head, side-prone, and approved command actions expose a whole-frame WPF horizontal orientation variant without creating or changing PNG files.
@@ -476,3 +483,37 @@ Before implementation, add or provide the reviewed UX artifact and a pinned Pupu
 - Owner commands use deterministic `CommandCooperativeness`, relationship, state, effort, and repetition scoring. Low-effort commands remain normally cooperative; severe state or repetition can defer/reject stronger commands. Independence does not become disobedience.
 - All Normal non-idle motions create a reducer-owned execution. Reviewed daily, sleep, patrol, food/water, expression, posture-transition, and owner-command actions have explicit outcome profiles; unreviewed legacy effects use a reducer compatibility profile rather than double-writing formal state.
 - No PNG, manifest approval, menu, runtime asset mapping, or `main` branch is changed. This remains local uncommitted Agent candidate work pending full Windows verification.
+## Decision memory, initiative feedback, and command explanations - local candidate 2026-09-21
+
+- Confirmed conversation memories and saved album Markdown descriptions now project into bounded semantic decision weights. Category influence is capped at `0.10`, initiative-topic influence at `0.12`, and hard runtime/pose/source gates remain authoritative.
+- The local owner album source is configured outside Git; photos, Markdown content, conversation history, and absolute local paths are not repository content.
+- Initiative speech now tracks pending owner feedback. Unanswered speech extends cooldown and reduces frequency; an explicit owner dialogue response clears the pending item and slowly updates initiative acceptance.
+- Owner commands expose accepted/deferred/rejected state, concise reason, retry time when applicable, willingness percentage, and leading score factors in the panel.
+- Current stage: local uncommitted implementation on `codex/decision-memory-speech-command-v2`; Windows candidate EXE validation remains pending.
+
+## Standing happy-expectant expression - local candidate 2026-09-22
+
+- Imported 16 byte-exact RGBA PNGs from `WK-STANDING-HAPPY-EXPECTANT-CANDIDATE-v4-gate` into `WK-STANDING-HAPPY-EXPECTANT-PRODUCTION-v1` without re-encoding, mirroring, scaling, cropping, or colour changes.
+- Behavior ID: `wk.expression.stand_happy_expectant`; pose contract: `stand.neutral.left_front -> stand.neutral.left_front`; one-shot duration: 6170 ms.
+- Source visual review is finalized. Formal state remains `runtime_validation=pending_windows_renderer_qa`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, `prototype_use=false`, and `autonomous_binding_enabled=false`.
+- DeveloperPreview is available through the existing BehaviorRequest path. A candidate publish may include `Wukong.StandingHappyExpectantReview.enabled`; only that local marker enables structured positive-expression requests and low-frequency Observing/Socializing autonomous review.
+- Candidate scheduling requires the exact compatible stand pose, non-busy state, adequate energy, low stress, positive mood, and a randomized 75-150 second cooldown. Owner commands, food/water, sleep, car ride, and magic retain priority.
+- Current stage: local uncommitted candidate. Windows WPF playback at 310 px and 240 px remains pending owner review.
+
+## Prone happy hot-panting v6 - local candidate 2026-09-25
+
+- Imported all 17 source PNGs byte-for-byte from `WK-AUTONOMOUS-PRONE-HAPPY-HOT-PANTING-SEQUENCE-v6` into the versioned action batch of the same ID. The repository manifest and `SHA256SUMS.txt` freeze every production frame; review GIFs and contact sheets are not runtime content.
+- Behavior ID: `prone_happy_hot_panting`; pose contract: `prone.awake.front -> prone.awake.front`; one-shot duration: 5680 ms, including the original frame 04-13 full-tongue plateau of 4100 ms. Horizontal mirroring is forbidden.
+- Owner source-visual approval is recorded as `visual_approved=true`. Formal state remains `runtime_validation=pending_windows_renderer_qa`, `runtime_approved=false`, `runtime_use=false`, `production_asset=false`, `prototype_use=false`, and `autonomous_binding_enabled=false`.
+- DeveloperPreview uses the existing BehaviorRequest path. Only a candidate publish containing `Wukong.ProneHappyHotPantingReview.enabled` temporarily enables low-frequency `AutonomousTick` review; the manifest remains fail-closed.
+- Autonomous review requires a stable non-busy `prone.awake.front` pose, positive mood, stress no higher than 0.65, the existing shared 45-120 second expression cooldown, and recent-action suppression. Its score remains far below the stable front-prone breathing idle.
+- Source and current approved front-prone anchors share the same y=899 baseline and near-identical center, but the source visible width is approximately 3.5% larger. No PNG or runtime scale correction was applied; transition continuity and tongue-edge rendering remain explicit Windows owner-QA items.
+- Current stage: local uncommitted runtime candidate. No commit, push, PR, `main` change, or production runtime promotion has occurred.
+
+## Asset-panel execution and consolidated rise timelines - 2026-09-28
+
+- The owner accepted the visible standing happy-expectant and front-prone happy hot-panting artwork for continued EXE review. Their formal manifests remain fail-closed pending a complete Windows renderer playback record; this does not claim `runtime_approved=true` or `runtime_use=true`.
+- `基础动作 > 让悟空执行` now submits the selected action to the real main-pet animation lifecycle with `source=ControlPanel` and an isolated `DeveloperPreview` execution mode. It requires a non-deprecated, visually reviewed action and a compatible stable pose. It does not directly operate frame paths.
+- Control-panel executions do not update relationship, learned behavior preferences, repetition history, recent behavior experience, mood/need effects, or owner-interaction memory. Physical lifecycle cleanup and preview-state restoration still run.
+- The effective P2 exit and interrupt-exit begin at `frames/intro/12-sit-to-prone-late.png`; V3R1 exit begins at `frames/exit/frame-002.png`; `wk.daily.prone_to_sit` resolves to the same corrected P2 exit start. The rejected backward-looking first frame remains immutable history but is absent from these runtime rise paths.
+- Older candidate EXEs built before 2026-09-22 still contain the former first-frame mapping. They are not valid evidence for the consolidated runtime and are scheduled for local publish-output cleanup after the replacement EXE passes verification.

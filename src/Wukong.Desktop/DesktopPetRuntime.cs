@@ -340,6 +340,8 @@ public static class MotionDisplayNameCatalog
             [FrontProneExpressionBehaviorIds.SatisfiedSmile] = "满足地笑一笑",
             [FrontProneExpressionBehaviorIds.CuriousObserve] = "好奇地看看",
             [FrontProneExpressionBehaviorIds.KnowingLook] = "若有所思地看着",
+            [ProneHappyHotPantingBehaviorIds.HappyHotPanting] = "开心地趴着吐舌",
+            [StandingHappyExpectantBehaviorIds.HappyExpectant] = "开心地期待",
             [SideProneFrontBehaviorIds.ObserveV5] = "侧趴回头看看",
             [ProneHeadCandidateBehaviorIds.HeadLowerTurnV4] = "趴着低头回头",
             [SleepCandidateBehaviorIds.MainLifecycle] = "慢慢入睡",
@@ -405,6 +407,8 @@ public sealed class DesktopMotionCatalog
     private const double ApprovedProneIdleRenderScale = 0.68;
     public const string RoadGazeReviewMarkerFileName = "Wukong.RoadGazeReview.enabled";
     public const string FrontProneExpressionsReviewMarkerFileName = "Wukong.FrontProneExpressionsReview.enabled";
+    public const string ProneHappyHotPantingReviewMarkerFileName = "Wukong.ProneHappyHotPantingReview.enabled";
+    public const string StandingHappyExpectantReviewMarkerFileName = "Wukong.StandingHappyExpectantReview.enabled";
     private readonly IReadOnlyList<PlayableMotion> _allMotions;
     private readonly Dictionary<string, PlayableMotion> _motions;
 
@@ -451,6 +455,8 @@ public sealed class DesktopMotionCatalog
         var root = Path.Combine(baseDirectory, "WukongAssets");
         var carRideRoadGazeReviewEnabled = File.Exists(Path.Combine(baseDirectory, RoadGazeReviewMarkerFileName));
         var frontProneExpressionsReviewEnabled = File.Exists(Path.Combine(baseDirectory, FrontProneExpressionsReviewMarkerFileName));
+        var proneHappyHotPantingReviewEnabled = File.Exists(Path.Combine(baseDirectory, ProneHappyHotPantingReviewMarkerFileName));
+        var standingHappyExpectantReviewEnabled = File.Exists(Path.Combine(baseDirectory, StandingHappyExpectantReviewMarkerFileName));
         var motions = new[]
         {
             Motion(
@@ -605,6 +611,8 @@ public sealed class DesktopMotionCatalog
         var lifecycleReviewCandidates = LoadLifecycleReviewCandidates(root).ToArray();
         var proneHeadCandidates = LoadProneHeadCandidates(root).ToArray();
         var frontProneExpressionCandidates = LoadFrontProneExpressionCandidates(root, frontProneExpressionsReviewEnabled).ToArray();
+        var proneHappyHotPantingCandidates = LoadProneHappyHotPantingCandidates(root, proneHappyHotPantingReviewEnabled).ToArray();
+        var standingHappyExpectantCandidates = LoadStandingHappyExpectantCandidates(root, standingHappyExpectantReviewEnabled).ToArray();
         var sleepCandidates = LoadSleepCandidates(root).ToArray();
         var foodWaterCandidates = LoadFoodWaterCandidates(root).ToArray();
         var patrolWalkCandidates = LoadPatrolWalkCandidates(root).ToArray();
@@ -615,10 +623,10 @@ public sealed class DesktopMotionCatalog
             .FirstOrDefault(x => x.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop && x.RuntimeEnabled)?.FirstFrame
             ?? motions.FirstOrDefault(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle)?.FirstFrame
             ?? string.Empty;
-        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; lifecycle_review_candidates={lifecycleReviewCandidates.Length}; prone_head_candidates={proneHeadCandidates.Length}; front_prone_expression_candidates={frontProneExpressionCandidates.Length}; front_prone_expression_review={frontProneExpressionsReviewEnabled}; sleep_candidates={sleepCandidates.Length}; food_water_candidates={foodWaterCandidates.Length}; patrol_walk_candidates={patrolWalkCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; car_ride_road_gaze_review={carRideRoadGazeReviewEnabled}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch}/runtime-review-manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V4AssetBatch}/runtime-review-manifest.json,action-batches/{ProneHeadCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{FrontProneExpressionBehaviorIds.AssetBatch}/manifest.json,action-batches/{SleepCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{FoodWaterCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{PatrolWalkCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{SideProneFrontBehaviorIds.AssetBatch}/manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.RoadGazeAssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; lifecycle_review_candidates={lifecycleReviewCandidates.Length}; prone_head_candidates={proneHeadCandidates.Length}; front_prone_expression_candidates={frontProneExpressionCandidates.Length}; front_prone_expression_review={frontProneExpressionsReviewEnabled}; prone_happy_hot_panting_candidates={proneHappyHotPantingCandidates.Length}; prone_happy_hot_panting_review={proneHappyHotPantingReviewEnabled}; standing_happy_expectant_candidates={standingHappyExpectantCandidates.Length}; standing_happy_expectant_review={standingHappyExpectantReviewEnabled}; sleep_candidates={sleepCandidates.Length}; food_water_candidates={foodWaterCandidates.Length}; patrol_walk_candidates={patrolWalkCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; car_ride_road_gaze_review={carRideRoadGazeReviewEnabled}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch}/runtime-review-manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V4AssetBatch}/runtime-review-manifest.json,action-batches/{ProneHeadCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{FrontProneExpressionBehaviorIds.AssetBatch}/manifest.json,action-batches/{ProneHappyHotPantingBehaviorIds.AssetBatch}/manifest.json,action-batches/{StandingHappyExpectantBehaviorIds.AssetBatch}/manifest.json,action-batches/{SleepCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{FoodWaterCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{PatrolWalkCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{SideProneFrontBehaviorIds.AssetBatch}/manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.RoadGazeAssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
         BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
         return new DesktopMotionCatalog(
-            motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(lifecycleReviewCandidates).Concat(proneHeadCandidates).Concat(frontProneExpressionCandidates).Concat(sleepCandidates).Concat(foodWaterCandidates).Concat(patrolWalkCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks),
+            motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(lifecycleReviewCandidates).Concat(proneHeadCandidates).Concat(frontProneExpressionCandidates).Concat(proneHappyHotPantingCandidates).Concat(standingHappyExpectantCandidates).Concat(sleepCandidates).Concat(foodWaterCandidates).Concat(patrolWalkCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks),
             summary,
             carRideRoadGazeReviewEnabled);
     }
@@ -1316,6 +1324,222 @@ public sealed class DesktopMotionCatalog
                     AutonomousBindingEnabled: reviewEnabled,
                     SupportsHorizontalMirror: false);
             }
+        }
+    }
+
+    private static IEnumerable<PlayableMotion> LoadStandingHappyExpectantCandidates(string root, bool reviewEnabled)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", StandingHappyExpectantBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("standing_happy_expectant_manifest_missing");
+            yield break;
+        }
+
+        JsonDocument document;
+        try
+        {
+            document = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Standing happy-expectant manifest parse failed", ex);
+            yield break;
+        }
+
+        using (document)
+        {
+            var manifest = document.RootElement;
+            var errors = new List<string>();
+            if (manifest.GetProperty("batch_id").GetString() != StandingHappyExpectantBehaviorIds.AssetBatch)
+                errors.Add("batch_id_invalid");
+            if (!manifest.GetProperty("owner_preview_approved").GetBoolean() ||
+                !manifest.GetProperty("visual_approved").GetBoolean() ||
+                manifest.GetProperty("runtime_approved").GetBoolean() ||
+                manifest.GetProperty("runtime_use").GetBoolean() ||
+                manifest.GetProperty("production_asset").GetBoolean() ||
+                manifest.GetProperty("prototype_use").GetBoolean() ||
+                !manifest.GetProperty("developer_preview").GetBoolean() ||
+                manifest.GetProperty("autonomous_binding_enabled").GetBoolean() ||
+                manifest.GetProperty("runtime_validation").GetString() != "pending_windows_renderer_qa")
+                errors.Add("candidate_gate_invalid");
+
+            var action = manifest.GetProperty("action");
+            if (action.GetProperty("behavior_id").GetString() != StandingHappyExpectantBehaviorIds.HappyExpectant ||
+                action.GetProperty("from_pose").GetString() != "stand.neutral.left_front" ||
+                action.GetProperty("to_pose").GetString() != "stand.neutral.left_front" ||
+                action.GetProperty("loop").GetBoolean() ||
+                action.GetProperty("total_duration_ms").GetInt32() != 6170)
+                errors.Add("action_contract_invalid");
+
+            var batchRoot = Path.GetDirectoryName(manifestPath)!;
+            var frames = new List<string>();
+            var durations = new List<int>();
+            foreach (var frame in action.GetProperty("frames").EnumerateArray())
+            {
+                var relative = frame.GetProperty("path").GetString() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(relative) || Path.IsPathRooted(relative) ||
+                    relative.Split('/', StringSplitOptions.RemoveEmptyEntries).Contains("..", StringComparer.Ordinal))
+                {
+                    errors.Add($"unsafe_path:{relative}");
+                    continue;
+                }
+
+                var path = Path.Combine(batchRoot, relative.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(path))
+                    errors.Add($"missing:{relative}");
+                else if (new FileInfo(path).Length != frame.GetProperty("bytes").GetInt64())
+                    errors.Add($"bytes:{relative}");
+                else if (!string.Equals(Sha256(path), frame.GetProperty("sha256").GetString(), StringComparison.OrdinalIgnoreCase))
+                    errors.Add($"sha256:{relative}");
+                frames.Add(path);
+                durations.Add(frame.GetProperty("duration_ms").GetInt32());
+            }
+
+            if (frames.Count != 16 || durations.Count != 16 || durations.Any(x => x <= 0) || durations.Sum() != 6170 ||
+                frames.Count > 0 && !string.Equals(Sha256(frames[0]), Sha256(frames[^1]), StringComparison.OrdinalIgnoreCase))
+                errors.Add("frame_contract_invalid");
+
+            if (errors.Count > 0)
+            {
+                BootstrapLog.WriteRaw($"standing_happy_expectant_manifest_invalid errors={string.Join(',', errors)}");
+                yield break;
+            }
+
+            yield return new PlayableMotion(
+                StandingHappyExpectantBehaviorIds.HappyExpectant,
+                action.GetProperty("display_name").GetString() ?? StandingHappyExpectantBehaviorIds.HappyExpectant,
+                "自主日常",
+                "left-front",
+                durations[0],
+                Interruptible: true,
+                new[] { new MotionPhase("microexpression", frames, Loop: false, durations) },
+                batchRoot,
+                RuntimeEnabled: reviewEnabled,
+                Status: reviewEnabled ? "本地候选 EXE 审阅已启用" : "视觉已通过，等待 Windows 渲染验收",
+                MissingContent: "Formal runtime approval remains pending until owner reviews the candidate EXE.",
+                StartPose: "stand.neutral.left_front",
+                EndPose: "stand.neutral.left_front",
+                StyleGroup: "wukong-standing-happy-expectant-v1",
+                Disposition: reviewEnabled ? "候选 EXE 审阅" : "视觉已通过 · 未启用",
+                PrototypeUse: false,
+                AssetBatch: StandingHappyExpectantBehaviorIds.AssetBatch,
+                Description: action.GetProperty("description").GetString() ?? string.Empty,
+                CandidateProfile: "standing_happy_expectant_review_v1",
+                VisualScale: ApprovedPetVisualScale,
+                VisualApproved: true,
+                RuntimeApproved: false,
+                AutonomousBindingEnabled: reviewEnabled,
+                SupportsHorizontalMirror: false);
+        }
+    }
+
+    private static IEnumerable<PlayableMotion> LoadProneHappyHotPantingCandidates(string root, bool reviewEnabled)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", ProneHappyHotPantingBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("prone_happy_hot_panting_manifest_missing");
+            yield break;
+        }
+
+        JsonDocument document;
+        try
+        {
+            document = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Prone happy hot-panting manifest parse failed", ex);
+            yield break;
+        }
+
+        using (document)
+        {
+            var manifest = document.RootElement;
+            var errors = new List<string>();
+            if (manifest.GetProperty("batch_id").GetString() != ProneHappyHotPantingBehaviorIds.AssetBatch)
+                errors.Add("batch_id_invalid");
+            if (!manifest.GetProperty("owner_preview_approved").GetBoolean() ||
+                !manifest.GetProperty("visual_approved").GetBoolean() ||
+                manifest.GetProperty("runtime_approved").GetBoolean() ||
+                manifest.GetProperty("runtime_use").GetBoolean() ||
+                manifest.GetProperty("production_asset").GetBoolean() ||
+                manifest.GetProperty("prototype_use").GetBoolean() ||
+                !manifest.GetProperty("developer_preview").GetBoolean() ||
+                manifest.GetProperty("autonomous_binding_enabled").GetBoolean() ||
+                manifest.GetProperty("runtime_validation").GetString() != "pending_windows_renderer_qa")
+                errors.Add("candidate_gate_invalid");
+
+            var action = manifest.GetProperty("action");
+            if (action.GetProperty("behavior_id").GetString() != ProneHappyHotPantingBehaviorIds.HappyHotPanting ||
+                action.GetProperty("from_pose").GetString() != "prone.awake.front" ||
+                action.GetProperty("to_pose").GetString() != "prone.awake.front" ||
+                action.GetProperty("loop").GetBoolean() ||
+                action.GetProperty("total_duration_ms").GetInt32() != 5680 ||
+                action.GetProperty("full_tongue_duration_ms").GetInt32() != 4100)
+                errors.Add("action_contract_invalid");
+
+            var batchRoot = Path.GetDirectoryName(manifestPath)!;
+            var frames = new List<string>();
+            var durations = new List<int>();
+            foreach (var frame in action.GetProperty("frames").EnumerateArray())
+            {
+                var relative = frame.GetProperty("path").GetString() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(relative) || Path.IsPathRooted(relative) ||
+                    relative.Split('/', StringSplitOptions.RemoveEmptyEntries).Contains("..", StringComparer.Ordinal))
+                {
+                    errors.Add($"unsafe_path:{relative}");
+                    continue;
+                }
+
+                var path = Path.Combine(batchRoot, relative.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(path))
+                    errors.Add($"missing:{relative}");
+                else if (new FileInfo(path).Length != frame.GetProperty("bytes").GetInt64())
+                    errors.Add($"bytes:{relative}");
+                else if (!string.Equals(Sha256(path), frame.GetProperty("sha256").GetString(), StringComparison.OrdinalIgnoreCase))
+                    errors.Add($"sha256:{relative}");
+                frames.Add(path);
+                durations.Add(frame.GetProperty("duration_ms").GetInt32());
+            }
+
+            if (frames.Count != 17 || durations.Count != 17 || durations.Any(x => x <= 0) ||
+                durations.Sum() != 5680 || durations.Skip(3).Take(10).Sum() != 4100 ||
+                frames.Count > 0 && !string.Equals(Sha256(frames[0]), Sha256(frames[^1]), StringComparison.OrdinalIgnoreCase))
+                errors.Add("frame_contract_invalid");
+
+            if (errors.Count > 0)
+            {
+                BootstrapLog.WriteRaw($"prone_happy_hot_panting_manifest_invalid errors={string.Join(',', errors)}");
+                yield break;
+            }
+
+            yield return new PlayableMotion(
+                ProneHappyHotPantingBehaviorIds.HappyHotPanting,
+                action.GetProperty("display_name").GetString() ?? ProneHappyHotPantingBehaviorIds.HappyHotPanting,
+                "自主日常",
+                "front",
+                durations[0],
+                Interruptible: true,
+                new[] { new MotionPhase("microexpression", frames, Loop: false, durations) },
+                batchRoot,
+                RuntimeEnabled: reviewEnabled,
+                Status: reviewEnabled ? "本地候选 EXE 审阅已启用" : "视觉已通过，等待 Windows 渲染验收",
+                MissingContent: "Formal runtime approval remains pending until owner reviews WPF playback continuity and tongue edges.",
+                StartPose: "prone.awake.front",
+                EndPose: "prone.awake.front",
+                StyleGroup: "wukong-prone-happy-hot-panting-v6",
+                Disposition: reviewEnabled ? "候选 EXE 审阅" : "视觉已通过 · 未启用",
+                PrototypeUse: false,
+                AssetBatch: ProneHappyHotPantingBehaviorIds.AssetBatch,
+                Description: action.GetProperty("description").GetString() ?? string.Empty,
+                CandidateProfile: "prone_happy_hot_panting_review_v6",
+                VisualScale: ApprovedPetVisualScale,
+                VisualApproved: true,
+                RuntimeApproved: false,
+                AutonomousBindingEnabled: reviewEnabled,
+                SupportsHorizontalMirror: false);
         }
     }
 
@@ -2801,6 +3025,18 @@ public static class FrontProneExpressionBehaviorIds
     };
 }
 
+public static class ProneHappyHotPantingBehaviorIds
+{
+    public const string AssetBatch = "WK-AUTONOMOUS-PRONE-HAPPY-HOT-PANTING-SEQUENCE-v6";
+    public const string HappyHotPanting = "prone_happy_hot_panting";
+}
+
+public static class StandingHappyExpectantBehaviorIds
+{
+    public const string AssetBatch = "WK-STANDING-HAPPY-EXPECTANT-PRODUCTION-v1";
+    public const string HappyExpectant = "wk.expression.stand_happy_expectant";
+}
+
 public static class SleepCandidateBehaviorIds
 {
     public const string AssetBatch = "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10";
@@ -3575,6 +3811,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             FrontProneExpressionBehaviorIds.SatisfiedSmile,
             FrontProneExpressionBehaviorIds.CuriousObserve,
             FrontProneExpressionBehaviorIds.KnowingLook,
+            ProneHappyHotPantingBehaviorIds.HappyHotPanting,
+            StandingHappyExpectantBehaviorIds.HappyExpectant,
             PatrolWalkCandidateBehaviorIds.WalkLeft,
             PatrolWalkCandidateBehaviorIds.WalkRight,
             SleepCandidateBehaviorIds.MainLifecycle,
@@ -3604,6 +3842,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private readonly RollingFileLogStore _logs = RollingFileLogStore.CreateDefault();
     private readonly object _agentStatePersistenceLock = new();
     private IPetAgentStateStore? _agentStateStore;
+    private IPetDecisionMemorySource? _decisionMemorySource;
+    private readonly SemaphoreSlim _decisionMemoryRefreshGate = new(1, 1);
     private Task _agentStatePersistence = Task.CompletedTask;
     private PetAgentState _petAgentState = PetAgentState.CreateDefault(DateTimeOffset.UnixEpoch);
     private PetRuntimeState _agentState
@@ -3636,6 +3876,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private DateTimeOffset _nextAutonomousDecisionAt = DateTimeOffset.MinValue;
     private DateTimeOffset? _coinActivityAt;
     private DateTimeOffset _nextFrontProneExpressionAt = DateTimeOffset.MinValue;
+    private DateTimeOffset _nextStandingHappyExpectantAt = DateTimeOffset.MinValue;
     private BehaviorRequestSource _coinPreviewSource = BehaviorRequestSource.OwnerContextMenu;
     private bool _frontProneProfileActive;
     private bool _patrolCanMoveLeft;
@@ -3703,6 +3944,10 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         .Where(x => string.Equals(x.AssetBatch, LifecycleCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
         .OrderBy(x => x.BehaviorId)
         .ToArray();
+    public IReadOnlyList<PlayableMotion> StandingExpressionCandidateMotions => _catalog.Motions
+        .Where(x => string.Equals(x.AssetBatch, StandingHappyExpectantBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        .OrderBy(x => x.BehaviorId)
+        .ToArray();
     public IReadOnlyList<PlayableMotion> LifecycleReviewCandidateMotions => _catalog.Motions
         .Where(x => LifecycleReviewCandidateBehaviorIds.AssetBatches.Contains(x.AssetBatch))
         .OrderBy(x => x.BehaviorId)
@@ -3712,6 +3957,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             string.Equals(x.AssetBatch, AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(x.AssetBatch, ProneHeadCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(x.AssetBatch, FrontProneExpressionBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(x.AssetBatch, ProneHappyHotPantingBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(x.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(x.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
         .OrderBy(x => x.BehaviorId)
@@ -3748,6 +3994,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public string CurrentAsset { get; private set; } = string.Empty;
     public string CurrentDisposition { get; private set; } = "愿意";
     public string CurrentReason { get; private set; } = "启动后进入安静趴卧";
+    public string CurrentDecisionDetail { get; private set; } = "等待下一次互动";
     public string LastSource { get; private set; } = "启动";
     public string LastTrigger { get; private set; } = "startup";
     public string LastError { get; private set; } = "无";
@@ -3776,15 +4023,17 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public int RecentNegativeInteractions => _relationshipState.RecentNegativeInteractions;
     public string AgentMoodProjection => $"{_agentState.CurrentPosture} · 心情 {_agentState.MoodValence:P0} · 唤醒度 {_agentState.Arousal:P0}";
 
-    public void AttachAgentStateStore(IPetAgentStateStore store)
+    public async Task<bool> AttachAgentStateStoreAsync(
+        IPetAgentStateStore store,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(store);
         _agentStateStore = store;
         try
         {
-            var loaded = store.LoadAsync().GetAwaiter().GetResult();
+            var loaded = await store.LoadAsync(cancellationToken);
             if (loaded is null)
-                return;
+                return false;
             var now = _now();
             var recoveredRuntime = EnsurePoseMatchesPosture(loaded.Runtime with
             {
@@ -3807,10 +4056,42 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                 "prone.front",
                 StringComparison.OrdinalIgnoreCase);
             Trace("agent_state_loaded", $"schema={_petAgentState.SchemaVersion} experiences={_petAgentState.RecentExperience.Count} preferences={_petAgentState.Preferences.Count}");
+            return true;
         }
         catch (Exception ex)
         {
             Trace("agent_state_load_failed", ex.GetType().Name);
+            return false;
+        }
+    }
+
+    public void AttachDecisionMemorySource(IPetDecisionMemorySource source)
+    {
+        _decisionMemorySource = source ?? throw new ArgumentNullException(nameof(source));
+    }
+
+    public async Task RefreshDecisionMemoryAsync(string reason = "manual_refresh", CancellationToken cancellationToken = default)
+    {
+        var source = _decisionMemorySource;
+        if (source is null)
+            return;
+        await _decisionMemoryRefreshGate.WaitAsync(cancellationToken);
+        try
+        {
+            var profile = await source.LoadAsync(cancellationToken);
+            _petAgentState = (_petAgentState with { DecisionMemory = profile }).Clamp();
+            QueueAgentStatePersistence($"decision_memory:{reason}");
+            Trace("decision_memory_refreshed",
+                $"reason={reason} fingerprint={profile.Fingerprint[..Math.Min(12, profile.Fingerprint.Length)]} conversation={profile.EvidenceCounts.GetValueOrDefault("confirmed_conversation")} album={profile.EvidenceCounts.GetValueOrDefault("album_description")}");
+            OnPropertyChanged(nameof(BehaviorAgentSnapshot));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
+        {
+            Trace("decision_memory_refresh_failed", $"reason={reason} type={ex.GetType().Name}");
+        }
+        finally
+        {
+            _decisionMemoryRefreshGate.Release();
         }
     }
 
@@ -3989,7 +4270,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             _decisionSeed + _autonomousDecisionCount + (int)(now.Ticks % int.MaxValue))
         {
             Episode = _petAgentState.Episode.Kind,
-            RecentExperience = _petAgentState.RecentExperience
+            RecentExperience = _petAgentState.RecentExperience,
+            DecisionMemory = _petAgentState.DecisionMemory,
+            Feedback = _petAgentState.InitiativeSpeechFeedback
         });
         var scores = string.Join(",", decision.Candidates
             .OrderByDescending(candidate => candidate.Score)
@@ -4007,6 +4290,13 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         Trace("initiative_speech_shown", $"topic={topic} generation={generationReason}");
     }
 
+    public void RecordOwnerDialogueResponse(bool positive = true)
+    {
+        ReduceAgentState(new PetOwnerDialogueObserved(_now(), positive), "owner_dialogue_response");
+        RaiseMetrics();
+        Trace("owner_dialogue_response", $"positive={positive} pending={_petAgentState.InitiativeSpeechFeedback.PendingTopic ?? "none"}");
+    }
+
     public Task<PetActionResult> SubmitContextMenuIntentAsync(SemanticIntent intent)
     {
         var behaviorId = intent.Kind switch
@@ -4016,6 +4306,36 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             _ => Phase15BehaviorIds.LookAround
         };
         return Task.FromResult(SubmitBehavior(BehaviorRequestSource.OwnerContextMenu, behaviorId, $"menu:{intent.Kind}", priority: 5));
+    }
+
+    public Task<PetActionResult> SubmitExpressionIntentAsync(
+        SemanticIntent intent,
+        BehaviorRequestSource source = BehaviorRequestSource.OwnerDialogue)
+    {
+        if (intent.Kind != SemanticIntentKind.PositiveExpression ||
+            !string.Equals(intent.CanonicalBehaviorId, StandingHappyExpectantBehaviorIds.HappyExpectant, StringComparison.OrdinalIgnoreCase))
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "expression_intent_unresolved", "当前没有可执行的表情意图");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
+
+        if (!IsStandingHappyExpectantProfileAllowed(_agentState.CurrentPosture, _agentState.CurrentPoseId, _agentState.IsBusy))
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "expression_pose_or_busy_mismatch", "当前姿态不适合这个表情");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
+
+        if (_agentState.Stress >= 0.72 || _agentState.Energy < 0.24)
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "expression_state_mismatch", "悟空现在更想安静休息");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
+
+        return Task.FromResult(SubmitBehavior(
+            source,
+            StandingHappyExpectantBehaviorIds.HappyExpectant,
+            "semantic:positive_expression:happy_expectant",
+            priority: 4));
     }
 
     public Task<PetActionResult> SubmitOwnerCommandAsync(
@@ -4283,6 +4603,67 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         return Task.FromResult(SubmitNextFoodWaterStep());
     }
 
+    public Task<PetActionResult> SubmitBaseMotionAsync(string behaviorId, BehaviorRequestSource source)
+    {
+        if (source != BehaviorRequestSource.ControlPanel)
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "base_motion_source_forbidden", "基础动作只允许从素材面板手动触发");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
+
+        var motion = _catalog.Find(behaviorId);
+        if (motion is null)
+        {
+            UpdateDecision(PetActionResult.MissingAsset, source.ToString(), "base_motion_missing", $"缺少基础动作素材：{behaviorId}");
+            return Task.FromResult(PetActionResult.MissingAsset);
+        }
+        if (!IsBaseAssetMotion(motion))
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "base_motion_category_forbidden", "该动作不属于基础动作，请使用对应的主人入口");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
+
+        if (motion.IsExpired || motion.Deprecated)
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "base_motion_deprecated", "该素材已过期，只保留静态预览");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
+        if (!motion.VisualApproved && !motion.RuntimeApproved)
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "base_motion_visual_approval_missing", "该素材尚未通过主人视觉验收，只能在预览框查看");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
+
+        var capability = _behaviorCapabilities.Find(behaviorId);
+        if (capability is null)
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "base_motion_capability_missing", "该基础动作尚未注册运行能力");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
+        if (!PetPoseCompatibility.IsCompatible(capability.StartPoseFamily, _agentState))
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "base_motion_pose_incompatible", "当前姿态不能自然衔接这个动作");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
+        if (_agentState.IsBusy && !_currentInterruptible)
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "base_motion_wait_for_safe_point", "当前动作正在安全结束，请稍后再试");
+            return Task.FromResult(PetActionResult.Deferred);
+        }
+
+        return Task.FromResult(SubmitBehavior(
+            source,
+            behaviorId,
+            $"owner_base_motion:{behaviorId}",
+            priority: 7,
+            executionMode: BehaviorExecutionMode.DeveloperPreview));
+    }
+
+    public static bool IsBaseAssetMotion(PlayableMotion motion) =>
+        !string.Equals(motion.Category, "口令动作", StringComparison.Ordinal) &&
+        !string.Equals(motion.Category, "宠物魔法", StringComparison.Ordinal) &&
+        !string.Equals(motion.BehaviorId, CarRideBehaviorIds.CarRide, StringComparison.OrdinalIgnoreCase);
+
     private PetActionResult SubmitNextFoodWaterStep()
     {
         if (_pendingFoodWaterSequence.Count == 0)
@@ -4349,10 +4730,13 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             var result = participation.Disposition == RequestDisposition.Rejected
                 ? PetActionResult.Rejected
                 : PetActionResult.Deferred;
-            UpdateDecision(result, source.ToString(), participation.ReasonCode, participation.UserFacingReason);
+            UpdateCommandDecision(result, source, participation, decision.SelectedActionId);
             return result;
         }
-        return SubmitMockDecision(decision, source, trigger, allowAutonomous: false);
+        var submitted = SubmitMockDecision(decision, source, trigger, allowAutonomous: false);
+        if (submitted == PetActionResult.Accepted)
+            UpdateCommandDecision(submitted, source, participation, decision.SelectedActionId);
+        return submitted;
     }
 
     private PetActionResult SubmitMockDecision(PetDecision decision, BehaviorRequestSource source, string trigger, bool allowAutonomous)
@@ -4568,7 +4952,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         var decisionOrdinal = _autonomousDecisionCount++;
         var decisionSeed = CombineDecisionSeed(_decisionSeed, decisionOrdinal, (int)_agentState.CurrentPosture);
         var authoritative = _rolloutOptions.IsAuthoritative(_petAgentState.Episode.Kind);
-        var episodeBindings = DesktopAutonomousEpisodeBindings.For(_petAgentState.Episode.Kind);
+        var episodeBindings = BuildAutonomousEpisodeBindings(_petAgentState.Episode.Kind);
         Exception? decisionFailure = null;
         try
         {
@@ -4653,6 +5037,25 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             Trace("behavior_agent_episode", string.Join(",", episode.ReasonCodes));
             OnPropertyChanged(nameof(BehaviorAgentSnapshot));
         }
+    }
+
+    private IReadOnlySet<string>? BuildAutonomousEpisodeBindings(PetEpisodeKind episode)
+    {
+        var configured = DesktopAutonomousEpisodeBindings.For(episode);
+        if (episode is not (PetEpisodeKind.Observing or PetEpisodeKind.Socializing))
+            return configured;
+
+        var result = configured is null
+            ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            : new HashSet<string>(configured, StringComparer.OrdinalIgnoreCase);
+        if (_catalog.Find(StandingHappyExpectantBehaviorIds.HappyExpectant) is
+            { RuntimeEnabled: true, AutonomousBindingEnabled: true })
+            result.Add(StandingHappyExpectantBehaviorIds.HappyExpectant);
+        if (episode == PetEpisodeKind.Observing &&
+            _catalog.Find(ProneHappyHotPantingBehaviorIds.HappyHotPanting) is
+                { RuntimeEnabled: true, AutonomousBindingEnabled: true })
+            result.Add(ProneHappyHotPantingBehaviorIds.HappyHotPanting);
+        return result;
     }
 
     public async Task SubmitFakeModelMessageAsync(string text)
@@ -4874,7 +5277,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         }
 
         if (completedMotion is not null &&
-            string.Equals(completedMotion.AssetBatch, FrontProneExpressionBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+            (string.Equals(completedMotion.AssetBatch, FrontProneExpressionBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(completedMotion.AssetBatch, ProneHappyHotPantingBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase)))
         {
             _frontProneProfileActive = true;
             _agentState = _agentState with
@@ -5342,13 +5746,18 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             _lastAccepted[motion.BehaviorId] = _currentStartedAt;
         if (executionMode == BehaviorExecutionMode.Normal &&
             source == BehaviorRequestSource.AutonomousTick &&
-            FrontProneExpressionBehaviorIds.All.Contains(motion.BehaviorId))
+            (FrontProneExpressionBehaviorIds.All.Contains(motion.BehaviorId) ||
+             string.Equals(motion.BehaviorId, ProneHappyHotPantingBehaviorIds.HappyHotPanting, StringComparison.OrdinalIgnoreCase)))
         {
             _nextFrontProneExpressionAt = _currentStartedAt + TimeSpan.FromSeconds(_random.Next(45, 121));
             _recentFrontProneExpressions.Enqueue(motion.BehaviorId);
             while (_recentFrontProneExpressions.Count > 2)
                 _recentFrontProneExpressions.Dequeue();
         }
+        if (executionMode == BehaviorExecutionMode.Normal &&
+            source == BehaviorRequestSource.AutonomousTick &&
+            string.Equals(motion.BehaviorId, StandingHappyExpectantBehaviorIds.HappyExpectant, StringComparison.OrdinalIgnoreCase))
+            _nextStandingHappyExpectantAt = _currentStartedAt + TimeSpan.FromSeconds(_random.Next(75, 151));
         if (tracksAgentLifecycle)
         {
             _activeReducerExecution = new ActiveBehaviorExecution(
@@ -5615,6 +6024,13 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             case StablePosture.Stand:
                 AddCurrentOrPreferredStableIdle(candidates, LifecycleCandidateBehaviorIds.StandIdleMicroloop,
                     0.16 + Comfort * 0.08 + (1 - _agentState.Arousal) * 0.05 + (workQuiet ? 0.04 : 0.01), "autonomous:brief_stable_stand_microloop");
+                if (_petAgentState.Episode.Kind is PetEpisodeKind.Observing or PetEpisodeKind.Socializing &&
+                    IsStandingHappyExpectantProfileAllowed(_agentState.CurrentPosture, _agentState.CurrentPoseId, _agentState.IsBusy) &&
+                    CanScheduleStandingHappyExpectant(_now(), _nextStandingHappyExpectantAt, StandingHappyExpectantBehaviorIds.HappyExpectant) &&
+                    _agentState.MoodValence >= 0.52 && _agentState.Stress < 0.58 && _agentState.Energy >= 0.32)
+                    AddIfEnabled(candidates, StandingHappyExpectantBehaviorIds.HappyExpectant,
+                        0.08 + _agentState.MoodValence * 0.09 + _agentState.SocialNeed * 0.04,
+                        "autonomous:low_frequency_positive_standing_expression");
                 if (elapsed >= MinimumAutonomousDwell(StablePosture.Stand) && Energy >= 0.18 && Stress < 0.85)
                 {
                     AddIfEnabled(candidates, AutonomousDailyCandidateBehaviorIds.StandToSit,
@@ -5678,6 +6094,16 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
                             0.30 * calmFactor * awakeFactor * (0.70 + Curiosity * 0.60 + _agentState.Boredom * 0.25), "autonomous:front_prone_curious_observe");
                         AddFrontProneExpressionIfReady(candidates, FrontProneExpressionBehaviorIds.KnowingLook,
                             0.20 * calmFactor * awakeFactor * (0.75 + _agentState.Focus * 0.35), "autonomous:front_prone_knowing_look");
+                        if (IsProneHappyHotPantingProfileAllowed(
+                                _agentState.CurrentPosture,
+                                _agentState.CurrentPoseId,
+                                _frontProneProfileActive,
+                                _agentState.IsBusy,
+                                Mood,
+                                Stress))
+                            AddFrontProneExpressionIfReady(candidates, ProneHappyHotPantingBehaviorIds.HappyHotPanting,
+                                0.12 * calmFactor * awakeFactor * (0.65 + Mood * 0.45),
+                                "autonomous:front_prone_happy_hot_panting");
                     }
                     if (elapsed >= TimeSpan.FromSeconds(18) &&
                         Energy < 0.62 &&
@@ -5885,8 +6311,35 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         string behaviorId,
         IReadOnlyCollection<string> recentExpressions) =>
         now >= nextAllowedAt &&
-        FrontProneExpressionBehaviorIds.All.Contains(behaviorId) &&
+        (FrontProneExpressionBehaviorIds.All.Contains(behaviorId) ||
+         string.Equals(behaviorId, ProneHappyHotPantingBehaviorIds.HappyHotPanting, StringComparison.OrdinalIgnoreCase)) &&
         !recentExpressions.Contains(behaviorId, StringComparer.OrdinalIgnoreCase);
+
+    public static bool IsProneHappyHotPantingProfileAllowed(
+        StablePosture posture,
+        string? poseId,
+        bool frontProneProfileActive,
+        bool isBusy,
+        double mood,
+        double stress) =>
+        IsFrontProneExpressionProfileAllowed(posture, poseId, frontProneProfileActive, isBusy) &&
+        mood >= 0.55 &&
+        stress <= 0.65;
+
+    public static bool IsStandingHappyExpectantProfileAllowed(
+        StablePosture posture,
+        string? poseId,
+        bool isBusy) =>
+        posture == StablePosture.Stand &&
+        !isBusy &&
+        string.Equals(poseId, "stand.neutral.left_front", StringComparison.OrdinalIgnoreCase);
+
+    public static bool CanScheduleStandingHappyExpectant(
+        DateTimeOffset now,
+        DateTimeOffset nextAllowedAt,
+        string behaviorId) =>
+        now >= nextAllowedAt &&
+        string.Equals(behaviorId, StandingHappyExpectantBehaviorIds.HappyExpectant, StringComparison.OrdinalIgnoreCase);
 
     public static bool IsSleepAutonomousProfileAllowed(string behaviorId, StablePosture posture, bool frontProneProfileActive) =>
         posture == StablePosture.Prone && behaviorId switch
@@ -5908,11 +6361,13 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             _ => "没有完成"
         };
         CurrentReason = userFacing;
+        CurrentDecisionDetail = $"原因代码：{reasonCode}";
         LastSource = source switch
         {
             "OwnerContextMenu" => "右键菜单",
             "ControlPanel" => "控制面板",
             "Dialogue" => "对话",
+            "OwnerDialogue" => "对话",
             "AutonomousTick" => "自主行为",
             "DeveloperPreview" => "开发者预览",
             "Startup" => "启动",
@@ -5931,11 +6386,50 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         };
         OnPropertyChanged(nameof(CurrentDisposition));
         OnPropertyChanged(nameof(CurrentReason));
+        OnPropertyChanged(nameof(CurrentDecisionDetail));
         OnPropertyChanged(nameof(LastSource));
         OnPropertyChanged(nameof(LastTrigger));
         OnPropertyChanged(nameof(LastError));
         OnPropertyChanged(nameof(Willingness));
         Trace("decision", $"{result} source={source} reason={reasonCode}");
+    }
+
+    private void UpdateCommandDecision(
+        PetActionResult result,
+        BehaviorRequestSource source,
+        ParticipationDecision decision,
+        string actionId)
+    {
+        var retry = decision.RetryAt is { } retryAt
+            ? $" · 可在 {retryAt:HH:mm:ss} 后再试"
+            : string.Empty;
+        UpdateDecision(result, source.ToString(), decision.ReasonCode, decision.UserFacingReason + retry);
+        var componentLabels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["command_cooperativeness"] = "服从基线",
+            ["relationship_trust"] = "信任",
+            ["relationship_familiarity"] = "熟悉度",
+            ["current_mood"] = "心情",
+            ["available_energy"] = "精力",
+            ["stress_safety"] = "压力安全",
+            ["repetition_penalty"] = "重复疲劳"
+        };
+        var factors = decision.Components
+            .OrderByDescending(item => Math.Abs(item.Value))
+            .Take(3)
+            .Select(item => componentLabels.GetValueOrDefault(item.Key, item.Key))
+            .ToArray();
+        CurrentDecisionDetail = $"口令 {actionId} · 意愿 {decision.WillingnessScore:P0}" +
+            (factors.Length == 0 ? string.Empty : $" · 主要因素：{string.Join("、", factors)}");
+        Willingness = result switch
+        {
+            PetActionResult.Accepted => $"接受 · {decision.UserFacingReason}",
+            PetActionResult.Deferred => $"延后 · {decision.UserFacingReason}",
+            PetActionResult.Rejected => $"拒绝 · {decision.UserFacingReason}",
+            _ => Willingness
+        };
+        OnPropertyChanged(nameof(CurrentDecisionDetail));
+        OnPropertyChanged(nameof(Willingness));
     }
 
     private void Trace(string kind, string detail)
@@ -5983,7 +6477,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         var decision = _lastAgentDecision is null
             ? "none"
             : $"{_lastAgentDecision.SelectedActionId} {_lastAgentDecision.StartPosture}->{_lastAgentDecision.EndPosture} mood={_lastAgentDecision.MoodExpression} style={_lastAgentDecision.DialogueStyle}";
-        return $"enabled={EnableBehaviorAgentMock}; posture={_agentState.CurrentPosture}; energy={_agentState.Energy:0.00}; hunger={_agentState.Hunger:0.00}; social={_agentState.SocialNeed:0.00}; boredom={_agentState.Boredom:0.00}; stress={_agentState.Stress:0.00}; mood={_agentState.MoodValence:0.00}; arousal={_agentState.Arousal:0.00}; temperament=({_temperament.Activity},{_temperament.Attachment},{_temperament.Sensitivity},{_temperament.Independence},{_temperament.Mischief}); autonomous_preferences=(walk={_autonomousPreferences.WalkingWeight:0.00},prone={_autonomousPreferences.ProneRestWeight:0.00},sleep={_autonomousPreferences.SleepingWeight:0.00},stand={_autonomousPreferences.StandingIdleWeight:0.00}); last_decision={decision}";
+        return $"enabled={EnableBehaviorAgentMock}; posture={_agentState.CurrentPosture}; energy={_agentState.Energy:0.00}; hunger={_agentState.Hunger:0.00}; social={_agentState.SocialNeed:0.00}; boredom={_agentState.Boredom:0.00}; stress={_agentState.Stress:0.00}; mood={_agentState.MoodValence:0.00}; arousal={_agentState.Arousal:0.00}; temperament=({_temperament.Activity},{_temperament.Attachment},{_temperament.Sensitivity},{_temperament.Independence},{_temperament.Mischief}); autonomous_preferences=(walk={_autonomousPreferences.WalkingWeight:0.00},prone={_autonomousPreferences.ProneRestWeight:0.00},sleep={_autonomousPreferences.SleepingWeight:0.00},stand={_autonomousPreferences.StandingIdleWeight:0.00}); decision_memory={_petAgentState.DecisionMemory.Fingerprint[..Math.Min(12, _petAgentState.DecisionMemory.Fingerprint.Length)]}; memory_evidence=(conversation={_petAgentState.DecisionMemory.EvidenceCounts.GetValueOrDefault("confirmed_conversation")},album={_petAgentState.DecisionMemory.EvidenceCounts.GetValueOrDefault("album_description")}); initiative_unanswered={_petAgentState.InitiativeSpeechFeedback.ConsecutiveUnanswered}; last_decision={decision}";
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>

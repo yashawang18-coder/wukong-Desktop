@@ -152,11 +152,24 @@ needs, posture, recent bounded experience, and learned behavior preferences are
 retained. A maximum of 32 recent events is kept, and learned weights are clamped to
 `[-0.15, 0.15]`, so memory influences close choices without bypassing hard gates.
 
+Confirmed dialogue memory and saved album Markdown descriptions are additionally
+projected into a `PetDecisionMemoryProfile`. The projection recognizes only a
+small fixed vocabulary of companion, play, explore, food, drink, rest, and
+observe themes. Category influence is capped at `0.10`; initiative-topic
+influence is capped at `0.12`. Pending/rejected dialogue memories, image pixels,
+instructions embedded in album text, absolute paths, and unstructured model
+output cannot grant a capability, select an asset, or bypass posture/runtime
+gates. The profile stores only bounded weights, evidence counts, and a content
+fingerprint in formal Agent state.
+
 Successful owner interactions slowly raise trust and familiarity. Touch feedback
 adjusts touch acceptance, and an owner response after spontaneous speech adjusts
 initiative acceptance. Completed, failed, interrupted, and rejected outcomes add
 small time-decayed utility components. Free-text conversation memory remains a
 dialogue input and cannot directly grant runtime capability or select an asset.
+Its decision effect exists only through the bounded structured projection above.
+Recent completed/interrupted/failed interactions remain a separate decayed score
+component, so album/dialogue preference and actual outcome memory stay distinct.
 
 ## Initiative speech
 
@@ -165,8 +178,23 @@ hours, not petrified, and without an expanded chat. Topic scores come from curre
 needs, Episode, temperament, relationship, and recent topic history. The service
 uses randomized check intervals but deterministic admission for the same state and
 seed. It applies topic-repeat penalties, a longer cooldown when the previous line
-was not answered, and a budget of six initiatives per eight hours. Speech records
-`LastInitiativeSpeechAt`; it does not falsely count as an owner interaction.
+was not answered, and a bounded rolling budget. Speech records
+`LastInitiativeSpeechAt` and one pending topic; it does not falsely count as an
+owner interaction. A real owner dialogue response, or a positive direct
+interaction inside the response window, resolves that pending initiative and
+slowly adjusts `InitiativeAcceptance`. Repeated unanswered lines lengthen the
+next evaluation interval and reduce the rolling budget. Topic selection includes
+the bounded decision-memory profile, while local fallback text remains consistent
+with the current posture and stress level.
+
+## Owner command feedback
+
+Owner commands remain deterministic and usually cooperative. The participation
+policy returns `Accepted`, `Deferred`, or `Rejected` with a stable reason code,
+concise owner-facing explanation, willingness score, weighted factors, and an
+optional retry time. The owner page shows the result and retry hint; the developer
+page retains the main score factors. Asset, source, posture, and safe-interruption
+failures remain hard gates and are not described as personality refusals.
 
 ## Next rollout
 

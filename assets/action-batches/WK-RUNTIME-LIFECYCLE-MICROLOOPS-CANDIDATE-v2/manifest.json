@@ -239,17 +239,8 @@
         {
           "name": "exit",
           "loop": false,
-          "frame_count": 8,
+          "frame_count": 7,
           "frames": [
-            {
-              "path": "frames/intro/14-stable-prone.png",
-              "width": 1024,
-              "height": 1024,
-              "mode": "RGBA",
-              "sha256": "106483d70c6513a821a186a6f70e2d217acfb4ada8377656e226e4b361668d88",
-              "bytes": 316952,
-              "duration_ms": 420
-            },
             {
               "path": "frames/intro/12-sit-to-prone-late.png",
               "width": 1024,
@@ -318,17 +309,8 @@
         {
           "name": "interrupt_exit",
           "loop": false,
-          "frame_count": 8,
+          "frame_count": 7,
           "frames": [
-            {
-              "path": "frames/intro/14-stable-prone.png",
-              "width": 1024,
-              "height": 1024,
-              "mode": "RGBA",
-              "sha256": "106483d70c6513a821a186a6f70e2d217acfb4ada8377656e226e4b361668d88",
-              "bytes": 316952,
-              "duration_ms": 420
-            },
             {
               "path": "frames/intro/12-sit-to-prone-late.png",
               "width": 1024,
@@ -420,7 +402,6 @@
           "frames/intro/01-stable-stand.png"
         ],
         "from_intro_after_sit": [
-          "frames/intro/14-stable-prone.png",
           "frames/intro/12-sit-to-prone-late.png",
           "frames/intro/11-sit-to-prone-early.png",
           "frames/intro/10-stable-sit.png",
@@ -430,7 +411,6 @@
           "frames/intro/01-stable-stand.png"
         ],
         "from_loop_prone": [
-          "frames/intro/14-stable-prone.png",
           "frames/intro/12-sit-to-prone-late.png",
           "frames/intro/11-sit-to-prone-early.png",
           "frames/intro/10-stable-sit.png",
@@ -440,7 +420,6 @@
           "frames/intro/01-stable-stand.png"
         ],
         "from_exit": [
-          "frames/intro/14-stable-prone.png",
           "frames/intro/12-sit-to-prone-late.png",
           "frames/intro/11-sit-to-prone-early.png",
           "frames/intro/10-stable-sit.png",

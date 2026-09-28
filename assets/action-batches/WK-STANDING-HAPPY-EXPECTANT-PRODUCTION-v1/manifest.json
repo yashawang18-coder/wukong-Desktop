@@ -1,0 +1,51 @@
+{
+  "batch_id": "WK-STANDING-HAPPY-EXPECTANT-PRODUCTION-v1",
+  "source_batch": "WK-STANDING-HAPPY-EXPECTANT-CANDIDATE-v4-gate",
+  "source_status": "owner_visual_review_finalized_not_runtime_approved",
+  "asset_stage": "runtime_candidate",
+  "owner_preview_approved": true,
+  "visual_approved": true,
+  "runtime_validation": "pending_windows_renderer_qa",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": false,
+  "candidate_exe_review_marker": "Wukong.StandingHappyExpectantReview.enabled",
+  "source_frames_byte_exact": true,
+  "supports_horizontal_mirror": false,
+  "action": {
+    "behavior_id": "wk.expression.stand_happy_expectant",
+    "display_name": "开心地期待",
+    "description": "稳定站姿中的一次性开心期待微表情。",
+    "from_pose": "stand.neutral.left_front",
+    "to_pose": "stand.neutral.left_front",
+    "loop": false,
+    "interruptible": true,
+    "total_duration_ms": 6170,
+    "phases": [
+      { "name": "intro", "from_frame": 1, "to_frame": 5 },
+      { "name": "hold", "from_frame": 6, "to_frame": 12 },
+      { "name": "exit", "from_frame": 13, "to_frame": 16 }
+    ],
+    "frames": [
+      { "path": "frames/frame-001.png", "role": "neutral_hold", "duration_ms": 320, "bytes": 479979, "sha256": "77be067001a7de36f6fe436f73ab05735b9a827612746dba52e43e9d8bc07758" },
+      { "path": "frames/frame-002.png", "role": "smile_anticipation", "duration_ms": 300, "bytes": 479931, "sha256": "123819c59e46336cb403e30dffb305a6049e6f41bffaf68da316f44638e87bb7" },
+      { "path": "frames/frame-003.png", "role": "mouth_half_open_tiny_tongue", "duration_ms": 260, "bytes": 482204, "sha256": "8da4ba84b63049c66c43424b244edf0454ef6ed7b523373a14b962758ac37e8f" },
+      { "path": "frames/frame-004.png", "role": "tongue_tip_centered", "duration_ms": 300, "bytes": 482133, "sha256": "0d4619e98600d186a4c141aa5bd1b846888d04efdc0dc2c21cf2a3d202da18f4" },
+      { "path": "frames/frame-005.png", "role": "pant_inhale_subtle", "duration_ms": 480, "bytes": 483847, "sha256": "53f2e5c8e384368bacc817ce8852f0a81489651ed828a755e8cac91d0cc270c9" },
+      { "path": "frames/frame-006.png", "role": "moderate_happy_peak", "duration_ms": 520, "bytes": 483777, "sha256": "ab11708659e69a141788c4a03280afc53448a83d3bdd031fa464c50047ac00d9" },
+      { "path": "frames/frame-007.png", "role": "pant_exhale_subtle", "duration_ms": 520, "bytes": 483200, "sha256": "c90ec50ee4c2f1baa2c5e7aec0f941ab21061dda9674f1c23eacb70c1b3ebcb6" },
+      { "path": "frames/frame-008.png", "role": "moderate_happy_peak", "duration_ms": 480, "bytes": 483777, "sha256": "ab11708659e69a141788c4a03280afc53448a83d3bdd031fa464c50047ac00d9" },
+      { "path": "frames/frame-009.png", "role": "pant_inhale_subtle", "duration_ms": 480, "bytes": 483847, "sha256": "53f2e5c8e384368bacc817ce8852f0a81489651ed828a755e8cac91d0cc270c9" },
+      { "path": "frames/frame-010.png", "role": "soft_symmetric_blink", "duration_ms": 170, "bytes": 484826, "sha256": "89b31198fd32511c8362397334244449bf95e5b2aaff7128088fbfbbe4e46a01" },
+      { "path": "frames/frame-011.png", "role": "moderate_happy_peak", "duration_ms": 480, "bytes": 483777, "sha256": "ab11708659e69a141788c4a03280afc53448a83d3bdd031fa464c50047ac00d9" },
+      { "path": "frames/frame-012.png", "role": "pant_exhale_subtle", "duration_ms": 520, "bytes": 483200, "sha256": "c90ec50ee4c2f1baa2c5e7aec0f941ab21061dda9674f1c23eacb70c1b3ebcb6" },
+      { "path": "frames/frame-013.png", "role": "tongue_tip_centered", "duration_ms": 300, "bytes": 482133, "sha256": "0d4619e98600d186a4c141aa5bd1b846888d04efdc0dc2c21cf2a3d202da18f4" },
+      { "path": "frames/frame-014.png", "role": "mouth_half_close_tiny_tongue", "duration_ms": 260, "bytes": 482204, "sha256": "8da4ba84b63049c66c43424b244edf0454ef6ed7b523373a14b962758ac37e8f" },
+      { "path": "frames/frame-015.png", "role": "smile_release", "duration_ms": 300, "bytes": 479931, "sha256": "123819c59e46336cb403e30dffb305a6049e6f41bffaf68da316f44638e87bb7" },
+      { "path": "frames/frame-016.png", "role": "neutral_return", "duration_ms": 480, "bytes": 479979, "sha256": "77be067001a7de36f6fe436f73ab05735b9a827612746dba52e43e9d8bc07758" }
+    ]
+  }
+}

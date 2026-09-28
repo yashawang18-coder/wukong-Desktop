@@ -64,6 +64,7 @@ public partial class MainWindow : Window
 {
     private readonly DesktopRuntimeHost _runtime;
     private readonly DesktopAgentRuntime _agentRuntime;
+    private readonly Task<bool> _agentStateLoadTask;
     private readonly DispatcherTimer _autonomousTimer;
     private readonly DispatcherTimer _animationTimer;
     private readonly DispatcherTimer _coinStateTimer;
@@ -114,8 +115,12 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         _runtime = new DesktopRuntimeHost();
+        BootstrapLog.WriteRaw("mainwindow_runtime_created");
         _agentRuntime = DesktopAgentRuntime.CreateDefault(BuildConversationRuntimeState);
-        _runtime.AttachAgentStateStore(_agentRuntime.AgentState);
+        BootstrapLog.WriteRaw("mainwindow_agent_runtime_created");
+        _agentStateLoadTask = _runtime.AttachAgentStateStoreAsync(_agentRuntime.AgentState);
+        BootstrapLog.WriteRaw("mainwindow_agent_state_load_scheduled");
+        _runtime.AttachDecisionMemorySource(_agentRuntime.DecisionMemory);
         _runtime.MotionRequested += Runtime_MotionRequested;
         _runtime.PetPixelSizeRequested += Runtime_PetPixelSizeRequested;
         _runtime.PetScaleRequested += Runtime_PetScaleRequested;
@@ -189,9 +194,14 @@ public partial class MainWindow : Window
     {
         try
         {
+            var restoredAgentState = await _agentStateLoadTask;
+            BootstrapLog.WriteRaw($"mainwindow_agent_state_load_completed restored={restoredAgentState}");
+            if (restoredAgentState)
+                _runtime.StartIdle("restored_state");
             var personalityTask = _agentRuntime.Profiles.LoadPersonalityAsync();
             var preferencesTask = _agentRuntime.AutonomousBehaviorPreferences.LoadAsync();
-            await Task.WhenAll(personalityTask, preferencesTask);
+            var decisionMemoryTask = _runtime.RefreshDecisionMemoryAsync("startup");
+            await Task.WhenAll(personalityTask, preferencesTask, decisionMemoryTask);
             var personality = await personalityTask;
             _runtime.UpdateTemperament(TemperamentProfile.FromSnapshot(personality));
             _runtime.UpdateAutonomousBehaviorPreferences(await preferencesTask);
@@ -1622,7 +1632,13 @@ public partial class MainWindow : Window
             if (!decision.ShouldSpeak)
                 return;
 
-            var candidate = InitiativeSpeechSchedule.SelectMessage(_initiativeSpeechRandom, decision.Topic, _runtime.CurrentStablePosture);
+            var state = _runtime.AgentStateSnapshot;
+            var candidate = InitiativeSpeechSchedule.SelectMessage(
+                _initiativeSpeechRandom,
+                decision.Topic,
+                _runtime.CurrentStablePosture,
+                state.Runtime,
+                state.DecisionMemory);
             var text = _runtime.ValidateDialogueReply(candidate).Text;
             _runtime.RecordInitiativeSpeech(decision.Topic, "state_rule");
             ShowSpeechBubble(text);

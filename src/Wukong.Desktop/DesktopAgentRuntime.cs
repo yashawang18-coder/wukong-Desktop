@@ -20,6 +20,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         IConversationHistoryStore history,
         IConversationMemoryStore memory,
         IPetAgentStateStore agentState,
+        IPetDecisionMemorySource decisionMemory,
         IDeveloperSession developerSession,
         IDeveloperDiagnostics diagnostics,
         IMockContextController mockContext,
@@ -34,6 +35,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         History = history;
         Memory = memory;
         AgentState = agentState;
+        DecisionMemory = decisionMemory;
         DeveloperSession = developerSession;
         Diagnostics = diagnostics;
         MockContext = mockContext;
@@ -48,6 +50,7 @@ public sealed class DesktopAgentRuntime : IDisposable
     public IConversationHistoryStore History { get; }
     public IConversationMemoryStore Memory { get; }
     public IPetAgentStateStore AgentState { get; }
+    public IPetDecisionMemorySource DecisionMemory { get; }
     public IDeveloperSession DeveloperSession { get; }
     public IDeveloperDiagnostics Diagnostics { get; }
     public IMockContextController MockContext { get; }
@@ -80,6 +83,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         var diagnostics = new DeveloperDiagnostics(developer);
         var mockState = new MockRuntimeContextStateProvider(developer, liveRuntimeState);
         var album = new AlbumMarkdownMemoryRetriever(() => ResolveAlbumRoot(dataPaths));
+        var decisionMemory = new LocalPetDecisionMemorySource(memoryConfiguration, memory, album);
         var context = new LocalPetContextProvider(profiles, mockState, album, memory);
         var conversation = new ContextualConversationService(
             models,
@@ -89,7 +93,7 @@ public sealed class DesktopAgentRuntime : IDisposable
             memory,
             diagnostics);
         return new(httpClient, conversation, models, profiles, memoryConfiguration, autonomousBehaviorPreferences,
-            history, memory, agentState, developer, diagnostics, mockState, dataPaths);
+            history, memory, agentState, decisionMemory, developer, diagnostics, mockState, dataPaths);
     }
 
     public async Task AppendLocalAssistantMessageAsync(string text, CancellationToken cancellationToken = default)

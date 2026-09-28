@@ -25,6 +25,8 @@ public sealed record InitiativeSpeechContext(
 {
     public PetEpisodeKind Episode { get; init; } = PetEpisodeKind.Resting;
     public IReadOnlyList<PetRecentExperience> RecentExperience { get; init; } = Array.Empty<PetRecentExperience>();
+    public PetDecisionMemoryProfile DecisionMemory { get; init; } = PetDecisionMemoryProfile.Empty;
+    public InitiativeSpeechFeedbackState Feedback { get; init; } = InitiativeSpeechFeedbackState.Empty;
 }
 
 public sealed record InitiativeSpeechCandidate(
@@ -88,7 +90,15 @@ public sealed class InitiativeSpeechDecisionService
             .Where(item => item.EventKind == "initiative_speech" && context.Now - item.At <= TimeSpan.FromHours(8))
             .OrderByDescending(item => item.At)
             .ToArray();
-        if (recentInitiatives.Length >= 6)
+        var feedback = context.Feedback.Clamp();
+        var pendingUnanswered = feedback.PendingSince is { } pending &&
+            context.Now >= pending &&
+            context.Now - pending >= TimeSpan.FromMinutes(10)
+            ? 1
+            : 0;
+        var unansweredCount = Math.Clamp(feedback.ConsecutiveUnanswered + pendingUnanswered, 0, 8);
+        var budget = unansweredCount >= 2 ? 4 : 6;
+        if (recentInitiatives.Length >= budget)
             return "initiative_budget_exhausted";
 
         var urgency = NeedUrgency(state);
@@ -100,10 +110,10 @@ public sealed class InitiativeSpeechDecisionService
             - urgency * 4.0;
         var cooldown = TimeSpan.FromMinutes(Math.Clamp(cooldownMinutes, 7, 20));
         var lastSpeechAt = context.LastSpokenAt ?? recentInitiatives.FirstOrDefault()?.At;
-        var unanswered = lastSpeechAt is not null &&
+        var unanswered = unansweredCount > 0 || lastSpeechAt is not null &&
             (state.LastInteractionAt is null || state.LastInteractionAt.Value <= lastSpeechAt.Value);
         if (unanswered && urgency < 0.82)
-            cooldown = TimeSpan.FromTicks((long)(cooldown.Ticks * 1.6));
+            cooldown = TimeSpan.FromTicks((long)(cooldown.Ticks * (1.35 + Math.Min(3, unansweredCount) * 0.30)));
         if (lastSpeechAt is not null && context.Now - lastSpeechAt.Value < cooldown)
             return "initiative_cooldown";
         return null;
@@ -154,7 +164,9 @@ public sealed class InitiativeSpeechDecisionService
             >= 0.62 => (90, 181),
             _ => (150, 301)
         };
-        return TimeSpan.FromSeconds(random.Next(minimumSeconds, maximumSeconds));
+        var seconds = random.Next(minimumSeconds, maximumSeconds);
+        var unanswered = Math.Clamp(context.Feedback.ConsecutiveUnanswered, 0, 3);
+        return TimeSpan.FromSeconds(seconds * (1 + unanswered * 0.35));
     }
 
     private static double NeedUrgency(PetRuntimeState state) => Math.Max(
@@ -200,11 +212,13 @@ public sealed class InitiativeSpeechDecisionService
             InitiativeSpeechTopic.Play or InitiativeSpeechTopic.Curiosity => context.Relationship.Trust01 * 0.03,
             _ => 0
         };
+        var decisionMemory = context.DecisionMemory.InitiativeTopicWeight(candidate.Topic);
         return candidate with
         {
-            Score = Math.Clamp(candidate.Score + relationshipBonus - repeatPenalty, 0, 1.5),
+            Score = Math.Clamp(candidate.Score + relationshipBonus + decisionMemory - repeatPenalty, 0, 1.5),
             ReasonCodes = candidate.ReasonCodes
                 .Append($"relationship={relationshipBonus:0.00}")
+                .Append($"decision_memory={decisionMemory:0.00}")
                 .Append($"topic_repeat_penalty={repeatPenalty:0.00}")
                 .ToArray()
         };
