@@ -26,14 +26,10 @@ internal static class LifecycleReviewCandidateTests
             .Where(x => LifecycleReviewCandidateBehaviorIds.AssetBatches.Contains(x.AssetBatch))
             .OrderBy(x => x.BehaviorId)
             .ToArray();
-        var v5ManifestPath = Path.Combine(output, "WukongAssets", "action-batches", SideProneFrontBehaviorIds.AssetBatch, "manifest.json");
-        using var v5Document = JsonDocument.Parse(File.ReadAllText(v5ManifestPath));
-        var v5Enabled = v5Document.RootElement.GetProperty("runtime_approved").GetBoolean() &&
-                        v5Document.RootElement.GetProperty("runtime_use").GetBoolean();
 
         Assert(candidates.Length == 7, "review catalog must expose exactly seven lifecycle review cards");
         Assert(candidates.Select(x => x.BehaviorId).OrderBy(x => x).SequenceEqual(ExpectedIds.OrderBy(x => x)), "review behavior IDs changed");
-        Assert(candidates.Sum(x => x.FrameCount) == (v5Enabled ? 138 : 114), "approved runtime composition frame total does not match the v5 promotion gate");
+        Assert(candidates.Sum(x => x.FrameCount) == 114, "rejected v5 composition entered the approved lifecycle");
         Assert(candidates.All(x => x.Category == "基础动作"), "approved lifecycle material escaped the basic-action category");
         Assert(candidates.All(x => x.RuntimeEnabled && x.RuntimeApproved && !x.PrototypeUse), "approved runtime gates were not loaded");
         Assert(candidates.All(x => x.AutonomousBindingEnabled), "an approved lifecycle entry is missing its autonomous binding");
@@ -51,12 +47,10 @@ internal static class LifecycleReviewCandidateTests
         var calm = candidates.Single(x => x.BehaviorId == LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4);
         Assert(calm.Phases.Count == 1 && calm.Phases[0].Loop && calm.FrameCount == 12, "V4 calm must remain an independent loop");
         var full = candidates.Single(x => x.BehaviorId == LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1);
-        var expectedPhases = v5Enabled
-            ? new[] { "intro", "bridge-to-front", "side-prone-front-calm", "bridge-to-legacy", "exit" }
-            : new[] { "intro", "loop", "exit" };
-        Assert(full.Phases.Select(x => x.Name).SequenceEqual(expectedPhases), "V3R1 full lifecycle composition does not match the v5 promotion gate");
-        Assert(full.FrameCount == (v5Enabled ? 67 : 43), "V3R1 lifecycle frame count does not match the v5 promotion gate");
-        Assert(v5Enabled ? full.Phases[2].Loop : full.Phases[1].Loop, "V3R1 lifecycle calm phase must loop");
+        Assert(full.Phases.Select(x => x.Name).SequenceEqual(new[] { "intro", "loop", "exit" }), "V3R1 original lifecycle changed");
+        Assert(full.FrameCount == 43 && full.Phases[1].Loop, "V3R1 original frame count/loop changed");
+        Assert(candidates.SelectMany(x => x.Phases).SelectMany(x => x.Frames)
+            .All(x => !x.Contains(SideProneFrontBehaviorIds.AssetBatch, StringComparison.Ordinal)), "rejected composite pixels loaded");
         var exit = candidates.Single(x => x.BehaviorId == LifecycleReviewCandidateBehaviorIds.LivelyDailyExitV3R1);
         Assert(exit.FrameCount == 11, "V3R1 exit must omit the rejected side-prone first frame");
         Assert(exit.FirstFrame.EndsWith("frame-002.png", StringComparison.OrdinalIgnoreCase),
@@ -213,37 +207,12 @@ internal static class LifecycleReviewCandidateTests
         var rejectedRoadGazeV11ManifestPath = Path.Combine(assetRoot, "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v11", "manifest.json");
         var rejectedRoadGazeV10ManifestPath = Path.Combine(assetRoot, "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v10", "manifest.json");
         var supersededRoadGazeManifestPath = Path.Combine(assetRoot, "WK-INTERACTION-CAR-RIDE-ROAD-GAZE-CANDIDATE-v9", "manifest.json");
-        Assert(File.Exists(v5ManifestPath), "side-prone v5 manifest was not copied to Windows output");
+        Assert(!Directory.Exists(Path.GetDirectoryName(v5ManifestPath)), "removed side-prone v5 was packaged again");
         Assert(File.Exists(roadGazeManifestPath), "road-gaze v13 manifest was not copied to Windows output");
         Assert(File.Exists(rejectedRoadGazeV12ManifestPath), "rejected road-gaze v12 evidence was not copied to Windows output");
         Assert(File.Exists(rejectedRoadGazeV11ManifestPath), "rejected road-gaze v11 evidence was not copied to Windows output");
         Assert(File.Exists(rejectedRoadGazeV10ManifestPath), "rejected road-gaze v10 evidence was not copied to Windows output");
         Assert(File.Exists(supersededRoadGazeManifestPath), "superseded road-gaze v9 evidence was not copied to Windows output");
-
-        using var v5Document = JsonDocument.Parse(File.ReadAllText(v5ManifestPath));
-        var v5 = v5Document.RootElement;
-        Assert(v5.GetProperty("frame_count").GetInt32() == 36, "side-prone v5 must contain 36 runtime frames");
-        Assert(v5.GetProperty("owner_runtime_enable_requested").GetBoolean(), "side-prone v5 owner enable request was lost");
-        var v5VisualApproved = v5.GetProperty("visual_approved").GetBoolean();
-        var v5Approved = v5.GetProperty("runtime_approved").GetBoolean();
-        Assert(v5Approved == v5.GetProperty("runtime_use").GetBoolean(), "side-prone v5 runtime gates diverged");
-        Assert(v5Approved == v5.GetProperty("production_asset").GetBoolean(), "side-prone v5 production gate diverged");
-        Assert(v5Approved == v5.GetProperty("autonomous_binding_enabled").GetBoolean(), "side-prone v5 autonomous gate diverged");
-        var expectedV5Validation = v5Approved
-            ? "passed_windows_renderer_qa"
-            : v5VisualApproved
-                ? "pending_windows_renderer_ci"
-                : "pending_owner_visual_review_and_windows_renderer_ci";
-        Assert(v5.GetProperty("runtime_validation").GetString() == expectedV5Validation,
-            "side-prone v5 validation state does not match its visual/runtime gates");
-        Assert(!v5Approved || v5VisualApproved, "side-prone v5 runtime approval bypassed owner visual approval");
-
-        var v5Frames = v5.GetProperty("phases")
-            .EnumerateArray()
-            .SelectMany(phase => phase.GetProperty("frames").EnumerateArray().Select(frame => frame.GetProperty("path").GetString()!))
-            .ToArray();
-        Assert(v5Frames.Length == 36, "side-prone v5 phase inventory changed");
-        DecodeFrames(Path.GetDirectoryName(v5ManifestPath)!, v5Frames, "side-prone v5");
 
         using var roadGazeDocument = JsonDocument.Parse(File.ReadAllText(roadGazeManifestPath));
         var roadGaze = roadGazeDocument.RootElement;

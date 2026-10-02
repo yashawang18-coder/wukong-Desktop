@@ -2,33 +2,34 @@
   "schema_version": 1,
   "asset_id": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
   "asset_version": 10,
-  "asset_stage": "runtime-approved",
+  "asset_stage": "deprecated",
   "source_package": "wukong-sleep-runtime-final-transparent-v10.zip",
   "source_zip_sha256": "174350b0aaa7d01a6639d8ce189fb7a12d3541e5dc5ce4460b1461d8f0d1c701",
   "source_frame_count": 48,
   "runtime_frame_count": 48,
   "sequence_count": 8,
   "source_png_byte_identity": true,
-  "owner_preview_approved": true,
-  "owner_material_visual_confirmed": true,
-  "visual_approved": true,
+  "owner_preview_approved": false,
+  "owner_material_visual_confirmed": false,
+  "visual_approved": false,
   "automated_validation": "passed_import_integrity",
-  "runtime_validation": "passed_windows_renderer_qa",
-  "runtime_approved": true,
-  "runtime_use": true,
-  "production_asset": true,
+  "runtime_validation": "failed_owner_visual_qa",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
   "prototype_use": false,
-  "developer_preview": true,
-  "autonomous_binding_enabled": true,
-  "normal_runtime_available": true,
-  "allowed_sources": [
-    "AutonomousTick",
-    "DeveloperPreview"
-  ],
+  "developer_preview": false,
+  "autonomous_binding_enabled": false,
+  "normal_runtime_available": false,
+  "allowed_sources": [],
   "runtime_render_scale": 0.61,
   "runtime_scale_policy": "fixed per-sequence owner-reviewed visual scale after Alpha-bounds baseline; no per-frame normalization",
-  "deprecated_action_count": 4,
+  "deprecated_action_count": 8,
   "deprecated_actions": [
+    "wk.candidate.sleep.main_lifecycle_v2",
+    "wk.candidate.sleep.prone_to_side_roll_v2",
+    "wk.candidate.sleep.sprawled_front_breath_v2",
+    "wk.candidate.sleep.sprawled_left_side_breath_v2",
     "wk.candidate.sleep.sprawled_right_side_breath_v2",
     "wk.candidate.sleep.compact_prone_breath_v2",
     "wk.candidate.sleep.curled_side_breath_v2",
@@ -57,7 +58,7 @@
     "candidate_scaled_visible_major_axis_px": 583.16,
     "runtime_visible_major_axis_px": 812,
     "runtime_scaled_visible_major_axis_px": 552.16,
-    "windows_transition_review": "passed_windows_renderer_qa"
+    "windows_transition_review": "withdrawn_owner_visual_qa_2026_09_30"
   },
   "runtime_frame_format": "1024x1024 RGBA PNG copied byte-for-byte from the supplied v10 ZIP",
   "missing_content": [
@@ -65,5 +66,25 @@
     "approved interrupt exit",
     "compatible bridges for independent side-view variants"
   ],
-  "notes": "Owner Windows review passed on 2026-09-06 for the four non-deprecated sequences. Main lifecycle and front breathing are enabled only from compatible autonomous prone profiles; the independent roll and left-side loop remain runtime-approved explicit previews until a compatible pose bridge exists. Four owner-rejected color/coat variants remain deprecated audit evidence and are never playable."
+  "notes": "Owner rejected identity/coat/fur on 2026-09-30. All eight v10 sequences are disabled, including autonomous and developer playback. Original PNGs, timing and hashes are retained for audit; previous approval is historical, not current. Use compatible awake rest until a new sleep sequence and wake exit pass review.",
+  "approval_history_before_2026_09_30": {
+    "owner_preview_approved": true,
+    "owner_material_visual_confirmed": true,
+    "visual_approved": true,
+    "runtime_approved": true,
+    "runtime_use": true,
+    "production_asset": true,
+    "prototype_use": false,
+    "developer_preview": true,
+    "autonomous_binding_enabled": true,
+    "normal_runtime_available": true,
+    "runtime_validation": "passed_windows_renderer_qa",
+    "allowed_sources": [
+      "AutonomousTick",
+      "DeveloperPreview"
+    ]
+  },
+  "deprecated": true,
+  "deprecated_reason": "owner_rejected_identity_coat_and_fur_2026_09_30",
+  "status": "deprecated"
 }

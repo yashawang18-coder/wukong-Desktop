@@ -12,4 +12,4 @@ Byte-exact runtime candidate imported from `WK-AUTONOMOUS-PRONE-HAPPY-HOT-PANTIN
 - Horizontal mirror: no
 - Ground baseline: y=899
 
-The owner approved the source visual. Formal runtime approval remains closed until byte validation, Release build, and Windows WPF playback continuity and tongue-edge QA are complete. A candidate EXE marker may temporarily expose developer preview and low-frequency autonomous review without changing the formal gate.
+On 2026-10-02 the owner authorized activation. Byte validation and actual transparent MainWindow playback observed all 17 frame paths and recovery to front-prone idle. Normal runtime is enabled without a candidate marker; front-pose, mood, stress and shared cooldown gates remain mandatory. Source PNGs and durations are unchanged. Final perceived continuity at owner-selected desktop sizes remains a separate visual review.

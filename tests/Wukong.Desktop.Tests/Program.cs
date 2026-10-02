@@ -14,6 +14,12 @@ using Wukong.Domain;
 
 if (args.Contains("--show-panel-smoke", StringComparer.Ordinal))
     return ShowPanelSmoke();
+if (args.Contains("--walk-v8-renderer-smoke", StringComparer.Ordinal))
+    return WalkV8RendererSmoke.Run(args.Last());
+if (args.Contains("--prone-renderer-smoke", StringComparer.Ordinal))
+    return ProneRendererSmoke.Run(args.Last());
+if (args.Contains("--sleep-v11-renderer-smoke", StringComparer.Ordinal))
+    return SleepV11RendererSmoke.Run(args.Last());
 if (args.Contains("--capture-panel-screens", StringComparer.Ordinal))
     return CapturePanelScreens(args.SkipWhile(x => x != "--capture-panel-screens").Skip(1).FirstOrDefault() ?? Path.Combine(".publish-check", "ux-panel-album-coin-fixes-v1", "screenshots"));
 if (args.Contains("--car-ride-memory-smoke", StringComparer.Ordinal))
@@ -26,6 +32,8 @@ if (args.Contains("--car-ride-memory-smoke", StringComparer.Ordinal))
 
 var tests = new (string Name, Action Run)[]
 {
+    ("prone promotion uses Normal and rejects stale or incompatible requests", ProneRuntimePromotionTests.NormalGateAndRecovery),
+    ("prone scheduling honors shared cooldown and reduced side dwell", ProneRuntimePromotionTests.SchedulingAndSidePreference),
     ("input adapter emits input events", InputAdapterEmitsEvents),
     ("startup factory creates one main window", StartupFactoryCreatesOneMainWindow),
     ("desktop single instance rejects a duplicate process", DesktopSingleInstanceRejectsDuplicate),
@@ -61,15 +69,16 @@ var tests = new (string Name, Action Run)[]
     ("front-prone expression candidate gate and autonomous rules stay isolated", FrontProneExpressionCandidateTests.CandidateReviewGateAndAutonomousRulesAreIsolated),
     ("front-prone happy hot-panting frames and timing stay byte exact", ProneHappyHotPantingCandidateTests.ManifestFramesAndTimingStayByteExact),
     ("front-prone happy hot-panting gate pose cooldown and preview stay isolated", ProneHappyHotPantingCandidateTests.CandidateGatePoseCooldownAndPreviewStayIsolated),
-    ("sleep runtime v10 candidate manifest frames and gate are valid", SleepCandidateTests.ManifestFramesAndGateAreValid),
-    ("sleep runtime v10 uses compatible autonomous routes and isolated developer preview", SleepCandidateTests.ApprovedSleepUsesCompatibleAutonomousRoutesAndIsolatedPreview),
-    ("missing sleep runtime v10 fails closed without legacy fallback", SleepCandidateTests.MissingV10FramesFailClosedWithoutLegacyFallback),
+    ("sleep runtime v11 manifest frames and gate are valid", SleepCandidateTests.ManifestFramesAndGateAreValid),
+    ("approved sleep v11 uses compatible autonomy and manual runtime", SleepCandidateTests.ApprovedSleepUsesCompatibleAutonomyAndManualRuntime),
+    ("missing sleep runtime v11 fails closed without legacy fallback", SleepCandidateTests.MissingV11FramesFailClosedWithoutLegacyFallback),
     ("food and water v5 manifest frames and owner runtime gate are valid", FoodWaterCandidateTests.ManifestFramesAndRuntimeGateAreValid),
     ("food and water v5 owner routes use Normal while other sources stay closed", FoodWaterCandidateTests.OwnerRoutesUseNormalAndOtherSourcesStayClosed),
     ("food and water v5 with missing frames fails closed", FoodWaterCandidateTests.MissingFramesFailClosed),
     ("patrol walk v1 approved manifest frames and gate are valid", PatrolWalkCandidateTests.ManifestFramesAndGateAreValid),
     ("patrol walk v1 uses autonomous allowlist and isolated developer preview", PatrolWalkCandidateTests.ApprovedGaitUsesAutonomousAllowlistAndDeveloperPreviewStaysIsolated),
     ("patrol walk v1 window travel is directional and work-area bounded", PatrolWalkCandidateTests.WindowTravelIsDirectionalAndWorkAreaBounded),
+    ("patrol walk v8 normal autonomous choices preserve facing", PatrolWalkCandidateTests.AutonomousSelectionUsesApprovedV8AndLocksFacing),
     ("autonomous allowlist excludes command-only jump and spin", AutonomousAllowlistExcludesCommandOnlyActions),
     ("approved autonomous daily transitions are indexed and gated", ApprovedAutonomousDailyTransitionsAreIndexedAndGated),
     ("developer autonomous daily candidate can request playback", DeveloperAutonomousDailyCandidateCanRequestPlayback),
@@ -78,7 +87,7 @@ var tests = new (string Name, Action Run)[]
     ("command candidates stay out of autonomous and production commands", CommandCandidatesStayGated),
     ("behavior agent mock owner command uses posture branch", BehaviorAgentMockOwnerCommandUsesPostureBranch),
     ("desktop refreshes decision memory and exposes command reasons", DesktopDecisionMemoryAndCommandReasonFeedback),
-    ("approved owner commands tolerate missing posture bridge assets", ApprovedOwnerCommandsTolerateMissingPostureBridgeAssets),
+    ("approved owner commands use approved posture bridges", ApprovedOwnerCommandsUseApprovedPostureBridges),
     ("command completion holds the exact terminal frame", CommandCompletionHoldsExactTerminalFrame),
     ("reported commands keep rendered size at terminal hold", ReportedCommandTerminalHoldsKeepRenderScale),
     ("command groups share one batch visual scale", CommandGroupsShareOneBatchVisualScale),
@@ -89,8 +98,17 @@ var tests = new (string Name, Action Run)[]
     ("dialogue and menu commands use the same runtime path", BehaviorTruthRuntimeTests.DialogueAndMenuCommandsUseTheSameRuntimePath),
     ("dialogue commitments require an active lifecycle request", BehaviorTruthRuntimeTests.DialogueCommitmentRequiresAStartedRequest),
     ("false autonomous speech is replaced by current facts", BehaviorTruthRuntimeTests.FalseAutonomousSpeechIsReplacedByCurrentFact),
-    ("continuity rollout owns four daily episodes", BehaviorTruthRuntimeTests.ContinuityRolloutOwnsTheFourDailyEpisodes),
+    ("continuity rollout owns daily episodes including quiet recovery", BehaviorTruthRuntimeTests.ContinuityRolloutOwnsDailyEpisodes),
     ("normal owner command uses reducer lifecycle", BehaviorTruthRuntimeTests.NormalOwnerCommandUsesReducerLifecycle),
+    ("duplicate completion cannot reward twice", ReducerCompletionRuntimeTests.DuplicateCompletionCannotRewardTwice),
+    ("late completion after stop is ignored", ReducerCompletionRuntimeTests.LateCompletionAfterStopIsIgnored),
+    ("failed execution settles only once", ReducerCompletionRuntimeTests.FailedExecutionSettlesOnlyOnce),
+    ("stale terminal hold cannot interrupt new owner action", ReducerCompletionRuntimeTests.StaleHoldCannotInterruptNewOwnerAction),
+    ("repeated preview uses execution identity", ReducerCompletionRuntimeTests.RepeatedPreviewUsesExecutionIdentity),
+    ("stable idle completion does not record activity", ReducerCompletionRuntimeTests.StableIdleCompletionDoesNotRecordActivity),
+    ("preview failure restores without learning", ReducerCompletionRuntimeTests.PreviewFailureRestoresWithoutLearning),
+    ("window decode failure reaches reducer", ReducerCompletionRuntimeTests.WindowDecodeFailureReachesReducer),
+    ("thirty minute virtual continuity rejects stale callbacks", ReducerCompletionRuntimeTests.ThirtyMinuteVirtualContinuityRejectsStaleCallbacks),
     ("reducer-owned actions keep action-specific outcomes", BehaviorAgentRolloutTests.ReducerOwnedProfilesKeepActionSpecificOutcomes),
     ("developer forced command candidate can request playback", DeveloperForcedCommandCandidateCanRequestPlayback),
     ("magic candidate assets are indexed and validated", MagicCandidateAssetsAreIndexed),
@@ -131,6 +149,7 @@ var tests = new (string Name, Action Run)[]
     ("album markdown update preserves unknown fields", AlbumMarkdownUpdatePreservesUnknownFields),
     ("album media unlink handles persistence and keeps files", AlbumMediaUnlinkHandlesPersistenceAndKeepsFiles),
     ("album folder removal persists and keeps local files", AlbumFolderRemovalPersistsAndKeepsFiles),
+    ("episode preparation uses the real approved compatible catalog", CompanionEpisodeTests.RealCatalogUsesCompatibleEpisodePreparation),
     ("autonomous tick can request a motion after dwell", AutonomousTickCanRequestMotion),
     ("autonomous behavior preferences map to all decision paths", AutonomousBehaviorPreferencesMapToDecisionPaths),
     ("agent state attachment never blocks window construction", AgentStateAttachmentNeverBlocksWindowConstruction),
@@ -1278,7 +1297,7 @@ static void DesktopDecisionMemoryAndCommandReasonFeedback()
         "owner-facing command decision did not expose concise willingness details");
 }
 
-static void ApprovedOwnerCommandsTolerateMissingPostureBridgeAssets()
+static void ApprovedOwnerCommandsUseApprovedPostureBridges()
 {
     var runtime = new DesktopRuntimeHost();
     var requests = new List<PetMotionRequest>();
@@ -1291,9 +1310,12 @@ static void ApprovedOwnerCommandsTolerateMissingPostureBridgeAssets()
     Assert(runtime.CurrentStablePosture == StablePosture.Sit, "sit command did not update stable posture after playback completed");
 
     var spin = runtime.SubmitOwnerCommandAsync("转圈").GetAwaiter().GetResult();
-    Assert(spin == PetActionResult.Accepted, "spin from sit should play available spin while recording missing bridge");
+    Assert(spin == PetActionResult.Accepted, "spin from sit should use the approved stand-up bridge");
+    Assert(requests.Last().Motion.Phases[0].Frames.SequenceEqual(
+        DesktopMotionCatalog.Load(AppContext.BaseDirectory).Find(AutonomousDailyCandidateBehaviorIds.SitToStand)!.Phases[0].Frames),
+        "spin omitted its approved stand-up bridge");
     Assert(requests.Last().Motion.BehaviorId == MockCommandActionIds.Spin, "spin from sit did not select spin action");
-    Assert(requests.Last().Motion.Phases.Any(x => x.Name.Contains(MockCommandActionIds.Spin, StringComparison.Ordinal)), "spin action frames were not included after missing bridge");
+    Assert(requests.Last().Motion.Phases.Any(x => x.Name.Contains(MockCommandActionIds.Spin, StringComparison.Ordinal)), "spin action frames were not included after approved bridge");
     Assert(requests.Last().Motion.RuntimeEnabled && requests.Last().ExecutionMode == BehaviorExecutionMode.Normal, "spin command did not stay on approved Normal path");
 }
 
@@ -2670,7 +2692,8 @@ static void HorizontalMirrorPolicyCoversOnlyNonDirectionalPetActions()
     Assert(expected.All(x => x.SupportsHorizontalMirror), "an eligible non-directional action did not expose its mirror variant");
     Assert(runtime.MagicMotions.All(x => !x.SupportsHorizontalMirror), "magic assets must never be runtime mirrored");
     Assert(runtime.CarRideCandidateMotions.All(x => !x.SupportsHorizontalMirror), "native car directions must never be runtime mirrored");
-    Assert(runtime.Motions.Where(x => x.AssetBatch == PatrolWalkCandidateBehaviorIds.AssetBatch).All(x => !x.SupportsHorizontalMirror), "native left/right patrol assets were mirrored twice");
+    Assert(runtime.Motions.Where(x => x.AssetBatch == PatrolWalkCandidateBehaviorIds.AssetBatch).All(x => x.SupportsHorizontalMirror), "v8 shared canonical patrol frames cannot resolve both directions");
+    Assert(runtime.Motions.Where(x => x.AssetBatch == FrontProneExpressionBehaviorIds.AssetBatch).All(x => !x.SupportsHorizontalMirror), "front-only expressions exposed mirror variants");
     Assert(runtime.Motions.Where(x => x.IsExpired).All(x => !x.SupportsHorizontalMirror), "expired assets exposed new mirror variants");
 
     var mainXaml = File.ReadAllText(Path.GetFullPath(Path.Combine("src", "Wukong.Desktop", "MainWindow.xaml")));
@@ -2737,7 +2760,7 @@ static void AutonomousTickCanRequestMotion()
     Assert(runtime.Hunger > hungerBeforeTick, "unified runtime state did not increase hunger during autonomous ticks");
     Assert(requests.Any(x => x.Motion.BehaviorId is LifecycleCandidateBehaviorIds.LivelyDailyP2 or LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1), "state-driven autonomous scheduling never selected an approved complete lively lifecycle");
     var restLifecycle = requests.First(x => x.Motion.BehaviorId is LifecycleCandidateBehaviorIds.LivelyDailyP2 or LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1);
-    Assert(restLifecycle.LoopCycles is >= 4 and <= 7, "autonomous complete lifecycle no longer spends a sustained interval in its prone loop");
+    Assert(restLifecycle.LoopCycles is >= 1 and <= 2, "backward-looking rest exceeds the reduced dwell policy");
     Assert(requests.All(x => x.Motion.BehaviorId is LifecycleCandidateBehaviorIds.StandIdleMicroloop or LifecycleReviewCandidateBehaviorIds.StandIdleV3R1 or LifecycleCandidateBehaviorIds.LivelyDailyP2 or LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1 or AutonomousDailyCandidateBehaviorIds.StandToSit), "autonomous tick selected an expired or out-of-scope behavior");
     var standDelays = Enumerable.Range(1, 64).Select(seed => DesktopRuntimeHost.ChooseAutonomousIdleDelay(StablePosture.Stand, new Random(seed))).ToArray();
     var proneDelays = Enumerable.Range(1, 64).Select(seed => DesktopRuntimeHost.ChooseAutonomousIdleDelay(StablePosture.Prone, new Random(seed))).ToArray();
@@ -2756,8 +2779,8 @@ static void AutonomousBehaviorPreferencesMapToDecisionPaths()
     var preferences = AutonomousBehaviorPreferences.Default;
     Assert(Math.Abs(DesktopRuntimeHost.AutonomousBehaviorWeightFor(PatrolWalkCandidateBehaviorIds.WalkLeft, preferences) - 1.35) < 0.001,
         "walking preference does not apply to patrol");
-    Assert(Math.Abs(DesktopRuntimeHost.AutonomousBehaviorWeightFor(LifecycleCandidateBehaviorIds.LivelyDailyP2, preferences) - 1.45) < 0.001,
-        "prone preference does not apply to the long resting lifecycle");
+    Assert(Math.Abs(DesktopRuntimeHost.AutonomousBehaviorWeightFor(LifecycleCandidateBehaviorIds.LivelyDailyP2, preferences) - preferences.ProneRestWeight * 0.20) < 0.001,
+        "side-prone reduction does not compose with the owner's resting preference");
     Assert(Math.Abs(DesktopRuntimeHost.AutonomousBehaviorWeightFor(SleepCandidateBehaviorIds.MainLifecycle, preferences) - 1.25) < 0.001,
         "sleeping preference does not apply to sleep lifecycle");
     Assert(Math.Abs(DesktopRuntimeHost.AutonomousBehaviorWeightFor(LifecycleCandidateBehaviorIds.StandIdleMicroloop, preferences) - 0.40) < 0.001,

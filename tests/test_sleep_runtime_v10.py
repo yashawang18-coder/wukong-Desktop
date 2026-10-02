@@ -19,22 +19,18 @@ class SleepRuntimeV10Tests(unittest.TestCase):
         cls.asset = json.loads((BATCH / "asset.json").read_text(encoding="utf-8"))
         cls.manifest = json.loads((BATCH / "manifest.json").read_text(encoding="utf-8"))
 
-    def test_v10_approved_actions_and_deprecated_variants_have_distinct_gates(self):
+    def test_v10_withdrawal_closes_every_gate_and_preserves_history(self):
         for document in (self.asset, self.manifest):
             self.assertEqual(BATCH_ID, document["asset_id"])
             self.assertEqual(10, document["asset_version"])
             self.assertEqual(SOURCE_ZIP_SHA256, document["source_zip_sha256"])
-            self.assertTrue(document["owner_preview_approved"])
-            self.assertTrue(document["owner_material_visual_confirmed"])
-            self.assertTrue(document["visual_approved"])
-            self.assertEqual("passed_windows_renderer_qa", document["runtime_validation"])
-            self.assertTrue(document["runtime_approved"])
-            self.assertTrue(document["runtime_use"])
-            self.assertTrue(document["production_asset"])
-            self.assertFalse(document["prototype_use"])
-            self.assertTrue(document["developer_preview"])
-            self.assertTrue(document["autonomous_binding_enabled"])
-            self.assertEqual(["AutonomousTick", "DeveloperPreview"], document["allowed_sources"])
+            for flag in ("owner_preview_approved", "owner_material_visual_confirmed",
+                         "visual_approved", "runtime_approved", "runtime_use", "production_asset",
+                         "prototype_use", "developer_preview", "autonomous_binding_enabled"):
+                self.assertFalse(document[flag], flag)
+            self.assertEqual("failed_owner_visual_qa", document["runtime_validation"])
+            self.assertEqual([], document["allowed_sources"])
+            self.assertTrue(document["approval_history_before_2026_09_30"]["runtime_approved"])
 
     def test_all_48_runtime_pngs_match_manifest_and_checksum_inventory(self):
         inventory = self.manifest["frame_inventory"]
@@ -90,16 +86,6 @@ class SleepRuntimeV10Tests(unittest.TestCase):
             "wk.candidate.sleep.curled_side_breath_v2": 0.92,
             "wk.candidate.sleep.top_down_prone_breath_v2": 1.04,
         }
-        deprecated_ids = {
-            "wk.candidate.sleep.sprawled_right_side_breath_v2",
-            "wk.candidate.sleep.compact_prone_breath_v2",
-            "wk.candidate.sleep.curled_side_breath_v2",
-            "wk.candidate.sleep.top_down_prone_breath_v2",
-        }
-        autonomous_ids = {
-            "wk.candidate.sleep.main_lifecycle_v2",
-            "wk.candidate.sleep.sprawled_front_breath_v2",
-        }
         self.assertEqual(set(expected), {action["behavior_id"] for action in actions})
         self.assertEqual(48, sum(action["frame_count"] for action in actions))
         for action in actions:
@@ -111,32 +97,16 @@ class SleepRuntimeV10Tests(unittest.TestCase):
             self.assertEqual(sum(durations), action["total_duration_ms"])
             self.assertEqual(loop, action["loop"])
             self.assertEqual(expected_scales[action["behavior_id"]], action["runtime_render_scale"])
-            deprecated = action["behavior_id"] in deprecated_ids
-            self.assertEqual(deprecated, action["deprecated"])
-            if deprecated:
-                self.assertFalse(action["owner_preview_approved"])
-                self.assertFalse(action["visual_approved"])
-                self.assertFalse(action["runtime_approved"])
-                self.assertFalse(action["runtime_use"])
-                self.assertFalse(action["production_asset"])
-                self.assertFalse(action["autonomous_binding_enabled"])
-                self.assertEqual("failed_owner_visual_qa", action["runtime_validation"])
-                self.assertFalse(action["developer_preview"])
-                self.assertEqual([], action["allowed_sources"])
-                self.assertEqual("owner_rejected_color_and_fur_texture_2026_09_05", action["deprecated_reason"])
-            else:
-                self.assertTrue(action["owner_preview_approved"])
-                self.assertTrue(action["visual_approved"])
-                self.assertEqual("passed_windows_renderer_qa", action["runtime_validation"])
-                self.assertTrue(action["runtime_approved"])
-                self.assertTrue(action["runtime_use"])
-                self.assertTrue(action["production_asset"])
-                self.assertFalse(action["prototype_use"])
-                self.assertTrue(action["developer_preview"])
-                autonomous = action["behavior_id"] in autonomous_ids
-                self.assertEqual(autonomous, action["autonomous_binding_enabled"])
-                self.assertEqual(["AutonomousTick", "DeveloperPreview"] if autonomous else ["DeveloperPreview"], action["allowed_sources"])
-                self.assertIsNone(action["deprecated_reason"])
+            self.assertTrue(action["deprecated"])
+            for flag in ("owner_preview_approved", "visual_approved", "runtime_approved", "runtime_use",
+                         "production_asset", "prototype_use", "developer_preview", "autonomous_binding_enabled"):
+                self.assertFalse(action[flag], (action["behavior_id"], flag))
+            self.assertEqual("failed_owner_visual_qa", action["runtime_validation"])
+            self.assertEqual([], action["allowed_sources"])
+            self.assertIn(action["deprecated_reason"], (
+                "owner_rejected_color_and_fur_texture_2026_09_05",
+                "owner_rejected_identity_coat_and_fur_2026_09_30"))
+
 
     def test_v5_and_omitted_views_are_not_active(self):
         self.assertFalse(OLD_V5_BATCH.exists())
@@ -154,10 +124,10 @@ class SleepRuntimeV10Tests(unittest.TestCase):
         self.assertFalse(rules["approved_wake_sequence_available"])
         self.assertFalse(rules["legacy_sleep_visual_fallback_allowed"])
 
-    def test_runtime_prone_visible_body_area_is_owner_approved(self):
+    def test_historical_scale_audit_is_preserved_without_claiming_approval(self):
         comparison = self.manifest["current_runtime_prone_bridge"]
         self.assertTrue(comparison["candidate_f01_bytes_preserved"])
-        self.assertEqual("passed_windows_renderer_qa", comparison["windows_transition_review"])
+        self.assertEqual("withdrawn_owner_visual_qa_2026_09_30", comparison["windows_transition_review"])
         ratio = comparison["candidate_scaled_visible_major_axis_px"] / comparison["runtime_scaled_visible_major_axis_px"]
         self.assertGreaterEqual(ratio, 1.00)
         self.assertLessEqual(ratio, 1.10)
@@ -167,7 +137,7 @@ class SleepRuntimeV10Tests(unittest.TestCase):
             alpha_histogram = image.getchannel("A").histogram()
             reference_body_size = sum(alpha_histogram[1:]) ** 0.5 * 0.68
         for action in self.manifest["actions"]:
-            if action["deprecated"]:
+            if not action["approval_history_before_2026_09_30"]["runtime_approved"]:
                 continue
             visible_body_sizes = []
             for frame in action["phases"][0]["frames"]:

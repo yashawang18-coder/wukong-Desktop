@@ -16,16 +16,17 @@ class FrontProneMicroexpressionsV1Tests(unittest.TestCase):
     def setUpClass(cls):
         cls.manifest = json.loads((BATCH / "manifest.json").read_text(encoding="utf-8"))
 
-    def test_candidate_gate_is_not_formal_runtime_approval(self):
+    def test_owner_enabled_gate_records_real_renderer_evidence(self):
         self.assertTrue(self.manifest["owner_preview_approved"])
         self.assertTrue(self.manifest["visual_approved"])
-        self.assertEqual("pending_windows_expression_strength_qa", self.manifest["runtime_validation"])
-        self.assertFalse(self.manifest["runtime_approved"])
-        self.assertFalse(self.manifest["runtime_use"])
-        self.assertFalse(self.manifest["production_asset"])
+        self.assertEqual("passed_windows_renderer_qa", self.manifest["runtime_validation"])
+        self.assertTrue(self.manifest["runtime_approved"])
+        self.assertTrue(self.manifest["runtime_use"])
+        self.assertTrue(self.manifest["production_asset"])
         self.assertFalse(self.manifest["prototype_use"])
         self.assertTrue(self.manifest["developer_preview"])
-        self.assertFalse(self.manifest["autonomous_binding_enabled"])
+        self.assertTrue(self.manifest["autonomous_binding_enabled"])
+        self.assertEqual(3, len(self.manifest["approval_evidence"]["results"]))
 
     def test_all_production_frames_match_inventory_and_alpha_contract(self):
         inventory = self.manifest["frame_inventory"]

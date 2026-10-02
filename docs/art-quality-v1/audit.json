@@ -1,0 +1,4232 @@
+{
+  "schema_version": 1,
+  "scope": "reference_selection_and_read_only_repair_triage",
+  "source_pixels_modified": false,
+  "runtime_approval_changed": false,
+  "reference_selection": "existing owner-approved command and early prone anchors; not a new identity approval",
+  "references": [
+    {
+      "role": "standing_identity",
+      "path": "assets/action-mocks/WK-COMMAND-PRODUCTION-CANDIDATES-v4/frames/sit/frame-001.png",
+      "sha256": "eeed89145e8b567898e6d85296b80a58de802561fe08855fb7bf7106f0eac5c5",
+      "bytes": 509821,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": {
+        "1": [
+          177,
+          200,
+          847,
+          900
+        ],
+        "16": [
+          177,
+          200,
+          847,
+          900
+        ],
+        "128": [
+          178,
+          201,
+          846,
+          899
+        ]
+      },
+      "baseline_nonzero": 899,
+      "baseline_alpha16": 899,
+      "gold_region_rgb_median": [
+        203.0,
+        153.0,
+        99.0
+      ],
+      "blue_dominant_visible_pixels": 0,
+      "faint_alpha_pixels": 6956,
+      "errors": []
+    },
+    {
+      "role": "sitting_identity",
+      "path": "assets/action-mocks/WK-COMMAND-PRODUCTION-CANDIDATES-v4/frames/sit/frame-010.png",
+      "sha256": "2bf7f67b8fb43261c6dd0c11ac2760d5d43692fd26d7e1b0944af49752dbff2b",
+      "bytes": 482506,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": {
+        "1": [
+          253,
+          193,
+          771,
+          900
+        ],
+        "16": [
+          253,
+          193,
+          771,
+          900
+        ],
+        "128": [
+          254,
+          194,
+          770,
+          899
+        ]
+      },
+      "baseline_nonzero": 899,
+      "baseline_alpha16": 899,
+      "gold_region_rgb_median": [
+        209.0,
+        166.0,
+        120.0
+      ],
+      "blue_dominant_visible_pixels": 0,
+      "faint_alpha_pixels": 3390,
+      "errors": []
+    },
+    {
+      "role": "front_prone_pose",
+      "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-IDLE-FRONT-CANDIDATE-v4/frames/prone-idle-front-calm/frame-001.png",
+      "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+      "bytes": 214970,
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_bounds": {
+        "1": [
+          323,
+          477,
+          700,
+          900
+        ],
+        "16": [
+          323,
+          480,
+          697,
+          897
+        ],
+        "128": [
+          324,
+          481,
+          696,
+          896
+        ]
+      },
+      "baseline_nonzero": 899,
+      "baseline_alpha16": 896,
+      "gold_region_rgb_median": [
+        216.0,
+        175.0,
+        130.0
+      ],
+      "blue_dominant_visible_pixels": 0,
+      "faint_alpha_pixels": 2994,
+      "errors": []
+    }
+  ],
+  "groups": [
+    {
+      "batch": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate",
+      "sequence": "walk-left",
+      "frames": [
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-001.png",
+          "sha256": "db36f1cbff0e5b0bbda22cbc069c50ef1abc8133aacde9cf6408264be2ee4da7",
+          "bytes": 345807,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              163,
+              365,
+              858,
+              895
+            ],
+            "16": [
+              164,
+              365,
+              858,
+              895
+            ],
+            "128": [
+              166,
+              367,
+              855,
+              894
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 894,
+          "gold_region_rgb_median": [
+            224.0,
+            165.0,
+            101.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 398,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-002.png",
+          "sha256": "85f4e2529ff8985c2e71144277f84341aac2b37e5cedc8c9581a4375870e59e1",
+          "bytes": 352786,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              157,
+              362,
+              867,
+              895
+            ],
+            "16": [
+              157,
+              362,
+              867,
+              893
+            ],
+            "128": [
+              159,
+              364,
+              861,
+              892
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 892,
+          "gold_region_rgb_median": [
+            224.0,
+            164.0,
+            101.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 438,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-003.png",
+          "sha256": "0bfe7bffba3774a754f6e5fea9e48723b34b836aeb03f0aa064d3bf25abdf183",
+          "bytes": 355984,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              135,
+              365,
+              889,
+              893
+            ],
+            "16": [
+              135,
+              365,
+              889,
+              893
+            ],
+            "128": [
+              136,
+              368,
+              886,
+              892
+            ]
+          },
+          "baseline_nonzero": 892,
+          "baseline_alpha16": 892,
+          "gold_region_rgb_median": [
+            222.0,
+            165.0,
+            103.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 524,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-004.png",
+          "sha256": "fa79f2b18610d8a981726ee5b8dbb70d231799d1064547f44efe638692987882",
+          "bytes": 362885,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              140,
+              368,
+              884,
+              895
+            ],
+            "16": [
+              140,
+              368,
+              882,
+              895
+            ],
+            "128": [
+              141,
+              374,
+              881,
+              892
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 894,
+          "gold_region_rgb_median": [
+            224.0,
+            165.0,
+            101.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 483,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-005.png",
+          "sha256": "adfbce2c71a9b2de9af9a9eb005951c2ab52275a611dc5184cf52330e756f6bd",
+          "bytes": 368625,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              122,
+              358,
+              902,
+              893
+            ],
+            "16": [
+              122,
+              358,
+              902,
+              893
+            ],
+            "128": [
+              124,
+              360,
+              899,
+              892
+            ]
+          },
+          "baseline_nonzero": 892,
+          "baseline_alpha16": 892,
+          "gold_region_rgb_median": [
+            225.0,
+            166.0,
+            102.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 459,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-006.png",
+          "sha256": "2ff4fa32ce6eb0d02a2890fa7e2c498540b07ea7c519aeca0d664c38f63e2fe1",
+          "bytes": 371213,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              124,
+              354,
+              899,
+              893
+            ],
+            "16": [
+              124,
+              354,
+              894,
+              893
+            ],
+            "128": [
+              125,
+              356,
+              893,
+              891
+            ]
+          },
+          "baseline_nonzero": 892,
+          "baseline_alpha16": 892,
+          "gold_region_rgb_median": [
+            223.0,
+            164.0,
+            101.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 465,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-007.png",
+          "sha256": "d1bfbbff46111154f7a260e2133888e64407d71138c4abe8f43d6bfcac76c313",
+          "bytes": 346432,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              166,
+              362,
+              857,
+              895
+            ],
+            "16": [
+              166,
+              363,
+              853,
+              895
+            ],
+            "128": [
+              167,
+              364,
+              851,
+              890
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 894,
+          "gold_region_rgb_median": [
+            224.0,
+            166.0,
+            104.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 440,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-008.png",
+          "sha256": "ce4b48f99eaca5b8727a8a7f785818fe0cb802ebecd5a2d586ca499b88501302",
+          "bytes": 362900,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              153,
+              365,
+              867,
+              895
+            ],
+            "16": [
+              154,
+              365,
+              867,
+              895
+            ],
+            "128": [
+              155,
+              368,
+              866,
+              894
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 894,
+          "gold_region_rgb_median": [
+            225.0,
+            166.0,
+            103.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 455,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-009.png",
+          "sha256": "3779411b83e652d00dcb3c1be0578ab92ebf8c56327a49aa844e85927bb6459f",
+          "bytes": 362516,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              147,
+              363,
+              876,
+              895
+            ],
+            "16": [
+              147,
+              363,
+              876,
+              894
+            ],
+            "128": [
+              150,
+              364,
+              873,
+              892
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 893,
+          "gold_region_rgb_median": [
+            222.0,
+            164.0,
+            99.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 479,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-010.png",
+          "sha256": "8f7d31a76211b4cb4440d532a381df486cd8b6a1b942e844319693aea7c32a7a",
+          "bytes": 343862,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              161,
+              370,
+              858,
+              895
+            ],
+            "16": [
+              161,
+              370,
+              858,
+              895
+            ],
+            "128": [
+              162,
+              371,
+              856,
+              892
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 894,
+          "gold_region_rgb_median": [
+            223.0,
+            165.0,
+            102.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 440,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-011.png",
+          "sha256": "e4c27f3199bd33bfab263844946d3e3beffeaecb5c358ab752796c46996ef07b",
+          "bytes": 364783,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              153,
+              344,
+              870,
+              891
+            ],
+            "16": [
+              153,
+              344,
+              870,
+              891
+            ],
+            "128": [
+              154,
+              345,
+              865,
+              889
+            ]
+          },
+          "baseline_nonzero": 890,
+          "baseline_alpha16": 890,
+          "gold_region_rgb_median": [
+            224.0,
+            165.5,
+            103.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 489,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-left/frame-012.png",
+          "sha256": "434a86e1627cb35af87a19d332cbea018d1adcc95bacd7e0c231ee4ef31bf4ab",
+          "bytes": 362262,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              159,
+              351,
+              863,
+              895
+            ],
+            "16": [
+              159,
+              351,
+              863,
+              895
+            ],
+            "128": [
+              160,
+              352,
+              860,
+              894
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 894,
+          "gold_region_rgb_median": [
+            225.0,
+            167.0,
+            104.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 513,
+          "errors": []
+        }
+      ],
+      "frame_count": 12,
+      "visible_width_range": [
+        687,
+        780
+      ],
+      "visible_height_range": [
+        525,
+        547
+      ],
+      "baseline_range_alpha16": [
+        890,
+        894
+      ],
+      "review_priority": "P0_gait",
+      "automated_visual_approval": false
+    },
+    {
+      "batch": "WK-AUTONOMOUS-PATROL-WALK-v1-candidate",
+      "sequence": "walk-right",
+      "frames": [
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-001.png",
+          "sha256": "f2d2b1d6da60de4a56594ec5d8f475f7036bcc106eaee731ff3f493b34f37587",
+          "bytes": 345393,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              166,
+              365,
+              861,
+              895
+            ],
+            "16": [
+              166,
+              365,
+              860,
+              895
+            ],
+            "128": [
+              169,
+              367,
+              858,
+              894
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 894,
+          "gold_region_rgb_median": [
+            224.0,
+            165.0,
+            101.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 398,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-002.png",
+          "sha256": "f1ae4b5e96c9d3f4d9d5b07b9fcbf3d1e3cc95bdab3eccff820ceba07d8b9bb8",
+          "bytes": 351983,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              157,
+              362,
+              867,
+              895
+            ],
+            "16": [
+              157,
+              362,
+              867,
+              893
+            ],
+            "128": [
+              163,
+              364,
+              865,
+              892
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 892,
+          "gold_region_rgb_median": [
+            224.0,
+            164.0,
+            101.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 438,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-003.png",
+          "sha256": "b31018d0fc5928978fc74fbfa175ca774c7a87d88ad27e560e6bcafc2a9239f9",
+          "bytes": 355719,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              135,
+              365,
+              889,
+              893
+            ],
+            "16": [
+              135,
+              365,
+              889,
+              893
+            ],
+            "128": [
+              138,
+              368,
+              888,
+              892
+            ]
+          },
+          "baseline_nonzero": 892,
+          "baseline_alpha16": 892,
+          "gold_region_rgb_median": [
+            222.0,
+            165.0,
+            103.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 524,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-004.png",
+          "sha256": "d030bee1c3ace9505ceb8fc1b57bc370483cdc3ff61f138715b2b1f1b68f6729",
+          "bytes": 362938,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              140,
+              368,
+              884,
+              895
+            ],
+            "16": [
+              142,
+              368,
+              884,
+              895
+            ],
+            "128": [
+              143,
+              374,
+              883,
+              892
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 894,
+          "gold_region_rgb_median": [
+            224.0,
+            165.0,
+            101.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 483,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-005.png",
+          "sha256": "de6e71bebd8c0516f082182ebdb46a16100cbbaf960b2493d2b75f0e249b3b4c",
+          "bytes": 368275,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              122,
+              358,
+              902,
+              893
+            ],
+            "16": [
+              122,
+              358,
+              902,
+              893
+            ],
+            "128": [
+              125,
+              360,
+              900,
+              892
+            ]
+          },
+          "baseline_nonzero": 892,
+          "baseline_alpha16": 892,
+          "gold_region_rgb_median": [
+            225.0,
+            166.0,
+            102.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 459,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-006.png",
+          "sha256": "dbd4a3689ebcf082203dc72ab4ca3633f814d3a5caf8566eb77d30a6991dada7",
+          "bytes": 371167,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              125,
+              354,
+              900,
+              893
+            ],
+            "16": [
+              130,
+              354,
+              900,
+              893
+            ],
+            "128": [
+              131,
+              356,
+              899,
+              891
+            ]
+          },
+          "baseline_nonzero": 892,
+          "baseline_alpha16": 892,
+          "gold_region_rgb_median": [
+            223.0,
+            164.0,
+            101.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 465,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-007.png",
+          "sha256": "3d22f36aefab57b3a24a5c995b37de1a5967f2c32b3f43ad4691547795dd31fe",
+          "bytes": 346321,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              167,
+              362,
+              858,
+              895
+            ],
+            "16": [
+              171,
+              363,
+              858,
+              895
+            ],
+            "128": [
+              173,
+              364,
+              857,
+              890
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 894,
+          "gold_region_rgb_median": [
+            224.0,
+            166.0,
+            104.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 440,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-008.png",
+          "sha256": "477b242ed526bc391b30b111f09c31aca78fac1d7cdc44fbe38a644793162df7",
+          "bytes": 363074,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              157,
+              365,
+              871,
+              895
+            ],
+            "16": [
+              157,
+              365,
+              870,
+              895
+            ],
+            "128": [
+              158,
+              368,
+              869,
+              894
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 894,
+          "gold_region_rgb_median": [
+            225.0,
+            166.0,
+            103.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 455,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-009.png",
+          "sha256": "990b378af0647060f2524a8dc54f92525b75225451984cf97c7ca0dd2324aad5",
+          "bytes": 362052,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              148,
+              363,
+              877,
+              895
+            ],
+            "16": [
+              148,
+              363,
+              877,
+              894
+            ],
+            "128": [
+              151,
+              364,
+              874,
+              892
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 893,
+          "gold_region_rgb_median": [
+            222.0,
+            164.0,
+            99.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 479,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-010.png",
+          "sha256": "988f3069631afa3f6b2b30ca2a289c12b4bc24429292c3a736a831ea46adbf95",
+          "bytes": 343215,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              166,
+              370,
+              863,
+              895
+            ],
+            "16": [
+              166,
+              370,
+              863,
+              895
+            ],
+            "128": [
+              168,
+              371,
+              862,
+              892
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 894,
+          "gold_region_rgb_median": [
+            223.0,
+            165.0,
+            102.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 440,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-011.png",
+          "sha256": "bc2f1facd6ac8a8d4f45ecf95b31786538aa818fd822ae3e4fa35406f88a9287",
+          "bytes": 364073,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              154,
+              344,
+              871,
+              891
+            ],
+            "16": [
+              154,
+              344,
+              871,
+              891
+            ],
+            "128": [
+              159,
+              345,
+              870,
+              889
+            ]
+          },
+          "baseline_nonzero": 890,
+          "baseline_alpha16": 890,
+          "gold_region_rgb_median": [
+            224.0,
+            165.5,
+            103.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 489,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PATROL-WALK-v1-candidate/frames/walk-right/frame-012.png",
+          "sha256": "b4dd7ada11cf8a3b4cd724ba5736c63ee94edaf36050066ab792ac9be6dc730a",
+          "bytes": 361486,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              161,
+              351,
+              865,
+              895
+            ],
+            "16": [
+              161,
+              351,
+              865,
+              895
+            ],
+            "128": [
+              164,
+              352,
+              864,
+              894
+            ]
+          },
+          "baseline_nonzero": 894,
+          "baseline_alpha16": 894,
+          "gold_region_rgb_median": [
+            225.0,
+            167.0,
+            104.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 513,
+          "errors": []
+        }
+      ],
+      "frame_count": 12,
+      "visible_width_range": [
+        687,
+        780
+      ],
+      "visible_height_range": [
+        525,
+        547
+      ],
+      "baseline_range_alpha16": [
+        890,
+        894
+      ],
+      "review_priority": "P0_gait",
+      "automated_visual_approval": false
+    },
+    {
+      "batch": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
+      "sequence": "01-main-sleep-lifecycle",
+      "frames": [
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F01.png",
+          "sha256": "b81f36ea611c1f98a1d43cacf216bebd34ebc44fe9ca540f12cf0a582aec169b",
+          "bytes": 483547,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              42,
+              302,
+              998,
+              857
+            ],
+            "16": [
+              42,
+              302,
+              998,
+              857
+            ],
+            "128": [
+              43,
+              303,
+              997,
+              856
+            ]
+          },
+          "baseline_nonzero": 856,
+          "baseline_alpha16": 856,
+          "gold_region_rgb_median": [
+            210.0,
+            165.0,
+            112.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 705,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F02.png",
+          "sha256": "b0fbe44514649a7f677d318b26df25d72846db399d74d601271e1a2211ec967f",
+          "bytes": 462960,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              43,
+              422,
+              990,
+              867
+            ],
+            "16": [
+              43,
+              422,
+              990,
+              867
+            ],
+            "128": [
+              44,
+              423,
+              989,
+              866
+            ]
+          },
+          "baseline_nonzero": 866,
+          "baseline_alpha16": 866,
+          "gold_region_rgb_median": [
+            212.0,
+            157.0,
+            97.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 640,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F03.png",
+          "sha256": "b05655e6e1c26c6d4edda000e9bbf34fcea413efe991faa6091bdac6733e16bf",
+          "bytes": 462273,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              42,
+              427,
+              983,
+              886
+            ],
+            "16": [
+              42,
+              427,
+              983,
+              886
+            ],
+            "128": [
+              43,
+              428,
+              982,
+              885
+            ]
+          },
+          "baseline_nonzero": 885,
+          "baseline_alpha16": 885,
+          "gold_region_rgb_median": [
+            219.0,
+            160.0,
+            97.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 644,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F04.png",
+          "sha256": "5acbe751c142f7ebcc834a6061756234558100f33bf207a1190ca5fed81a3fb1",
+          "bytes": 456806,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              37,
+              448,
+              980,
+              897
+            ],
+            "16": [
+              37,
+              448,
+              980,
+              897
+            ],
+            "128": [
+              38,
+              449,
+              979,
+              896
+            ]
+          },
+          "baseline_nonzero": 896,
+          "baseline_alpha16": 896,
+          "gold_region_rgb_median": [
+            218.0,
+            160.0,
+            99.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 706,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F05.png",
+          "sha256": "e5f8d2cb4c1f7b569c20adfcb5cd20aeb74ef48ed4b66a5261bc108dcc172f57",
+          "bytes": 440352,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              61,
+              450,
+              987,
+              890
+            ],
+            "16": [
+              61,
+              450,
+              987,
+              890
+            ],
+            "128": [
+              62,
+              451,
+              986,
+              889
+            ]
+          },
+          "baseline_nonzero": 889,
+          "baseline_alpha16": 889,
+          "gold_region_rgb_median": [
+            217.0,
+            160.0,
+            99.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 626,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F06.png",
+          "sha256": "26ccbfbe3ceb8e5bde901c952910665d20f9ec270dceaae637d4513bd6d17c5b",
+          "bytes": 424555,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              70,
+              421,
+              990,
+              854
+            ],
+            "16": [
+              70,
+              421,
+              990,
+              854
+            ],
+            "128": [
+              71,
+              422,
+              989,
+              853
+            ]
+          },
+          "baseline_nonzero": 853,
+          "baseline_alpha16": 853,
+          "gold_region_rgb_median": [
+            211.0,
+            151.0,
+            88.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 622,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F07.png",
+          "sha256": "1eb640e82a6b2535a8cba0d7115a742af54e90923485131556862378c17bcc3b",
+          "bytes": 423522,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              72,
+              420,
+              985,
+              858
+            ],
+            "16": [
+              72,
+              420,
+              985,
+              858
+            ],
+            "128": [
+              73,
+              421,
+              984,
+              857
+            ]
+          },
+          "baseline_nonzero": 857,
+          "baseline_alpha16": 857,
+          "gold_region_rgb_median": [
+            217.0,
+            162.0,
+            103.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 656,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F08.png",
+          "sha256": "263f25cc73774c0c3691f63f574ad85452df282efbce1a36611a2984af2b5fa2",
+          "bytes": 401236,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              50,
+              433,
+              971,
+              842
+            ],
+            "16": [
+              50,
+              433,
+              971,
+              842
+            ],
+            "128": [
+              51,
+              434,
+              970,
+              841
+            ]
+          },
+          "baseline_nonzero": 841,
+          "baseline_alpha16": 841,
+          "gold_region_rgb_median": [
+            229.0,
+            177.0,
+            122.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 791,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F09.png",
+          "sha256": "f0a5c6d4c6395fd96afa4fd3667453da9dac7d09e4aec852190378fc769c76bd",
+          "bytes": 375647,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              68,
+              436,
+              949,
+              812
+            ],
+            "16": [
+              68,
+              436,
+              949,
+              812
+            ],
+            "128": [
+              69,
+              437,
+              948,
+              811
+            ]
+          },
+          "baseline_nonzero": 811,
+          "baseline_alpha16": 811,
+          "gold_region_rgb_median": [
+            220.0,
+            179.0,
+            136.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 715,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F10.png",
+          "sha256": "672b82d97113ad1d5a6af446960270b6d32534cc8e8254d5711fa7e595af3f5a",
+          "bytes": 377224,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              54,
+              441,
+              951,
+              815
+            ],
+            "16": [
+              54,
+              441,
+              951,
+              815
+            ],
+            "128": [
+              55,
+              442,
+              950,
+              814
+            ]
+          },
+          "baseline_nonzero": 814,
+          "baseline_alpha16": 814,
+          "gold_region_rgb_median": [
+            224.0,
+            182.0,
+            140.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 822,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F11.png",
+          "sha256": "fe41696a227b22b3b994e29732d28b7bfb8e305a631580eaac95c3bc7ed9dae2",
+          "bytes": 379744,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              51,
+              453,
+              963,
+              826
+            ],
+            "16": [
+              51,
+              453,
+              963,
+              826
+            ],
+            "128": [
+              52,
+              454,
+              962,
+              825
+            ]
+          },
+          "baseline_nonzero": 825,
+          "baseline_alpha16": 825,
+          "gold_region_rgb_median": [
+            227.0,
+            178.0,
+            124.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 702,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F12.png",
+          "sha256": "a59ba31b1644457fa8ca83a7bd1541e436d4769b29b35af3d4eac7fbcdd1eb8f",
+          "bytes": 384585,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              39,
+              468,
+              974,
+              840
+            ],
+            "16": [
+              39,
+              468,
+              974,
+              840
+            ],
+            "128": [
+              40,
+              469,
+              973,
+              839
+            ]
+          },
+          "baseline_nonzero": 839,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            227.0,
+            173.0,
+            115.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 719,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F13.png",
+          "sha256": "cf5f2a9640b8ce543bc6a6a6e4502ad80258a012edf42e0565289730604026bf",
+          "bytes": 376356,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              59,
+              440,
+              983,
+              815
+            ],
+            "16": [
+              59,
+              440,
+              983,
+              815
+            ],
+            "128": [
+              60,
+              441,
+              982,
+              814
+            ]
+          },
+          "baseline_nonzero": 814,
+          "baseline_alpha16": 814,
+          "gold_region_rgb_median": [
+            227.0,
+            180.0,
+            130.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 693,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F14.png",
+          "sha256": "f40205146af84070b723633ec354bbc6ea2c93f80bc1bed9c2b2d5da8944f729",
+          "bytes": 359544,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              40,
+              433,
+              974,
+              802
+            ],
+            "16": [
+              40,
+              433,
+              974,
+              802
+            ],
+            "128": [
+              41,
+              434,
+              973,
+              801
+            ]
+          },
+          "baseline_nonzero": 801,
+          "baseline_alpha16": 801,
+          "gold_region_rgb_median": [
+            226.0,
+            183.0,
+            139.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 760,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F15.png",
+          "sha256": "114b5446258a57e4c932902d3767c0e3982ca3428c817c2b26b592975d385b34",
+          "bytes": 368844,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              42,
+              454,
+              995,
+              809
+            ],
+            "16": [
+              42,
+              454,
+              995,
+              809
+            ],
+            "128": [
+              43,
+              455,
+              994,
+              808
+            ]
+          },
+          "baseline_nonzero": 808,
+          "baseline_alpha16": 808,
+          "gold_region_rgb_median": [
+            232.0,
+            180.0,
+            126.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 787,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/01-main-sleep-lifecycle/F16.png",
+          "sha256": "20cdcd485e0be7e66370298b7eb0a857ef218076d3a108917d0c2d7aaee8837e",
+          "bytes": 367445,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              29,
+              458,
+              996,
+              821
+            ],
+            "16": [
+              29,
+              458,
+              996,
+              821
+            ],
+            "128": [
+              30,
+              459,
+              995,
+              820
+            ]
+          },
+          "baseline_nonzero": 820,
+          "baseline_alpha16": 820,
+          "gold_region_rgb_median": [
+            232.0,
+            179.0,
+            124.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 909,
+          "errors": []
+        }
+      ],
+      "frame_count": 16,
+      "visible_width_range": [
+        881,
+        967
+      ],
+      "visible_height_range": [
+        355,
+        555
+      ],
+      "baseline_range_alpha16": [
+        801,
+        896
+      ],
+      "review_priority": "P1_identity_and_continuity",
+      "automated_visual_approval": false
+    },
+    {
+      "batch": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
+      "sequence": "02-prone-to-side-roll",
+      "frames": [
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/02-prone-to-side-roll/F01.png",
+          "sha256": "707537e58a8760837b637d223e9d85013d3ef4f33391440e45c0c3973bf9ab10",
+          "bytes": 449504,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              49,
+              415,
+              979,
+              859
+            ],
+            "16": [
+              49,
+              415,
+              979,
+              859
+            ],
+            "128": [
+              50,
+              416,
+              978,
+              858
+            ]
+          },
+          "baseline_nonzero": 858,
+          "baseline_alpha16": 858,
+          "gold_region_rgb_median": [
+            214.0,
+            156.0,
+            94.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 734,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/02-prone-to-side-roll/F02.png",
+          "sha256": "ce186ad93a3db84083775c008c7709f2b722afc9e282f338e904b5b34c560746",
+          "bytes": 446863,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              51,
+              418,
+              983,
+              859
+            ],
+            "16": [
+              51,
+              418,
+              983,
+              859
+            ],
+            "128": [
+              52,
+              419,
+              982,
+              858
+            ]
+          },
+          "baseline_nonzero": 858,
+          "baseline_alpha16": 858,
+          "gold_region_rgb_median": [
+            211.0,
+            152.0,
+            91.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 771,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/02-prone-to-side-roll/F03.png",
+          "sha256": "b584a4bf1419fe65687f39eaf015e9f6454f0851389d2fc986cdf35b7672228a",
+          "bytes": 442829,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              48,
+              425,
+              980,
+              858
+            ],
+            "16": [
+              48,
+              425,
+              980,
+              858
+            ],
+            "128": [
+              49,
+              426,
+              979,
+              857
+            ]
+          },
+          "baseline_nonzero": 857,
+          "baseline_alpha16": 857,
+          "gold_region_rgb_median": [
+            216.0,
+            161.0,
+            102.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 719,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/02-prone-to-side-roll/F04.png",
+          "sha256": "de40313d861af13f9204172c7eb177602b9085ab2c51076d2ad93b796bb09523",
+          "bytes": 414206,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              50,
+              464,
+              982,
+              852
+            ],
+            "16": [
+              50,
+              464,
+              982,
+              852
+            ],
+            "128": [
+              51,
+              465,
+              981,
+              851
+            ]
+          },
+          "baseline_nonzero": 851,
+          "baseline_alpha16": 851,
+          "gold_region_rgb_median": [
+            227.0,
+            174.0,
+            118.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 713,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/02-prone-to-side-roll/F05.png",
+          "sha256": "82425f33f2d6571d32aa73ca53b3e667b74c8027db1ff0c2b178eadcec989af3",
+          "bytes": 401774,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              50,
+              442,
+              969,
+              812
+            ],
+            "16": [
+              50,
+              442,
+              969,
+              812
+            ],
+            "128": [
+              51,
+              443,
+              968,
+              811
+            ]
+          },
+          "baseline_nonzero": 811,
+          "baseline_alpha16": 811,
+          "gold_region_rgb_median": [
+            220.0,
+            174.0,
+            125.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 797,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/02-prone-to-side-roll/F06.png",
+          "sha256": "313ebe5a4ca27bb67cb57a79de02e1a712a6262e2c183147e33b513265d6abd4",
+          "bytes": 407274,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              48,
+              435,
+              972,
+              806
+            ],
+            "16": [
+              48,
+              435,
+              972,
+              806
+            ],
+            "128": [
+              49,
+              436,
+              971,
+              805
+            ]
+          },
+          "baseline_nonzero": 805,
+          "baseline_alpha16": 805,
+          "gold_region_rgb_median": [
+            222.0,
+            172.0,
+            120.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 754,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/02-prone-to-side-roll/F07.png",
+          "sha256": "e24a378f61146e07b4744a19e18a06a76fc819e1c84b1cee105abda7d001fee1",
+          "bytes": 403743,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              46,
+              442,
+              974,
+              809
+            ],
+            "16": [
+              46,
+              442,
+              974,
+              809
+            ],
+            "128": [
+              47,
+              443,
+              973,
+              808
+            ]
+          },
+          "baseline_nonzero": 808,
+          "baseline_alpha16": 808,
+          "gold_region_rgb_median": [
+            227.0,
+            174.0,
+            119.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 699,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/02-prone-to-side-roll/F08.png",
+          "sha256": "2b30d775b5dd38d4221e292a226201475a94cb6ad49e70e974b3906d2070b415",
+          "bytes": 387329,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              47,
+              468,
+              974,
+              831
+            ],
+            "16": [
+              47,
+              468,
+              974,
+              831
+            ],
+            "128": [
+              48,
+              469,
+              973,
+              830
+            ]
+          },
+          "baseline_nonzero": 830,
+          "baseline_alpha16": 830,
+          "gold_region_rgb_median": [
+            230.0,
+            174.0,
+            115.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 585,
+          "errors": []
+        }
+      ],
+      "frame_count": 8,
+      "visible_width_range": [
+        919,
+        932
+      ],
+      "visible_height_range": [
+        363,
+        444
+      ],
+      "baseline_range_alpha16": [
+        805,
+        858
+      ],
+      "review_priority": "P1_identity_and_continuity",
+      "automated_visual_approval": false
+    },
+    {
+      "batch": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
+      "sequence": "03-sprawled-front-breath",
+      "frames": [
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/03-sprawled-front-breath/F01.png",
+          "sha256": "a4935960f0279d29f3b24457b08382ebe0fa095d84baf298441d3199d007e9eb",
+          "bytes": 389403,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              98,
+              317,
+              928,
+              841
+            ],
+            "16": [
+              98,
+              317,
+              928,
+              841
+            ],
+            "128": [
+              99,
+              318,
+              927,
+              839
+            ]
+          },
+          "baseline_nonzero": 840,
+          "baseline_alpha16": 840,
+          "gold_region_rgb_median": [
+            207.0,
+            143.0,
+            83.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 1319,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/03-sprawled-front-breath/F02.png",
+          "sha256": "e6027a6afef699bc69efe125a4f62ccf897279ddcc37eff0c4176ac5822926a8",
+          "bytes": 390119,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              98,
+              316,
+              928,
+              841
+            ],
+            "16": [
+              98,
+              316,
+              928,
+              841
+            ],
+            "128": [
+              99,
+              317,
+              927,
+              839
+            ]
+          },
+          "baseline_nonzero": 840,
+          "baseline_alpha16": 840,
+          "gold_region_rgb_median": [
+            206.0,
+            143.0,
+            83.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 1428,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/03-sprawled-front-breath/F03.png",
+          "sha256": "f79bf6b18f006bde1999ee847221926a0074f5d5137b8978b8c843fb7cd11b50",
+          "bytes": 390335,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              98,
+              315,
+              928,
+              841
+            ],
+            "16": [
+              98,
+              315,
+              928,
+              841
+            ],
+            "128": [
+              99,
+              316,
+              927,
+              839
+            ]
+          },
+          "baseline_nonzero": 840,
+          "baseline_alpha16": 840,
+          "gold_region_rgb_median": [
+            206.0,
+            143.0,
+            83.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 1433,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/03-sprawled-front-breath/F04.png",
+          "sha256": "6333fbf28d9d1723200ecb0ae971b1b5bd23f700a1a72fab4f9cd2a5811b695b",
+          "bytes": 389374,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              98,
+              316,
+              928,
+              841
+            ],
+            "16": [
+              98,
+              316,
+              928,
+              841
+            ],
+            "128": [
+              99,
+              317,
+              927,
+              839
+            ]
+          },
+          "baseline_nonzero": 840,
+          "baseline_alpha16": 840,
+          "gold_region_rgb_median": [
+            206.0,
+            143.0,
+            83.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 1492,
+          "errors": []
+        }
+      ],
+      "frame_count": 4,
+      "visible_width_range": [
+        830,
+        830
+      ],
+      "visible_height_range": [
+        524,
+        526
+      ],
+      "baseline_range_alpha16": [
+        840,
+        840
+      ],
+      "review_priority": "P1_identity_and_continuity",
+      "automated_visual_approval": false
+    },
+    {
+      "batch": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
+      "sequence": "04-sprawled-left-side-breath",
+      "frames": [
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/04-sprawled-left-side-breath/F01.png",
+          "sha256": "e30b97c6a5c913107fe0383bc93f503ffb6542900024d1fc14c96a32078ee808",
+          "bytes": 362016,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              33,
+              483,
+              991,
+              841
+            ],
+            "16": [
+              34,
+              483,
+              990,
+              841
+            ],
+            "128": [
+              34,
+              484,
+              989,
+              840
+            ]
+          },
+          "baseline_nonzero": 840,
+          "baseline_alpha16": 840,
+          "gold_region_rgb_median": [
+            224.0,
+            172.0,
+            116.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 737,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/04-sprawled-left-side-breath/F02.png",
+          "sha256": "76f98a2ef2b3464963b3373c5bfcaf67a0c396f7d426d76d6e5c3a2df335d7b1",
+          "bytes": 362281,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              33,
+              488,
+              993,
+              842
+            ],
+            "16": [
+              33,
+              488,
+              993,
+              841
+            ],
+            "128": [
+              34,
+              489,
+              992,
+              840
+            ]
+          },
+          "baseline_nonzero": 841,
+          "baseline_alpha16": 840,
+          "gold_region_rgb_median": [
+            224.0,
+            173.0,
+            119.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 890,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/04-sprawled-left-side-breath/F03.png",
+          "sha256": "4c96e17b6ab8c3b66bdb22c4e57c7230a8ec874788bbc4ce308c2a80cc56e2da",
+          "bytes": 360515,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              32,
+              485,
+              994,
+              841
+            ],
+            "16": [
+              32,
+              485,
+              993,
+              840
+            ],
+            "128": [
+              32,
+              486,
+              993,
+              839
+            ]
+          },
+          "baseline_nonzero": 840,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            225.0,
+            174.0,
+            119.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 680,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/04-sprawled-left-side-breath/F04.png",
+          "sha256": "4ce89570cd88e0b92e044a7d8961d1e881a9633cac08e7bfe6b978719c94c369",
+          "bytes": 359406,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              34,
+              487,
+              991,
+              841
+            ],
+            "16": [
+              34,
+              487,
+              991,
+              841
+            ],
+            "128": [
+              34,
+              488,
+              990,
+              840
+            ]
+          },
+          "baseline_nonzero": 840,
+          "baseline_alpha16": 840,
+          "gold_region_rgb_median": [
+            225.0,
+            174.0,
+            119.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 685,
+          "errors": []
+        }
+      ],
+      "frame_count": 4,
+      "visible_width_range": [
+        956,
+        961
+      ],
+      "visible_height_range": [
+        353,
+        358
+      ],
+      "baseline_range_alpha16": [
+        839,
+        840
+      ],
+      "review_priority": "P1_identity_and_continuity",
+      "automated_visual_approval": false
+    },
+    {
+      "batch": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
+      "sequence": "05-sprawled-right-side-breath",
+      "frames": [
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/05-sprawled-right-side-breath/F01.png",
+          "sha256": "b171b3dfd2fde10500893cbadca228fe4fdd35e4f94c4dc4967dfebd218e4dea",
+          "bytes": 557694,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              47,
+              456,
+              977,
+              840
+            ],
+            "16": [
+              47,
+              456,
+              977,
+              840
+            ],
+            "128": [
+              47,
+              456,
+              977,
+              840
+            ]
+          },
+          "baseline_nonzero": 839,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            210.0,
+            169.0,
+            119.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 956,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/05-sprawled-right-side-breath/F02.png",
+          "sha256": "98f656f411cc9f938d4750992bdb070fd70e1b506ff186651c7467ff7a98524f",
+          "bytes": 527944,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              47,
+              455,
+              977,
+              840
+            ],
+            "16": [
+              47,
+              455,
+              977,
+              840
+            ],
+            "128": [
+              47,
+              455,
+              977,
+              840
+            ]
+          },
+          "baseline_nonzero": 839,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            210.0,
+            169.0,
+            119.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 670,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/05-sprawled-right-side-breath/F03.png",
+          "sha256": "e64a8e61e671a6a41e5664c1d9f71b290f6b397ccff5fa458a91a9cb729ced3c",
+          "bytes": 528565,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              47,
+              454,
+              977,
+              840
+            ],
+            "16": [
+              47,
+              455,
+              977,
+              840
+            ],
+            "128": [
+              47,
+              455,
+              977,
+              840
+            ]
+          },
+          "baseline_nonzero": 839,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            210.0,
+            169.0,
+            119.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 669,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/05-sprawled-right-side-breath/F04.png",
+          "sha256": "8809aab1256ea73614207278808e2076a340eed979aa7c13958df29bafd06f29",
+          "bytes": 527647,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              47,
+              455,
+              977,
+              840
+            ],
+            "16": [
+              47,
+              455,
+              977,
+              840
+            ],
+            "128": [
+              47,
+              456,
+              977,
+              840
+            ]
+          },
+          "baseline_nonzero": 839,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            210.0,
+            169.0,
+            119.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 670,
+          "errors": []
+        }
+      ],
+      "frame_count": 4,
+      "visible_width_range": [
+        930,
+        930
+      ],
+      "visible_height_range": [
+        384,
+        385
+      ],
+      "baseline_range_alpha16": [
+        839,
+        839
+      ],
+      "review_priority": "P1_identity_and_continuity",
+      "automated_visual_approval": false
+    },
+    {
+      "batch": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
+      "sequence": "06-compact-prone-breath",
+      "frames": [
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/06-compact-prone-breath/F01.png",
+          "sha256": "b465a2c6fc98060ce5e08d03bee7bfc1966ceb8a48215a44446482555ebb08d1",
+          "bytes": 568497,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              143,
+              415,
+              881,
+              840
+            ],
+            "16": [
+              143,
+              415,
+              881,
+              840
+            ],
+            "128": [
+              143,
+              415,
+              881,
+              840
+            ]
+          },
+          "baseline_nonzero": 839,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            210.0,
+            169.0,
+            117.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 481,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/06-compact-prone-breath/F02.png",
+          "sha256": "746042c7ea3ef90b6ba8e9647382078f647cf146ae66ff15996c21a0b441b7c2",
+          "bytes": 534790,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              143,
+              414,
+              881,
+              840
+            ],
+            "16": [
+              143,
+              414,
+              881,
+              840
+            ],
+            "128": [
+              143,
+              414,
+              881,
+              840
+            ]
+          },
+          "baseline_nonzero": 839,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            210.0,
+            168.0,
+            117.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 287,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/06-compact-prone-breath/F03.png",
+          "sha256": "fd77959a12d6ce65d5a13b9f2f34d309942b138f10dd082800f5a7e29e745a94",
+          "bytes": 536274,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              143,
+              414,
+              881,
+              840
+            ],
+            "16": [
+              143,
+              414,
+              881,
+              840
+            ],
+            "128": [
+              143,
+              414,
+              881,
+              840
+            ]
+          },
+          "baseline_nonzero": 839,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            210.0,
+            168.0,
+            117.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 337,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/06-compact-prone-breath/F04.png",
+          "sha256": "0fd076a55f4e1a0a615d6800f5b6f934f2cdb23adfd63ed8429432c12533a9b4",
+          "bytes": 533422,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              143,
+              414,
+              881,
+              840
+            ],
+            "16": [
+              143,
+              414,
+              881,
+              840
+            ],
+            "128": [
+              143,
+              415,
+              881,
+              840
+            ]
+          },
+          "baseline_nonzero": 839,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            210.0,
+            168.0,
+            117.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 282,
+          "errors": []
+        }
+      ],
+      "frame_count": 4,
+      "visible_width_range": [
+        738,
+        738
+      ],
+      "visible_height_range": [
+        425,
+        426
+      ],
+      "baseline_range_alpha16": [
+        839,
+        839
+      ],
+      "review_priority": "P1_identity_and_continuity",
+      "automated_visual_approval": false
+    },
+    {
+      "batch": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
+      "sequence": "07-curled-side-breath",
+      "frames": [
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/07-curled-side-breath/F01.png",
+          "sha256": "cbafb496e043454d5057e435158d6418dc64e852916f2148ad29219552182de7",
+          "bytes": 567611,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              106,
+              486,
+              918,
+              840
+            ],
+            "16": [
+              106,
+              486,
+              918,
+              840
+            ],
+            "128": [
+              106,
+              486,
+              918,
+              840
+            ]
+          },
+          "baseline_nonzero": 839,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            208.0,
+            165.0,
+            116.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 505,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/07-curled-side-breath/F02.png",
+          "sha256": "02099865c7a8ad5a555c10cb01b8ce2416df76ecff4122c19352254d6941075e",
+          "bytes": 537216,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              106,
+              485,
+              918,
+              840
+            ],
+            "16": [
+              106,
+              485,
+              918,
+              840
+            ],
+            "128": [
+              106,
+              486,
+              917,
+              839
+            ]
+          },
+          "baseline_nonzero": 839,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            208.0,
+            165.0,
+            116.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 329,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/07-curled-side-breath/F03.png",
+          "sha256": "09e22f6ce17431814ad48435a5703ef84f7b67c39dfec873b29f1bfa397606ca",
+          "bytes": 538702,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              106,
+              485,
+              918,
+              840
+            ],
+            "16": [
+              106,
+              485,
+              918,
+              840
+            ],
+            "128": [
+              106,
+              485,
+              918,
+              839
+            ]
+          },
+          "baseline_nonzero": 839,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            208.0,
+            165.0,
+            116.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 341,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/07-curled-side-breath/F04.png",
+          "sha256": "c966134fe00e942d9becc3744d73372777e331ab363c16e0a32736b1c2778739",
+          "bytes": 538162,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              106,
+              485,
+              918,
+              840
+            ],
+            "16": [
+              106,
+              485,
+              918,
+              840
+            ],
+            "128": [
+              106,
+              486,
+              917,
+              840
+            ]
+          },
+          "baseline_nonzero": 839,
+          "baseline_alpha16": 839,
+          "gold_region_rgb_median": [
+            208.0,
+            165.0,
+            116.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 332,
+          "errors": []
+        }
+      ],
+      "frame_count": 4,
+      "visible_width_range": [
+        812,
+        812
+      ],
+      "visible_height_range": [
+        354,
+        355
+      ],
+      "baseline_range_alpha16": [
+        839,
+        839
+      ],
+      "review_priority": "P1_identity_and_continuity",
+      "automated_visual_approval": false
+    },
+    {
+      "batch": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
+      "sequence": "08-top-down-prone-breath",
+      "frames": [
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/08-top-down-prone-breath/F01.png",
+          "sha256": "d118191a189723a9fe8540eb5b5b1c4b73a455409b46e91aec50755866f44826",
+          "bytes": 545666,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              154,
+              156,
+              870,
+              869
+            ],
+            "16": [
+              154,
+              156,
+              870,
+              869
+            ],
+            "128": [
+              155,
+              156,
+              869,
+              869
+            ]
+          },
+          "baseline_nonzero": 868,
+          "baseline_alpha16": 868,
+          "gold_region_rgb_median": [
+            209.0,
+            168.0,
+            121.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 789,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/08-top-down-prone-breath/F02.png",
+          "sha256": "ac8d323316521c16077a0d1bb68a9b8676cacf2debedaaff0f288620b15ee9c6",
+          "bytes": 519491,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              154,
+              155,
+              870,
+              869
+            ],
+            "16": [
+              154,
+              155,
+              870,
+              869
+            ],
+            "128": [
+              155,
+              156,
+              869,
+              869
+            ]
+          },
+          "baseline_nonzero": 868,
+          "baseline_alpha16": 868,
+          "gold_region_rgb_median": [
+            208.0,
+            168.0,
+            120.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 588,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/08-top-down-prone-breath/F03.png",
+          "sha256": "fc538d1cf82e1162b810d619f32dd230e7e62b2a40e9c742a91fe038dbf59214",
+          "bytes": 519044,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              154,
+              155,
+              870,
+              869
+            ],
+            "16": [
+              154,
+              155,
+              870,
+              869
+            ],
+            "128": [
+              155,
+              155,
+              869,
+              868
+            ]
+          },
+          "baseline_nonzero": 868,
+          "baseline_alpha16": 868,
+          "gold_region_rgb_median": [
+            208.0,
+            168.0,
+            120.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 568,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10/frames/08-top-down-prone-breath/F04.png",
+          "sha256": "5abc302c54ba25bfae70e37558f719ed04bd55ceb29e8cbc03fb5aeae05f79d8",
+          "bytes": 518352,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              154,
+              155,
+              870,
+              869
+            ],
+            "16": [
+              154,
+              155,
+              870,
+              869
+            ],
+            "128": [
+              155,
+              156,
+              869,
+              869
+            ]
+          },
+          "baseline_nonzero": 868,
+          "baseline_alpha16": 868,
+          "gold_region_rgb_median": [
+            208.0,
+            168.0,
+            120.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 548,
+          "errors": []
+        }
+      ],
+      "frame_count": 4,
+      "visible_width_range": [
+        716,
+        716
+      ],
+      "visible_height_range": [
+        713,
+        714
+      ],
+      "baseline_range_alpha16": [
+        868,
+        868
+      ],
+      "review_priority": "P1_identity_and_continuity",
+      "automated_visual_approval": false
+    },
+    {
+      "batch": "WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4",
+      "sequence": "head-lower",
+      "frames": [
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-lower/frame-001.png",
+          "sha256": "254b75d53f355be23b4bd8258f62465441e8dbac6d45943bd0f9a9e2ca64df04",
+          "bytes": 511761,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              33,
+              203,
+              958,
+              771
+            ],
+            "16": [
+              33,
+              203,
+              958,
+              771
+            ],
+            "128": [
+              34,
+              203,
+              958,
+              771
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            224.0,
+            179.0,
+            126.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 164,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-lower/frame-002.png",
+          "sha256": "254b75d53f355be23b4bd8258f62465441e8dbac6d45943bd0f9a9e2ca64df04",
+          "bytes": 511761,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              33,
+              203,
+              958,
+              771
+            ],
+            "16": [
+              33,
+              203,
+              958,
+              771
+            ],
+            "128": [
+              34,
+              203,
+              958,
+              771
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            224.0,
+            179.0,
+            126.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 164,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-lower/frame-003.png",
+          "sha256": "baf8e7d2e2524b590ead0db1b9bca09b3efdd8da781b24c51e0dadbcdbf98afc",
+          "bytes": 469421,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              24,
+              327,
+              958,
+              771
+            ],
+            "16": [
+              24,
+              327,
+              957,
+              771
+            ],
+            "128": [
+              24,
+              327,
+              957,
+              770
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            227.0,
+            175.0,
+            113.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 201,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-lower/frame-004.png",
+          "sha256": "baf8e7d2e2524b590ead0db1b9bca09b3efdd8da781b24c51e0dadbcdbf98afc",
+          "bytes": 469421,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              24,
+              327,
+              958,
+              771
+            ],
+            "16": [
+              24,
+              327,
+              957,
+              771
+            ],
+            "128": [
+              24,
+              327,
+              957,
+              770
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            227.0,
+            175.0,
+            113.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 201,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-lower/frame-005.png",
+          "sha256": "a145516ee32509f6c481b18b993a6a2f68650743b24556c379f9b6c162c5442e",
+          "bytes": 457298,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              40,
+              349,
+              958,
+              771
+            ],
+            "16": [
+              40,
+              349,
+              958,
+              771
+            ],
+            "128": [
+              40,
+              349,
+              958,
+              769
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            231.0,
+            177.0,
+            114.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 150,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-lower/frame-006.png",
+          "sha256": "a145516ee32509f6c481b18b993a6a2f68650743b24556c379f9b6c162c5442e",
+          "bytes": 457298,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              40,
+              349,
+              958,
+              771
+            ],
+            "16": [
+              40,
+              349,
+              958,
+              771
+            ],
+            "128": [
+              40,
+              349,
+              958,
+              769
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            231.0,
+            177.0,
+            114.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 150,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-lower/frame-007.png",
+          "sha256": "4e95b776004e9a1646419a68eae082a23676b9fe9d104ba975d890584b30d79c",
+          "bytes": 477118,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              23,
+              333,
+              958,
+              771
+            ],
+            "16": [
+              23,
+              333,
+              958,
+              771
+            ],
+            "128": [
+              23,
+              333,
+              958,
+              770
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            229.0,
+            176.0,
+            115.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 178,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-lower/frame-008.png",
+          "sha256": "4e95b776004e9a1646419a68eae082a23676b9fe9d104ba975d890584b30d79c",
+          "bytes": 477118,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              23,
+              333,
+              958,
+              771
+            ],
+            "16": [
+              23,
+              333,
+              958,
+              771
+            ],
+            "128": [
+              23,
+              333,
+              958,
+              770
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            229.0,
+            176.0,
+            115.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 178,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-lower/frame-009.png",
+          "sha256": "563a929716d0aa8c6f023e1625a6fa0a1c1208697dc2c9a1b8e7c0e04c68228f",
+          "bytes": 469100,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              34,
+              312,
+              958,
+              771
+            ],
+            "16": [
+              34,
+              312,
+              958,
+              771
+            ],
+            "128": [
+              35,
+              312,
+              957,
+              770
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            229.0,
+            175.0,
+            112.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 189,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-lower/frame-010.png",
+          "sha256": "563a929716d0aa8c6f023e1625a6fa0a1c1208697dc2c9a1b8e7c0e04c68228f",
+          "bytes": 469100,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              34,
+              312,
+              958,
+              771
+            ],
+            "16": [
+              34,
+              312,
+              958,
+              771
+            ],
+            "128": [
+              35,
+              312,
+              957,
+              770
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            229.0,
+            175.0,
+            112.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 189,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-lower/frame-011.png",
+          "sha256": "0d8f1d4b86720d1e15aee644f6a450596f025de5b55f4e697a4cb64d39b70bf2",
+          "bytes": 476347,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              24,
+              323,
+              958,
+              771
+            ],
+            "16": [
+              24,
+              323,
+              958,
+              771
+            ],
+            "128": [
+              24,
+              323,
+              957,
+              770
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            228.0,
+            172.0,
+            109.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 176,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-lower/frame-012.png",
+          "sha256": "0d8f1d4b86720d1e15aee644f6a450596f025de5b55f4e697a4cb64d39b70bf2",
+          "bytes": 476347,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              24,
+              323,
+              958,
+              771
+            ],
+            "16": [
+              24,
+              323,
+              958,
+              771
+            ],
+            "128": [
+              24,
+              323,
+              957,
+              770
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            228.0,
+            172.0,
+            109.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 176,
+          "errors": []
+        }
+      ],
+      "frame_count": 12,
+      "visible_width_range": [
+        918,
+        935
+      ],
+      "visible_height_range": [
+        422,
+        568
+      ],
+      "baseline_range_alpha16": [
+        770,
+        770
+      ],
+      "review_priority": "P1_identity_and_continuity",
+      "automated_visual_approval": false
+    },
+    {
+      "batch": "WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4",
+      "sequence": "head-turn",
+      "frames": [
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-turn/frame-001.png",
+          "sha256": "0d8f1d4b86720d1e15aee644f6a450596f025de5b55f4e697a4cb64d39b70bf2",
+          "bytes": 476347,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              24,
+              323,
+              958,
+              771
+            ],
+            "16": [
+              24,
+              323,
+              958,
+              771
+            ],
+            "128": [
+              24,
+              323,
+              957,
+              770
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            228.0,
+            172.0,
+            109.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 176,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-turn/frame-002.png",
+          "sha256": "0d8f1d4b86720d1e15aee644f6a450596f025de5b55f4e697a4cb64d39b70bf2",
+          "bytes": 476347,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              24,
+              323,
+              958,
+              771
+            ],
+            "16": [
+              24,
+              323,
+              958,
+              771
+            ],
+            "128": [
+              24,
+              323,
+              957,
+              770
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            228.0,
+            172.0,
+            109.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 176,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-turn/frame-003.png",
+          "sha256": "72704bde607a1518658e927078228891cff6ff63ee97515dde7e33e44d4b5910",
+          "bytes": 406142,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              42,
+              360,
+              958,
+              771
+            ],
+            "16": [
+              42,
+              360,
+              958,
+              771
+            ],
+            "128": [
+              42,
+              360,
+              958,
+              770
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            237.0,
+            180.0,
+            109.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 242,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-turn/frame-004.png",
+          "sha256": "72704bde607a1518658e927078228891cff6ff63ee97515dde7e33e44d4b5910",
+          "bytes": 406142,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              42,
+              360,
+              958,
+              771
+            ],
+            "16": [
+              42,
+              360,
+              958,
+              771
+            ],
+            "128": [
+              42,
+              360,
+              958,
+              770
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            237.0,
+            180.0,
+            109.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 242,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-turn/frame-005.png",
+          "sha256": "91d2a1103920c10c6235bdbdb0b54394fb01cb0ca098789f8e014df7882b5952",
+          "bytes": 416191,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              27,
+              362,
+              958,
+              771
+            ],
+            "16": [
+              27,
+              362,
+              958,
+              771
+            ],
+            "128": [
+              27,
+              362,
+              957,
+              771
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            237.0,
+            181.0,
+            111.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 239,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-turn/frame-006.png",
+          "sha256": "91d2a1103920c10c6235bdbdb0b54394fb01cb0ca098789f8e014df7882b5952",
+          "bytes": 416191,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              27,
+              362,
+              958,
+              771
+            ],
+            "16": [
+              27,
+              362,
+              958,
+              771
+            ],
+            "128": [
+              27,
+              362,
+              957,
+              771
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            237.0,
+            181.0,
+            111.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 239,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-turn/frame-007.png",
+          "sha256": "56552078bf957c7677dd9a6106dedead0753e54d5236aae9779cb351419bae5d",
+          "bytes": 417569,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              26,
+              364,
+              958,
+              771
+            ],
+            "16": [
+              26,
+              364,
+              958,
+              771
+            ],
+            "128": [
+              26,
+              364,
+              958,
+              771
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            236.0,
+            180.0,
+            109.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 198,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-turn/frame-008.png",
+          "sha256": "56552078bf957c7677dd9a6106dedead0753e54d5236aae9779cb351419bae5d",
+          "bytes": 417569,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              26,
+              364,
+              958,
+              771
+            ],
+            "16": [
+              26,
+              364,
+              958,
+              771
+            ],
+            "128": [
+              26,
+              364,
+              958,
+              771
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            236.0,
+            180.0,
+            109.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 198,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-turn/frame-009.png",
+          "sha256": "d6133d0d518de0c28c86c3f5c3eedd44753d0dc040d031b53756945cdc6d503c",
+          "bytes": 413585,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              33,
+              367,
+              958,
+              771
+            ],
+            "16": [
+              33,
+              367,
+              958,
+              771
+            ],
+            "128": [
+              33,
+              368,
+              957,
+              771
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            235.0,
+            177.0,
+            106.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 255,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-turn/frame-010.png",
+          "sha256": "d6133d0d518de0c28c86c3f5c3eedd44753d0dc040d031b53756945cdc6d503c",
+          "bytes": 413585,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              33,
+              367,
+              958,
+              771
+            ],
+            "16": [
+              33,
+              367,
+              958,
+              771
+            ],
+            "128": [
+              33,
+              368,
+              957,
+              771
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            235.0,
+            177.0,
+            106.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 255,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-turn/frame-011.png",
+          "sha256": "b082d3c400f921b58d742be51cad5f9b07536fa0136a929fd761bf109f19ff70",
+          "bytes": 416893,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              26,
+              369,
+              958,
+              771
+            ],
+            "16": [
+              26,
+              369,
+              958,
+              771
+            ],
+            "128": [
+              26,
+              369,
+              957,
+              771
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            235.0,
+            178.0,
+            107.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 265,
+          "errors": []
+        },
+        {
+          "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-HEAD-MICROEVENT-CANDIDATE-v4/frames/head-turn/frame-012.png",
+          "sha256": "b082d3c400f921b58d742be51cad5f9b07536fa0136a929fd761bf109f19ff70",
+          "bytes": 416893,
+          "size": [
+            1024,
+            1024
+          ],
+          "mode": "RGBA",
+          "alpha_bounds": {
+            "1": [
+              26,
+              369,
+              958,
+              771
+            ],
+            "16": [
+              26,
+              369,
+              958,
+              771
+            ],
+            "128": [
+              26,
+              369,
+              957,
+              771
+            ]
+          },
+          "baseline_nonzero": 770,
+          "baseline_alpha16": 770,
+          "gold_region_rgb_median": [
+            235.0,
+            178.0,
+            107.0
+          ],
+          "blue_dominant_visible_pixels": 0,
+          "faint_alpha_pixels": 265,
+          "errors": []
+        }
+      ],
+      "frame_count": 12,
+      "visible_width_range": [
+        916,
+        934
+      ],
+      "visible_height_range": [
+        402,
+        448
+      ],
+      "baseline_range_alpha16": [
+        770,
+        770
+      ],
+      "review_priority": "P1_identity_and_continuity",
+      "automated_visual_approval": false
+    }
+  ],
+  "limitations": [
+    "Alpha statistics cannot prove identity, gait correctness or absence of anatomical holes.",
+    "Different poses legitimately change silhouette bounds; ranges are review signals, not automatic failures.",
+    "Coat medians are diagnostic only; do not automatically recolor frames to match RGB averages.",
+    "A new walk needs a complete four-beat contact/swing annotation and owner playback review."
+  ]
+}

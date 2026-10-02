@@ -1,13 +1,20 @@
-# WK-AUTONOMOUS-SIDE-PRONE-FRONT-PRODUCTION-v5
+# Removed Head/Neck Composite v5
 
-Thirty-six-frame side-prone forward-observation lifecycle extension, revised from three owner-supplied prone Shiba pose references:
+The owner rejected all three head-composite sequences on 2026-09-30:
+`bridge-to-front`, `side-prone-front-calm`, and `bridge-to-legacy`.
 
-- `bridge-to-front`: 12 frames from the frozen V3R1 side-looking prone anchor to the screen-facing head pose.
-- `side-prone-front-calm`: 12-frame calm loop with V3R1 breathing, one slow blink, and one subtle ear twitch.
-- `bridge-to-legacy`: the exact byte-reversed bridge so the existing V3R1 exit remains continuous.
+The 36 playback frames and their 13 source/review visual files were removed
+at the owner's request. No other batch's images were changed.
 
-The owner photographs guide only the relaxed side-prone anatomy: asymmetrical extended forelegs, hips and rear legs resting to one side, lightly raised chest, and a natural neck turn toward the viewer. They are not copied into or committed with the runtime package. Wukong's identity remains bound to `wukong-current-adult-v1`, and rendering is matched to the approved V3R1 lively material.
+- `REMOVAL-RECORD.json` preserves the 36 historical frame hashes, timing and phases.
+- `REMOVED-FILES.json` preserves all 49 removed paths, hashes and byte counts.
+- These records are historical evidence, not live runtime paths.
+- Git history at the recorded commit retains the original files.
+- The old composition generator and runtime composition entry were removed.
+- The desktop project excludes this exact batch from build and publish.
+- The remaining manifest and asset document are closed-gate tombstones.
 
-The torso, paws, rear legs, and tail continue the corresponding V3R1 side-prone microloop. Only a bounded head/upper-neck region changes; pixels at `x >= 560` and `y >= 760` remain byte-identical to the corresponding V3R1 body frame. The V3R1 package is not edited, mirrored, redrawn, recolored, rescaled, blurred, or sharpened.
-
-The owner requested runtime enablement on 2026-08-26, then supplied new pose references for this revision. The revised boards therefore remain fail closed pending owner visual review and the branch's Windows WPF decoder/build/test workflow. Promotion is a separate metadata change after both pieces of evidence exist.
+V3R1 keeps its own approved intro, legacy-side loop and exit. No replacement
+head, hard-cut front view, reversed new bridge or unapproved image is substituted.
+The historical PROMPT-RECORD is retained solely to explain the failed method;
+it is not an instruction to reuse local head compositing.

@@ -43,6 +43,15 @@ public sealed record InitiativeSpeechDecision(
 
 public sealed class InitiativeSpeechDecisionService
 {
+    public static bool IsExplicitQuietReply(string text)
+    {
+        var normalized = new string((text ?? string.Empty)
+            .Where(character => !char.IsWhiteSpace(character) && !char.IsPunctuation(character))
+            .ToArray());
+        return normalized is "别说了" or "别再说了" or "先别说话" or "先安静一会" or
+            "安静一会" or "暂时不想聊" or "现在不想聊" or "先不要打扰我" or "别打扰我";
+    }
+
     public InitiativeSpeechDecision Decide(InitiativeSpeechContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -81,13 +90,18 @@ public sealed class InitiativeSpeechDecisionService
             return "behavior_not_stable_idle";
         if (context.IsQuietHours)
             return "quiet_hours";
+        if (context.Episode == PetEpisodeKind.Sleeping ||
+            PetPoseCompatibility.FamilyFor(state.CurrentPoseId, state.CurrentPosture) == "sleep")
+            return "sleeping_does_not_initiate_speech";
+        if (state.LastInteractionAt is { } interaction && context.Now - interaction < TimeSpan.FromSeconds(90))
+            return "recent_owner_interaction";
         if (state.Stress >= 0.72)
             return "stress_safety_limit";
         if (context.Relationship.InitiativeAcceptance01 < 0.25)
             return "initiative_acceptance_low";
 
         var recentInitiatives = context.RecentExperience
-            .Where(item => item.EventKind == "initiative_speech" && context.Now - item.At <= TimeSpan.FromHours(8))
+            .Where(item => item.EventKind == "initiative_speech" && item.At <= context.Now && context.Now - item.At <= TimeSpan.FromHours(8))
             .OrderByDescending(item => item.At)
             .ToArray();
         var feedback = context.Feedback.Clamp();
@@ -193,6 +207,7 @@ public sealed class InitiativeSpeechDecisionService
     {
         var lastSameTopic = context.RecentExperience
             .Where(item => item.EventKind == "initiative_speech" &&
+                           item.At <= context.Now &&
                            string.Equals(item.BehaviorId, candidate.Topic.ToString(), StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(item => item.At)
             .FirstOrDefault();

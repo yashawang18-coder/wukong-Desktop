@@ -1,0 +1,67 @@
+{
+  "passed": true,
+  "evidence": [
+    {
+      "direction": "left",
+      "stop": false,
+      "normal": false,
+      "frames": 13,
+      "phases": [
+        "intro",
+        "loop",
+        "exit"
+      ],
+      "displacement": -422.3999999999999,
+      "elapsed_ms": 5732.6853,
+      "RequestId": "37ca633e-3d47-40cc-8f9a-f13017defbab"
+    },
+    {
+      "direction": "right",
+      "stop": false,
+      "normal": false,
+      "frames": 13,
+      "phases": [
+        "intro",
+        "loop",
+        "exit"
+      ],
+      "displacement": 422.39999999999986,
+      "elapsed_ms": 5744.3267,
+      "RequestId": "88c5620a-fc96-4534-9162-7027638b5c39"
+    },
+    {
+      "direction": "left",
+      "stop": true,
+      "normal": false,
+      "frames": 13,
+      "phases": [
+        "intro",
+        "loop",
+        "exit"
+      ],
+      "displacement": -246.85714285714283,
+      "elapsed_ms": 4149.8131,
+      "RequestId": "853fe829-ade8-450e-b517-c41ff1ce4f4c"
+    },
+    {
+      "direction": "right",
+      "stop": false,
+      "normal": true,
+      "frames": 13,
+      "phases": [
+        "intro",
+        "loop",
+        "exit"
+      ],
+      "displacement": 422.4000000000001,
+      "elapsed_ms": 8957.6939,
+      "RequestId": "9b79276d-133f-4335-a78b-b546639f3be8"
+    }
+  ],
+  "renderer_code_sha256": {
+    "src/Wukong.Desktop/MainWindow.xaml.cs": "b5a360457e61885e839fa1200e904e162e72e97271b7b0c2701f4c05411e3ddc",
+    "src/Wukong.Desktop/PatrolWalkPlayback.cs": "31199f0515a7aa55d686e28eda7980c5bde6a234cc93f0383cbff2d6e57be53f",
+    "src/Wukong.Desktop/DesktopPetRuntime.cs": "e4dba62cbba7723230f916588df17c770ba83c0ef307bb426b5bd5250eaf6f05"
+  },
+  "owner_final_desktop_visual_qa": "pending"
+}

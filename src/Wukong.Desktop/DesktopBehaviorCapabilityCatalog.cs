@@ -98,6 +98,9 @@ public static class DesktopBehaviorCapabilityCatalog
         var sources = new HashSet<BehaviorRequestSource> { BehaviorRequestSource.DeveloperPreview };
         if (participation == BehaviorParticipationMode.Autonomous && motion.AutonomousBindingEnabled)
             sources.Add(BehaviorRequestSource.AutonomousTick);
+        if (string.Equals(motion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) &&
+            SleepCandidateBehaviorIds.AutonomousAllowed.Contains(motion.BehaviorId))
+            sources.Add(BehaviorRequestSource.OwnerDialogue);
         if (participation is BehaviorParticipationMode.ForcedByOwner or BehaviorParticipationMode.UsuallyCooperative or BehaviorParticipationMode.StateSensitive)
         {
             sources.Add(BehaviorRequestSource.OwnerContextMenu);
@@ -221,7 +224,11 @@ public static class DesktopAutonomousEpisodeBindings
         AutonomousDailyCandidateBehaviorIds.StandToSit,
         AutonomousDailyCandidateBehaviorIds.SitToProne,
         ProneHeadCandidateBehaviorIds.HeadLowerTurnV4,
-        LifecycleReviewCandidateBehaviorIds.FrontProneLickV4);
+        LifecycleReviewCandidateBehaviorIds.FrontProneLickV4,
+        FrontProneExpressionBehaviorIds.SatisfiedSmile,
+        FrontProneExpressionBehaviorIds.CuriousObserve,
+        FrontProneExpressionBehaviorIds.KnowingLook,
+        ProneHappyHotPantingBehaviorIds.HappyHotPanting);
 
     private static readonly IReadOnlySet<string> Socializing = Set(
         LifecycleCandidateBehaviorIds.StandIdleMicroloop,
@@ -234,8 +241,24 @@ public static class DesktopAutonomousEpisodeBindings
     private static readonly IReadOnlySet<string> Exploring = Set(
         LifecycleCandidateBehaviorIds.StandIdleMicroloop,
         LifecycleReviewCandidateBehaviorIds.StandIdleV3R1,
+        LifecycleReviewCandidateBehaviorIds.SitIdleV3R1,
+        LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
+        LifecycleReviewCandidateBehaviorIds.LegacySideProneIdleV3R1,
+        AutonomousDailyCandidateBehaviorIds.ProneToSit,
+        AutonomousDailyCandidateBehaviorIds.SitToStand,
         PatrolWalkCandidateBehaviorIds.WalkLeft,
         PatrolWalkCandidateBehaviorIds.WalkRight);
+
+    private static readonly IReadOnlySet<string> Recovering = Set(
+        LifecycleCandidateBehaviorIds.StandIdleMicroloop,
+        LifecycleCandidateBehaviorIds.SitIdleMicroloop,
+        LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
+        LifecycleReviewCandidateBehaviorIds.StandIdleV3R1,
+        LifecycleReviewCandidateBehaviorIds.SitIdleV3R1,
+        LifecycleReviewCandidateBehaviorIds.LegacySideProneIdleV3R1,
+        LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
+        AutonomousDailyCandidateBehaviorIds.StandToSit,
+        AutonomousDailyCandidateBehaviorIds.SitToProne);
 
     public static IReadOnlySet<string>? For(PetEpisodeKind episode) => episode switch
     {
@@ -243,9 +266,31 @@ public static class DesktopAutonomousEpisodeBindings
         PetEpisodeKind.Observing => Observing,
         PetEpisodeKind.Sleeping => Sleeping,
         PetEpisodeKind.Exploring => Exploring,
+        PetEpisodeKind.Recovering => Recovering,
         PetEpisodeKind.Socializing => Socializing,
         _ => null
     };
+
+    public static IReadOnlySet<PetEpisodeKind> AvailableEpisodes(
+        IBehaviorCapabilityCatalog catalog, PetRuntimeState runtime)
+    {
+        var available = new HashSet<PetEpisodeKind> { PetEpisodeKind.Resting, PetEpisodeKind.Recovering };
+        foreach (var episode in Enum.GetValues<PetEpisodeKind>())
+        {
+            var bindings = For(episode);
+            if (bindings is null) continue;
+            if (catalog.Capabilities.Any(capability => bindings.Contains(capability.BehaviorId) &&
+                    capability.ProductionApproved && capability.RuntimeUse && capability.ProductionAsset &&
+                    capability.AutonomousBindingEnabled && capability.AllowedSources.Contains(BehaviorRequestSource.AutonomousTick) &&
+                    capability.ParticipationMode == BehaviorParticipationMode.Autonomous &&
+                    capability.Category != BehaviorSemanticCategory.StableIdle &&
+                    capability.AllowedEpisodes.Contains(episode) &&
+                    capability.StartPostures.Contains(runtime.CurrentPosture) &&
+                    PetPoseCompatibility.IsCompatible(capability.StartPoseFamily, runtime)))
+                available.Add(episode);
+        }
+        return available;
+    }
 
     private static IReadOnlySet<string> Set(params string[] values) =>
         new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);

@@ -150,6 +150,7 @@ public sealed record AutonomousAgentRolloutOptions(
             PetEpisodeKind.Resting,
             PetEpisodeKind.Observing,
             PetEpisodeKind.Exploring,
+            PetEpisodeKind.Recovering,
             PetEpisodeKind.Sleeping
         },
         LegacyFallbackOnInfrastructureFailure: false);
@@ -164,7 +165,8 @@ public sealed record AutonomousAgentRolloutOptions(
 
 public sealed class PetEpisodePolicy
 {
-    public PetEpisodeSelection Evaluate(PetAgentState state, DateTimeOffset now)
+    public PetEpisodeSelection Evaluate(PetAgentState state, DateTimeOffset now,
+        IReadOnlySet<PetEpisodeKind>? availableEpisodes = null)
     {
         ArgumentNullException.ThrowIfNull(state);
         state = state.Clamp();
@@ -176,8 +178,17 @@ public sealed class PetEpisodePolicy
             return Keep(current, "sleeping_minimum_duration");
 
         var desired = DesiredEpisode(state);
+        // Do not enter an episode whose next compatible action is unavailable.
+        // Sleep is held separately until a real, approved wake bridge exists.
+        if (availableEpisodes is not null && current.Kind != PetEpisodeKind.Sleeping &&
+            !availableEpisodes.Contains(desired))
+            desired = PetEpisodeKind.Resting;
         if (desired == current.Kind)
             return Keep(current, "episode_still_matches_state");
+        if (!RequiresImmediateRecovery(state.Runtime) &&
+            state.EpisodeLastEndedAt.TryGetValue(desired, out var lastEnded) &&
+            now - lastEnded < BehaviorEpisodeCatalog.Get(desired).Cooldown)
+            return Keep(current, "episode_reentry_cooldown");
         var currentDefinition = BehaviorEpisodeCatalog.Get(current.Kind);
         var elapsed = now - current.StartedAt;
         if (!current.CanSwitchAt(now) && !RequiresImmediateRecovery(state.Runtime))
@@ -286,6 +297,8 @@ public sealed record PetAgentState(
 
     public PetDecisionMemoryProfile DecisionMemory { get; init; } = PetDecisionMemoryProfile.Empty;
     public InitiativeSpeechFeedbackState InitiativeSpeechFeedback { get; init; } = InitiativeSpeechFeedbackState.Empty;
+    public IReadOnlyDictionary<PetEpisodeKind, DateTimeOffset> EpisodeLastEndedAt { get; init; } =
+        new Dictionary<PetEpisodeKind, DateTimeOffset>();
 
     public static PetAgentState CreateDefault(DateTimeOffset now) => new(
         CurrentSchemaVersion,
@@ -325,6 +338,9 @@ public sealed record PetAgentState(
             Runtime = Runtime.Clamp(),
             DecisionMemory = (DecisionMemory ?? PetDecisionMemoryProfile.Empty).Clamp(),
             InitiativeSpeechFeedback = (InitiativeSpeechFeedback ?? InitiativeSpeechFeedbackState.Empty).Clamp(),
+            EpisodeLastEndedAt = (EpisodeLastEndedAt ?? new Dictionary<PetEpisodeKind, DateTimeOffset>())
+                .Where(pair => Enum.IsDefined(pair.Key))
+                .ToDictionary(pair => pair.Key, pair => pair.Value),
             RecentExperience = RecentExperience.TakeLast(PetStateReducer.MaximumRecentExperience).ToArray(),
             Preferences = Preferences
                 .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
@@ -431,15 +447,24 @@ public sealed class PetStateReducer
             PetOwnerInteractionObserved interaction => ApplyInteraction(state, interaction),
             PetInitiativeSpeechOccurred speech => ApplyInitiativeSpeech(state, speech),
             PetOwnerDialogueObserved dialogue => ApplyOwnerDialogue(state, dialogue),
-            PetEpisodeChanged episode => state with
-            {
-                Episode = BehaviorEpisodeCatalog.Start(
-                    episode.Episode,
-                    episode.At,
-                    episode.ReasonCode,
-                    episode.CorrelationId ?? state.Episode.CorrelationId)
-            },
+            PetEpisodeChanged episode => ChangeEpisode(state, episode),
             _ => state
+        };
+    }
+
+    private static PetAgentState ChangeEpisode(PetAgentState state, PetEpisodeChanged change)
+    {
+        if (change.At < state.Episode.StartedAt || change.Episode == state.Episode.Kind)
+            return state;
+        var history = new Dictionary<PetEpisodeKind, DateTimeOffset>(state.EpisodeLastEndedAt)
+        {
+            [state.Episode.Kind] = change.At
+        };
+        return state with
+        {
+            EpisodeLastEndedAt = history,
+            Episode = BehaviorEpisodeCatalog.Start(change.Episode, change.At, change.ReasonCode,
+                change.CorrelationId ?? state.Episode.CorrelationId)
         };
     }
 
@@ -506,6 +531,8 @@ public sealed class PetStateReducer
     {
         if (finished.ExecutionMode != BehaviorExecutionMode.Normal ||
             state.Runtime.ActiveExecutionId != finished.ExecutionId ||
+            finished.Status is not (ExecutionStatus.Completed or ExecutionStatus.Interrupted or ExecutionStatus.Failed) ||
+            finished.At < state.Runtime.ActiveActionStartedAt ||
             !string.Equals(state.Runtime.ActiveActionId, finished.BehaviorId, StringComparison.OrdinalIgnoreCase))
             return state;
 
@@ -517,6 +544,15 @@ public sealed class PetStateReducer
                 : 0;
         var recordsLearning = ShouldRecordBehaviorLearning(finished.Source);
         var effects = recordsLearning ? Scale(finished.Effects, partialFactor) : new PetStateEffects();
+        if (!completed)
+        {
+            // Interrupted execution may spend energy, but cannot award a meal,
+            // rest benefit or social reward before the completion contract.
+            effects = new PetStateEffects(
+                Energy: Math.Min(0, effects.Energy), Hunger: Math.Max(0, effects.Hunger),
+                Thirst: Math.Max(0, effects.Thirst), Stress: Math.Max(0, effects.Stress),
+                Arousal: Math.Max(0, effects.Arousal));
+        }
         var repeated = recordsLearning && completed && string.Equals(state.Runtime.LastActionId, finished.BehaviorId, StringComparison.OrdinalIgnoreCase)
             ? state.Runtime.RepeatedActionCount + 1
             : 0;
@@ -537,7 +573,7 @@ public sealed class PetStateReducer
             Thirst = state.Runtime.Thirst + effects.Thirst,
             SocialNeed = state.Runtime.SocialNeed + effects.SocialNeed,
             Boredom = state.Runtime.Boredom + effects.Boredom,
-            Stress = state.Runtime.Stress + effects.Stress + (finished.Status == ExecutionStatus.Failed ? 0.03 : 0),
+            Stress = state.Runtime.Stress + effects.Stress + (recordsLearning && finished.Status == ExecutionStatus.Failed ? 0.03 : 0),
             MoodValence = state.Runtime.MoodValence + effects.MoodValence,
             Arousal = state.Runtime.Arousal + effects.Arousal,
             Comfort = state.Runtime.Comfort + effects.Comfort,
@@ -554,7 +590,7 @@ public sealed class PetStateReducer
                 RecentPositiveInteractions = relationship.RecentPositiveInteractions + 1
             };
         }
-        if (recordsLearning && finished.MemoryEligible)
+        if (recordsLearning && finished.MemoryEligible && finished.OwnerInteraction && completed)
             preferences = ReinforcePreference(preferences, finished.BehaviorId, finished.Status, finished.OwnerInteraction, finished.At);
         var next = (state with { Runtime = runtime.Clamp(), Relationship = relationship, Preferences = preferences }).Clamp();
         return recordsLearning
@@ -648,7 +684,7 @@ public sealed class PetStateReducer
 
     private static PetAgentState ApplyOwnerDialogue(PetAgentState state, PetOwnerDialogueObserved dialogue)
     {
-        var answeredInitiative = dialogue.Positive && HasPendingInitiative(state, dialogue.At);
+        var answeredInitiative = HasPendingInitiative(state, dialogue.At);
         var runtime = state.Runtime with
         {
             LastInteractionAt = dialogue.At,
@@ -660,7 +696,9 @@ public sealed class PetStateReducer
         {
             Trust = state.Relationship.Trust + (dialogue.Positive ? 0.001 : 0),
             Familiarity = state.Relationship.Familiarity + (dialogue.Positive ? 0.002 : 0),
-            InitiativeAcceptance = state.Relationship.InitiativeAcceptance + (answeredInitiative ? 0.006 : 0),
+            InitiativeAcceptance = state.Relationship.InitiativeAcceptance + (answeredInitiative
+                ? dialogue.Positive ? 0.006 : -0.012
+                : 0),
             RecentPositiveInteractions = state.Relationship.RecentPositiveInteractions + (dialogue.Positive ? 1 : 0),
             RecentNegativeInteractions = state.Relationship.RecentNegativeInteractions + (dialogue.Positive ? 0 : 1)
         };
@@ -858,6 +896,9 @@ public sealed class BehaviorParticipationPolicy
             return Defer("current_not_interruptible", "当前动作需要先到达安全中断点");
         if (!capability.StartPostures.Contains(state.Runtime.CurrentPosture))
             return Defer("posture_transition_required", "需要先完成兼容的姿态转换");
+        if (capability.ParticipationMode != BehaviorParticipationMode.ForcedByOwner &&
+            !PetPoseCompatibility.IsCompatible(capability.StartPoseFamily, state.Runtime))
+            return Defer("pose_transition_required", "当前朝向需要先完成兼容过渡");
 
         if (capability.ParticipationMode == BehaviorParticipationMode.ForcedByOwner)
             return Accept("forced_owner_safe_admission", "主人特辑将在安全中断后执行");
@@ -867,11 +908,13 @@ public sealed class BehaviorParticipationPolicy
         var runtime = state.Runtime;
         var cooperation = state.Temperament.CommandCooperativeness01;
         var recentRepeats = state.RecentExperience
-            .Where(item => now - item.At <= TimeSpan.FromMinutes(10) &&
+            .Where(item => item.At <= now && now - item.At <= TimeSpan.FromMinutes(10) &&
                            string.Equals(item.BehaviorId, capability.BehaviorId, StringComparison.OrdinalIgnoreCase) &&
                            item.Status == ExecutionStatus.Completed)
             .Count();
-        var repeatCount = Math.Max(runtime.RepeatedActionCount, recentRepeats);
+        var sameLastAction = string.Equals(runtime.LastActionId, capability.BehaviorId, StringComparison.OrdinalIgnoreCase);
+        var recentLastAction = runtime.LastInteractionAt is { } last && last <= now && now - last <= TimeSpan.FromMinutes(10);
+        var repeatCount = Math.Max(sameLastAction && recentLastAction ? runtime.RepeatedActionCount : 0, recentRepeats);
         if (capability.Effort == BehaviorEffortLevel.High && runtime.Energy < 0.16)
             return Reject("energy_too_low", "悟空现在太累了，想先休息一下");
         if (capability.Effort == BehaviorEffortLevel.High && runtime.Stress > 0.82)
@@ -1048,6 +1091,8 @@ public sealed class BehaviorDecisionEngine
         if (input.Source == BehaviorRequestSource.AutonomousTick &&
             (capability.ParticipationMode != BehaviorParticipationMode.Autonomous || !capability.AutonomousBindingEnabled))
             reasons.Add("not_autonomous_capability");
+        if (input.Source == BehaviorRequestSource.AutonomousTick && state.Runtime.IsBusy)
+            reasons.Add("autonomous_waits_for_completion");
         if (!capability.StartPostures.Contains(state.Runtime.CurrentPosture))
             reasons.Add("posture_mismatch");
         if (!PetPoseCompatibility.IsCompatible(capability.StartPoseFamily, state.Runtime))
@@ -1109,7 +1154,7 @@ public sealed class BehaviorDecisionEngine
             _ => 0
         };
         var preference = state.Preferences.TryGetValue(capability.BehaviorId, out var learned)
-            ? learned.EffectiveWeight
+            ? learned.EffectiveWeight * Math.Exp(-Math.Max(0, (input.Now - learned.UpdatedAt).TotalDays) / 30)
             : 0;
         var experienceMemory = ExperienceMemoryScore(state, capability.BehaviorId, input.Now);
         var decisionMemory = state.DecisionMemory.CategoryWeight(capability.Category);

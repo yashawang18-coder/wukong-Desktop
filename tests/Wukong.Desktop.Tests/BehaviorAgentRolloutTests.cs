@@ -13,6 +13,7 @@ internal static class BehaviorAgentRolloutTests
             PetEpisodeKind.Resting,
             PetEpisodeKind.Observing,
             PetEpisodeKind.Exploring,
+            PetEpisodeKind.Recovering,
             PetEpisodeKind.Sleeping
         }), "default rollout does not own the reviewed daily continuity episodes");
         Assert(!runtime.AuthoritativeAgentEpisodes.Contains(PetEpisodeKind.OwnerInteraction),

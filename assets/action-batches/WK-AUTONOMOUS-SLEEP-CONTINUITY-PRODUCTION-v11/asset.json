@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "asset_id": "WK-AUTONOMOUS-SLEEP-CONTINUITY-PRODUCTION-v11",
+  "asset_version": 11,
+  "asset_stage": "runtime-approved",
+  "batch_id": "WK-AUTONOMOUS-SLEEP-CONTINUITY-PRODUCTION-v11",
+  "candidate_profile": "sleep-continuity-v11-owner-approved",
+  "source_zip": "not_applicable_local_review_batch_v7",
+  "source_review_batch": "WK-SLEEP-WALK-CONTINUITY-ART-REVIEW-v7",
+  "source_frame_count": 29,
+  "runtime_frame_count": 29,
+  "sequence_frame_reference_count": 44,
+  "sequence_count": 7,
+  "source_png_byte_identity": false,
+  "owner_preview_approved": true,
+  "owner_material_visual_confirmed": true,
+  "visual_approved": true,
+  "automated_validation": "passed_runtime_derivative_integrity",
+  "runtime_validation": "passed_windows_renderer_qa",
+  "runtime_approved": true,
+  "runtime_use": true,
+  "production_asset": true,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": true,
+  "normal_runtime_available": true,
+  "allowed_sources": [
+    "AutonomousTick",
+    "DeveloperPreview",
+    "OwnerDialogue"
+  ],
+  "runtime_render_scale": 0.78,
+  "runtime_scale_policy": "single fixed batch scale composed with userScale; no per-frame fit or centering",
+  "runtime_frame_format": "1024x1024 RGBA PNG derived uniformly from owner-approved 1254x1254 V7 review art",
+  "derivative_method": "premultiplied-alpha Lanczos 1254-to-1024 full-canvas resize; alpha<=1 and transparent RGB cleared uniformly",
+  "walk_review_included": false,
+  "walk_exclusion_reason": "owner_observed_interframe_coat_color_jumps_2026_10_02",
+  "missing_content": [
+    "approved wake exit",
+    "approved interrupt exit",
+    "compatible bridges for independent side-view variants"
+  ],
+  "status": "runtime-approved",
+  "action_count": 7,
+  "autonomous_action_ids": [
+    "wk.candidate.sleep.main_lifecycle_v2",
+    "wk.candidate.sleep.sprawled_front_breath_v2"
+  ],
+  "manual_runtime_only_action_ids": [
+    "wk.candidate.sleep.prone_to_side_roll_v2",
+    "wk.candidate.sleep.sprawled_left_side_breath_v2",
+    "wk.candidate.sleep.sprawled_right_side_breath_v2",
+    "wk.candidate.sleep.compact_prone_breath_v2",
+    "wk.candidate.sleep.curled_side_breath_v2"
+  ],
+  "notes": "Owner accepted all V7 sleep and breathing groups. Walk groups remain excluded because several frames change coat color. Runtime registration keeps incompatible camera views out of autonomy."
+}

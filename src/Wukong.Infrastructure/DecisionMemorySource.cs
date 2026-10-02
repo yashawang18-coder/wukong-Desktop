@@ -39,7 +39,7 @@ public sealed class LocalPetDecisionMemorySource : IPetDecisionMemorySource
                 .Select(item => new PetMemoryEvidence(
                     item.Id.ToString("N"),
                     PetMemoryEvidenceSource.ConfirmedConversation,
-                    Clip(item.Content, 2000))));
+                    Clip(item.Content, 2000)) { ObservedAt = item.CreatedAt }));
         }
 
         if (configuration.UseAlbumMemory)

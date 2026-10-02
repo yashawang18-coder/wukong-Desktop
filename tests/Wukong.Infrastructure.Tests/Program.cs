@@ -468,6 +468,7 @@ static async Task MemoryConfigurationStorePersistsSwitches()
 
 static async Task DecisionMemorySourceProjectsEnabledEvidence()
 {
+    var now = new DateTimeOffset(2026, 9, 21, 12, 0, 0, TimeSpan.Zero);
     var root = Path.Combine(Path.GetTempPath(), "wukong-decision-memory-" + Guid.NewGuid().ToString("N"));
     try
     {
@@ -480,16 +481,16 @@ static async Task DecisionMemorySourceProjectsEnabledEvidence()
         var configuration = new FileAgentMemoryConfigurationStore(agentRoot);
         var memory = new FileConversationMemoryStore(agentRoot);
         await memory.SaveAsync(new ConversationMemoryCandidate(
-            Guid.NewGuid(), "daily", "我喜欢陪老爸出去玩。", "test", DateTimeOffset.UtcNow,
+            Guid.NewGuid(), "daily", "我喜欢陪老爸出去玩。", "test", now.AddMinutes(-1),
             ConversationMemoryStatus.Confirmed));
         await memory.SaveAsync(new ConversationMemoryCandidate(
-            Guid.NewGuid(), "daily", "这条待确认内容不应参与决策。", "test", DateTimeOffset.UtcNow,
+            Guid.NewGuid(), "daily", "这条待确认内容不应参与决策。", "test", now.AddMinutes(-1),
             ConversationMemoryStatus.Pending));
         var source = new LocalPetDecisionMemorySource(
             configuration,
             memory,
             new AlbumMarkdownMemoryRetriever(() => albumRoot),
-            now: () => new DateTimeOffset(2026, 9, 21, 12, 0, 0, TimeSpan.Zero));
+            now: () => now);
         var profile = await source.LoadAsync();
         Assert(profile.EvidenceCounts.GetValueOrDefault("confirmed_conversation") == 1,
             "pending conversation memory entered decision projection");

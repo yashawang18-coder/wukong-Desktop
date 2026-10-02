@@ -2,29 +2,26 @@
   "schema_version": 1,
   "asset_id": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
   "asset_version": 10,
-  "asset_stage": "runtime-approved",
+  "asset_stage": "deprecated",
   "source_package": "wukong-sleep-runtime-final-transparent-v10.zip",
   "source_zip_sha256": "174350b0aaa7d01a6639d8ce189fb7a12d3541e5dc5ce4460b1461d8f0d1c701",
   "source_frame_count": 48,
   "runtime_frame_count": 48,
   "sequence_count": 8,
   "source_png_byte_identity": true,
-  "owner_preview_approved": true,
-  "owner_material_visual_confirmed": true,
-  "visual_approved": true,
+  "owner_preview_approved": false,
+  "owner_material_visual_confirmed": false,
+  "visual_approved": false,
   "automated_validation": "passed_import_integrity",
-  "runtime_validation": "passed_windows_renderer_qa",
-  "runtime_approved": true,
-  "runtime_use": true,
-  "production_asset": true,
+  "runtime_validation": "failed_owner_visual_qa",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
   "prototype_use": false,
-  "developer_preview": true,
-  "autonomous_binding_enabled": true,
-  "normal_runtime_available": true,
-  "allowed_sources": [
-    "AutonomousTick",
-    "DeveloperPreview"
-  ],
+  "developer_preview": false,
+  "autonomous_binding_enabled": false,
+  "normal_runtime_available": false,
+  "allowed_sources": [],
   "runtime_render_scale": 0.61,
   "runtime_scale_policy": "fixed per-sequence owner-reviewed visual scale after Alpha-bounds baseline; no per-frame normalization",
   "current_runtime_prone_bridge": {
@@ -50,7 +47,7 @@
     "candidate_scaled_visible_major_axis_px": 583.16,
     "runtime_visible_major_axis_px": 812,
     "runtime_scaled_visible_major_axis_px": 552.16,
-    "windows_transition_review": "passed_windows_renderer_qa"
+    "windows_transition_review": "withdrawn_owner_visual_qa_2026_09_30"
   },
   "batch_id": "WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10",
   "candidate_profile": "sleep-runtime-final-v10-approved-compatible-routing",
@@ -86,7 +83,7 @@
       "visible_width": 956,
       "visible_height": 555,
       "visible_center_x": 519.5,
-      "visible_center_y": 579.0,
+      "visible_center_y": 579,
       "ground_baseline_y": 856,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -108,8 +105,8 @@
       ],
       "visible_width": 947,
       "visible_height": 445,
-      "visible_center_x": 516.0,
-      "visible_center_y": 644.0,
+      "visible_center_x": 516,
+      "visible_center_y": 644,
       "ground_baseline_y": 866,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -131,8 +128,8 @@
       ],
       "visible_width": 941,
       "visible_height": 459,
-      "visible_center_x": 512.0,
-      "visible_center_y": 656.0,
+      "visible_center_x": 512,
+      "visible_center_y": 656,
       "ground_baseline_y": 885,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -154,8 +151,8 @@
       ],
       "visible_width": 943,
       "visible_height": 449,
-      "visible_center_x": 508.0,
-      "visible_center_y": 672.0,
+      "visible_center_x": 508,
+      "visible_center_y": 672,
       "ground_baseline_y": 896,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -201,7 +198,7 @@
       "visible_width": 920,
       "visible_height": 433,
       "visible_center_x": 529.5,
-      "visible_center_y": 637.0,
+      "visible_center_y": 637,
       "ground_baseline_y": 853,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -223,7 +220,7 @@
       ],
       "visible_width": 913,
       "visible_height": 438,
-      "visible_center_x": 528.0,
+      "visible_center_x": 528,
       "visible_center_y": 638.5,
       "ground_baseline_y": 857,
       "canvas_edges_transparent": true,
@@ -246,8 +243,8 @@
       ],
       "visible_width": 921,
       "visible_height": 409,
-      "visible_center_x": 510.0,
-      "visible_center_y": 637.0,
+      "visible_center_x": 510,
+      "visible_center_y": 637,
       "ground_baseline_y": 841,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -269,7 +266,7 @@
       ],
       "visible_width": 881,
       "visible_height": 376,
-      "visible_center_x": 508.0,
+      "visible_center_x": 508,
       "visible_center_y": 623.5,
       "ground_baseline_y": 811,
       "canvas_edges_transparent": true,
@@ -292,7 +289,7 @@
       ],
       "visible_width": 897,
       "visible_height": 374,
-      "visible_center_x": 502.0,
+      "visible_center_x": 502,
       "visible_center_y": 627.5,
       "ground_baseline_y": 814,
       "canvas_edges_transparent": true,
@@ -316,7 +313,7 @@
       "visible_width": 912,
       "visible_height": 373,
       "visible_center_x": 506.5,
-      "visible_center_y": 639.0,
+      "visible_center_y": 639,
       "ground_baseline_y": 825,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -338,7 +335,7 @@
       ],
       "visible_width": 935,
       "visible_height": 372,
-      "visible_center_x": 506.0,
+      "visible_center_x": 506,
       "visible_center_y": 653.5,
       "ground_baseline_y": 839,
       "canvas_edges_transparent": true,
@@ -362,7 +359,7 @@
       "visible_width": 924,
       "visible_height": 375,
       "visible_center_x": 520.5,
-      "visible_center_y": 627.0,
+      "visible_center_y": 627,
       "ground_baseline_y": 814,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -385,7 +382,7 @@
       "visible_width": 934,
       "visible_height": 369,
       "visible_center_x": 506.5,
-      "visible_center_y": 617.0,
+      "visible_center_y": 617,
       "ground_baseline_y": 801,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -407,8 +404,8 @@
       ],
       "visible_width": 953,
       "visible_height": 355,
-      "visible_center_x": 518.0,
-      "visible_center_y": 631.0,
+      "visible_center_x": 518,
+      "visible_center_y": 631,
       "ground_baseline_y": 808,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -430,8 +427,8 @@
       ],
       "visible_width": 967,
       "visible_height": 363,
-      "visible_center_x": 512.0,
-      "visible_center_y": 639.0,
+      "visible_center_x": 512,
+      "visible_center_y": 639,
       "ground_baseline_y": 820,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -477,7 +474,7 @@
       "visible_width": 932,
       "visible_height": 441,
       "visible_center_x": 516.5,
-      "visible_center_y": 638.0,
+      "visible_center_y": 638,
       "ground_baseline_y": 858,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -500,7 +497,7 @@
       "visible_width": 932,
       "visible_height": 433,
       "visible_center_x": 513.5,
-      "visible_center_y": 641.0,
+      "visible_center_y": 641,
       "ground_baseline_y": 857,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -545,7 +542,7 @@
       ],
       "visible_width": 919,
       "visible_height": 370,
-      "visible_center_x": 509.0,
+      "visible_center_x": 509,
       "visible_center_y": 626.5,
       "ground_baseline_y": 811,
       "canvas_edges_transparent": true,
@@ -569,7 +566,7 @@
       "visible_width": 924,
       "visible_height": 371,
       "visible_center_x": 509.5,
-      "visible_center_y": 620.0,
+      "visible_center_y": 620,
       "ground_baseline_y": 805,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -592,7 +589,7 @@
       "visible_width": 928,
       "visible_height": 367,
       "visible_center_x": 509.5,
-      "visible_center_y": 625.0,
+      "visible_center_y": 625,
       "ground_baseline_y": 808,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -614,8 +611,8 @@
       ],
       "visible_width": 927,
       "visible_height": 363,
-      "visible_center_x": 510.0,
-      "visible_center_y": 649.0,
+      "visible_center_x": 510,
+      "visible_center_y": 649,
       "ground_baseline_y": 830,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -661,7 +658,7 @@
       "visible_width": 830,
       "visible_height": 525,
       "visible_center_x": 512.5,
-      "visible_center_y": 578.0,
+      "visible_center_y": 578,
       "ground_baseline_y": 840,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 6
@@ -707,7 +704,7 @@
       "visible_width": 830,
       "visible_height": 525,
       "visible_center_x": 512.5,
-      "visible_center_y": 578.0,
+      "visible_center_y": 578,
       "ground_baseline_y": 840,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 17
@@ -798,7 +795,7 @@
       ],
       "visible_width": 957,
       "visible_height": 354,
-      "visible_center_x": 512.0,
+      "visible_center_x": 512,
       "visible_center_y": 663.5,
       "ground_baseline_y": 840,
       "canvas_edges_transparent": true,
@@ -845,7 +842,7 @@
       "visible_width": 930,
       "visible_height": 385,
       "visible_center_x": 511.5,
-      "visible_center_y": 647.0,
+      "visible_center_y": 647,
       "ground_baseline_y": 839,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -891,7 +888,7 @@
       "visible_width": 930,
       "visible_height": 385,
       "visible_center_x": 511.5,
-      "visible_center_y": 647.0,
+      "visible_center_y": 647,
       "ground_baseline_y": 839,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -914,7 +911,7 @@
       "visible_width": 738,
       "visible_height": 425,
       "visible_center_x": 511.5,
-      "visible_center_y": 627.0,
+      "visible_center_y": 627,
       "ground_baseline_y": 839,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -1029,7 +1026,7 @@
       "visible_width": 812,
       "visible_height": 355,
       "visible_center_x": 511.5,
-      "visible_center_y": 662.0,
+      "visible_center_y": 662,
       "ground_baseline_y": 839,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -1052,7 +1049,7 @@
       "visible_width": 812,
       "visible_height": 355,
       "visible_center_x": 511.5,
-      "visible_center_y": 662.0,
+      "visible_center_y": 662,
       "ground_baseline_y": 839,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -1075,7 +1072,7 @@
       "visible_width": 812,
       "visible_height": 355,
       "visible_center_x": 511.5,
-      "visible_center_y": 662.0,
+      "visible_center_y": 662,
       "ground_baseline_y": 839,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -1098,7 +1095,7 @@
       "visible_width": 716,
       "visible_height": 713,
       "visible_center_x": 511.5,
-      "visible_center_y": 512.0,
+      "visible_center_y": 512,
       "ground_baseline_y": 868,
       "canvas_edges_transparent": true,
       "possible_blue_carrier_pixels": 0
@@ -1187,22 +1184,19 @@
       "total_duration_ms": 5000,
       "interruptible": true,
       "loop": false,
-      "owner_preview_approved": true,
-      "visual_approved": true,
-      "runtime_validation": "passed_windows_renderer_qa",
-      "runtime_approved": true,
-      "runtime_use": true,
-      "production_asset": true,
+      "owner_preview_approved": false,
+      "visual_approved": false,
+      "runtime_validation": "failed_owner_visual_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
       "prototype_use": false,
-      "developer_preview": true,
-      "autonomous_binding_enabled": true,
-      "allowed_sources": [
-        "AutonomousTick",
-        "DeveloperPreview"
-      ],
+      "developer_preview": false,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [],
       "runtime_render_scale": 0.61,
-      "deprecated": false,
-      "deprecated_reason": null,
+      "deprecated": true,
+      "deprecated_reason": "owner_rejected_identity_coat_and_fur_2026_09_30",
       "phases": [
         {
           "name": "intro",
@@ -1307,7 +1301,24 @@
             }
           ]
         }
-      ]
+      ],
+      "approval_history_before_2026_09_30": {
+        "owner_preview_approved": true,
+        "visual_approved": true,
+        "runtime_approved": true,
+        "runtime_use": true,
+        "production_asset": true,
+        "prototype_use": false,
+        "developer_preview": true,
+        "autonomous_binding_enabled": true,
+        "runtime_validation": "passed_windows_renderer_qa",
+        "allowed_sources": [
+          "AutonomousTick",
+          "DeveloperPreview"
+        ]
+      },
+      "owner_material_visual_confirmed": false,
+      "normal_runtime_available": false
     },
     {
       "behavior_id": "wk.candidate.sleep.prone_to_side_roll_v2",
@@ -1322,21 +1333,19 @@
       "total_duration_ms": 2620,
       "interruptible": true,
       "loop": false,
-      "owner_preview_approved": true,
-      "visual_approved": true,
-      "runtime_validation": "passed_windows_renderer_qa",
-      "runtime_approved": true,
-      "runtime_use": true,
-      "production_asset": true,
+      "owner_preview_approved": false,
+      "visual_approved": false,
+      "runtime_validation": "failed_owner_visual_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
       "prototype_use": false,
-      "developer_preview": true,
+      "developer_preview": false,
       "autonomous_binding_enabled": false,
-      "allowed_sources": [
-        "DeveloperPreview"
-      ],
+      "allowed_sources": [],
       "runtime_render_scale": 0.64,
-      "deprecated": false,
-      "deprecated_reason": null,
+      "deprecated": true,
+      "deprecated_reason": "owner_rejected_identity_coat_and_fur_2026_09_30",
       "phases": [
         {
           "name": "intro",
@@ -1393,7 +1402,23 @@
             }
           ]
         }
-      ]
+      ],
+      "approval_history_before_2026_09_30": {
+        "owner_preview_approved": true,
+        "visual_approved": true,
+        "runtime_approved": true,
+        "runtime_use": true,
+        "production_asset": true,
+        "prototype_use": false,
+        "developer_preview": true,
+        "autonomous_binding_enabled": false,
+        "runtime_validation": "passed_windows_renderer_qa",
+        "allowed_sources": [
+          "DeveloperPreview"
+        ]
+      },
+      "owner_material_visual_confirmed": false,
+      "normal_runtime_available": false
     },
     {
       "behavior_id": "wk.candidate.sleep.sprawled_front_breath_v2",
@@ -1408,22 +1433,19 @@
       "total_duration_ms": 2600,
       "interruptible": true,
       "loop": true,
-      "owner_preview_approved": true,
-      "visual_approved": true,
-      "runtime_validation": "passed_windows_renderer_qa",
-      "runtime_approved": true,
-      "runtime_use": true,
-      "production_asset": true,
+      "owner_preview_approved": false,
+      "visual_approved": false,
+      "runtime_validation": "failed_owner_visual_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
       "prototype_use": false,
-      "developer_preview": true,
-      "autonomous_binding_enabled": true,
-      "allowed_sources": [
-        "AutonomousTick",
-        "DeveloperPreview"
-      ],
+      "developer_preview": false,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [],
       "runtime_render_scale": 0.63,
-      "deprecated": false,
-      "deprecated_reason": null,
+      "deprecated": true,
+      "deprecated_reason": "owner_rejected_identity_coat_and_fur_2026_09_30",
       "phases": [
         {
           "name": "loop",
@@ -1456,7 +1478,24 @@
             }
           ]
         }
-      ]
+      ],
+      "approval_history_before_2026_09_30": {
+        "owner_preview_approved": true,
+        "visual_approved": true,
+        "runtime_approved": true,
+        "runtime_use": true,
+        "production_asset": true,
+        "prototype_use": false,
+        "developer_preview": true,
+        "autonomous_binding_enabled": true,
+        "runtime_validation": "passed_windows_renderer_qa",
+        "allowed_sources": [
+          "AutonomousTick",
+          "DeveloperPreview"
+        ]
+      },
+      "owner_material_visual_confirmed": false,
+      "normal_runtime_available": false
     },
     {
       "behavior_id": "wk.candidate.sleep.sprawled_left_side_breath_v2",
@@ -1471,21 +1510,19 @@
       "total_duration_ms": 2600,
       "interruptible": true,
       "loop": true,
-      "owner_preview_approved": true,
-      "visual_approved": true,
-      "runtime_validation": "passed_windows_renderer_qa",
-      "runtime_approved": true,
-      "runtime_use": true,
-      "production_asset": true,
+      "owner_preview_approved": false,
+      "visual_approved": false,
+      "runtime_validation": "failed_owner_visual_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
       "prototype_use": false,
-      "developer_preview": true,
+      "developer_preview": false,
       "autonomous_binding_enabled": false,
-      "allowed_sources": [
-        "DeveloperPreview"
-      ],
+      "allowed_sources": [],
       "runtime_render_scale": 0.78,
-      "deprecated": false,
-      "deprecated_reason": null,
+      "deprecated": true,
+      "deprecated_reason": "owner_rejected_identity_coat_and_fur_2026_09_30",
       "phases": [
         {
           "name": "loop",
@@ -1518,7 +1555,23 @@
             }
           ]
         }
-      ]
+      ],
+      "approval_history_before_2026_09_30": {
+        "owner_preview_approved": true,
+        "visual_approved": true,
+        "runtime_approved": true,
+        "runtime_use": true,
+        "production_asset": true,
+        "prototype_use": false,
+        "developer_preview": true,
+        "autonomous_binding_enabled": false,
+        "runtime_validation": "passed_windows_renderer_qa",
+        "allowed_sources": [
+          "DeveloperPreview"
+        ]
+      },
+      "owner_material_visual_confirmed": false,
+      "normal_runtime_available": false
     },
     {
       "behavior_id": "wk.candidate.sleep.sprawled_right_side_breath_v2",
@@ -1578,7 +1631,21 @@
             }
           ]
         }
-      ]
+      ],
+      "approval_history_before_2026_09_30": {
+        "owner_preview_approved": false,
+        "visual_approved": false,
+        "runtime_approved": false,
+        "runtime_use": false,
+        "production_asset": false,
+        "prototype_use": false,
+        "developer_preview": false,
+        "autonomous_binding_enabled": false,
+        "runtime_validation": "failed_owner_visual_qa",
+        "allowed_sources": []
+      },
+      "owner_material_visual_confirmed": false,
+      "normal_runtime_available": false
     },
     {
       "behavior_id": "wk.candidate.sleep.compact_prone_breath_v2",
@@ -1638,7 +1705,21 @@
             }
           ]
         }
-      ]
+      ],
+      "approval_history_before_2026_09_30": {
+        "owner_preview_approved": false,
+        "visual_approved": false,
+        "runtime_approved": false,
+        "runtime_use": false,
+        "production_asset": false,
+        "prototype_use": false,
+        "developer_preview": false,
+        "autonomous_binding_enabled": false,
+        "runtime_validation": "failed_owner_visual_qa",
+        "allowed_sources": []
+      },
+      "owner_material_visual_confirmed": false,
+      "normal_runtime_available": false
     },
     {
       "behavior_id": "wk.candidate.sleep.curled_side_breath_v2",
@@ -1698,7 +1779,21 @@
             }
           ]
         }
-      ]
+      ],
+      "approval_history_before_2026_09_30": {
+        "owner_preview_approved": false,
+        "visual_approved": false,
+        "runtime_approved": false,
+        "runtime_use": false,
+        "production_asset": false,
+        "prototype_use": false,
+        "developer_preview": false,
+        "autonomous_binding_enabled": false,
+        "runtime_validation": "failed_owner_visual_qa",
+        "allowed_sources": []
+      },
+      "owner_material_visual_confirmed": false,
+      "normal_runtime_available": false
     },
     {
       "behavior_id": "wk.candidate.sleep.top_down_prone_breath_v2",
@@ -1758,7 +1853,42 @@
             }
           ]
         }
-      ]
+      ],
+      "approval_history_before_2026_09_30": {
+        "owner_preview_approved": false,
+        "visual_approved": false,
+        "runtime_approved": false,
+        "runtime_use": false,
+        "production_asset": false,
+        "prototype_use": false,
+        "developer_preview": false,
+        "autonomous_binding_enabled": false,
+        "runtime_validation": "failed_owner_visual_qa",
+        "allowed_sources": []
+      },
+      "owner_material_visual_confirmed": false,
+      "normal_runtime_available": false
     }
-  ]
+  ],
+  "approval_history_before_2026_09_30": {
+    "owner_preview_approved": true,
+    "owner_material_visual_confirmed": true,
+    "visual_approved": true,
+    "runtime_approved": true,
+    "runtime_use": true,
+    "production_asset": true,
+    "prototype_use": false,
+    "developer_preview": true,
+    "autonomous_binding_enabled": true,
+    "normal_runtime_available": true,
+    "runtime_validation": "passed_windows_renderer_qa",
+    "allowed_sources": [
+      "AutonomousTick",
+      "DeveloperPreview"
+    ]
+  },
+  "deprecated": true,
+  "deprecated_reason": "owner_rejected_identity_coat_and_fur_2026_09_30",
+  "status": "deprecated",
+  "notes": "Owner rejected identity/coat/fur on 2026-09-30. All eight v10 sequences are disabled, including autonomous and developer playback. Original PNGs, timing and hashes are retained for audit; previous approval is historical, not current. Use compatible awake rest until a new sleep sequence and wake exit pass review."
 }

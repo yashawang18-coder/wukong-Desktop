@@ -87,7 +87,7 @@ public static class InitiativeSpeechSchedule
             InitiativeSpeechTopic.Play when memory.InitiativeTopicWeight(topic) >= 0.05 => new[] { "想再出去玩啦。", "老爸，去草地嘛。", "想和你玩一会儿。" },
             InitiativeSpeechTopic.Play => new[] { "陪我玩嘛。", "我想动一动啦。", "玩一会儿呀？" },
             InitiativeSpeechTopic.Curiosity when memory.InitiativeTopicWeight(topic) >= 0.05 => new[] { "想和老爸再看看外面。", "外面会有新东西吗？", "我想去闻闻啦。" },
-            InitiativeSpeechTopic.Curiosity => new[] { "那边有动静诶。", "老爸在忙啥呀？", "我看看哦。" },
+            InitiativeSpeechTopic.Curiosity => new[] { "想看看窗外呀。", "老爸在忙啥呀？", "今天有什么好玩的？" },
             InitiativeSpeechTopic.Rest when posture == StablePosture.Prone => new[] { "我先趴会儿啦。", "这里趴着好舒服。", "陪我歇会儿呀。" },
             InitiativeSpeechTopic.Rest => new[] { "我有点困啦。", "想找地方趴会儿。", "陪我歇会儿呀。" },
             InitiativeSpeechTopic.Companionship when posture == StablePosture.Prone => new[] { "我陪老爸趴会儿。", "我就在旁边呀。", "老爸看看我嘛。" },

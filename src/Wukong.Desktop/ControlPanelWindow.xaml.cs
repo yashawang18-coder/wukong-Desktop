@@ -1318,7 +1318,7 @@ public partial class ControlPanelWindow : Window
         _previewMotion = motion;
         PreviewTitle.Text = $"{motion.DisplayName} - {motion.BehaviorId}";
         PreviewMeta.Text = $"{motion.Category} - {motion.Direction} - {motion.FrameCount} frames - {motion.Fps:F2} fps - {motion.RuntimeStatus} - 左右镜像：{(motion.SupportsHorizontalMirror ? "可用" : "不适用")} - profile: {motion.CandidateProfile}";
-        PreviewMirrorCheck.IsChecked = false;
+        PreviewMirrorCheck.IsChecked = MotionHorizontalMirrorPolicy.Resolve(motion, false);
         PreviewMirrorCheck.IsEnabled = motion.SupportsHorizontalMirror;
         ApplyPreviewMirror();
         PreviewPhaseCombo.ItemsSource = motion.Phases;

@@ -19,11 +19,11 @@ internal static class FrontProneExpressionCandidateTests
         using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
         var root = document.RootElement;
         Assert(root.GetProperty("visual_approved").GetBoolean(), "owner-approved source visuals were not recorded");
-        Assert(root.GetProperty("runtime_validation").GetString() == "pending_windows_expression_strength_qa", "candidate claimed Windows runtime approval");
-        Assert(!root.GetProperty("runtime_approved").GetBoolean() &&
-               !root.GetProperty("runtime_use").GetBoolean() &&
-               !root.GetProperty("production_asset").GetBoolean() &&
-               !root.GetProperty("prototype_use").GetBoolean(), "candidate formal runtime gate is open");
+        Assert(root.GetProperty("runtime_validation").GetString() == "passed_windows_renderer_qa", "renderer evidence not recorded");
+        Assert(root.GetProperty("runtime_approved").GetBoolean() &&
+               root.GetProperty("runtime_use").GetBoolean() &&
+               root.GetProperty("production_asset").GetBoolean() &&
+               !root.GetProperty("prototype_use").GetBoolean(), "approved runtime flags inconsistent");
 
         var inventory = root.GetProperty("frame_inventory").EnumerateArray().ToArray();
         Assert(inventory.Length == 36, "front-prone expression inventory must contain 36 PNGs");
@@ -63,7 +63,7 @@ internal static class FrontProneExpressionCandidateTests
             var catalog = DesktopMotionCatalog.Load(output);
             var motions = FrontProneExpressionBehaviorIds.All.Select(id => catalog.Find(id)).ToArray();
             Assert(motions.All(x => x is not null), "front-prone expression action is missing from catalog");
-            Assert(motions.All(x => x!.RuntimeEnabled && x.AutonomousBindingEnabled && !x.RuntimeApproved), "candidate EXE gate did not stay isolated from formal approval");
+            Assert(motions.All(x => x!.RuntimeEnabled && x.AutonomousBindingEnabled && x.RuntimeApproved), "approved expression unavailable");
             Assert(motions.All(x => x!.Phases.Single().FrameDurationsMs!.SequenceEqual(Durations)), "catalog timing differs from source manifest");
             Assert(motions.All(x => !x!.SupportsHorizontalMirror), "front-facing expressions must not be mirrored");
 

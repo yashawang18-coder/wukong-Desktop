@@ -22,13 +22,13 @@ internal static class ProneHappyHotPantingCandidateTests
         var root = document.RootElement;
         Assert(root.GetProperty("owner_preview_approved").GetBoolean(), "owner visual approval was not recorded");
         Assert(root.GetProperty("visual_approved").GetBoolean(), "visual approval was not recorded");
-        Assert(root.GetProperty("runtime_validation").GetString() == "pending_windows_renderer_qa", "candidate claimed Windows runtime approval");
-        Assert(!root.GetProperty("runtime_approved").GetBoolean() &&
-               !root.GetProperty("runtime_use").GetBoolean() &&
-               !root.GetProperty("production_asset").GetBoolean() &&
-               !root.GetProperty("prototype_use").GetBoolean(), "formal runtime gate is open");
+        Assert(root.GetProperty("runtime_validation").GetString() == "passed_windows_renderer_qa", "renderer evidence not recorded");
+        Assert(root.GetProperty("runtime_approved").GetBoolean() &&
+               root.GetProperty("runtime_use").GetBoolean() &&
+               root.GetProperty("production_asset").GetBoolean() &&
+               !root.GetProperty("prototype_use").GetBoolean(), "approved runtime flags inconsistent");
         Assert(root.GetProperty("developer_preview").GetBoolean() &&
-               !root.GetProperty("autonomous_binding_enabled").GetBoolean(), "candidate preview gate is inconsistent");
+               root.GetProperty("autonomous_binding_enabled").GetBoolean(), "approved autonomous gate is inconsistent");
 
         var action = root.GetProperty("action");
         Assert(action.GetProperty("behavior_id").GetString() == ProneHappyHotPantingBehaviorIds.HappyHotPanting,
@@ -66,8 +66,8 @@ internal static class ProneHappyHotPantingCandidateTests
             var catalog = DesktopMotionCatalog.Load(output);
             var motion = catalog.Find(ProneHappyHotPantingBehaviorIds.HappyHotPanting)
                 ?? throw new InvalidOperationException("happy hot-panting candidate is missing from catalog");
-            Assert(motion.RuntimeEnabled && motion.AutonomousBindingEnabled && !motion.RuntimeApproved,
-                "candidate EXE gate did not stay isolated from formal approval");
+            Assert(motion.RuntimeEnabled && motion.AutonomousBindingEnabled && motion.RuntimeApproved,
+                "approved panting unavailable");
             Assert(motion.Phases.Single().FrameDurationsMs!.SequenceEqual(Durations), "catalog timing differs from source manifest");
             Assert(!motion.SupportsHorizontalMirror, "front-facing panting must not be mirrored");
 

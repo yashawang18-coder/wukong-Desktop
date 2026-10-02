@@ -1,0 +1,34 @@
+{
+  "id": "wukong-early-approved-reference-v1",
+  "asset_role": "production_reference_selection",
+  "selection_basis": "owner-authorized selection from existing approved command and early prone imagery",
+  "contains_real_photos": false,
+  "runtime_approved": false,
+  "runtime_use": false,
+  "may_register_in_runtime_manifest": false,
+  "current_runtime_profile_changed": false,
+  "references": [
+    {
+      "role": "standing_identity",
+      "path": "assets/action-mocks/WK-COMMAND-PRODUCTION-CANDIDATES-v4/frames/sit/frame-001.png",
+      "sha256": "eeed89145e8b567898e6d85296b80a58de802561fe08855fb7bf7106f0eac5c5"
+    },
+    {
+      "role": "sitting_identity",
+      "path": "assets/action-mocks/WK-COMMAND-PRODUCTION-CANDIDATES-v4/frames/sit/frame-010.png",
+      "sha256": "2bf7f67b8fb43261c6dd0c11ac2760d5d43692fd26d7e1b0944af49752dbff2b"
+    },
+    {
+      "role": "front_prone_pose_and_paw_anchor",
+      "path": "assets/action-batches/WK-AUTONOMOUS-PRONE-IDLE-FRONT-CANDIDATE-v4/frames/prone-idle-front-calm/frame-001.png",
+      "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+    }
+  ],
+  "identity_constraints": [
+    "Same adult Wukong, not a generic standard Shiba or puppy",
+    "Preserve compact adult proportions, muzzle, eye spacing, ears and curl-tail geometry",
+    "Malt-gold coat and cream partition; no red/caramel recoloring",
+    "Fine directional fur, coherent black nose, no white/transparent nose holes",
+    "Do not change approved command or magic action designs"
+  ]
+}

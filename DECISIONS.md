@@ -1,5 +1,151 @@
 # Decisions
 
+## 2026-10-02 - promote accepted sleep v11 without promoting rejected walking art
+
+Treat the owner's approval as approval of the seven sleep, roll and breathing
+groups only. Exclude both V7 walking groups because their coat color changes
+between frames. Do not weaken that decision by mixing a few V7 walk frames into
+the already approved patrol batch; keep `WK-AUTONOMOUS-PATROL-WALK-v8` unchanged.
+
+Use one deterministic full-canvas conversion and one fixed local scale for all
+sleep v11 frames. Runtime approval does not imply camera-view compatibility.
+Only the complete main lifecycle and front-prone breathing loop may enter the
+autonomous pool, and each requires its exact compatible pose family. Keep the
+roll bridge and the independent side, compact and curled views available for
+explicit runtime/developer inspection until approved bridges exist. Never hard
+cut between those views, reverse the sleep entry as a wake sequence, or load the
+retired v10 pixels as a fallback.
+
+Real transparent MainWindow playback, frozen bitmap checks, asset integrity,
+Normal-route checks and the complete regression suite are required before Git
+publication. Stable presentation Idle is not a behavior episode and must not
+write OwnerInteraction state when a preview finishes.
+
+## 2026-10-02 - enable accepted front-prone events without reviving rejected art
+
+Interpret the owner's enable-prone request as the four visually accepted but
+runtime-disabled front microevents, not blanket approval of obsolete sleep,
+touch or head-composite packages. Promote only after exact-source checks and
+actual MainWindow playback. Keep front-only orientation and state-family gates.
+Authoritative Episode dispatch must honor the same cooldown as legacy dispatch.
+
+Reduce backward-looking side-prone selection and dwell, not its image size.
+Existing safe exit trimming stays; do not remove a necessary anchor or falsely
+declare front/side profiles compatible to increase variation. Keep command and
+magic designs unchanged. New direction and sleep art remains independent review
+work until complete gait/bridges, canvas/alpha checks and owner QA succeed.
+Generated keyframes or an EXE that stays alive are not evidence of a finished
+multidirection walk or sleep lifecycle. This turn does not authorize Git publishing.
+
+## 2026-10-02 - integrate accepted walk v8 and reuse safe mirror variants
+
+The owner accepted the normalized walking set and requested runtime integration
+and left/right expansion for suitable assets. Use one immutable 13-PNG canonical
+set in a new batch, retaining old sources and stable behavior IDs. Do not generate
+or reencode mirror copies. Reuse the established WPF transform and freeze facing
+for the whole execution, including intro and exit. Do not mirror magic, native
+direction sets, front-only expression assets or expired art.
+
+Keep the existing behavior pipeline and Exploring eligibility. Both selectors
+must honor actual left/right room, a shared walking cooldown and facing continuity.
+Move only while walking: accelerate after the initial stand, cruise during complete
+gait cycles, decelerate before terminal standing. Do not multiply intro/exit by the
+loop count. Menu Stop is idempotent and exits at the loop contact boundary; urgent
+replacement/shutdown can cancel without leaving a second player or movement task.
+
+Owner art acceptance alone does not establish renderer QA. This version additionally
+passed real MainWindow transparent-WPF playback in both directions and a repeated
+stop run before enabling its local runtime gate. Preserve that evidence and label
+the final owner's integrated desktop visual check separately. This decision does
+not authorize Git publication, replacing other art, or changing other approvals.
+
+## 2026-10-02 - normalize separate walking copies with one shared transform
+
+The owner now explicitly authorizes 1024x1024 walking runtime-format copies and
+low-alpha background cleanup. Preserve original files and hashes. Use one
+full-canvas scale for the entire cycle and start/stop set; do not crop, center,
+fit or translate individual frames. Keep the same low-alpha/component thresholds
+and premultiplied resampling for all 13 images. Do not script per-frame color
+normalization or paint over diagnostic holes.
+
+Keep 1/5/7 as immutable raw material anchors. New 3/4/6 material edits remain
+review candidates. Reject variants that move paws or drift the coat exposure;
+retain their provenance. Do not interpret ROI statistics as perceptual acceptance.
+In particular, frame 4/6 color metrics are not uniformly improved. Expose the
+before/after animation and measured baseline variation instead of declaring the
+flicker and gait fully solved. The natural gap between standing front legs is
+negative space, not an instruction to fill pixels.
+
+This permission does not promote the artwork, replace patrol, alter approved
+command/magic designs or authorize Git publication. Review evidence lives in
+`.publish-check/art-rebuild-walk-v8-normalized-review/` with all runtime gates
+closed; next approval is owner animation review, followed by actual integration
+and Windows renderer verification.
+
+## 2026-10-02 - keep review art separate and settle each execution once
+
+The requested walk revisions and start/stop sequence are whole-frame review
+candidates. Keep unchanged 1/5/7 anchors and preserve raw generation bytes. Do not
+relax the 1024/alpha gates, replace patrol, or promote sleep merely to complete
+a checklist. Normalization and final material/animation review remain outstanding.
+
+All Normal finite motions already acquire a Reducer execution in Accept. Remove
+the old batch-specific completion fallback rather than let a callback with no
+active execution write state again. Guard previews and terminal holds with their
+presentation request IDs too. Route actual WPF decode failure through the same
+terminal-event contract; keep effect recovery in Desktop and preview learning
+isolated. Do not change command or magic art/behavior profiles in this cleanup.
+
+Virtual-clock continuity tests and EXE survival are separate from owner animation
+acceptance. This checkpoint does not authorize a commit, push or asset promotion.
+
+## 2026-09-30 - withdraw composites and sleep v10 before extending replacement art
+
+The owner's latest rejection supersedes earlier sleep v10 acceptance for all eight
+sequences, but does not erase that history or their 48 source PNGs. Close visual,
+runtime, developer execution and autonomous gates; keep expired gallery inspection.
+No old sleep fallback or reverse-entry wake may be substituted.
+
+Remove the explicitly rejected side-prone front v5 composite images and previews,
+retaining historical SHA records and closed tombstone manifests. Remove the
+compositor and its dynamic V3R1 hook, exclude only this exact batch from publish.
+Do not remove original V3R1 or other approved source frames.
+
+Do not use the backward-looking prone frame as an identity/coat reference.
+Choose approved front-prone V4 for posture, and early command stand/sit for
+individual identity and coat. Reference selection does not authorize a new pose bridge.
+
+Generate coherent whole-body masters first, never head/neck patches. The current
+two new attempts fail canvas and strict alpha-border checks and are diagnostic
+review files only, not playable replacements. Do not expand a failed master into
+sleep/roll loops or claim a single walk pose proves a correct gait cycle.
+Patrol remains unchanged pending a complete validated replacement; this task does
+not claim its gait is repaired. Command and magic designs remain untouched.
+
+## 2026-09-30 - preserve approved designs while tightening companion continuity
+
+Use the owner's preferred early command/prone artwork as immutable identity,
+proportion and coat references. Keep command and magic designs intact. Later
+walking/sleep repairs require coherent new sequences and independent review;
+failed generator output must not replace approved files or inherit their gates.
+Selecting a reference frame does not restore a removed pose or approve a bridge.
+
+Improve the existing shared Agent rather than adding a new one. Capability and
+pose safety precede willingness and utility; missing transitions fail closed.
+Recovering is restricted to quiet existing idles/posture transitions, Exploring
+prepares a compatible posture one request at a time, and episode re-entry uses
+cooldown. Ordinary autonomous selection cannot interrupt an active execution.
+
+Relationship/evidence may bias choices within bounded limits, never unlock
+assets. Retrieval hints alone are not evidence; preferences decay and are not
+self-reinforced by autonomous completions. Interrupted actions grant no success
+benefits. Panel inspection and preview must not teach preferences or stress.
+Explicit quiet replies are owner feedback, not unanswered initiatives. Preserve
+existing persona, menus, command imagery, magic effects and all approval states.
+
+This is local mechanism work pending Windows owner acceptance. It does not
+authorize a commit, push, main merge, installer or art promotion.
+
 ## 2026-09-09 - expand eligible pet actions with a locked whole-frame orientation transform
 
 Use a WPF whole-frame horizontal `ScaleTransform` to provide left/right presentation for current non-directional pet actions without duplicating or rewriting approved PNGs. Treat this as runtime orientation, not as approval of a generated mirror asset. Capture the orientation once per `PetMotionRequest` and preserve it across all phases and the terminal posture hold.

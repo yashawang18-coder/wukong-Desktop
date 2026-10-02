@@ -1,6 +1,7 @@
 import hashlib
 import json
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import numpy as np
@@ -205,68 +206,32 @@ class CarRoadGazeAndSideProneFrontCandidateTests(unittest.TestCase):
                 self.assertTrue(path.is_file(), path)
                 self.assertEqual(expected, repository_sha256(path), path)
 
-    def test_side_prone_front_v5_has_bidirectional_bridges_and_a_calm_loop(self):
+    def test_rejected_side_prone_v5_pixels_and_loader_are_removed(self):
         manifest = json.loads((SIDE_V5 / "manifest.json").read_text(encoding="utf-8"))
-        self.assertEqual("wk.candidate.lifecycle.side_prone_front_observe_v5", manifest["behavior_id"])
-        self.assertEqual(36, manifest["frame_count"])
-        self.assertEqual("production_candidate_owner_visual_review_pending", manifest["status"])
-        self.assertEqual("pending_owner_visual_review_and_windows_renderer_ci", manifest["runtime_validation"])
-        self.assertFalse(manifest["visual_approved"])
-        self.assertTrue(manifest["owner_runtime_enable_requested"])
-        self.assertFalse(manifest["runtime_approved"])
-        self.assertFalse(manifest["runtime_use"])
-        self.assertFalse(manifest["autonomous_binding_enabled"])
-        self.assertIn("no hard splice", manifest["bridge_policy"])
-        self.assertFalse(manifest["source_policy"]["runtime_mirror_used"])
-        self.assertFalse(manifest["source_policy"]["v3r1_source_modified"])
-
-        phases = manifest["phases"]
-        self.assertEqual(
-            ["bridge-to-front", "side-prone-front-calm", "bridge-to-legacy"],
-            [phase["name"] for phase in phases],
-        )
-        self.assertEqual([12, 12, 12], [phase["frame_count"] for phase in phases])
-        self.assertEqual([False, True, False], [phase["loop"] for phase in phases])
-
-        forward = [SIDE_V5 / entry["path"] for entry in phases[0]["frames"]]
-        calm = [SIDE_V5 / entry["path"] for entry in phases[1]["frames"]]
-        reverse = [SIDE_V5 / entry["path"] for entry in phases[2]["frames"]]
-        self.assertEqual([path.read_bytes() for path in forward[::-1]], [path.read_bytes() for path in reverse])
-        self.assertEqual((V3_SIDE / "frame-001.png").read_bytes(), forward[0].read_bytes())
-        self.assertEqual(forward[-1].read_bytes(), calm[0].read_bytes())
-        self.assertEqual(calm[0].read_bytes(), calm[-1].read_bytes())
-        self.assertNotEqual(calm[0].read_bytes(), calm[5].read_bytes())
-        self.assertNotEqual(calm[0].read_bytes(), calm[8].read_bytes())
-
-        for index, path in enumerate(forward + calm, 1):
-            body_index = (index - 1) % 12 + 1
-            with Image.open(path) as image:
-                image.load()
-                self.assertEqual((1024, 1024), image.size)
-                self.assertEqual("RGBA", image.mode)
-                candidate = np.asarray(image)
-                bounds = image.getchannel("A").getbbox()
-            with Image.open(V3_SIDE / f"frame-{body_index:03d}.png") as source:
-                source.load()
-                frozen = np.asarray(source.convert("RGBA"))
-                frozen_bounds = source.getchannel("A").getbbox()
-            self.assertTrue(np.array_equal(candidate[:, 560:, :], frozen[:, 560:, :]), f"right-side body changed: {path}")
-            self.assertTrue(np.array_equal(candidate[760:, :, :], frozen[760:, :, :]), f"lower body changed: {path}")
-            self.assertLessEqual(abs(bounds[0] - frozen_bounds[0]), 12, path)
-            self.assertLessEqual(abs(bounds[1] - frozen_bounds[1]), 45, path)
-
-        sources = sorted((SIDE_V5 / "source/transition-heads").glob("*.png"))
-        self.assertEqual(6, len(sources))
-        for path in sources:
-            with Image.open(path) as image:
-                image.load()
-                self.assertEqual((310, 380), image.size)
-                self.assertEqual("RGBA", image.mode)
-                rgba = np.asarray(image)
-            visible = rgba[..., 3] > 64
-            rgb16 = rgba[..., :3].astype(np.int16)
-            green_spill = rgb16[..., 1] > np.maximum(rgb16[..., 0], rgb16[..., 2]) + 18
-            self.assertEqual(0, int(np.count_nonzero(visible & green_spill)), path)
+        self.assertTrue(manifest["deprecated"])
+        self.assertEqual(0, manifest["frame_count"])
+        self.assertEqual([], manifest["phases"])
+        self.assertEqual([], manifest["allowed_sources"])
+        for flag in ("visual_approved", "runtime_approved", "runtime_use", "production_asset",
+                     "prototype_use", "developer_preview", "autonomous_binding_enabled", "publish_included"):
+            self.assertFalse(manifest[flag], flag)
+        self.assertEqual([], list(SIDE_V5.rglob("*.png")))
+        self.assertEqual([], list(SIDE_V5.rglob("*.gif")))
+        history = json.loads((SIDE_V5 / "REMOVAL-RECORD.json").read_text(encoding="utf-8"))
+        self.assertTrue(history["records_are_historical_not_runtime_paths"])
+        self.assertEqual(36, history["historical_frame_count"])
+        self.assertEqual([12, 12, 12], [p["frame_count"] for p in history["removed_phases"]])
+        for phase in history["removed_phases"]:
+            for frame in phase["frames"]:
+                self.assertRegex(frame["sha256"], r"^[a-f0-9]{64}$")
+                self.assertFalse((SIDE_V5 / frame["path"]).exists())
+        desktop = (ROOT / "src/Wukong.Desktop/DesktopPetRuntime.cs").read_text(encoding="utf-8")
+        self.assertNotIn("LoadSideProneFrontProductionPhases", desktop)
+        self.assertFalse((ROOT / "tools/build_side_prone_front_v5.py").exists())
+        project = (ROOT / "src/Wukong.Desktop/Wukong.Desktop.csproj").read_text(encoding="utf-8")
+        removed = {item.attrib.get("Remove", "").replace(chr(92), "/")
+                   for item in ET.fromstring(project).iter("Content")}
+        self.assertIn("../../assets/action-batches/" + SIDE_V5.name + "/**/*", removed)
 
 
 if __name__ == "__main__":

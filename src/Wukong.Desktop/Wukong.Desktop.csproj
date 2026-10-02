@@ -33,6 +33,9 @@
              LinkBase="WukongAssets"
              CopyToOutputDirectory="PreserveNewest"
              CopyToPublishDirectory="PreserveNewest" />
+    <Content Remove="..\..\assets\action-batches\WK-AUTONOMOUS-SIDE-PRONE-FRONT-PRODUCTION-v5\**\*" />
+    <Content Remove="..\..\assets\action-batches\WK-AUTONOMOUS-PATROL-WALK-v1-candidate\**\*" />
+    <Content Remove="..\..\assets\action-batches\WK-AUTONOMOUS-SLEEP-RUNTIME-FINAL-CANDIDATE-v10\**\*" />
     <Content Include="..\..\config\defaults\**\*"
              LinkBase="WukongDefaults"
              CopyToOutputDirectory="PreserveNewest"

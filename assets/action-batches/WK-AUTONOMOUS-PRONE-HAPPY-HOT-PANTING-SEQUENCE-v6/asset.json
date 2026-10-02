@@ -1,0 +1,28 @@
+{
+  "batch_id": "WK-AUTONOMOUS-PRONE-HAPPY-HOT-PANTING-SEQUENCE-v6",
+  "asset_stage": "runtime-approved",
+  "owner_preview_approved": true,
+  "visual_approved": true,
+  "runtime_validation": "passed_windows_renderer_qa",
+  "runtime_approved": true,
+  "runtime_use": true,
+  "production_asset": true,
+  "prototype_use": false,
+  "autonomous_binding_enabled": true,
+  "manifest": "manifest.json",
+  "approval_evidence": {
+    "owner_enable_authorized": true,
+    "date": "2026-10-02",
+    "method": "actual_MainWindow_WPF_full_sequence_and_front_idle_recovery",
+    "results": [
+      {
+        "id": "prone_happy_hot_panting",
+        "frames": 17,
+        "elapsed_ms": 6331.3654,
+        "recovered_pose": "prone.awake.front"
+      }
+    ],
+    "new_pixel_processing": false,
+    "final_owner_desktop_check": "pending"
+  }
+}

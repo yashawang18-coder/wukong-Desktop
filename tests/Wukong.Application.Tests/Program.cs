@@ -5,6 +5,13 @@ using Wukong.Infrastructure;
 
 var tests = new (string Name, Func<Task> Run)[]
 {
+    ("command repetitions are action scoped and expire", () => RunSync(CompanionQualityTests.CommandRepetitionIsActionScopedAndExpires)),
+    ("memory evidence deduplicates signs and decays", () => RunSync(CompanionQualityTests.MemoryEvidenceIsDeduplicatedSignedAndDecayed)),
+    ("episode cooldown and capability availability hold", () => RunSync(CompanionQualityTests.EpisodeCooldownAndAvailabilityAreEnforced)),
+    ("10000 autonomous choices preserve hard gates", () => RunSync(CompanionQualityTests.TenThousandAutonomousChoicesRespectHardGates)),
+    ("interrupted outcomes spend without rewarding", () => RunSync(CompanionQualityTests.InterruptedOutcomesSpendButDoNotReward)),
+    ("panel failure and autonomous success do not teach preferences", () => RunSync(CompanionQualityTests.PanelFailureAndAutonomousSuccessDoNotTeachPreferences)),
+    ("speech respects sleep chat and negative feedback", () => RunSync(CompanionQualityTests.SleepingAndRecentChatSuppressSpeechAndNegativeReplyCounts)),
     ("production closed registry defers asset-backed behavior", ProductionClosedRegistryDefers),
     ("same state clock seed gives deterministic arbitration", DeterministicArbitration),
     ("pose mismatch defers behavior", PoseMismatchDefers),

@@ -9,15 +9,17 @@
   "candidate_profile": "front_prone_expression_review_v1",
   "owner_preview_approved": true,
   "visual_approved": true,
-  "runtime_validation": "pending_windows_expression_strength_qa",
-  "runtime_approved": false,
-  "runtime_use": false,
-  "production_asset": false,
+  "runtime_validation": "passed_windows_renderer_qa",
+  "runtime_approved": true,
+  "runtime_use": true,
+  "production_asset": true,
   "prototype_use": false,
   "developer_preview": true,
-  "autonomous_binding_enabled": false,
+  "autonomous_binding_enabled": true,
   "candidate_exe_review_marker": "Wukong.FrontProneExpressionsReview.enabled",
   "allowed_sources": [
+    "AutonomousTick",
+    "ControlPanel",
     "DeveloperPreview"
   ],
   "candidate_exe_allowed_sources": [
@@ -766,5 +768,34 @@
         }
       ]
     }
-  ]
+  ],
+  "asset_stage": "runtime-approved",
+  "deprecated": false,
+  "approval_evidence": {
+    "owner_enable_authorized": true,
+    "date": "2026-10-02",
+    "method": "actual_MainWindow_WPF_full_sequence_and_front_idle_recovery",
+    "results": [
+      {
+        "id": "prone-satisfied-smile",
+        "frames": 12,
+        "elapsed_ms": 3815.2187,
+        "recovered_pose": "prone.awake.front"
+      },
+      {
+        "id": "prone-curious-observe",
+        "frames": 12,
+        "elapsed_ms": 3800.0607,
+        "recovered_pose": "prone.awake.front"
+      },
+      {
+        "id": "prone-knowing-look",
+        "frames": 12,
+        "elapsed_ms": 3815.0228,
+        "recovered_pose": "prone.awake.front"
+      }
+    ],
+    "new_pixel_processing": false,
+    "final_owner_desktop_check": "pending"
+  }
 }

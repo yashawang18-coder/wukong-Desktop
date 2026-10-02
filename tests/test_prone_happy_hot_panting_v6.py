@@ -16,16 +16,17 @@ class ProneHappyHotPantingV6Tests(unittest.TestCase):
         cls.manifest = json.loads((BATCH / "manifest.json").read_text(encoding="utf-8"))
         cls.action = cls.manifest["action"]
 
-    def test_gate_and_timing_remain_candidate_only(self):
+    def test_owner_enabled_gate_preserves_timing(self):
         self.assertTrue(self.manifest["owner_preview_approved"])
         self.assertTrue(self.manifest["visual_approved"])
-        self.assertEqual("pending_windows_renderer_qa", self.manifest["runtime_validation"])
-        self.assertFalse(self.manifest["runtime_approved"])
-        self.assertFalse(self.manifest["runtime_use"])
-        self.assertFalse(self.manifest["production_asset"])
+        self.assertEqual("passed_windows_renderer_qa", self.manifest["runtime_validation"])
+        self.assertTrue(self.manifest["runtime_approved"])
+        self.assertTrue(self.manifest["runtime_use"])
+        self.assertTrue(self.manifest["production_asset"])
         self.assertFalse(self.manifest["prototype_use"])
         self.assertTrue(self.manifest["developer_preview"])
-        self.assertFalse(self.manifest["autonomous_binding_enabled"])
+        self.assertTrue(self.manifest["autonomous_binding_enabled"])
+        self.assertEqual(1, len(self.manifest["approval_evidence"]["results"]))
         self.assertEqual(17, len(self.action["frames"]))
         self.assertEqual(5680, sum(frame["duration_ms"] for frame in self.action["frames"]))
         self.assertEqual(4100, sum(frame["duration_ms"] for frame in self.action["frames"][3:13]))

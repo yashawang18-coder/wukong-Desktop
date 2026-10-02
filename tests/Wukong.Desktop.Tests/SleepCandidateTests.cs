@@ -14,113 +14,61 @@ internal static class SleepCandidateTests
         var batchRoot = Path.Combine(output, "WukongAssets", "action-batches", SleepCandidateBehaviorIds.AssetBatch);
         var assetPath = Path.Combine(batchRoot, "asset.json");
         var manifestPath = Path.Combine(batchRoot, "manifest.json");
-        Assert(File.Exists(assetPath), "sleep candidate asset.json was not copied");
-        Assert(File.Exists(manifestPath), "sleep candidate manifest was not copied");
+        Assert(File.Exists(assetPath), "sleep v11 asset.json was not copied");
+        Assert(File.Exists(manifestPath), "sleep v11 manifest was not copied");
 
         using var assetDocument = JsonDocument.Parse(File.ReadAllText(assetPath));
         var asset = assetDocument.RootElement;
-        Assert(asset.GetProperty("owner_preview_approved").GetBoolean(), "v10 owner approval was not recorded");
-        Assert(asset.GetProperty("visual_approved").GetBoolean(), "v10 visual approval was not recorded");
-        Assert(asset.GetProperty("runtime_validation").GetString() == "passed_windows_renderer_qa", "sleep runtime validation was not promoted");
-        Assert(asset.GetProperty("runtime_approved").GetBoolean(), "sleep runtime approval was not recorded");
-        Assert(asset.GetProperty("runtime_use").GetBoolean(), "sleep runtime use was not enabled");
-        Assert(asset.GetProperty("production_asset").GetBoolean(), "sleep production status was not recorded");
-        Assert(!asset.GetProperty("prototype_use").GetBoolean(), "sleep candidate incorrectly enabled owner prototype use");
-        Assert(asset.GetProperty("developer_preview").GetBoolean(), "sleep developer review was disabled");
-        Assert(asset.GetProperty("autonomous_binding_enabled").GetBoolean(), "compatible sleep actions were not enabled for autonomous use");
-        Assert(asset.GetProperty("allowed_sources").EnumerateArray().Select(x => x.GetString()).SequenceEqual(new[] { "AutonomousTick", "DeveloperPreview" }),
-            "sleep batch source policy changed");
-        Assert(asset.GetProperty("runtime_render_scale").GetDouble() == 0.61, "sleep batch reference scale changed");
-        Assert(asset.GetProperty("deprecated_action_count").GetInt32() == 4, "sleep deprecated action count changed");
-        Assert(asset.GetProperty("runtime_frame_format").GetString()!.Contains("copied byte-for-byte", StringComparison.Ordinal),
-            "sleep v10 source-byte preservation was not recorded");
+        foreach (var flag in new[] { "owner_preview_approved", "visual_approved", "runtime_approved", "runtime_use",
+                     "production_asset", "developer_preview", "autonomous_binding_enabled" })
+            Assert(asset.GetProperty(flag).GetBoolean(), $"approved sleep v11 closed {flag}");
+        Assert(!asset.GetProperty("prototype_use").GetBoolean(), "sleep v11 depends on PrototypePreview");
+        Assert(asset.GetProperty("runtime_validation").GetString() == "passed_windows_renderer_qa", "sleep v11 renderer approval missing");
+        Assert(asset.GetProperty("runtime_render_scale").GetDouble() == 0.78, "sleep v11 global scale changed");
+        Assert(asset.GetProperty("runtime_frame_count").GetInt32() == 29, "sleep v11 runtime count changed");
+        Assert(asset.GetProperty("sequence_frame_reference_count").GetInt32() == 44, "sleep v11 sequence references changed");
+        Assert(!asset.GetProperty("walk_review_included").GetBoolean(), "rejected walking art entered the sleep batch");
 
         using var manifestDocument = JsonDocument.Parse(File.ReadAllText(manifestPath));
         var manifest = manifestDocument.RootElement;
         var inventory = manifest.GetProperty("frame_inventory").EnumerateArray().ToArray();
-        Assert(inventory.Length == 48, "sleep candidate inventory must contain 48 runtime PNGs");
-        Assert(manifest.GetProperty("actions").GetArrayLength() == 8, "sleep candidate must contain eight actions");
+        Assert(inventory.Length == 29, "sleep v11 inventory must contain 29 runtime PNGs");
+        Assert(manifest.GetProperty("actions").GetArrayLength() == 7, "sleep v11 must contain seven actions");
         foreach (var item in inventory)
         {
             var relative = item.GetProperty("path").GetString()!;
+            Assert(!relative.Contains("walk", StringComparison.OrdinalIgnoreCase), "walking frame entered sleep v11");
             var path = Path.Combine(batchRoot, relative.Replace('/', Path.DirectorySeparatorChar));
-            Assert(File.Exists(path), $"sleep candidate frame missing: {relative}");
-            Assert(new FileInfo(path).Length == item.GetProperty("bytes").GetInt64(), $"sleep candidate byte count changed: {relative}");
-            Assert(Sha256(path) == item.GetProperty("sha256").GetString(), $"sleep candidate hash changed: {relative}");
+            Assert(File.Exists(path), $"sleep v11 frame missing: {relative}");
+            Assert(new FileInfo(path).Length == item.GetProperty("bytes").GetInt64(), $"sleep v11 byte count changed: {relative}");
+            Assert(Sha256(path) == item.GetProperty("sha256").GetString(), $"sleep v11 hash changed: {relative}");
             using var stream = File.OpenRead(path);
             var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
             var frame = decoder.Frames.Single();
-            Assert(frame.PixelWidth == 1024 && frame.PixelHeight == 1024, $"sleep candidate dimensions changed: {relative}");
-            Assert(frame.Format.ToString().Contains("a", StringComparison.OrdinalIgnoreCase), $"sleep candidate alpha channel missing: {relative}");
+            Assert(frame.PixelWidth == 1024 && frame.PixelHeight == 1024, $"sleep v11 dimensions changed: {relative}");
+            Assert(frame.Format.ToString().Contains("a", StringComparison.OrdinalIgnoreCase), $"sleep v11 alpha channel missing: {relative}");
         }
 
         var actions = manifest.GetProperty("actions").EnumerateArray().ToArray();
-        Assert(actions.Sum(x => x.GetProperty("frame_count").GetInt32()) == 48, "sleep candidate action frame total changed");
-        var expectedScales = new Dictionary<string, double>(StringComparer.Ordinal)
-        {
-            [SleepCandidateBehaviorIds.MainLifecycle] = 0.61,
-            [SleepCandidateBehaviorIds.ProneToSideRoll] = 0.64,
-            [SleepCandidateBehaviorIds.SprawledFrontBreath] = 0.63,
-            [SleepCandidateBehaviorIds.SprawledLeftSideBreath] = 0.78,
-            [SleepCandidateBehaviorIds.SprawledRightSideBreath] = 0.80,
-            [SleepCandidateBehaviorIds.CompactProneBreath] = 1.01,
-            [SleepCandidateBehaviorIds.CurledSideBreath] = 0.92,
-            [SleepCandidateBehaviorIds.TopDownProneBreath] = 1.04
-        };
-        var deprecatedIds = new HashSet<string>(StringComparer.Ordinal)
-        {
-            SleepCandidateBehaviorIds.SprawledRightSideBreath,
-            SleepCandidateBehaviorIds.CompactProneBreath,
-            SleepCandidateBehaviorIds.CurledSideBreath,
-            SleepCandidateBehaviorIds.TopDownProneBreath
-        };
-        var autonomousIds = new HashSet<string>(StringComparer.Ordinal)
-        {
-            SleepCandidateBehaviorIds.MainLifecycle,
-            SleepCandidateBehaviorIds.SprawledFrontBreath
-        };
+        Assert(actions.Sum(x => x.GetProperty("frame_count").GetInt32()) == 44, "sleep v11 action references changed");
         foreach (var action in actions)
         {
             var behaviorId = action.GetProperty("behavior_id").GetString()!;
-            var deprecated = deprecatedIds.Contains(behaviorId);
-            Assert(SleepCandidateBehaviorIds.All.Contains(behaviorId), "unknown sleep candidate behavior id");
-            Assert(action.GetProperty("runtime_render_scale").GetDouble() == expectedScales[behaviorId],
-                $"sleep action scale changed: {behaviorId}");
-            Assert(action.GetProperty("deprecated").GetBoolean() == deprecated, $"sleep action deprecation changed: {behaviorId}");
-            if (deprecated)
-            {
-                Assert(!action.GetProperty("owner_preview_approved").GetBoolean() &&
-                       !action.GetProperty("visual_approved").GetBoolean() &&
-                       !action.GetProperty("runtime_approved").GetBoolean() &&
-                       !action.GetProperty("runtime_use").GetBoolean() &&
-                       !action.GetProperty("production_asset").GetBoolean() &&
-                       !action.GetProperty("prototype_use").GetBoolean() &&
-                       !action.GetProperty("autonomous_binding_enabled").GetBoolean(),
-                    "deprecated sleep action escaped its closed gate");
-                Assert(action.GetProperty("runtime_validation").GetString() == "failed_owner_visual_qa", "deprecated sleep action validation changed");
-                Assert(!action.GetProperty("developer_preview").GetBoolean(), "deprecated sleep action remains playable");
-                Assert(action.GetProperty("allowed_sources").GetArrayLength() == 0, "deprecated sleep action retains a request source");
-                Assert(action.GetProperty("deprecated_reason").GetString() == "owner_rejected_color_and_fur_texture_2026_09_05",
-                    "deprecated sleep action reason changed");
-            }
-            else
-            {
-                var autonomous = autonomousIds.Contains(behaviorId);
-                Assert(action.GetProperty("owner_preview_approved").GetBoolean() &&
-                       action.GetProperty("visual_approved").GetBoolean() &&
-                       action.GetProperty("runtime_approved").GetBoolean() &&
-                       action.GetProperty("runtime_use").GetBoolean() &&
-                       action.GetProperty("production_asset").GetBoolean() &&
-                       !action.GetProperty("prototype_use").GetBoolean(),
-                    "approved sleep action gate changed");
-                Assert(action.GetProperty("runtime_validation").GetString() == "passed_windows_renderer_qa", "approved sleep validation changed");
-                Assert(action.GetProperty("developer_preview").GetBoolean(), "active sleep developer preview was disabled");
-                Assert(action.GetProperty("autonomous_binding_enabled").GetBoolean() == autonomous,
-                    "sleep autonomous compatibility gate changed");
-                var expectedSources = autonomous ? new[] { "AutonomousTick", "DeveloperPreview" } : new[] { "DeveloperPreview" };
-                Assert(action.GetProperty("allowed_sources").EnumerateArray().Select(x => x.GetString()).SequenceEqual(expectedSources),
-                    "approved sleep source policy changed");
-            }
+            Assert(SleepCandidateBehaviorIds.All.Contains(behaviorId), "unknown sleep v11 behavior");
+            Assert(action.GetProperty("runtime_render_scale").GetDouble() == 0.78, "sleep action escaped the global scale");
+            Assert(!action.GetProperty("deprecated").GetBoolean(), "approved sleep v11 is deprecated");
+            foreach (var flag in new[] { "owner_preview_approved", "visual_approved", "runtime_approved", "runtime_use",
+                         "production_asset", "developer_preview" })
+                Assert(action.GetProperty(flag).GetBoolean(), $"approved action closed {flag}: {behaviorId}");
+            Assert(!action.GetProperty("prototype_use").GetBoolean(), $"approved action depends on prototype: {behaviorId}");
+            Assert(action.GetProperty("runtime_validation").GetString() == "passed_windows_renderer_qa", "action renderer approval missing");
+            var autonomous = SleepCandidateBehaviorIds.AutonomousAllowed.Contains(behaviorId);
+            Assert(action.GetProperty("autonomous_binding_enabled").GetBoolean() == autonomous, "sleep autonomy policy drifted");
+            var sources = action.GetProperty("allowed_sources").EnumerateArray().Select(x => x.GetString()).ToHashSet(StringComparer.Ordinal);
+            var expected = autonomous
+                ? new HashSet<string?> { "AutonomousTick", "DeveloperPreview", "OwnerDialogue" }
+                : new HashSet<string?> { "DeveloperPreview" };
+            Assert(sources.SetEquals(expected), "sleep source policy drifted");
         }
 
         var rules = manifest.GetProperty("sequence_rules");
@@ -130,74 +78,53 @@ internal static class SleepCandidateTests
         Assert(!rules.GetProperty("legacy_sleep_visual_fallback_allowed").GetBoolean(), "legacy sleep visuals can be used as fallback");
     }
 
-    public static void ApprovedSleepUsesCompatibleAutonomousRoutesAndIsolatedPreview()
+    public static void ApprovedSleepUsesCompatibleAutonomyAndManualRuntime()
     {
         var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
         var catalog = DesktopMotionCatalog.Load(output);
         var motions = catalog.Motions.Where(x => x.AssetBatch == SleepCandidateBehaviorIds.AssetBatch).ToArray();
-        Assert(motions.Length == 8, "catalog did not expose all eight v10 sleep actions");
-        Assert(!catalog.Motions.Any(x => x.SourceRoot.Contains("WK-CORE-SLEEP-BREATH-v2", StringComparison.OrdinalIgnoreCase)),
-            "legacy sleep pixels remain discoverable through the desktop catalog");
-        Assert(motions.Where(x => !x.IsExpired).All(x => x.VisualApproved && x.RuntimeEnabled && x.RuntimeApproved && !x.PrototypeUse),
-            "approved sleep catalog gate changed");
-        Assert(motions.Where(x => x.IsExpired).All(x => !x.VisualApproved && !x.RuntimeEnabled && !x.RuntimeApproved && !x.AutonomousBindingEnabled),
-            "deprecated sleep catalog gate changed");
-        Assert(motions.Count(x => x.IsExpired) == 4, "sleep candidate must retain exactly four deprecated review records");
-        Assert(motions.Count(x => !x.IsExpired) == 4, "sleep candidate must retain exactly four active review records");
-        Assert(motions.Where(x => x.AutonomousBindingEnabled).Select(x => x.BehaviorId).ToHashSet(StringComparer.Ordinal)
-            .SetEquals(SleepCandidateBehaviorIds.AutonomousAllowed), "sleep autonomous posture allowlist changed");
-        Assert(SleepCandidateBehaviorIds.AutonomousAllowed.All(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed),
-            "compatible sleep action is missing from the autonomous runtime allowlist");
-        Assert(!DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(SleepCandidateBehaviorIds.ProneToSideRoll) &&
-               !DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(SleepCandidateBehaviorIds.SprawledLeftSideBreath),
-            "sleep action without a compatible runtime pose entered the autonomous allowlist");
-        Assert(DesktopRuntimeHost.IsSleepAutonomousProfileAllowed(SleepCandidateBehaviorIds.MainLifecycle, StablePosture.Prone, frontProneProfileActive: false),
-            "main sleep lifecycle cannot start from its compatible prone profile");
-        Assert(!DesktopRuntimeHost.IsSleepAutonomousProfileAllowed(SleepCandidateBehaviorIds.MainLifecycle, StablePosture.Prone, frontProneProfileActive: true),
-            "main sleep lifecycle can hard-cut from the front-prone profile");
-        Assert(DesktopRuntimeHost.IsSleepAutonomousProfileAllowed(SleepCandidateBehaviorIds.SprawledFrontBreath, StablePosture.Prone, frontProneProfileActive: true),
-            "front breathing cannot start from its compatible front-prone profile");
-        Assert(!DesktopRuntimeHost.IsSleepAutonomousProfileAllowed(SleepCandidateBehaviorIds.SprawledFrontBreath, StablePosture.Prone, frontProneProfileActive: false),
-            "front breathing can hard-cut from a non-front prone profile");
-        Assert(!DesktopRuntimeHost.IsSleepAutonomousProfileAllowed(SleepCandidateBehaviorIds.ProneToSideRoll, StablePosture.Prone, frontProneProfileActive: false) &&
-               !DesktopRuntimeHost.IsSleepAutonomousProfileAllowed(SleepCandidateBehaviorIds.SprawledLeftSideBreath, StablePosture.Prone, frontProneProfileActive: false),
-            "sleep action without a represented bridge passed posture eligibility");
-
-        var runtime = new DesktopRuntimeHost();
-        Assert(runtime.AutonomousDailyCandidateMotions.Count(x => x.AssetBatch == SleepCandidateBehaviorIds.AssetBatch) == 8,
-            "sleep candidates are missing from the developer autonomous review page");
-        var postureBefore = runtime.CurrentStablePosture;
-        PetMotionRequest? request = null;
-        runtime.MotionRequested += (_, value) => request = value;
-        foreach (var motion in motions.Where(x => !x.IsExpired))
+        Assert(motions.Length == 7, "sleep v11 catalog count changed");
+        Assert(motions.All(x => !x.IsExpired && x.VisualApproved && x.RuntimeEnabled && x.RuntimeApproved && !x.PrototypeUse),
+            "approved sleep v11 gate closed");
+        Assert(SleepCandidateBehaviorIds.RuntimeApproved.SetEquals(SleepCandidateBehaviorIds.All), "sleep approval set is incomplete");
+        Assert(SleepCandidateBehaviorIds.AutonomousAllowed.SetEquals(new[]
         {
-            request = null;
-            var result = runtime.SubmitDeveloperCandidateMotionAsync(motion.BehaviorId).GetAwaiter().GetResult();
-            Assert(result == PetActionResult.Accepted, $"developer sleep request was not accepted: {motion.BehaviorId}");
-            Assert(request is not null, $"developer sleep request did not emit a motion request: {motion.BehaviorId}");
-            Assert(request!.Source == BehaviorRequestSource.DeveloperForced, "sleep candidate bypassed the developer request source");
-            Assert(request.ExecutionMode == BehaviorExecutionMode.DeveloperPreview, "sleep candidate bypassed DeveloperPreview mode");
-            Assert(request.Motion.BehaviorId == motion.BehaviorId, $"wrong sleep candidate was requested: {motion.BehaviorId}");
-            runtime.CompleteMotion(request.Motion.BehaviorId, motion.Phases[0].Name);
-            Assert(runtime.CurrentStablePosture == postureBefore, $"developer sleep preview changed production posture: {motion.BehaviorId}");
-            Assert(request.Motion.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop, $"sleep completion selected an unrelated posture idle: {motion.BehaviorId}");
-            Assert(request.Motion.RenderScaleOverride == 0.68, $"sleep completion returned to the oversized prone idle scale: {motion.BehaviorId}");
-        }
+            SleepCandidateBehaviorIds.MainLifecycle,
+            SleepCandidateBehaviorIds.SprawledFrontBreath
+        }), "sleep autonomous allowlist broadened");
+        Assert(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(SleepCandidateBehaviorIds.MainLifecycle), "main sleep is not autonomous");
+        Assert(DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(SleepCandidateBehaviorIds.SprawledFrontBreath), "front sleep breathing is not autonomous");
+        foreach (var id in SleepCandidateBehaviorIds.All.Except(SleepCandidateBehaviorIds.AutonomousAllowed))
+            Assert(!DesktopRuntimeHost.IsAutonomousRuntimeBehaviorAllowed(id), $"manual sleep view entered autonomy: {id}");
+        Assert(DesktopRuntimeHost.IsSleepAutonomousProfileAllowed(
+            SleepCandidateBehaviorIds.MainLifecycle, StablePosture.Prone, frontProneProfileActive: false), "compatible side-prone sleep was blocked");
+        Assert(!DesktopRuntimeHost.IsSleepAutonomousProfileAllowed(
+            SleepCandidateBehaviorIds.MainLifecycle, StablePosture.Prone, frontProneProfileActive: true), "main sleep can hard-cut from front prone");
+        Assert(DesktopRuntimeHost.IsSleepAutonomousProfileAllowed(
+            SleepCandidateBehaviorIds.SprawledFrontBreath, StablePosture.Prone, frontProneProfileActive: true), "front breathing was blocked");
+        Assert(!DesktopRuntimeHost.IsSleepAutonomousProfileAllowed(
+            SleepCandidateBehaviorIds.SprawledFrontBreath, StablePosture.Prone, frontProneProfileActive: false), "front breathing can hard-cut from side prone");
 
-        foreach (var motion in motions.Where(x => x.IsExpired))
+        foreach (var motion in motions)
         {
-            request = null;
+            var runtime = new DesktopRuntimeHost();
+            PetMotionRequest? request = null;
+            runtime.MotionRequested += (_, value) => request = value;
+            var before = JsonSerializer.Serialize(runtime.AgentStateSnapshot);
             var result = runtime.SubmitDeveloperCandidateMotionAsync(motion.BehaviorId).GetAwaiter().GetResult();
-            Assert(result == PetActionResult.Deferred, $"deprecated sleep action was playable: {motion.BehaviorId}");
-            Assert(request is null, $"deprecated sleep action emitted a motion request: {motion.BehaviorId}");
+            Assert(result == PetActionResult.Accepted && request is not null, $"approved sleep preview failed: {motion.BehaviorId}");
+            var acceptedRequest = request!;
+            Assert(acceptedRequest.ExecutionMode == BehaviorExecutionMode.DeveloperPreview, "sleep inspection bypassed isolated preview");
+            runtime.CompleteMotion(acceptedRequest.RequestId, motion.BehaviorId, acceptedRequest.Motion.Phases.Last().Name);
+            Assert(JsonSerializer.Serialize(runtime.AgentStateSnapshot) == before, "sleep preview changed production state");
         }
     }
 
-    public static void MissingV10FramesFailClosedWithoutLegacyFallback()
+    public static void MissingV11FramesFailClosedWithoutLegacyFallback()
     {
         var output = Path.GetDirectoryName(typeof(MainWindow).Assembly.Location)!;
         var source = Path.Combine(output, "WukongAssets", "action-batches", SleepCandidateBehaviorIds.AssetBatch);
-        var temporaryRoot = Path.Combine(Path.GetTempPath(), $"wukong-sleep-v10-missing-{Guid.NewGuid():N}");
+        var temporaryRoot = Path.Combine(Path.GetTempPath(), $"wukong-sleep-v11-missing-{Guid.NewGuid():N}");
         var candidateRoot = Path.Combine(temporaryRoot, "WukongAssets", "action-batches", SleepCandidateBehaviorIds.AssetBatch);
         Directory.CreateDirectory(candidateRoot);
         try
@@ -205,9 +132,9 @@ internal static class SleepCandidateTests
             File.Copy(Path.Combine(source, "manifest.json"), Path.Combine(candidateRoot, "manifest.json"));
             var catalog = DesktopMotionCatalog.Load(temporaryRoot);
             Assert(!catalog.Motions.Any(x => x.AssetBatch == SleepCandidateBehaviorIds.AssetBatch),
-                "sleep v10 with missing frames entered the catalog");
+                "sleep v11 with missing frames entered the catalog");
             Assert(!catalog.Motions.Any(x => x.SourceRoot.Contains("WK-CORE-SLEEP-BREATH-v2", StringComparison.OrdinalIgnoreCase)),
-                "missing sleep v10 silently fell back to legacy sleep pixels");
+                "missing sleep v11 silently fell back to legacy sleep pixels");
         }
         finally
         {

@@ -21,7 +21,11 @@ public sealed record PetMemoryEvidence(
     string EvidenceId,
     PetMemoryEvidenceSource Source,
     string Text,
-    PetMemoryTheme? SuggestedTheme = null);
+    PetMemoryTheme? SuggestedTheme = null)
+{
+    public DateTimeOffset? ObservedAt { get; init; }
+    public double Confidence { get; init; } = 1;
+}
 
 public sealed record PetDecisionMemoryProfile(
     IReadOnlyDictionary<string, double> CategoryWeights,
@@ -104,8 +108,14 @@ public sealed class PetDecisionMemoryProjector
         ArgumentNullException.ThrowIfNull(evidence);
         var items = evidence
             .Where(item => !string.IsNullOrWhiteSpace(item.EvidenceId) && !string.IsNullOrWhiteSpace(item.Text))
-            .GroupBy(item => $"{item.Source}:{item.EvidenceId}:{item.SuggestedTheme}", StringComparer.OrdinalIgnoreCase)
-            .Select(group => group.First())
+            .Where(item => item.ObservedAt is null || item.ObservedAt <= generatedAt.AddMinutes(5))
+            .GroupBy(item => $"{item.Source}:{item.EvidenceId}", StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.OrderByDescending(item => item.Text.Length)
+                .ThenBy(item => item.Text, StringComparer.Ordinal).First())
+            .GroupBy(item => $"{item.Source}:{item.Text.Trim()}", StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.OrderByDescending(item => item.ObservedAt).First())
+            .OrderByDescending(item => item.ObservedAt)
+            .Take(128)
             .OrderBy(item => item.Source)
             .ThenBy(item => item.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -122,11 +132,16 @@ public sealed class PetDecisionMemoryProjector
             foreach (var theme in matched)
             {
                 var unit = item.Source == PetMemoryEvidenceSource.ConfirmedConversation ? 0.018 : 0.012;
-                themeScores[theme] = Math.Min(0.10, themeScores[theme] + unit);
+                var ageDays = Math.Max(0, (generatedAt - (item.ObservedAt ?? generatedAt)).TotalDays);
+                var confidence = double.IsFinite(item.Confidence) ? Math.Clamp(item.Confidence, 0, 1) : 0;
+                themeScores[theme] += unit * confidence * Math.Exp(-ageDays / 90) * EvidencePolarity(item.Text, theme);
                 var key = $"theme:{theme}";
                 counts[key] = counts.GetValueOrDefault(key) + 1;
             }
         }
+
+        foreach (var theme in themeScores.Keys.ToArray())
+            themeScores[theme] = Math.Clamp(themeScores[theme], -0.10, 0.10);
 
         var categories = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
         {
@@ -148,20 +163,31 @@ public sealed class PetDecisionMemoryProjector
         };
         var fingerprint = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
             System.Text.Encoding.UTF8.GetBytes(string.Join("\n", items.Select(item =>
-                $"{item.Source}|{item.EvidenceId}|{item.SuggestedTheme}|{item.Text}"))))).ToLowerInvariant();
+                $"{item.Source}|{item.EvidenceId}|{item.ObservedAt:O}|{item.Confidence:R}|{item.Text}"))))).ToLowerInvariant();
         return new PetDecisionMemoryProfile(categories, topics, counts, generatedAt, fingerprint).Clamp();
     }
 
     private static IEnumerable<PetMemoryTheme> MatchThemes(PetMemoryEvidence evidence)
     {
-        if (evidence.SuggestedTheme is { } suggested)
-            yield return suggested;
         foreach (var pair in Keywords)
         {
-            if (evidence.SuggestedTheme == pair.Key)
-                continue;
             if (pair.Value.Any(keyword => evidence.Text.Contains(keyword, StringComparison.OrdinalIgnoreCase)))
                 yield return pair.Key;
         }
+    }
+
+    private static double EvidencePolarity(string text, PetMemoryTheme theme)
+    {
+        // Retrieval labels are not evidence. Explicit nearby aversion wins over
+        // incidental mentions; ambiguous stories remain a weak familiarity signal.
+        foreach (var keyword in Keywords[theme])
+        {
+            foreach (var prefix in new[] { "不喜欢", "讨厌", "不想", "不爱", "不愿意" })
+                if (text.Contains(prefix + keyword, StringComparison.OrdinalIgnoreCase))
+                    return -1;
+        }
+        return text.Contains("喜欢", StringComparison.Ordinal) || text.Contains("开心", StringComparison.Ordinal)
+            ? 1
+            : 0.35;
     }
 }

@@ -1,0 +1,40 @@
+{
+  "batch_id": "WK-AUTONOMOUS-PRONE-MICROEXPRESSIONS-v1",
+  "asset_stage": "runtime-approved",
+  "owner_preview_approved": true,
+  "visual_approved": true,
+  "runtime_validation": "passed_windows_renderer_qa",
+  "runtime_approved": true,
+  "runtime_use": true,
+  "production_asset": true,
+  "prototype_use": false,
+  "autonomous_binding_enabled": true,
+  "manifest": "manifest.json",
+  "approval_evidence": {
+    "owner_enable_authorized": true,
+    "date": "2026-10-02",
+    "method": "actual_MainWindow_WPF_full_sequence_and_front_idle_recovery",
+    "results": [
+      {
+        "id": "prone-satisfied-smile",
+        "frames": 12,
+        "elapsed_ms": 3815.2187,
+        "recovered_pose": "prone.awake.front"
+      },
+      {
+        "id": "prone-curious-observe",
+        "frames": 12,
+        "elapsed_ms": 3800.0607,
+        "recovered_pose": "prone.awake.front"
+      },
+      {
+        "id": "prone-knowing-look",
+        "frames": 12,
+        "elapsed_ms": 3815.0228,
+        "recovered_pose": "prone.awake.front"
+      }
+    ],
+    "new_pixel_processing": false,
+    "final_owner_desktop_check": "pending"
+  }
+}

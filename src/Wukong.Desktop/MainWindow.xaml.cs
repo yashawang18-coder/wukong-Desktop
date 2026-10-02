@@ -480,7 +480,11 @@ public partial class MainWindow : Window
         Dispatcher.Invoke(() =>
         {
             var pipelineElapsed = ElapsedMilliseconds(request.RequestedAtTimestamp);
+            var preserveWalkingGround = request.Motion.AssetBatch == PatrolWalkCandidateBehaviorIds.AssetBatch ||
+                _activeRequest?.Motion.AssetBatch == PatrolWalkCandidateBehaviorIds.AssetBatch;
+            var walkingGround = preserveWalkingGround ? WalkingTransitionGround(_activeRequest?.Motion, _currentFramePath) : (Point?)null;
             _activeRequest = request;
+            _suspendAnimationFrames = false;
             _phaseIndex = 0;
             _frameIndex = 0;
             _loopCount = 0;
@@ -493,6 +497,11 @@ public partial class MainWindow : Window
                 ApplyMotionVisualScale(request.Motion, firstPhase, 0);
             else
                 ApplyMotionVisualScale(request.Motion);
+            if (walkingGround is { } ground)
+            {
+                var nextGround = WalkingTransitionGround(request.Motion, request.Motion.FirstFrame);
+                ApplyVisiblePlacement(new Point(Left + ground.X - nextGround.X, Top + ground.Y - nextGround.Y));
+            }
             var scaleElapsed = ElapsedMilliseconds(scaleStarted);
             SetAnimationIntervalForCurrentFrame(request.Motion, phaseIndex: 0, frameIndex: 0, useDirectionalFrames: false);
             var firstFrameStarted = Stopwatch.GetTimestamp();
@@ -521,7 +530,7 @@ public partial class MainWindow : Window
         var phases = _activeRequest.Motion.Phases.Where(x => x.Frames.Count > 0).ToList();
         if (phases.Count == 0)
         {
-            ShowFallback("missing frames");
+            QueueFrameFailure("missing frames");
             return;
         }
 
@@ -591,13 +600,25 @@ public partial class MainWindow : Window
         _coinSingleClickTimer.Stop();
         _ownerSingleClickTimer.Stop();
         var returnToIdle = _activeRequest.ReturnToIdle;
-        _activeRequest = null;
+        if (request.Motion.AssetBatch != PatrolWalkCandidateBehaviorIds.AssetBatch)
+            _activeRequest = null;
         if (returnToIdle)
             _runtime.CompleteMotion(request.RequestId, behaviorId, phase);
     }
 
     private async Task StopCurrentBehaviorAsync(string reason)
     {
+        if (_activeRequest?.Motion.AssetBatch == PatrolWalkCandidateBehaviorIds.AssetBatch &&
+            _patrolPlaybackTask is { IsCompleted: false })
+        {
+            if (_patrolStopRequested)
+                return;
+            var executionId = _activeRequest.RequestId;
+            _patrolStopRequested = true;
+            await _patrolPlaybackTask;
+            if (_activeRequest?.RequestId != executionId)
+                return;
+        }
         _effectCancellation?.Cancel();
         RestoreWindowAfterEffect();
         _animationTimer.Stop();
@@ -631,7 +652,8 @@ public partial class MainWindow : Window
         var token = _effectCancellation?.Token ?? CancellationToken.None;
         if (request.Motion.WindowMotionEnabled)
         {
-            _ = RunPatrolWalkAsync(request, token);
+            _patrolStopRequested = false;
+            _patrolPlaybackTask = RunPatrolWalkAsync(request, token);
             return;
         }
         _ = request.Motion.Effect switch
@@ -648,19 +670,14 @@ public partial class MainWindow : Window
     {
         try
         {
-            var workArea = WindowPlacement.CurrentWorkingArea(this);
-            var width = ActualWidth > 0 ? ActualWidth : Width;
-            var height = ActualHeight > 0 ? ActualHeight : Height;
-            var start = ClampToWorkArea(new Point(Left, Top), workArea, width, height);
-            var cycles = request.LoopCycles == int.MaxValue ? 2 : Math.Max(1, request.LoopCycles);
-            var durationMs = request.Motion.Phases
-                .Where(phase => phase.Frames.Count > 0)
-                .Sum(phase => phase.DurationTotalMs(request.Motion.FrameDurationMs)) * cycles;
-            var duration = TimeSpan.FromMilliseconds(Math.Max(500, durationMs));
-            var target = ChoosePatrolWalkTarget(start, workArea, width, height, request.Motion.Direction, duration);
-            var distance = Math.Abs(target.X - start.X);
-            _runtime.ReportPerformance($"patrol_walk_motion direction={request.Motion.Direction} distance_px={distance:0.0} duration_ms={duration.TotalMilliseconds:0}");
-            await MoveWindowAsync(start, target, duration, token, MotionEasing.EaseInOut);
+            _suspendAnimationFrames = true;
+            await PlayPatrolTimelineAsync(request, token);
+            token.ThrowIfCancellationRequested();
+            if (_activeRequest?.RequestId == request.RequestId && !_patrolStopRequested)
+            {
+                _suspendAnimationFrames = false;
+                FinishCurrentMotion();
+            }
         }
         catch (OperationCanceledException)
         {
@@ -668,10 +685,17 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             _runtime.ReportError($"patrol_walk_motion_failed:{ex.GetType().Name}");
+            if (_activeRequest?.RequestId == request.RequestId)
+                _suspendAnimationFrames = false;
+            _runtime.FailMotion(request.RequestId, request.Motion.BehaviorId, ex.GetType().Name);
         }
         finally
         {
-            ApplyVisiblePlacement(new Point(Left, Top));
+            if (_activeRequest?.RequestId == request.RequestId)
+            {
+                _suspendAnimationFrames = false;
+                ApplyVisiblePlacement(new Point(Left, Top));
+            }
         }
     }
 
@@ -1411,7 +1435,7 @@ public partial class MainWindow : Window
         var frame = motion.Phases.SelectMany(x => x.Frames).FirstOrDefault();
         if (frame is null)
         {
-            ShowFallback("missing first frame");
+            QueueFrameFailure("missing first frame");
             return;
         }
 
@@ -1437,8 +1461,32 @@ public partial class MainWindow : Window
             BootstrapLog.WriteRaw($"frame_decode_failed_{ex.GetType().Name}");
             BootstrapLog.Write("Frame decode failed", ex);
             _runtime.ReportError($"frame_decode_failed:{Path.GetFileName(path)}:{ex.GetType().Name}");
-            ShowFallback(ex.GetType().Name);
+            QueueFrameFailure(ex.GetType().Name);
         }
+    }
+
+    private void QueueFrameFailure(string reason)
+    {
+        var failedRequest = _activeRequest;
+        _animationTimer.Stop();
+        _suspendAnimationFrames = true;
+        ShowFallback(reason);
+        if (failedRequest is null)
+            return;
+
+        // Finish the current frame callback before requesting recovery playback.
+        // A newer owner request must not be cancelled by this queued failure.
+        Dispatcher.BeginInvoke(DispatcherPriority.Send, () =>
+        {
+            if (_activeRequest?.RequestId != failedRequest.RequestId)
+                return;
+            _effectCancellation?.Cancel();
+            RestoreWindowAfterEffect();
+            _animationTimer.Stop();
+            _activeRequest = null;
+            _suspendAnimationFrames = false;
+            _runtime.FailMotion(failedRequest.RequestId, failedRequest.Motion.BehaviorId, $"frame_failure:{reason}");
+        });
     }
 
     private BitmapImage LoadImage(string path)

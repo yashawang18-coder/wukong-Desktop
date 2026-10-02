@@ -49,12 +49,13 @@ internal static class BehaviorTruthRuntimeTests
         Assert(validation.Text.Contains("趴", StringComparison.Ordinal), "fallback did not use the live prone posture");
     }
 
-    public static void ContinuityRolloutOwnsTheFourDailyEpisodes()
+    public static void ContinuityRolloutOwnsDailyEpisodes()
     {
         var rollout = AutonomousAgentRolloutOptions.ContinuityV1;
         Assert(rollout.IsAuthoritative(PetEpisodeKind.Resting), "Resting is not authoritative");
         Assert(rollout.IsAuthoritative(PetEpisodeKind.Observing), "Observing is not authoritative");
         Assert(rollout.IsAuthoritative(PetEpisodeKind.Exploring), "Exploring is not authoritative");
+        Assert(rollout.IsAuthoritative(PetEpisodeKind.Recovering), "Recovering is not authoritative");
         Assert(rollout.IsAuthoritative(PetEpisodeKind.Sleeping), "Sleeping is not authoritative");
         Assert(!rollout.LegacyFallbackOnInfrastructureFailure, "authoritative episode can fall through to random legacy selection");
     }
