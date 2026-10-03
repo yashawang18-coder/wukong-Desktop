@@ -749,6 +749,7 @@
           <TextBlock Text="脱敏的运行时、Agent、素材和错误诊断。退出开发者模式后服务层会拒绝读取这些数据。" Style="{StaticResource SubText}" Margin="0,2,0,16" />
           <WrapPanel Margin="0,0,0,10">
             <Button x:Name="DeveloperRuntimeTabButton" Content="运行诊断" Tag="Runtime" Style="{StaticResource PanelTabButtonSelected}" Click="DeveloperTab_Click" />
+            <Button x:Name="DeveloperMechanismsTabButton" Content="动作机制与统计" Tag="Mechanisms" Style="{StaticResource PanelTabButton}" Click="DeveloperTab_Click" />
             <Button x:Name="DeveloperGuideTabButton" Content="Agent 机制说明" Tag="Guide" Style="{StaticResource PanelTabButton}" Click="DeveloperTab_Click" />
           </WrapPanel>
           <StackPanel x:Name="DeveloperRuntimeTab">
@@ -1127,6 +1128,64 @@
                 <TextBlock Text="当前实现边界" FontWeight="SemiBold" Foreground="#7B531D" />
                 <TextBlock Text="当前记忆投影采用本地、确定性的主题词与有限权重，不是向量检索或自由模型推理；主动发言以规则短句为主；Agent 仍按 Episode 分批迁移到统一 Reducer。上述限制不会削弱素材审批、来源权限或状态安全门禁。" Style="{StaticResource SubText}" Margin="0,7,0,0" />
                 <TextBlock Text="{Binding BehaviorAgentSnapshot, StringFormat=当前脱敏快照：{0}}" FontFamily="Consolas" FontSize="11" TextWrapping="Wrap" Margin="0,10,0,0" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+          <StackPanel x:Name="DeveloperMechanismsTab" Visibility="Collapsed">
+            <Border Style="{StaticResource Card}" Background="#E8EDE3" Margin="0,0,0,12">
+              <DockPanel LastChildFill="False">
+                <StackPanel>
+                  <TextBlock Text="动作机制与会话统计" FontSize="21" FontWeight="SemiBold" />
+                  <TextBlock Text="每一行来自当前运行时能力目录。本次启动的真实请求才会计入统计；稳定待机和开发者预览不会污染数据。" Style="{StaticResource SubText}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                </StackPanel>
+                <Button DockPanel.Dock="Right" Content="刷新统计" Style="{StaticResource SecondaryButton}" Click="RefreshBehaviorMechanisms_Click" VerticalAlignment="Top" />
+              </DockPanel>
+            </Border>
+            <Border Style="{StaticResource Card}">
+              <StackPanel>
+                <TextBlock Text="运行中的动作能力" FontWeight="SemiBold" />
+                <TextBlock Text="权重仅适用于自主行为；主人明确发起的互动使用姿态、来源、审批和安全中断门禁，不参与随机评分。" Style="{StaticResource SubText}" Margin="0,4,0,10" TextWrapping="Wrap" />
+                <Grid Margin="0,0,0,4">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="185" />
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="190" />
+                    <ColumnDefinition Width="110" />
+                    <ColumnDefinition Width="160" />
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Grid.Column="0" Text="动作" FontWeight="SemiBold" />
+                  <TextBlock Grid.Column="1" Text="触发机制" FontWeight="SemiBold" />
+                  <TextBlock Grid.Column="2" Text="权重 / 频率" FontWeight="SemiBold" />
+                  <TextBlock Grid.Column="3" Text="姿态与中断门禁" FontWeight="SemiBold" />
+                  <TextBlock Grid.Column="4" Text="本次触发" FontWeight="SemiBold" />
+                  <TextBlock Grid.Column="5" Text="平均间隔 / 来源" FontWeight="SemiBold" />
+                </Grid>
+                <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" />
+                <ListBox x:Name="BehaviorMechanismList" BorderThickness="0" Background="Transparent" MaxHeight="560" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate>
+                      <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="0,10">
+                        <Grid>
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="185" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="190" />
+                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="160" />
+                          </Grid.ColumnDefinitions>
+                          <StackPanel Grid.Column="0"><TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextWrapping="Wrap" /><TextBlock Text="{Binding BehaviorId}" Style="{StaticResource SubText}" FontSize="10" TextWrapping="Wrap" /></StackPanel>
+                          <TextBlock Grid.Column="1" Text="{Binding TriggerMechanism}" Style="{StaticResource SubText}" TextWrapping="Wrap" Margin="0,0,8,0" />
+                          <TextBlock Grid.Column="2" Text="{Binding WeightAndFrequency}" Style="{StaticResource SubText}" TextWrapping="Wrap" Margin="0,0,8,0" />
+                          <TextBlock Grid.Column="3" Text="{Binding GateSummary}" Style="{StaticResource SubText}" TextWrapping="Wrap" Margin="0,0,8,0" />
+                          <TextBlock Grid.Column="4" Text="{Binding SessionTriggerCount}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" />
+                          <StackPanel Grid.Column="5"><TextBlock Text="{Binding AverageInterval}" Style="{StaticResource SubText}" TextWrapping="Wrap" /><TextBlock Text="{Binding TriggerSources}" Style="{StaticResource SubText}" TextWrapping="Wrap" /><TextBlock Text="{Binding LastTriggered}" Style="{StaticResource SubText}" FontSize="10" TextWrapping="Wrap" /></StackPanel>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
               </StackPanel>
             </Border>
           </StackPanel>

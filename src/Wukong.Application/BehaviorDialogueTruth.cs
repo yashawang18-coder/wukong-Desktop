@@ -209,7 +209,7 @@ public sealed class OwnerIntentNormalizer
             _ when Contains(value, "扫把", "飞行") => NormalizedOwnerIntentKind.BroomFlight,
             _ when Contains(value, "幻影移形", "消失再出现") => NormalizedOwnerIntentKind.Apparate,
             _ when Contains(value, "石化") => NormalizedOwnerIntentKind.Petrify,
-            _ when Contains(value, "散步", "走走", "巡视") => NormalizedOwnerIntentKind.Walk,
+            _ when Contains(value, "散步", "走走", "走一走", "出去走", "巡视") => NormalizedOwnerIntentKind.Walk,
             _ when Contains(value, "转圈") => NormalizedOwnerIntentKind.Spin,
             _ when Contains(value, "跳一下", "跳跃", "跳") => NormalizedOwnerIntentKind.Jump,
             _ when Contains(value, "握手", "伸爪", "抬爪") => NormalizedOwnerIntentKind.Paw,

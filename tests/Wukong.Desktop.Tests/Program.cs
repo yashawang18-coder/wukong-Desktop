@@ -20,6 +20,17 @@ if (args.Contains("--prone-renderer-smoke", StringComparer.Ordinal))
     return ProneRendererSmoke.Run(args.Last());
 if (args.Contains("--sleep-v11-renderer-smoke", StringComparer.Ordinal))
     return SleepV11RendererSmoke.Run(args.Last());
+if (args.Contains("--wake-rise-v9-selftest", StringComparer.Ordinal))
+{
+    WakeRiseCandidateTests.RuntimeFramesAndDeveloperPreviewStayIsolated();
+    return 0;
+}
+if (args.Contains("--dialogue-episode-routing-selftest", StringComparer.Ordinal))
+{
+    BehaviorTruthRuntimeTests.DialogueSleepUsesApprovedPosturePreparation();
+    BehaviorTruthRuntimeTests.DialogueWalkUsesApprovedPosturePreparationAndSpaceGate();
+    return 0;
+}
 if (args.Contains("--capture-panel-screens", StringComparer.Ordinal))
     return CapturePanelScreens(args.SkipWhile(x => x != "--capture-panel-screens").Skip(1).FirstOrDefault() ?? Path.Combine(".publish-check", "ux-panel-album-coin-fixes-v1", "screenshots"));
 if (args.Contains("--car-ride-memory-smoke", StringComparer.Ordinal))
@@ -79,6 +90,7 @@ var tests = new (string Name, Action Run)[]
     ("patrol walk v1 uses autonomous allowlist and isolated developer preview", PatrolWalkCandidateTests.ApprovedGaitUsesAutonomousAllowlistAndDeveloperPreviewStaysIsolated),
     ("patrol walk v1 window travel is directional and work-area bounded", PatrolWalkCandidateTests.WindowTravelIsDirectionalAndWorkAreaBounded),
     ("patrol walk v8 normal autonomous choices preserve facing", PatrolWalkCandidateTests.AutonomousSelectionUsesApprovedV8AndLocksFacing),
+    ("approved wake/rise runtime and v9 preview boundaries", WakeRiseCandidateTests.RuntimeFramesAndDeveloperPreviewStayIsolated),
     ("autonomous allowlist excludes command-only jump and spin", AutonomousAllowlistExcludesCommandOnlyActions),
     ("approved autonomous daily transitions are indexed and gated", ApprovedAutonomousDailyTransitionsAreIndexedAndGated),
     ("developer autonomous daily candidate can request playback", DeveloperAutonomousDailyCandidateCanRequestPlayback),
@@ -97,6 +109,8 @@ var tests = new (string Name, Action Run)[]
     ("ten thousand autonomous decisions never select forbidden capabilities", BehaviorAgentRolloutTests.TenThousandAutonomousDecisionsNeverSelectForbiddenCapabilities),
     ("dialogue and menu commands use the same runtime path", BehaviorTruthRuntimeTests.DialogueAndMenuCommandsUseTheSameRuntimePath),
     ("dialogue commitments require an active lifecycle request", BehaviorTruthRuntimeTests.DialogueCommitmentRequiresAStartedRequest),
+    ("dialogue sleep uses approved posture preparation", BehaviorTruthRuntimeTests.DialogueSleepUsesApprovedPosturePreparation),
+    ("dialogue walk uses approved posture preparation and space gate", BehaviorTruthRuntimeTests.DialogueWalkUsesApprovedPosturePreparationAndSpaceGate),
     ("false autonomous speech is replaced by current facts", BehaviorTruthRuntimeTests.FalseAutonomousSpeechIsReplacedByCurrentFact),
     ("continuity rollout owns daily episodes including quiet recovery", BehaviorTruthRuntimeTests.ContinuityRolloutOwnsDailyEpisodes),
     ("normal owner command uses reducer lifecycle", BehaviorTruthRuntimeTests.NormalOwnerCommandUsesReducerLifecycle),
@@ -612,17 +626,25 @@ static void ControlPanelXamlConstructs()
             Assert(panel.FindName("TemperamentMischiefSlider") is Slider, "mischief temperament slider missing");
             Assert(panel.FindName("TemperamentSaveStatus") is TextBlock, "temperament persistence status missing");
             var runtimeTabButton = panel.FindName("DeveloperRuntimeTabButton") as Button;
+            var mechanismsTabButton = panel.FindName("DeveloperMechanismsTabButton") as Button;
             var guideTabButton = panel.FindName("DeveloperGuideTabButton") as Button;
             Assert(runtimeTabButton is not null, "developer runtime diagnostics tab missing");
+            Assert(mechanismsTabButton is not null, "developer action mechanism tab missing");
             Assert(guideTabButton is not null, "developer Agent guide tab missing");
             var runtimeTab = panel.FindName("DeveloperRuntimeTab") as StackPanel;
+            var mechanismsTab = panel.FindName("DeveloperMechanismsTab") as StackPanel;
             var guideTab = panel.FindName("DeveloperGuideTab") as StackPanel;
-            Assert(runtimeTab is not null && guideTab is not null, "developer tab content panels missing");
+            Assert(runtimeTab is not null && mechanismsTab is not null && guideTab is not null, "developer tab content panels missing");
             guideTabButton!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Assert(guideTab!.Visibility == Visibility.Visible && runtimeTab!.Visibility == Visibility.Collapsed,
                 "developer Agent guide does not open as an isolated tab");
+            mechanismsTabButton!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert(mechanismsTab!.Visibility == Visibility.Visible && guideTab.Visibility == Visibility.Collapsed,
+                "developer action mechanism tab does not open as an isolated tab");
+            Assert(panel.FindName("BehaviorMechanismList") is ListBox { ItemsSource: not null },
+                "developer action mechanism statistics are not bound");
             runtimeTabButton!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            Assert(runtimeTab.Visibility == Visibility.Visible && guideTab.Visibility == Visibility.Collapsed,
+            Assert(runtimeTab.Visibility == Visibility.Visible && mechanismsTab.Visibility == Visibility.Collapsed,
                 "developer runtime diagnostics tab does not restore");
             var prompt = panel.FindName("PetPromptText") as TextBox;
             Assert(prompt?.ContextMenu is not null, "pet prompt context menu missing");

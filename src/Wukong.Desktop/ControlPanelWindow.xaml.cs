@@ -83,6 +83,7 @@ public partial class ControlPanelWindow : Window
         RefreshAlbumView();
         BehaviorAgentMockMotionList.ItemsSource = _runtime.CommandMotionMockMotions;
         BehaviorAgentSnapshotText.Text = _runtime.BehaviorAgentSnapshot;
+        RefreshBehaviorMechanisms();
         Loaded += async (_, _) => await LoadAgentUiAsync();
         Closed += (_, _) =>
         {
@@ -422,12 +423,23 @@ public partial class ControlPanelWindow : Window
 
     private void DeveloperTab_Click(object sender, RoutedEventArgs e)
     {
-        var showGuide = sender is Button { Tag: "Guide" };
-        DeveloperRuntimeTab.Visibility = showGuide ? Visibility.Collapsed : Visibility.Visible;
-        DeveloperGuideTab.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
-        DeveloperRuntimeTabButton.Style = PanelTabStyle(!showGuide);
-        DeveloperGuideTabButton.Style = PanelTabStyle(showGuide);
+        var tab = sender is Button { Tag: string value } ? value : "Runtime";
+        var showRuntime = tab == "Runtime";
+        var showMechanisms = tab == "Mechanisms";
+        DeveloperRuntimeTab.Visibility = showRuntime ? Visibility.Visible : Visibility.Collapsed;
+        DeveloperMechanismsTab.Visibility = showMechanisms ? Visibility.Visible : Visibility.Collapsed;
+        DeveloperGuideTab.Visibility = tab == "Guide" ? Visibility.Visible : Visibility.Collapsed;
+        DeveloperRuntimeTabButton.Style = PanelTabStyle(showRuntime);
+        DeveloperMechanismsTabButton.Style = PanelTabStyle(showMechanisms);
+        DeveloperGuideTabButton.Style = PanelTabStyle(tab == "Guide");
+        if (showMechanisms)
+            RefreshBehaviorMechanisms();
     }
+
+    private void RefreshBehaviorMechanisms_Click(object sender, RoutedEventArgs e) => RefreshBehaviorMechanisms();
+
+    private void RefreshBehaviorMechanisms() =>
+        BehaviorMechanismList.ItemsSource = _runtime.BehaviorMechanisms;
 
     private async void MemoryConfig_Changed(object sender, RoutedEventArgs e)
     {
@@ -1210,7 +1222,7 @@ public partial class ControlPanelWindow : Window
         var result = await _runtime.SubmitBaseMotionAsync(motion.BehaviorId, BehaviorRequestSource.ControlPanel);
         MagicShowStatus.Text = result switch
         {
-            PetActionResult.Accepted => $"{motion.DisplayName}：正在主窗口执行（不写入性格记忆）",
+            PetActionResult.Accepted => $"{motion.DisplayName}：正在主窗口执行，并同步当前状态与互动记录",
             PetActionResult.Deferred => $"{motion.DisplayName}：{_runtime.CurrentReason}",
             PetActionResult.MissingAsset => $"{motion.DisplayName}：素材缺失",
             PetActionResult.Interrupted => $"{motion.DisplayName}：已停止",

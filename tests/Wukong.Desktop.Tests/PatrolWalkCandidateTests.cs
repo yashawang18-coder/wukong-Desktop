@@ -20,6 +20,10 @@ internal static class PatrolWalkCandidateTests
         Assert(manifest.GetProperty("visual_approved").GetBoolean(), "visual approval missing");
         Assert(manifest.GetProperty("source_png_byte_identity").GetBoolean(), "source byte preservation missing");
         Assert(!manifest.GetProperty("prototype_use").GetBoolean(), "walk must not bypass gate with prototype mode");
+        Assert(manifest.GetProperty("allowed_sources").EnumerateArray().Select(x => x.GetString())
+            .OrderBy(value => value, StringComparer.Ordinal)
+            .SequenceEqual(new[] { "AutonomousTick", "DeveloperPreview", "OwnerDialogue" }.OrderBy(value => value, StringComparer.Ordinal)),
+            "walk must explicitly allow the owner dialogue route");
         var inventory = manifest.GetProperty("frame_inventory").EnumerateArray().ToArray();
         Assert(inventory.Length == 13 && inventory.Select(x => x.GetProperty("path").GetString()).Distinct().Count() == 13,
             "walk must store exactly thirteen unique PNGs, not duplicate mirror variants");
@@ -38,6 +42,10 @@ internal static class PatrolWalkCandidateTests
         Assert(actions.Length == 2, "left/right bindings missing");
         foreach (var action in actions)
         {
+            Assert(action.GetProperty("allowed_sources").EnumerateArray().Select(x => x.GetString())
+                .OrderBy(value => value, StringComparer.Ordinal)
+                .SequenceEqual(new[] { "AutonomousTick", "DeveloperPreview", "OwnerDialogue" }.OrderBy(value => value, StringComparer.Ordinal)),
+                "walk action source policy changed");
             Assert(action.GetProperty("total_duration_ms").GetInt32() == 4100, "single-cycle lifecycle timing changed");
             var phases = action.GetProperty("phases").EnumerateArray().ToArray();
             Assert(phases.Select(x => x.GetProperty("name").GetString()).SequenceEqual(new[] { "intro", "loop", "exit" }), "phase order wrong");

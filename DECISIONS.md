@@ -1,5 +1,54 @@
 # Decisions
 
+## 2026-10-03 - route owner dialogue sleep and walk through approved preparation
+
+Owner language such as “睡觉” and “走走” is a semantic request, not permission to
+hard-cut a pose. The runtime must compose only existing approved posture
+transitions before it requests the target lifecycle: standing/sitting sleep
+prepares a compatible prone pose, and prone/sitting walking prepares a compatible
+standing pose. A busy action, missing bridge or unavailable screen travel space
+returns an honest Deferred result. It must not substitute a different asset.
+
+The enabled patrol batch now declares `OwnerDialogue` as an allowed source. This
+does not make walk a command-only animation or loosen the autonomous allowlist;
+it simply makes the already approved owner dialogue route explicit and observable.
+
+Developer diagnostics may retain in-memory, session-only counts and intervals for
+accepted Normal requests. These measurements are not preferences, memories,
+approval evidence or an input to behavior scoring. Preview and stable-idle
+presentations are excluded.
+
+## 2026-10-03 - promote reviewed wake/rise v9 with frame-level exclusions
+
+The owner approved all retained v9 wake/rise sequences for Normal runtime and
+compatible autonomous use. Preserve every original PNG and its SHA evidence, but
+remove `front-rise/stand-half.png` from every runnable timeline, remove
+`front-rise/near-sit.png` only from the front-prone-to-sit route, and remove
+`front-wake/awake.png` from the front-prone-wake route.
+
+Use the shared BehaviorRequest, capability, Reducer and terminal-hold paths.
+Only route a completed side-sleep lifecycle into side wake and a completed
+front-sprawl sleep loop into front wake. Front-prone rising remains exact-pose
+gated; no front/side hard cut, reversed sleep sequence or old-pixel fallback is
+allowed. A runtime-approved base action initiated from the panel must use Normal,
+not DeveloperPreview, so it contributes only its ordinary reducer-approved state
+and experience effects.
+
+## 2026-10-03 - stage whole-frame wake/rise and patrol v9 for renderer review
+
+Import the reviewed v9 wake/rise and walking PNGs as separate versioned candidate
+batches, preserving their source bytes, declared timing and inventory SHA-256 values.
+They may be loaded by the real desktop catalog and invoked through the existing
+DeveloperPreview request path so the owner can inspect the exact EXE renderer.
+
+Do not replace `WK-AUTONOMOUS-PATROL-WALK-v8`, widen the Normal or autonomous
+allowlist, or infer approval from static checks. V9's rightward presentation uses
+the existing whole-frame WPF orientation policy; no duplicate mirrored PNG is
+generated. Wake/rise sequences also remain isolated until Windows playback proves
+their pose bridges are continuous. Keep every candidate gate closed:
+`runtime_validation=pending_windows_renderer_qa`, `runtime_approved=false`,
+`runtime_use=false`, `production_asset=false`, `prototype_use=false`.
+
 ## 2026-10-02 - promote accepted sleep v11 without promoting rejected walking art
 
 Treat the owner's approval as approval of the seven sleep, roll and breathing

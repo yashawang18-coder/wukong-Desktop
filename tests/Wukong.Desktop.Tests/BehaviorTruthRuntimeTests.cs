@@ -41,6 +41,63 @@ internal static class BehaviorTruthRuntimeTests
             "dialogue commitment was emitted before the request became active");
     }
 
+    public static void DialogueSleepUsesApprovedPosturePreparation()
+    {
+        var runtime = new DesktopRuntimeHost();
+        var requests = new List<PetMotionRequest>();
+        runtime.MotionRequested += (_, request) => requests.Add(request);
+        runtime.UpdateBehaviorAgentMock(
+            TemperamentProfile.Default,
+            PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand, CurrentPoseId = "stand.neutral.left_front" },
+            RelationshipState.Default,
+            91);
+
+        var result = runtime.SubmitDialogueIntentAsync("悟空，去睡觉吧").GetAwaiter().GetResult();
+        Assert(result is { Recognized: true, Result: PetActionResult.Accepted }, "sleep intent was not accepted");
+        Assert(requests.Count == 1 && requests[0].Motion.BehaviorId == AutonomousDailyCandidateBehaviorIds.StandToSit,
+            "standing sleep did not begin with the approved stand-to-sit transition");
+        runtime.CompleteMotion(requests[0].RequestId, requests[0].Motion.BehaviorId, "exit");
+        Assert(requests.Last().Motion.BehaviorId == AutonomousDailyCandidateBehaviorIds.SitToProne,
+            "sleep preparation omitted the approved sit-to-prone transition");
+        runtime.CompleteMotion(requests.Last().RequestId, requests.Last().Motion.BehaviorId, "exit");
+        Assert(requests.Last() is { Source: BehaviorRequestSource.OwnerDialogue, ExecutionMode: BehaviorExecutionMode.Normal } &&
+               requests.Last().Motion.BehaviorId == SleepCandidateBehaviorIds.MainLifecycle,
+            "sleep preparation did not reach the Normal sleep lifecycle");
+
+        var statistics = runtime.BehaviorMechanisms.Single(item => item.BehaviorId == SleepCandidateBehaviorIds.MainLifecycle);
+        Assert(statistics.SessionTriggerCount == 1 && statistics.TriggerSources.Contains("对话 1", StringComparison.Ordinal),
+            "session action statistics did not record the real dialogue sleep request");
+    }
+
+    public static void DialogueWalkUsesApprovedPosturePreparationAndSpaceGate()
+    {
+        var runtime = new DesktopRuntimeHost();
+        var requests = new List<PetMotionRequest>();
+        runtime.MotionRequested += (_, request) => requests.Add(request);
+        runtime.UpdateBehaviorAgentMock(
+            TemperamentProfile.Default,
+            PetRuntimeState.Default with { CurrentPosture = StablePosture.Prone, CurrentPoseId = "prone.awake.left_front" },
+            RelationshipState.Default,
+            92);
+
+        var noSpace = runtime.SubmitDialogueIntentAsync("去走一走").GetAwaiter().GetResult();
+        Assert(noSpace.Result == PetActionResult.Deferred && runtime.CurrentDecisionDetail.Contains("walk_workspace_unavailable", StringComparison.Ordinal),
+            "walk intent ignored the desktop travel-space gate");
+
+        runtime.UpdatePatrolTravelSpace(1000, 1000, 50);
+        var result = runtime.SubmitDialogueIntentAsync("去走一走").GetAwaiter().GetResult();
+        Assert(result is { Recognized: true, Result: PetActionResult.Accepted }, "walk intent was not accepted");
+        Assert(requests.Count == 1 && requests[0].Motion.BehaviorId == AutonomousDailyCandidateBehaviorIds.ProneToSit,
+            "prone walk did not begin with the approved prone-to-sit transition");
+        runtime.CompleteMotion(requests[0].RequestId, requests[0].Motion.BehaviorId, "exit");
+        Assert(requests.Last().Motion.BehaviorId == AutonomousDailyCandidateBehaviorIds.SitToStand,
+            "walk preparation omitted the approved sit-to-stand transition");
+        runtime.CompleteMotion(requests.Last().RequestId, requests.Last().Motion.BehaviorId, "exit");
+        Assert(requests.Last() is { Source: BehaviorRequestSource.OwnerDialogue, ExecutionMode: BehaviorExecutionMode.Normal } &&
+               PatrolWalkCandidateBehaviorIds.All.Contains(requests.Last().Motion.BehaviorId),
+            "walk preparation did not reach the Normal patrol lifecycle");
+    }
+
     public static void FalseAutonomousSpeechIsReplacedByCurrentFact()
     {
         var runtime = new DesktopRuntimeHost();

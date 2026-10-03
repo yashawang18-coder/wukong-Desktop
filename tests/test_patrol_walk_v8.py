@@ -63,7 +63,7 @@ class PatrolWalkV8Tests(unittest.TestCase):
         self.assertEqual(approved, self.manifest["runtime_use"])
         self.assertEqual(approved, self.manifest["autonomous_binding_enabled"])
         self.assertEqual(approved, self.manifest["approval_evidence"]["automated_windows_playback"])
-        self.assertEqual(["AutonomousTick", "DeveloperPreview"], self.manifest["allowed_sources"])
+        self.assertEqual(["AutonomousTick", "DeveloperPreview", "OwnerDialogue"], self.manifest["allowed_sources"])
         for action in self.manifest["actions"]:
             self.assertEqual(approved, action["runtime_use"])
         source = ROOT / ".publish-check/art-rebuild-walk-v8-normalized-review"

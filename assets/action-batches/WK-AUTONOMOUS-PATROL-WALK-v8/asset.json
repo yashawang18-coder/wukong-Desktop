@@ -21,7 +21,8 @@
   "autonomous_binding_enabled": true,
   "allowed_sources": [
     "AutonomousTick",
-    "DeveloperPreview"
+    "DeveloperPreview",
+    "OwnerDialogue"
   ],
   "runtime_render_scale": 0.68,
   "runtime_scale_basis": "one fixed group scale; matches existing approved standing height; no per-frame fit",
@@ -295,7 +296,8 @@
       "autonomous_binding_enabled": true,
       "allowed_sources": [
         "AutonomousTick",
-        "DeveloperPreview"
+        "DeveloperPreview",
+        "OwnerDialogue"
       ],
       "behavior_id": "wk.candidate.autonomous.patrol_walk_left_v1",
       "display_name": "向左走走",
@@ -441,7 +443,8 @@
       "autonomous_binding_enabled": true,
       "allowed_sources": [
         "AutonomousTick",
-        "DeveloperPreview"
+        "DeveloperPreview",
+        "OwnerDialogue"
       ],
       "behavior_id": "wk.candidate.autonomous.patrol_walk_right_v1",
       "display_name": "向右走走",

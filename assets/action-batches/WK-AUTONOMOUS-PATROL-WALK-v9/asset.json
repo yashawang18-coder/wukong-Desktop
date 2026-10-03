@@ -1,0 +1,541 @@
+{
+  "schema_version": 1,
+  "batch_id": "WK-AUTONOMOUS-PATROL-WALK-v9",
+  "asset_id": "WK-AUTONOMOUS-PATROL-WALK-v9",
+  "asset_stage": "runtime_candidate",
+  "candidate_profile": "wake-rise-walk-v9",
+  "source_package": "WK-WAKE-RISE-WALK-APPEARANCE-REVIEW-v9",
+  "source_review_batch": "WK-WAKE-RISE-WALK-APPEARANCE-REVIEW-v9",
+  "source_frame_count": 26,
+  "runtime_frame_count": 26,
+  "sequence_count": 2,
+  "source_png_byte_identity": true,
+  "owner_preview_approved": true,
+  "visual_approved": true,
+  "runtime_validation": "pending_windows_renderer_qa",
+  "runtime_approved": false,
+  "runtime_use": false,
+  "production_asset": false,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": false,
+  "allowed_sources": [
+    "DeveloperPreview"
+  ],
+  "runtime_render_scale": 0.68,
+  "runtime_scale_basis": "one fixed group scale; copied 1024 PNG bytes; no per-frame fit",
+  "window_motion_enabled": true,
+  "window_motion_validation": "pending_windows_renderer_qa",
+  "mirror_policy": {
+    "mirror_once_at_request_creation": true,
+    "duplicate_pngs": false,
+    "runtime_transform_only": true,
+    "canonical_direction": "left"
+  },
+  "anchor": [
+    512,
+    900
+  ],
+  "supersedes": "WK-AUTONOMOUS-PATROL-WALK-v8",
+  "replacement_status": "candidate_only_v8_remains_default",
+  "frame_inventory": [
+    {
+      "path": "frames/walk-front-left/cycle-001.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 645495,
+      "sha256": "bd040a22680cce6c142e99ffec60bcb624b492c5c8054dc9a508e74bd32f3e71"
+    },
+    {
+      "path": "frames/walk-front-left/cycle-002.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 646294,
+      "sha256": "8cace1858b88cce580f8624b713f0f2ac7e518938087db4a3fc3268087ffcc15"
+    },
+    {
+      "path": "frames/walk-front-left/cycle-003.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 639384,
+      "sha256": "7158858f7a67edb88bee674e3d0008ea7659d22e4ba23bdcb168a9eace00cd07"
+    },
+    {
+      "path": "frames/walk-front-left/cycle-004.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 651588,
+      "sha256": "dbced76823287628bf890bed5ff47b6c920c5407334993034b11b7a38966c0a4"
+    },
+    {
+      "path": "frames/walk-front-left/cycle-005.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 683759,
+      "sha256": "b5d36e87c252b6fa305d409d666013a99c3031bbff366ec2de71ffdbb075220f"
+    },
+    {
+      "path": "frames/walk-front-left/cycle-006.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 633660,
+      "sha256": "ac1095a689e82895c15bef02bcf398dea78c8b89c341dda5ba4e830a4f4e2b18"
+    },
+    {
+      "path": "frames/walk-front-left/cycle-007.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 626048,
+      "sha256": "0160f876e92a902bda9897a952835b3d30fb2ecaff7a7c1a3ab508dd44d2eff0"
+    },
+    {
+      "path": "frames/walk-front-left/cycle-008.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 643640,
+      "sha256": "d44a27d1b3f52b5e2affc7117c2f36329f35e24f82c5317af2e0304aae0fd847"
+    },
+    {
+      "path": "frames/walk-front-left/stand.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 655685,
+      "sha256": "521d62bf99d171b7c00884adeea1d29a1776a069ee251ec25e55ce165a5183b4"
+    },
+    {
+      "path": "frames/walk-front-left/start-reach.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 641078,
+      "sha256": "7c6c0760b39b4e718f5c917b29f53e7981cd9f83ba6bea629e2d4e95132e00ad"
+    },
+    {
+      "path": "frames/walk-front-left/start-shift.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 645335,
+      "sha256": "5a95f86ba67ed037e9a4daad3dba7b59cfbbe7b1496f198607ec173ee87960e7"
+    },
+    {
+      "path": "frames/walk-front-left/stop-settle.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 650313,
+      "sha256": "fc7c905c531e1df39c2e0c5574eb4306878a79b002afc2c97783427c7482fd50"
+    },
+    {
+      "path": "frames/walk-front-left/stop-step.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 676485,
+      "sha256": "8f1cfd1178a6fb7006732e98eb35bbee356c396d5c630cf253e7a9469d615a79"
+    },
+    {
+      "path": "frames/walk-rear-left/cycle-001.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 754733,
+      "sha256": "fed22822781a90830e1cada691a699a7c052ee9b36a6e98ca821f77e976143f6"
+    },
+    {
+      "path": "frames/walk-rear-left/cycle-002.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 769543,
+      "sha256": "15f46a646edb2b1061ed08fe4dd3ad970257dea7cadbd12aaa392ab796d77e43"
+    },
+    {
+      "path": "frames/walk-rear-left/cycle-003.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 734706,
+      "sha256": "5d19155702321138d386c092a8ab4006a7008fa8a15f9919d24749ba8392b16c"
+    },
+    {
+      "path": "frames/walk-rear-left/cycle-004.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 760398,
+      "sha256": "0db7e0da3767922e7efc7bad870f0e82a4a33fe49ade684ea7f169146b436879"
+    },
+    {
+      "path": "frames/walk-rear-left/cycle-005.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 704080,
+      "sha256": "abd74f2923b5d7560cf7fc8e329cd4214f8ce9565477e7772703c1c35e70296b"
+    },
+    {
+      "path": "frames/walk-rear-left/cycle-006.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 733969,
+      "sha256": "6bc94fd1de13fabf94da1479cce649be202f056de1cc12801dfdd09c670fbf34"
+    },
+    {
+      "path": "frames/walk-rear-left/cycle-007.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 712147,
+      "sha256": "01d53b6eb252715e937a7a2e89760b4f804f14327f333d9fff23f6ba6fba6fee"
+    },
+    {
+      "path": "frames/walk-rear-left/cycle-008.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 722283,
+      "sha256": "184c0319fb280dc5cecf6ad8a08bd32ffc9e9797e36709933540b16b7fb573e3"
+    },
+    {
+      "path": "frames/walk-rear-left/stand.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 766611,
+      "sha256": "6ae6bae542691ff32e723ec309f45e665d539a9f3f93831c82f744ed52f3c36d"
+    },
+    {
+      "path": "frames/walk-rear-left/start-reach.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 694396,
+      "sha256": "d2c423ff10b848c563c667c5fb4b0bc8e664426bd45b55115b8b60426abee63a"
+    },
+    {
+      "path": "frames/walk-rear-left/start-shift.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 698551,
+      "sha256": "79e55992549b5ad79465d82b041be3736d55e7db2709a04f2da263a14909284c"
+    },
+    {
+      "path": "frames/walk-rear-left/stop-settle.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 764453,
+      "sha256": "857ac5978ce786901b450981f2d20ca0c7f78980976ecf563b8b1bbd70bdbfaf"
+    },
+    {
+      "path": "frames/walk-rear-left/stop-step.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 748519,
+      "sha256": "786f1818071763bf9bcd26d50195c269a74e604135a0bbb90519be7117dd18d4"
+    }
+  ],
+  "actions": [
+    {
+      "owner_preview_approved": true,
+      "visual_approved": true,
+      "runtime_validation": "pending_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "behavior_id": "wk.candidate.autonomous.patrol_walk_left_v9",
+      "display_name": "向左走走",
+      "description": "新版完整走路生命周期候选：起步、循环与停步；等待 Windows 运行验收后替换 v8。",
+      "from_pose": "stand.neutral.left_front",
+      "to_pose": "stand.walk.left",
+      "direction": "left",
+      "frame_count": 16,
+      "frame_duration_ms": 200,
+      "total_duration_ms": 4100,
+      "interruptible": true,
+      "loop": false,
+      "phases": [
+        {
+          "name": "intro",
+          "loop": false,
+          "frame_count": 4,
+          "frames": [
+            {
+              "path": "frames/walk-front-left/stand.png",
+              "sha256": "521d62bf99d171b7c00884adeea1d29a1776a069ee251ec25e55ce165a5183b4",
+              "bytes": 655685,
+              "duration_ms": 500
+            },
+            {
+              "path": "frames/walk-front-left/start-shift.png",
+              "sha256": "5a95f86ba67ed037e9a4daad3dba7b59cfbbe7b1496f198607ec173ee87960e7",
+              "bytes": 645335,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/walk-front-left/start-reach.png",
+              "sha256": "7c6c0760b39b4e718f5c917b29f53e7981cd9f83ba6bea629e2d4e95132e00ad",
+              "bytes": 641078,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/walk-front-left/cycle-001.png",
+              "sha256": "bd040a22680cce6c142e99ffec60bcb624b492c5c8054dc9a508e74bd32f3e71",
+              "bytes": 645495,
+              "duration_ms": 200
+            }
+          ]
+        },
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 8,
+          "frames": [
+            {
+              "path": "frames/walk-front-left/cycle-001.png",
+              "sha256": "bd040a22680cce6c142e99ffec60bcb624b492c5c8054dc9a508e74bd32f3e71",
+              "bytes": 645495,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-front-left/cycle-002.png",
+              "sha256": "8cace1858b88cce580f8624b713f0f2ac7e518938087db4a3fc3268087ffcc15",
+              "bytes": 646294,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-front-left/cycle-003.png",
+              "sha256": "7158858f7a67edb88bee674e3d0008ea7659d22e4ba23bdcb168a9eace00cd07",
+              "bytes": 639384,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-front-left/cycle-004.png",
+              "sha256": "dbced76823287628bf890bed5ff47b6c920c5407334993034b11b7a38966c0a4",
+              "bytes": 651588,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-front-left/cycle-005.png",
+              "sha256": "b5d36e87c252b6fa305d409d666013a99c3031bbff366ec2de71ffdbb075220f",
+              "bytes": 683759,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-front-left/cycle-006.png",
+              "sha256": "ac1095a689e82895c15bef02bcf398dea78c8b89c341dda5ba4e830a4f4e2b18",
+              "bytes": 633660,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-front-left/cycle-007.png",
+              "sha256": "0160f876e92a902bda9897a952835b3d30fb2ecaff7a7c1a3ab508dd44d2eff0",
+              "bytes": 626048,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-front-left/cycle-008.png",
+              "sha256": "d44a27d1b3f52b5e2affc7117c2f36329f35e24f82c5317af2e0304aae0fd847",
+              "bytes": 643640,
+              "duration_ms": 200
+            }
+          ]
+        },
+        {
+          "name": "exit",
+          "loop": false,
+          "frame_count": 4,
+          "frames": [
+            {
+              "path": "frames/walk-front-left/cycle-001.png",
+              "sha256": "bd040a22680cce6c142e99ffec60bcb624b492c5c8054dc9a508e74bd32f3e71",
+              "bytes": 645495,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-front-left/stop-step.png",
+              "sha256": "8f1cfd1178a6fb7006732e98eb35bbee356c396d5c630cf253e7a9469d615a79",
+              "bytes": 676485,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/walk-front-left/stop-settle.png",
+              "sha256": "fc7c905c531e1df39c2e0c5574eb4306878a79b002afc2c97783427c7482fd50",
+              "bytes": 650313,
+              "duration_ms": 300
+            },
+            {
+              "path": "frames/walk-front-left/stand.png",
+              "sha256": "521d62bf99d171b7c00884adeea1d29a1776a069ee251ec25e55ce165a5183b4",
+              "bytes": 655685,
+              "duration_ms": 700
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "owner_preview_approved": true,
+      "visual_approved": true,
+      "runtime_validation": "pending_windows_renderer_qa",
+      "runtime_approved": false,
+      "runtime_use": false,
+      "production_asset": false,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": false,
+      "allowed_sources": [
+        "DeveloperPreview"
+      ],
+      "behavior_id": "wk.candidate.autonomous.patrol_walk_right_v9",
+      "display_name": "向右走走",
+      "description": "新版完整走路生命周期候选：起步、循环与停步；等待 Windows 运行验收后替换 v8。",
+      "from_pose": "stand.neutral.left_front",
+      "to_pose": "stand.walk.left",
+      "direction": "right",
+      "frame_count": 16,
+      "frame_duration_ms": 200,
+      "total_duration_ms": 4100,
+      "interruptible": true,
+      "loop": false,
+      "phases": [
+        {
+          "name": "intro",
+          "loop": false,
+          "frame_count": 4,
+          "frames": [
+            {
+              "path": "frames/walk-rear-left/stand.png",
+              "sha256": "6ae6bae542691ff32e723ec309f45e665d539a9f3f93831c82f744ed52f3c36d",
+              "bytes": 766611,
+              "duration_ms": 500
+            },
+            {
+              "path": "frames/walk-rear-left/start-shift.png",
+              "sha256": "79e55992549b5ad79465d82b041be3736d55e7db2709a04f2da263a14909284c",
+              "bytes": 698551,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/walk-rear-left/start-reach.png",
+              "sha256": "d2c423ff10b848c563c667c5fb4b0bc8e664426bd45b55115b8b60426abee63a",
+              "bytes": 694396,
+              "duration_ms": 180
+            },
+            {
+              "path": "frames/walk-rear-left/cycle-001.png",
+              "sha256": "fed22822781a90830e1cada691a699a7c052ee9b36a6e98ca821f77e976143f6",
+              "bytes": 754733,
+              "duration_ms": 200
+            }
+          ]
+        },
+        {
+          "name": "loop",
+          "loop": true,
+          "frame_count": 8,
+          "frames": [
+            {
+              "path": "frames/walk-rear-left/cycle-001.png",
+              "sha256": "fed22822781a90830e1cada691a699a7c052ee9b36a6e98ca821f77e976143f6",
+              "bytes": 754733,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-rear-left/cycle-002.png",
+              "sha256": "15f46a646edb2b1061ed08fe4dd3ad970257dea7cadbd12aaa392ab796d77e43",
+              "bytes": 769543,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-rear-left/cycle-003.png",
+              "sha256": "5d19155702321138d386c092a8ab4006a7008fa8a15f9919d24749ba8392b16c",
+              "bytes": 734706,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-rear-left/cycle-004.png",
+              "sha256": "0db7e0da3767922e7efc7bad870f0e82a4a33fe49ade684ea7f169146b436879",
+              "bytes": 760398,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-rear-left/cycle-005.png",
+              "sha256": "abd74f2923b5d7560cf7fc8e329cd4214f8ce9565477e7772703c1c35e70296b",
+              "bytes": 704080,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-rear-left/cycle-006.png",
+              "sha256": "6bc94fd1de13fabf94da1479cce649be202f056de1cc12801dfdd09c670fbf34",
+              "bytes": 733969,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-rear-left/cycle-007.png",
+              "sha256": "01d53b6eb252715e937a7a2e89760b4f804f14327f333d9fff23f6ba6fba6fee",
+              "bytes": 712147,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-rear-left/cycle-008.png",
+              "sha256": "184c0319fb280dc5cecf6ad8a08bd32ffc9e9797e36709933540b16b7fb573e3",
+              "bytes": 722283,
+              "duration_ms": 200
+            }
+          ]
+        },
+        {
+          "name": "exit",
+          "loop": false,
+          "frame_count": 4,
+          "frames": [
+            {
+              "path": "frames/walk-rear-left/cycle-001.png",
+              "sha256": "fed22822781a90830e1cada691a699a7c052ee9b36a6e98ca821f77e976143f6",
+              "bytes": 754733,
+              "duration_ms": 200
+            },
+            {
+              "path": "frames/walk-rear-left/stop-step.png",
+              "sha256": "786f1818071763bf9bcd26d50195c269a74e604135a0bbb90519be7117dd18d4",
+              "bytes": 748519,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/walk-rear-left/stop-settle.png",
+              "sha256": "857ac5978ce786901b450981f2d20ca0c7f78980976ecf563b8b1bbd70bdbfaf",
+              "bytes": 764453,
+              "duration_ms": 300
+            },
+            {
+              "path": "frames/walk-rear-left/stand.png",
+              "sha256": "6ae6bae542691ff32e723ec309f45e665d539a9f3f93831c82f744ed52f3c36d",
+              "bytes": 766611,
+              "duration_ms": 700
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

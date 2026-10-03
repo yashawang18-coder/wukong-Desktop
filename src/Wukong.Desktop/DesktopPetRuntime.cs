@@ -202,13 +202,14 @@ public static class MotionHorizontalMirrorPolicy
             FoodWaterCandidateBehaviorIds.AssetBatch,
             AutonomousDailyCandidateBehaviorIds.AssetBatch,
             CommandMockBehaviorIds.AssetBatch,
-            PatrolWalkCandidateBehaviorIds.AssetBatch
+            PatrolWalkCandidateBehaviorIds.AssetBatch,
+            PatrolWalkV9CandidateBehaviorIds.AssetBatch
         };
 
     public static bool Supports(PlayableMotion motion) =>
         !motion.IsExpired &&
         motion.Effect == DesktopMotionEffect.None &&
-        (!motion.WindowMotionEnabled || motion.AssetBatch == PatrolWalkCandidateBehaviorIds.AssetBatch) &&
+        (!motion.WindowMotionEnabled || motion.AssetBatch is PatrolWalkCandidateBehaviorIds.AssetBatch or PatrolWalkV9CandidateBehaviorIds.AssetBatch) &&
         motion.DirectionalFrames is not { Count: > 1 } &&
         EligibleAssetBatches.Contains(motion.AssetBatch);
 
@@ -361,6 +362,15 @@ public static class MotionDisplayNameCatalog
             [FoodWaterCandidateBehaviorIds.EatKibbleStandingV5] = "吃饭",
             [PatrolWalkCandidateBehaviorIds.WalkLeft] = "向左走走",
             [PatrolWalkCandidateBehaviorIds.WalkRight] = "向右走走",
+            [PatrolWalkV9CandidateBehaviorIds.WalkLeft] = "向左走走（候审）",
+            [PatrolWalkV9CandidateBehaviorIds.WalkRight] = "向右走走（候审）",
+            [WakeRiseCandidateBehaviorIds.SideWake] = "侧睡醒来（候审）",
+            [WakeRiseCandidateBehaviorIds.SideInterrupt] = "侧睡被打断（候审）",
+            [WakeRiseCandidateBehaviorIds.LowInterrupt] = "低头浅睡被打断（候审）",
+            [WakeRiseCandidateBehaviorIds.FrontWake] = "正趴睡醒（候审）",
+            [WakeRiseCandidateBehaviorIds.FrontRiseSit] = "正趴坐起（候审）",
+            [WakeRiseCandidateBehaviorIds.FrontSitStand] = "正面坐姿站起（候审）",
+            [WakeRiseCandidateBehaviorIds.FrontRiseFull] = "正趴完整起身（候审）",
             [AutonomousDailyCandidateBehaviorIds.StandToSit] = "从站立坐下",
             [AutonomousDailyCandidateBehaviorIds.SitToProne] = "从坐姿趴下",
             [AutonomousDailyCandidateBehaviorIds.ProneToSit] = "从趴姿坐起",
@@ -621,6 +631,8 @@ public sealed class DesktopMotionCatalog
         var sleepCandidates = LoadSleepCandidates(root).ToArray();
         var foodWaterCandidates = LoadFoodWaterCandidates(root).ToArray();
         var patrolWalkCandidates = LoadPatrolWalkCandidates(root).ToArray();
+        var patrolWalkV9Candidates = LoadPatrolWalkV9Candidates(root).ToArray();
+        var wakeRiseCandidates = LoadWakeRiseCandidates(root).ToArray();
         var carRideCandidates = LoadCarRideCandidates(root, carRideRoadGazeReviewEnabled).ToArray();
         var commandMocks = LoadCommandMotionMocks(root).ToArray();
         var autonomousDailyCandidates = LoadAutonomousDailyCandidates(root, lifecycleCandidates.Concat(commandMocks)).ToArray();
@@ -628,10 +640,10 @@ public sealed class DesktopMotionCatalog
             .FirstOrDefault(x => x.BehaviorId == LifecycleCandidateBehaviorIds.ProneIdleMicroloop && x.RuntimeEnabled)?.FirstFrame
             ?? motions.FirstOrDefault(x => x.BehaviorId == Phase15BehaviorIds.ProneIdle)?.FirstFrame
             ?? string.Empty;
-        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; lifecycle_review_candidates={lifecycleReviewCandidates.Length}; prone_head_candidates={proneHeadCandidates.Length}; front_prone_expression_candidates={frontProneExpressionCandidates.Length}; front_prone_expression_review={frontProneExpressionsReviewEnabled}; prone_happy_hot_panting_candidates={proneHappyHotPantingCandidates.Length}; prone_happy_hot_panting_review={proneHappyHotPantingReviewEnabled}; standing_happy_expectant_candidates={standingHappyExpectantCandidates.Length}; standing_happy_expectant_review={standingHappyExpectantReviewEnabled}; sleep_candidates={sleepCandidates.Length}; food_water_candidates={foodWaterCandidates.Length}; patrol_walk_candidates={patrolWalkCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; car_ride_road_gaze_review={carRideRoadGazeReviewEnabled}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch}/runtime-review-manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V4AssetBatch}/runtime-review-manifest.json,action-batches/{ProneHeadCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{FrontProneExpressionBehaviorIds.AssetBatch}/manifest.json,action-batches/{ProneHappyHotPantingBehaviorIds.AssetBatch}/manifest.json,action-batches/{StandingHappyExpectantBehaviorIds.AssetBatch}/manifest.json,action-batches/{SleepCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{FoodWaterCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{PatrolWalkCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.RoadGazeAssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
+        var summary = $"asset_root=WukongAssets; built_in={motions.Length}; command_candidates={commandCandidates.Length}; magic_candidates={magicCandidates.Length}; lifecycle_candidates={lifecycleCandidates.Length}; lifecycle_review_candidates={lifecycleReviewCandidates.Length}; prone_head_candidates={proneHeadCandidates.Length}; front_prone_expression_candidates={frontProneExpressionCandidates.Length}; front_prone_expression_review={frontProneExpressionsReviewEnabled}; prone_happy_hot_panting_candidates={proneHappyHotPantingCandidates.Length}; prone_happy_hot_panting_review={proneHappyHotPantingReviewEnabled}; standing_happy_expectant_candidates={standingHappyExpectantCandidates.Length}; standing_happy_expectant_review={standingHappyExpectantReviewEnabled}; sleep_candidates={sleepCandidates.Length}; food_water_candidates={foodWaterCandidates.Length}; patrol_walk_candidates={patrolWalkCandidates.Length}; patrol_walk_v9_candidates={patrolWalkV9Candidates.Length}; wake_rise_candidates={wakeRiseCandidates.Length}; autonomous_daily_candidates={autonomousDailyCandidates.Length}; car_ride_candidates={carRideCandidates.Length}; car_ride_road_gaze_review={carRideRoadGazeReviewEnabled}; command_mocks={commandMocks.Length}; manifests=action-batches/WK-COMMAND-ACTION-CANDIDATES-v3/manifest.json,action-batches/{MagicBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch}/runtime-review-manifest.json,action-batches/{LifecycleReviewCandidateBehaviorIds.V4AssetBatch}/runtime-review-manifest.json,action-batches/{ProneHeadCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{FrontProneExpressionBehaviorIds.AssetBatch}/manifest.json,action-batches/{ProneHappyHotPantingBehaviorIds.AssetBatch}/manifest.json,action-batches/{StandingHappyExpectantBehaviorIds.AssetBatch}/manifest.json,action-batches/{SleepCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{FoodWaterCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{PatrolWalkCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{PatrolWalkV9CandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{WakeRiseCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{AutonomousDailyCandidateBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.AssetBatch}/manifest.json,action-batches/{CarRideBehaviorIds.RoadGazeAssetBatch}/manifest.json,action-mocks/{CommandMockBehaviorIds.AssetBatch}/manifest.json";
         BootstrapLog.WriteRaw($"asset_catalog_loaded {summary}");
         return new DesktopMotionCatalog(
-            motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(lifecycleReviewCandidates).Concat(proneHeadCandidates).Concat(frontProneExpressionCandidates).Concat(proneHappyHotPantingCandidates).Concat(standingHappyExpectantCandidates).Concat(sleepCandidates).Concat(foodWaterCandidates).Concat(patrolWalkCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks),
+            motions.Concat(commandCandidates).Concat(magicCandidates).Concat(lifecycleCandidates).Concat(lifecycleReviewCandidates).Concat(proneHeadCandidates).Concat(frontProneExpressionCandidates).Concat(proneHappyHotPantingCandidates).Concat(standingHappyExpectantCandidates).Concat(sleepCandidates).Concat(foodWaterCandidates).Concat(patrolWalkCandidates).Concat(patrolWalkV9Candidates).Concat(wakeRiseCandidates).Concat(autonomousDailyCandidates).Concat(carRideCandidates).Concat(commandMocks),
             summary,
             carRideRoadGazeReviewEnabled);
     }
@@ -1952,6 +1964,249 @@ public sealed class DesktopMotionCatalog
         }
     }
 
+    private static IEnumerable<PlayableMotion> LoadWakeRiseCandidates(string root)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", WakeRiseCandidateBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("wake_rise_candidate_manifest_missing");
+            yield break;
+        }
+
+        SleepCandidateBatchManifest? manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<SleepCandidateBatchManifest>(
+                File.ReadAllText(manifestPath), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Wake/rise candidate manifest parse failed", ex);
+            yield break;
+        }
+
+        if (manifest is null ||
+            !string.Equals(manifest.BatchId, WakeRiseCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal) ||
+            !string.Equals(manifest.AssetId, WakeRiseCandidateBehaviorIds.AssetBatch, StringComparison.Ordinal))
+        {
+            BootstrapLog.WriteRaw("wake_rise_candidate_identity_invalid");
+            yield break;
+        }
+
+        var errors = new List<string>();
+        var runtimeGate = manifest.OwnerPreviewApproved && manifest.VisualApproved &&
+            manifest.RuntimeApproved && manifest.RuntimeUse && manifest.ProductionAsset &&
+            !manifest.PrototypeUse && manifest.DeveloperPreview && manifest.AutonomousBindingEnabled &&
+            string.Equals(manifest.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal);
+        if (!runtimeGate) errors.Add("runtime_gate_invalid");
+        if (manifest.SourceFrameCount != 27 || manifest.RuntimeFrameCount != 27 || manifest.SequenceCount != 7)
+            errors.Add("candidate_inventory_contract_invalid");
+        if (manifest.AllowedSources is null || !manifest.AllowedSources.OrderBy(value => value, StringComparer.Ordinal)
+                .SequenceEqual(new[] { "AutonomousTick", "DeveloperPreview" }.OrderBy(value => value, StringComparer.Ordinal), StringComparer.Ordinal))
+            errors.Add("runtime_source_policy_invalid");
+        if (manifest.RuntimeRenderScale <= 0) errors.Add("runtime_render_scale_invalid");
+
+        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        var inventory = new Dictionary<string, ProneHeadCandidateInventoryFrame>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in manifest.FrameInventory ?? Array.Empty<ProneHeadCandidateInventoryFrame>())
+        {
+            if (string.IsNullOrWhiteSpace(item.Path) || Path.IsPathRooted(item.Path) ||
+                item.Path.Split('/', StringSplitOptions.RemoveEmptyEntries).Contains("..", StringComparer.Ordinal) || !inventory.TryAdd(item.Path, item))
+            {
+                errors.Add($"unsafe_or_duplicate_inventory:{item.Path}");
+                continue;
+            }
+            var framePath = Path.Combine(batchRoot, item.Path.Replace('/', Path.DirectorySeparatorChar));
+            if (item.Width != 1024 || item.Height != 1024 || !string.Equals(item.Mode, "RGBA", StringComparison.Ordinal) ||
+                !File.Exists(framePath) || new FileInfo(framePath).Length != item.Bytes ||
+                !string.Equals(Sha256(framePath), item.Sha256, StringComparison.OrdinalIgnoreCase))
+                errors.Add($"frame_contract:{item.Path}");
+        }
+        if (inventory.Count != 27) errors.Add($"inventory_count:{inventory.Count}/27");
+
+        var actions = manifest.Actions ?? Array.Empty<SleepCandidateActionManifest>();
+        if (actions.Count != WakeRiseCandidateBehaviorIds.All.Count) errors.Add("action_count_invalid");
+        if (errors.Count > 0)
+        {
+            BootstrapLog.WriteRaw($"wake_rise_candidate_invalid batch={manifest.BatchId} errors={string.Join(',', errors)}");
+            yield break;
+        }
+
+        foreach (var action in actions)
+        {
+            var actionErrors = new List<string>();
+            if (!WakeRiseCandidateBehaviorIds.All.Contains(action.BehaviorId)) actionErrors.Add("behavior_id_invalid");
+            if (!action.OwnerPreviewApproved || !action.VisualApproved || !action.RuntimeApproved || !action.RuntimeUse ||
+                !action.ProductionAsset || action.PrototypeUse || !action.DeveloperPreview || !action.AutonomousBindingEnabled ||
+                !string.Equals(action.RuntimeValidation, "passed_windows_renderer_qa", StringComparison.Ordinal) ||
+                action.AllowedSources is null || !action.AllowedSources.OrderBy(value => value, StringComparer.Ordinal)
+                    .SequenceEqual(new[] { "AutonomousTick", "DeveloperPreview" }.OrderBy(value => value, StringComparer.Ordinal), StringComparer.Ordinal))
+                actionErrors.Add("action_runtime_gate_invalid");
+
+            var phases = new List<MotionPhase>();
+            foreach (var phase in action.Phases ?? Array.Empty<SleepCandidatePhaseManifest>())
+            {
+                var frames = new List<string>();
+                var durations = new List<int>();
+                foreach (var frame in phase.Frames ?? Array.Empty<CommandActionFrameManifest>())
+                {
+                    if (!inventory.TryGetValue(frame.Path, out var inventoryFrame) || frame.Bytes != inventoryFrame.Bytes ||
+                        !string.Equals(frame.Sha256, inventoryFrame.Sha256, StringComparison.OrdinalIgnoreCase))
+                    {
+                        actionErrors.Add($"frame_metadata_invalid:{frame.Path}");
+                        continue;
+                    }
+                    frames.Add(Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar)));
+                    durations.Add(frame.DurationMs.GetValueOrDefault(action.FrameDurationMs));
+                }
+                if (phase.Loop || phase.Name != "sequence" || frames.Count != phase.FrameCount || frames.Count == 0 || durations.Any(x => x <= 0))
+                    actionErrors.Add($"phase_invalid:{phase.Name}");
+                phases.Add(new MotionPhase(phase.Name, frames, false, durations));
+            }
+            if (phases.Count != 1 || phases.Single().Frames.Count != action.FrameCount ||
+                phases.Single().DurationTotalMs(action.FrameDurationMs) != action.TotalDurationMs || action.Loop)
+                actionErrors.Add("action_timeline_invalid");
+            if (actionErrors.Count > 0)
+            {
+                BootstrapLog.WriteRaw($"wake_rise_candidate_invalid behavior={action.BehaviorId} errors={string.Join(',', actionErrors)}");
+                continue;
+            }
+
+            yield return new PlayableMotion(
+                action.BehaviorId, action.DisplayName, "基础动作", action.Direction, action.FrameDurationMs,
+                action.Interruptible, phases, batchRoot, RuntimeEnabled: true,
+                Status: "已启用：仅匹配姿态路径", MissingContent: "跨视角或不存在的睡眠中间姿态不会作为 fallback。",
+                StartPose: action.FromPose, EndPose: action.ToPose, StyleGroup: "wukong-wake-rise-v9-candidate",
+                Disposition: "已启用：兼容姿态与睡眠退出", PrototypeUse: false, AssetBatch: manifest.BatchId,
+                Description: $"{action.Description} Uses the Normal lifecycle only when the current pose family is compatible.",
+                CandidateProfile: manifest.CandidateProfile, VisualScale: ApprovedPetVisualScale,
+                RenderScaleOverride: manifest.RuntimeRenderScale, VisualApproved: true, RuntimeApproved: true,
+                AutonomousBindingEnabled: true, WindowMotionEnabled: false, SupportsHorizontalMirror: false);
+        }
+    }
+
+    private static IEnumerable<PlayableMotion> LoadPatrolWalkV9Candidates(string root)
+    {
+        var manifestPath = Path.Combine(root, "action-batches", PatrolWalkV9CandidateBehaviorIds.AssetBatch, "manifest.json");
+        if (!File.Exists(manifestPath))
+        {
+            BootstrapLog.WriteRaw("patrol_walk_v9_candidate_manifest_missing");
+            yield break;
+        }
+
+        PatrolWalkCandidateBatchManifest? manifest;
+        try
+        {
+            manifest = JsonSerializer.Deserialize<PatrolWalkCandidateBatchManifest>(
+                File.ReadAllText(manifestPath), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            BootstrapLog.Write("Patrol walk v9 candidate manifest parse failed", ex);
+            yield break;
+        }
+
+        if (manifest is null ||
+            !string.Equals(manifest.BatchId, PatrolWalkV9CandidateBehaviorIds.AssetBatch, StringComparison.Ordinal) ||
+            !string.Equals(manifest.AssetId, PatrolWalkV9CandidateBehaviorIds.AssetBatch, StringComparison.Ordinal))
+        {
+            BootstrapLog.WriteRaw("patrol_walk_v9_candidate_identity_invalid");
+            yield break;
+        }
+
+        var errors = new List<string>();
+        var candidateGate = manifest.OwnerPreviewApproved && manifest.VisualApproved &&
+            !manifest.RuntimeApproved && !manifest.RuntimeUse && !manifest.ProductionAsset &&
+            !manifest.PrototypeUse && manifest.DeveloperPreview && !manifest.AutonomousBindingEnabled &&
+            manifest.WindowMotionEnabled &&
+            string.Equals(manifest.RuntimeValidation, "pending_windows_renderer_qa", StringComparison.Ordinal) &&
+            string.Equals(manifest.WindowMotionValidation, "pending_windows_renderer_qa", StringComparison.Ordinal);
+        if (!candidateGate) errors.Add("candidate_gate_invalid");
+        if (manifest.SourceFrameCount != 26 || manifest.RuntimeFrameCount != 26 || manifest.SequenceCount != 2)
+            errors.Add("candidate_inventory_contract_invalid");
+        if (manifest.AllowedSources is null || !manifest.AllowedSources.SequenceEqual(new[] { "DeveloperPreview" }, StringComparer.Ordinal))
+            errors.Add("candidate_source_policy_invalid");
+        if (manifest.RuntimeRenderScale <= 0) errors.Add("runtime_render_scale_invalid");
+
+        var batchRoot = Path.GetDirectoryName(manifestPath)!;
+        var inventory = new Dictionary<string, ProneHeadCandidateInventoryFrame>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in manifest.FrameInventory ?? Array.Empty<ProneHeadCandidateInventoryFrame>())
+        {
+            if (string.IsNullOrWhiteSpace(item.Path) || Path.IsPathRooted(item.Path) ||
+                item.Path.Split('/', StringSplitOptions.RemoveEmptyEntries).Contains("..", StringComparer.Ordinal) || !inventory.TryAdd(item.Path, item))
+            {
+                errors.Add($"unsafe_or_duplicate_inventory:{item.Path}");
+                continue;
+            }
+            var framePath = Path.Combine(batchRoot, item.Path.Replace('/', Path.DirectorySeparatorChar));
+            if (item.Width != 1024 || item.Height != 1024 || !string.Equals(item.Mode, "RGBA", StringComparison.Ordinal) ||
+                !File.Exists(framePath) || new FileInfo(framePath).Length != item.Bytes ||
+                !string.Equals(Sha256(framePath), item.Sha256, StringComparison.OrdinalIgnoreCase))
+                errors.Add($"frame_contract:{item.Path}");
+        }
+        if (inventory.Count != 26) errors.Add($"inventory_count:{inventory.Count}/26");
+
+        var actions = manifest.Actions ?? Array.Empty<PatrolWalkCandidateActionManifest>();
+        if (actions.Count != PatrolWalkV9CandidateBehaviorIds.All.Count) errors.Add("action_count_invalid");
+        if (errors.Count > 0)
+        {
+            BootstrapLog.WriteRaw($"patrol_walk_v9_candidate_invalid batch={manifest.BatchId} errors={string.Join(',', errors)}");
+            yield break;
+        }
+
+        foreach (var action in actions)
+        {
+            var actionErrors = new List<string>();
+            if (!PatrolWalkV9CandidateBehaviorIds.All.Contains(action.BehaviorId)) actionErrors.Add("behavior_id_invalid");
+            if (!action.OwnerPreviewApproved || !action.VisualApproved || action.RuntimeApproved || action.RuntimeUse ||
+                action.ProductionAsset || action.PrototypeUse || !action.DeveloperPreview || action.AutonomousBindingEnabled ||
+                !string.Equals(action.RuntimeValidation, "pending_windows_renderer_qa", StringComparison.Ordinal) ||
+                action.AllowedSources is null || !action.AllowedSources.SequenceEqual(new[] { "DeveloperPreview" }, StringComparer.Ordinal))
+                actionErrors.Add("action_gate_invalid");
+
+            var phases = new List<MotionPhase>();
+            foreach (var phase in action.Phases ?? Array.Empty<SleepCandidatePhaseManifest>())
+            {
+                var frames = new List<string>();
+                var durations = new List<int>();
+                foreach (var frame in phase.Frames ?? Array.Empty<CommandActionFrameManifest>())
+                {
+                    if (!inventory.TryGetValue(frame.Path, out var inventoryFrame) || frame.Bytes != inventoryFrame.Bytes ||
+                        !string.Equals(frame.Sha256, inventoryFrame.Sha256, StringComparison.OrdinalIgnoreCase))
+                    {
+                        actionErrors.Add($"frame_metadata_invalid:{frame.Path}");
+                        continue;
+                    }
+                    frames.Add(Path.Combine(batchRoot, frame.Path.Replace('/', Path.DirectorySeparatorChar)));
+                    durations.Add(frame.DurationMs.GetValueOrDefault(action.FrameDurationMs));
+                }
+                if (phase.Loop != (phase.Name == "loop") || frames.Count != phase.FrameCount || frames.Count == 0 || durations.Any(x => x <= 0))
+                    actionErrors.Add($"phase_invalid:{phase.Name}");
+                phases.Add(new MotionPhase(phase.Name, frames, phase.Loop, durations));
+            }
+            if (action.Loop || !phases.Select(x => x.Name).SequenceEqual(new[] { "intro", "loop", "exit" }) ||
+                !phases.Select(x => x.Frames.Count).SequenceEqual(new[] { 4, 8, 4 }) ||
+                phases.Sum(x => x.Frames.Count) != action.FrameCount ||
+                phases.Sum(x => x.DurationTotalMs(action.FrameDurationMs)) != action.TotalDurationMs)
+                actionErrors.Add("action_timeline_invalid");
+            if (actionErrors.Count > 0)
+            {
+                BootstrapLog.WriteRaw($"patrol_walk_v9_candidate_invalid behavior={action.BehaviorId} errors={string.Join(',', actionErrors)}");
+                continue;
+            }
+
+            yield return new PlayableMotion(
+                action.BehaviorId, action.DisplayName, "基础动作", action.Direction, action.FrameDurationMs,
+                action.Interruptible, phases, batchRoot, RuntimeEnabled: false,
+                Status: "候选：待 Windows 动画验收", MissingContent: "v8 remains the only automatic patrol route until v9 passes Windows QA.",
+                StartPose: action.FromPose, EndPose: action.ToPose, StyleGroup: "wukong-autonomous-patrol-walk-v9-candidate",
+                Disposition: "视觉已通过 · 未启用", PrototypeUse: false, AssetBatch: manifest.BatchId,
+                Description: $"{action.Description} DeveloperPreview only; source={manifest.SourcePackage}; no v8 replacement yet.",
+                CandidateProfile: manifest.CandidateProfile, VisualScale: ApprovedPetVisualScale,
+                RenderScaleOverride: manifest.RuntimeRenderScale, VisualApproved: true, RuntimeApproved: false,
+                AutonomousBindingEnabled: false, WindowMotionEnabled: true);
+        }
+    }
     private static IEnumerable<PlayableMotion> LoadPatrolWalkCandidates(string root)
     {
         var manifestPath = Path.Combine(root, "action-batches", PatrolWalkCandidateBehaviorIds.AssetBatch, "manifest.json");
@@ -1998,9 +2253,10 @@ public sealed class DesktopMotionCatalog
         if (manifest.RuntimeRenderScale <= 0)
             batchErrors.Add("runtime_render_scale_invalid");
         if (manifest.AllowedSources is null ||
-            manifest.AllowedSources.Count != 2 ||
+            manifest.AllowedSources.Count != 3 ||
             !manifest.AllowedSources.Contains("AutonomousTick", StringComparer.Ordinal) ||
-            !manifest.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
+            !manifest.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal) ||
+            !manifest.AllowedSources.Contains("OwnerDialogue", StringComparer.Ordinal))
             batchErrors.Add("source_policy_invalid");
 
         var inventory = new Dictionary<string, ProneHeadCandidateInventoryFrame>(StringComparer.OrdinalIgnoreCase);
@@ -2060,9 +2316,10 @@ public sealed class DesktopMotionCatalog
                 action.RuntimeValidation != manifest.RuntimeValidation)
                 errors.Add("action_gate_invalid");
             if (action.AllowedSources is null ||
-                action.AllowedSources.Count != 2 ||
+                action.AllowedSources.Count != 3 ||
                 !action.AllowedSources.Contains("AutonomousTick", StringComparer.Ordinal) ||
-                !action.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal))
+                !action.AllowedSources.Contains("DeveloperPreview", StringComparer.Ordinal) ||
+                !action.AllowedSources.Contains("OwnerDialogue", StringComparer.Ordinal))
                 errors.Add("action_source_policy_invalid");
 
             var phases = new List<MotionPhase>();
@@ -2998,6 +3255,29 @@ public static class PatrolWalkCandidateBehaviorIds
     };
 }
 
+public static class PatrolWalkV9CandidateBehaviorIds
+{
+    public const string AssetBatch = "WK-AUTONOMOUS-PATROL-WALK-v9";
+    public const string WalkLeft = "wk.candidate.autonomous.patrol_walk_left_v9";
+    public const string WalkRight = "wk.candidate.autonomous.patrol_walk_right_v9";
+    public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal) { WalkLeft, WalkRight };
+}
+
+public static class WakeRiseCandidateBehaviorIds
+{
+    public const string AssetBatch = "WK-AUTONOMOUS-WAKE-RISE-CANDIDATE-v1";
+    public const string SideWake = "wk.candidate.autonomous.side_sleep_wake_v1";
+    public const string SideInterrupt = "wk.candidate.autonomous.side_sleep_interrupt_exit_v1";
+    public const string LowInterrupt = "wk.candidate.autonomous.low_prone_interrupt_exit_v1";
+    public const string FrontWake = "wk.candidate.autonomous.front_prone_wake_v1";
+    public const string FrontRiseSit = "wk.candidate.autonomous.front_prone_to_sit_v1";
+    public const string FrontSitStand = "wk.candidate.autonomous.front_sit_to_stand_v1";
+    public const string FrontRiseFull = "wk.candidate.autonomous.front_prone_rise_v1";
+    public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
+    {
+        SideWake, SideInterrupt, LowInterrupt, FrontWake, FrontRiseSit, FrontSitStand, FrontRiseFull
+    };
+}
 public static class AutonomousDailyCandidateBehaviorIds
 {
     public const string AssetBatch = "WK-AUTONOMOUS-DAILY-BEHAVIORS-v1";
@@ -3363,6 +3643,7 @@ public sealed record PatrolWalkCandidateActionManifest(
     [property: JsonPropertyName("frame_duration_ms")] int FrameDurationMs,
     [property: JsonPropertyName("interruptible")] bool Interruptible,
     [property: JsonPropertyName("loop")] bool Loop,
+    [property: JsonPropertyName("owner_preview_approved")] bool OwnerPreviewApproved,
     [property: JsonPropertyName("visual_approved")] bool VisualApproved,
     [property: JsonPropertyName("runtime_validation")] string RuntimeValidation,
     [property: JsonPropertyName("runtime_approved")] bool RuntimeApproved,
@@ -3663,12 +3944,61 @@ public sealed record PetMotionRequest(
     Guid CorrelationId = default,
     bool TracksAgentLifecycle = false);
 
+/// <summary>
+/// Session-only diagnostic projection. It describes the active runtime contract and
+/// never participates in behavior selection or persistence.
+/// </summary>
+public sealed record BehaviorMechanismSnapshot(
+    string DisplayName,
+    string BehaviorId,
+    string TriggerMechanism,
+    string WeightAndFrequency,
+    string GateSummary,
+    int SessionTriggerCount,
+    string AverageInterval,
+    string LastTriggered,
+    string TriggerSources);
+
 public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 {
     private sealed record ActiveBehaviorExecution(
         BehaviorRequest Request,
         BehaviorOutcomeProfile Profile,
         TimeSpan EstimatedDuration);
+
+    private sealed class BehaviorTriggerAggregate
+    {
+        private readonly Dictionary<BehaviorRequestSource, int> _sources = new();
+        private DateTimeOffset? _lastTriggeredAt;
+        private TimeSpan _intervalTotal;
+        private int _intervalCount;
+
+        public int Count { get; private set; }
+        public DateTimeOffset? LastTriggeredAt => _lastTriggeredAt;
+
+        public void Record(DateTimeOffset timestamp, BehaviorRequestSource source)
+        {
+            if (_lastTriggeredAt is { } previous && timestamp >= previous)
+            {
+                _intervalTotal += timestamp - previous;
+                _intervalCount++;
+            }
+
+            Count++;
+            _lastTriggeredAt = timestamp;
+            _sources[source] = _sources.GetValueOrDefault(source) + 1;
+        }
+
+        public string AverageInterval => _intervalCount == 0
+            ? "尚无重复触发"
+            : $"{(_intervalTotal.TotalSeconds / _intervalCount):0.#} 秒";
+
+        public string SourceSummary => _sources.Count == 0
+            ? "--"
+            : string.Join(" / ", _sources
+                .OrderBy(item => item.Key.ToString(), StringComparer.Ordinal)
+                .Select(item => $"{DisplaySource(item.Key)} {item.Value}"));
+    }
 
     private const string StableHoldPrefix = "wk.runtime.posture_hold.";
     private static readonly IReadOnlySet<string> AutonomousRuntimeAllowlist =
@@ -3720,6 +4050,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private readonly AutonomousAgentRolloutOptions _rolloutOptions;
     private AutonomousBehaviorPreferences _autonomousPreferences = AutonomousBehaviorPreferences.Default;
     private readonly Dictionary<string, DateTimeOffset> _lastAccepted = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, BehaviorTriggerAggregate> _behaviorTriggerStatistics = new(StringComparer.OrdinalIgnoreCase);
     private readonly RollingFileLogStore _logs = RollingFileLogStore.CreateDefault();
     private readonly object _agentStatePersistenceLock = new();
     private IPetAgentStateStore? _agentStateStore;
@@ -3767,6 +4098,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private readonly Queue<string> _pendingFoodWaterSequence = new();
     private BehaviorRequestSource _pendingFoodWaterSource = BehaviorRequestSource.OwnerContextMenu;
     private string _pendingFoodWaterTarget = string.Empty;
+    private readonly Queue<string> _pendingDialogueEpisodeSequence = new();
+    private string _pendingDialogueEpisodeTarget = string.Empty;
     private ActiveBehaviorExecution? _activeReducerExecution;
     private PetAgentState? _previewAgentStateSnapshot;
     private BehaviorRequest? _lastBehaviorRequest;
@@ -3840,6 +4173,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             string.Equals(x.AssetBatch, FrontProneExpressionBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(x.AssetBatch, ProneHappyHotPantingBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(x.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(x.AssetBatch, WakeRiseCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(x.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
         .OrderBy(x => x.BehaviorId)
         .ToArray();
@@ -3903,6 +4237,14 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     public int RecentPositiveInteractions => _relationshipState.RecentPositiveInteractions;
     public int RecentNegativeInteractions => _relationshipState.RecentNegativeInteractions;
     public string AgentMoodProjection => $"{_agentState.CurrentPosture} · 心情 {_agentState.MoodValence:P0} · 唤醒度 {_agentState.Arousal:P0}";
+
+    public IReadOnlyList<BehaviorMechanismSnapshot> BehaviorMechanisms => _catalog.Motions
+        .Where(motion => !motion.IsExpired &&
+                         (motion.RuntimeEnabled || motion.PrototypeUse) &&
+                         !motion.BehaviorId.StartsWith(StableHoldPrefix, StringComparison.OrdinalIgnoreCase))
+        .OrderBy(motion => MotionDisplayNameCatalog.Resolve(motion.BehaviorId, motion.DisplayName), StringComparer.CurrentCulture)
+        .Select(BuildBehaviorMechanismSnapshot)
+        .ToArray();
 
     public async Task<bool> AttachAgentStateStoreAsync(
         IPetAgentStateStore store,
@@ -4288,26 +4630,66 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 
     private PetActionResult SubmitDialogueSleep()
     {
-        if (_agentState.CurrentPosture != StablePosture.Prone)
+        if (_agentState.IsBusy)
         {
-            UpdateDecision(PetActionResult.Deferred, BehaviorRequestSource.OwnerDialogue.ToString(), "sleep_transition_missing", "要先自然趴下才能睡觉");
+            UpdateDecision(PetActionResult.Deferred, BehaviorRequestSource.OwnerDialogue.ToString(), "sleep_wait_for_current_action", "我先把现在的动作做完，再去睡觉");
             return PetActionResult.Deferred;
         }
-        var behaviorId = _frontProneProfileActive
+
+        var staysInFrontProneProfile = _agentState.CurrentPosture == StablePosture.Prone && _frontProneProfileActive;
+        var behaviorId = staysInFrontProneProfile
             ? SleepCandidateBehaviorIds.SprawledFrontBreath
             : SleepCandidateBehaviorIds.MainLifecycle;
-        return SubmitBehavior(BehaviorRequestSource.OwnerDialogue, behaviorId, "dialogue:sleep", priority: 9);
+        var steps = _agentState.CurrentPosture switch
+        {
+            StablePosture.Stand => new[]
+            {
+                AutonomousDailyCandidateBehaviorIds.StandToSit,
+                AutonomousDailyCandidateBehaviorIds.SitToProne,
+                behaviorId
+            },
+            StablePosture.Sit => new[]
+            {
+                AutonomousDailyCandidateBehaviorIds.SitToProne,
+                behaviorId
+            },
+            _ => new[] { behaviorId }
+        };
+        return StartDialogueEpisodeSequence("sleep", behaviorId, steps, "我先慢慢趴好，再睡觉");
     }
 
     private PetActionResult SubmitDialogueWalk()
     {
-        if (_agentState.CurrentPosture != StablePosture.Stand)
+        if (_agentState.IsBusy)
         {
-            UpdateDecision(PetActionResult.Deferred, BehaviorRequestSource.OwnerDialogue.ToString(), "walk_transition_missing", "要先自然站起来才能走动");
+            UpdateDecision(PetActionResult.Deferred, BehaviorRequestSource.OwnerDialogue.ToString(), "walk_wait_for_current_action", "我先把现在的动作做完，再去走走");
             return PetActionResult.Deferred;
         }
-        var behaviorId = _patrolCanMoveRight ? PatrolWalkCandidateBehaviorIds.WalkRight : PatrolWalkCandidateBehaviorIds.WalkLeft;
-        return SubmitBehavior(BehaviorRequestSource.OwnerDialogue, behaviorId, "dialogue:walk", priority: 9);
+        if (!_patrolCanMoveLeft && !_patrolCanMoveRight)
+        {
+            UpdateDecision(PetActionResult.Deferred, BehaviorRequestSource.OwnerDialogue.ToString(), "walk_workspace_unavailable", "这里没有足够空间让我走走");
+            return PetActionResult.Deferred;
+        }
+
+        var behaviorId = _patrolCanMoveRight && (!_patrolCanMoveLeft || _petFacesRight)
+            ? PatrolWalkCandidateBehaviorIds.WalkRight
+            : PatrolWalkCandidateBehaviorIds.WalkLeft;
+        var steps = _agentState.CurrentPosture switch
+        {
+            StablePosture.Prone => new[]
+            {
+                AutonomousDailyCandidateBehaviorIds.ProneToSit,
+                AutonomousDailyCandidateBehaviorIds.SitToStand,
+                behaviorId
+            },
+            StablePosture.Sit => new[]
+            {
+                AutonomousDailyCandidateBehaviorIds.SitToStand,
+                behaviorId
+            },
+            _ => new[] { behaviorId }
+        };
+        return StartDialogueEpisodeSequence("walk", behaviorId, steps, "我先自然站起来，再去走走");
     }
 
     private DialogueAct BuildBehaviorDialogueAct(NormalizedOwnerIntent intent, PetActionResult result, Guid? requestId)
@@ -4541,7 +4923,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             behaviorId,
             $"owner_base_motion:{behaviorId}",
             priority: 7,
-            executionMode: BehaviorExecutionMode.DeveloperPreview));
+            executionMode: motion.RuntimeEnabled && motion.EffectiveRuntimeApproved
+                ? BehaviorExecutionMode.Normal
+                : BehaviorExecutionMode.DeveloperPreview));
     }
 
     public static bool IsBaseAssetMotion(PlayableMotion motion) =>
@@ -4574,6 +4958,75 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         if (_pendingFoodWaterSequence.Count == 0)
             return false;
         return SubmitNextFoodWaterStep() == PetActionResult.Accepted;
+    }
+
+    private PetActionResult StartDialogueEpisodeSequence(
+        string episode,
+        string targetBehaviorId,
+        IReadOnlyList<string> steps,
+        string preparationText)
+    {
+        if (_pendingDialogueEpisodeSequence.Count > 0)
+        {
+            UpdateDecision(PetActionResult.Deferred, BehaviorRequestSource.OwnerDialogue.ToString(),
+                $"{episode}_sequence_already_planned", "我已经在准备这个动作啦");
+            return PetActionResult.Deferred;
+        }
+
+        foreach (var step in steps)
+        {
+            if (_catalog.Find(step) is not { RuntimeEnabled: true, IsExpired: false })
+            {
+                UpdateDecision(PetActionResult.Deferred, BehaviorRequestSource.OwnerDialogue.ToString(),
+                    $"{episode}_posture_path_missing", "现在缺少自然衔接的姿态动作，先不硬切过去");
+                return PetActionResult.Deferred;
+            }
+        }
+
+        _pendingDialogueEpisodeSequence.Clear();
+        foreach (var step in steps)
+            _pendingDialogueEpisodeSequence.Enqueue(step);
+        _pendingDialogueEpisodeTarget = targetBehaviorId;
+        Trace("dialogue_episode_sequence_planned",
+            $"episode={episode} target={targetBehaviorId} posture={_agentState.CurrentPosture} steps={string.Join(',', steps)}");
+        var result = SubmitNextDialogueEpisodeStep(episode);
+        if (result == PetActionResult.Accepted && steps.Count > 1)
+            UpdateDecision(PetActionResult.Accepted, BehaviorRequestSource.OwnerDialogue.ToString(),
+                $"dialogue_{episode}_preparing", preparationText);
+        return result;
+    }
+
+    private PetActionResult SubmitNextDialogueEpisodeStep(string episode)
+    {
+        if (_pendingDialogueEpisodeSequence.Count == 0)
+            return PetActionResult.Accepted;
+
+        var step = _pendingDialogueEpisodeSequence.Dequeue();
+        var result = SubmitBehavior(
+            BehaviorRequestSource.OwnerDialogue,
+            step,
+            $"dialogue_{episode}:{_pendingDialogueEpisodeTarget}:step:{step}",
+            priority: 9);
+        if (result != PetActionResult.Accepted)
+        {
+            Trace("dialogue_episode_sequence_stopped",
+                $"episode={episode} target={_pendingDialogueEpisodeTarget} step={step} result={result}");
+            _pendingDialogueEpisodeSequence.Clear();
+            _pendingDialogueEpisodeTarget = string.Empty;
+        }
+        return result;
+    }
+
+    private bool ContinueDialogueEpisodeSequenceAfterTransition()
+    {
+        if (_pendingDialogueEpisodeSequence.Count == 0)
+            return false;
+
+        var episode = _pendingDialogueEpisodeTarget == SleepCandidateBehaviorIds.MainLifecycle ||
+                      _pendingDialogueEpisodeTarget == SleepCandidateBehaviorIds.SprawledFrontBreath
+            ? "sleep"
+            : "walk";
+        return SubmitNextDialogueEpisodeStep(episode) == PetActionResult.Accepted;
     }
 
     private PetActionResult SubmitBehaviorAgentCommand(OwnerCommandKind command, BehaviorRequestSource source, string trigger)
@@ -4842,6 +5295,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     {
         _pendingFoodWaterSequence.Clear();
         _pendingFoodWaterTarget = string.Empty;
+        _pendingDialogueEpisodeSequence.Clear();
+        _pendingDialogueEpisodeTarget = string.Empty;
         var restoredPreview = RestorePreviewAgentState("stop");
         FinishReducerOwnedExecution(ExecutionStatus.Interrupted, EstimateCurrentCompletionRatio(), reason);
         if (!restoredPreview && _pendingAgentDecision is not null)
@@ -4967,7 +5422,18 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             foreach (var id in FrontProneExpressionBehaviorIds.All.Append(ProneHappyHotPantingBehaviorIds.HappyHotPanting))
                 if (CanScheduleProneMicroevent(id)) prone.Add(id);
                 else prone.Remove(id);
-            if (episode == PetEpisodeKind.Resting) return prone;
+            if (episode == PetEpisodeKind.Resting)
+            {
+                foreach (var id in new[]
+                         {
+                             WakeRiseCandidateBehaviorIds.FrontRiseSit,
+                             WakeRiseCandidateBehaviorIds.FrontRiseFull,
+                             WakeRiseCandidateBehaviorIds.FrontSitStand
+                         })
+                    if (CanScheduleWakeRiseTransition(id)) prone.Add(id);
+                    else prone.Remove(id);
+                return prone;
+            }
             configured = prone;
         }
         if (episode == PetEpisodeKind.Exploring && configured is not null)
@@ -4994,6 +5460,26 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         (id != ProneHappyHotPantingBehaviorIds.HappyHotPanting ||
             IsProneHappyHotPantingProfileAllowed(_agentState.CurrentPosture, _agentState.CurrentPoseId,
                 _frontProneProfileActive, _agentState.IsBusy, Mood, Stress));
+
+    private bool CanScheduleWakeRiseTransition(string behaviorId)
+    {
+        if (_agentState.IsBusy ||
+            _catalog.Find(behaviorId) is not { RuntimeEnabled: true, RuntimeApproved: true, AutonomousBindingEnabled: true })
+            return false;
+
+        return behaviorId switch
+        {
+            WakeRiseCandidateBehaviorIds.FrontRiseSit or WakeRiseCandidateBehaviorIds.FrontRiseFull =>
+                _agentState.CurrentPosture == StablePosture.Prone &&
+                _frontProneProfileActive &&
+                string.Equals(PetPoseCompatibility.FamilyFor(_agentState.CurrentPoseId, _agentState.CurrentPosture), "prone.front", StringComparison.OrdinalIgnoreCase) &&
+                _now() - _currentStartedAt >= TimeSpan.FromSeconds(45),
+            WakeRiseCandidateBehaviorIds.FrontSitStand =>
+                _agentState.CurrentPosture == StablePosture.Sit &&
+                string.Equals(_agentState.LastActionId, WakeRiseCandidateBehaviorIds.FrontRiseSit, StringComparison.OrdinalIgnoreCase),
+            _ => false
+        };
+    }
 
     public async Task SubmitFakeModelMessageAsync(string text)
     {
@@ -5077,11 +5563,23 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         RaiseMetrics();
         if (ContinueFoodWaterSequenceAfterTransition())
             return;
+        if (ContinueDialogueEpisodeSequenceAfterTransition())
+            return;
         if (completedPlaybackMotion is not null &&
             string.Equals(completedPlaybackMotion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
-            StartCommandEndPoseHold(behaviorId, _agentState.CurrentPosture, $"sleep_hold:{behaviorId}", completedPlaybackMotion);
+        {
+            if (TryStartApprovedWakeExit(completedPlaybackMotion))
+            {
+                _pendingAgentDecision = null;
+                return;
+            }
+            StartTerminalPoseHold(behaviorId, _agentState.CurrentPosture, $"sleep_hold:{behaviorId}", completedPlaybackMotion);
+        }
+        else if (completedPlaybackMotion is not null &&
+                 string.Equals(completedPlaybackMotion.AssetBatch, WakeRiseCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+            StartTerminalPoseHold(behaviorId, _agentState.CurrentPosture, $"wake_rise_hold:{behaviorId}", completedPlaybackMotion);
         else if (completedPlaybackMotion is not null && MockCommandActionIds.PrototypeWhitelist.Contains(behaviorId))
-            StartCommandEndPoseHold(behaviorId, _agentState.CurrentPosture, $"command_complete:{behaviorId}", completedPlaybackMotion);
+            StartTerminalPoseHold(behaviorId, _agentState.CurrentPosture, $"command_complete:{behaviorId}", completedPlaybackMotion);
         else
             StartStablePostureIdle(_agentState.CurrentPosture, $"reducer_complete:{behaviorId}");
         if (_pendingAgentDecision is not null)
@@ -5168,7 +5666,29 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         Accept(fallback, BehaviorRequestSource.OwnerUi, BehaviorExecutionMode.Normal, source, returnToIdle: false, loopCycles: int.MaxValue);
     }
 
-    private void StartCommandEndPoseHold(string behaviorId, StablePosture posture, string source, PlayableMotion? completedRequestMotion)
+    private bool TryStartApprovedWakeExit(PlayableMotion completedSleepMotion)
+    {
+        var wakeBehaviorId = completedSleepMotion.BehaviorId switch
+        {
+            SleepCandidateBehaviorIds.MainLifecycle => WakeRiseCandidateBehaviorIds.SideWake,
+            SleepCandidateBehaviorIds.SprawledFrontBreath => WakeRiseCandidateBehaviorIds.FrontWake,
+            _ => string.Empty
+        };
+        if (string.IsNullOrEmpty(wakeBehaviorId) ||
+            _catalog.Find(wakeBehaviorId) is not { RuntimeEnabled: true, RuntimeApproved: true, AutonomousBindingEnabled: true })
+            return false;
+
+        var result = SubmitBehavior(
+            BehaviorRequestSource.AutonomousTick,
+            wakeBehaviorId,
+            $"approved_sleep_exit:{completedSleepMotion.BehaviorId}",
+            priority: 0);
+        if (result == PetActionResult.Accepted)
+            Trace("approved_sleep_exit_started", $"sleep={completedSleepMotion.BehaviorId} wake={wakeBehaviorId}");
+        return result == PetActionResult.Accepted;
+    }
+
+    private void StartTerminalPoseHold(string behaviorId, StablePosture posture, string source, PlayableMotion? completedRequestMotion)
     {
         var completedMotion = completedRequestMotion is not null &&
                               string.Equals(completedRequestMotion.BehaviorId, behaviorId, StringComparison.OrdinalIgnoreCase)
@@ -5463,6 +5983,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         _lastBehaviorRequest = behaviorRequest;
         if (executionMode == BehaviorExecutionMode.Normal)
             _lastAccepted[motion.BehaviorId] = _currentStartedAt;
+        if (executionMode == BehaviorExecutionMode.Normal && !stablePresentation)
+            RecordBehaviorTrigger(motion, source, _currentStartedAt);
         if (executionMode == BehaviorExecutionMode.Normal &&
             source == BehaviorRequestSource.AutonomousTick &&
             (FrontProneExpressionBehaviorIds.All.Contains(motion.BehaviorId) ||
@@ -5532,6 +6054,85 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         OnPropertyChanged(nameof(LastError));
     }
 
+    private void RecordBehaviorTrigger(PlayableMotion motion, BehaviorRequestSource source, DateTimeOffset timestamp)
+    {
+        if (!_behaviorTriggerStatistics.TryGetValue(motion.BehaviorId, out var aggregate))
+        {
+            aggregate = new BehaviorTriggerAggregate();
+            _behaviorTriggerStatistics[motion.BehaviorId] = aggregate;
+        }
+
+        aggregate.Record(timestamp, source);
+    }
+
+    private BehaviorMechanismSnapshot BuildBehaviorMechanismSnapshot(PlayableMotion motion)
+    {
+        var capability = _behaviorCapabilities.Find(motion.BehaviorId);
+        _behaviorTriggerStatistics.TryGetValue(motion.BehaviorId, out var aggregate);
+        var autonomous = capability?.AutonomousBindingEnabled == true;
+        var weightAndFrequency = autonomous && capability is not null
+            ? $"权重 {capability.BaseWeight:0.00} · 冷却 {FormatDuration(capability.Cooldown)} · 最短驻留 {FormatDuration(capability.MinimumDwell)}"
+            : "主人明确触发，不参与自主评分";
+        var gateSummary = capability is null
+            ? "未建立能力目录"
+            : $"起：{FormatPosture(capability.StartPostures)} · 终：{FormatPosture(capability.EndPosture)} · {(motion.Interruptible ? "可在安全点中断" : "等待安全结束")}";
+        return new BehaviorMechanismSnapshot(
+            MotionDisplayNameCatalog.Resolve(motion.BehaviorId, motion.DisplayName),
+            motion.BehaviorId,
+            TriggerMechanismFor(motion, autonomous),
+            weightAndFrequency,
+            gateSummary,
+            aggregate?.Count ?? 0,
+            aggregate?.AverageInterval ?? "尚无重复触发",
+            aggregate?.LastTriggeredAt is { } last ? last.ToLocalTime().ToString("HH:mm:ss") : "本次启动未触发",
+            aggregate?.SourceSummary ?? "--");
+    }
+
+    private static string TriggerMechanismFor(PlayableMotion motion, bool autonomous)
+    {
+        if (motion.Effect is DesktopMotionEffect.BroomFlight or DesktopMotionEffect.Apparate or
+            DesktopMotionEffect.Petrify or DesktopMotionEffect.PetrifyRelease)
+            return "主人魔法：右键 / 面板 / 对话";
+        if (motion.Effect == DesktopMotionEffect.CarRide)
+            return "主人邀请：右键 / 面板 / 对话";
+        if (string.Equals(motion.AssetBatch, FoodWaterCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+            return "主人互动：吃一下 / 面板 / 对话";
+        if (string.Equals(motion.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+            return "自主日常 / 对话“走走”";
+        if (string.Equals(motion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+            return "自主日常 / 对话“睡觉”";
+        if (autonomous)
+            return "自主日常；面板可手动展示";
+        return "主人右键 / 面板触发";
+    }
+
+    private static string FormatDuration(TimeSpan duration) => duration <= TimeSpan.Zero
+        ? "无"
+        : duration.TotalSeconds < 60
+            ? $"{duration.TotalSeconds:0.#} 秒"
+            : $"{duration.TotalMinutes:0.#} 分钟";
+
+    private static string FormatPosture(IEnumerable<StablePosture> postures) =>
+        string.Join("/", postures.OrderBy(value => value).Select(posture => FormatPosture(posture)));
+
+    private static string FormatPosture(StablePosture posture) => posture switch
+    {
+        StablePosture.Stand => "站姿",
+        StablePosture.Sit => "坐姿",
+        _ => "趴姿"
+    };
+
+    private static string DisplaySource(BehaviorRequestSource source) => source switch
+    {
+        BehaviorRequestSource.AutonomousTick => "自主",
+        BehaviorRequestSource.OwnerDialogue => "对话",
+        BehaviorRequestSource.OwnerContextMenu => "右键",
+        BehaviorRequestSource.ControlPanel => "面板",
+        BehaviorRequestSource.OwnerUi => "主人",
+        BehaviorRequestSource.DeveloperPreview => "预览",
+        _ => source.ToString()
+    };
+
     private void StartEpisodeForMotion(PlayableMotion motion, Guid correlationId, BehaviorRequestSource source)
     {
         var episode = motion.Effect switch
@@ -5539,6 +6140,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             DesktopMotionEffect.BroomFlight or DesktopMotionEffect.Apparate or DesktopMotionEffect.Petrify or DesktopMotionEffect.PetrifyRelease or DesktopMotionEffect.Scourgify => PetEpisodeKind.MagicActivity,
             DesktopMotionEffect.CarRide => PetEpisodeKind.VehicleActivity,
             _ when string.Equals(motion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) => PetEpisodeKind.Sleeping,
+            _ when string.Equals(motion.AssetBatch, WakeRiseCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) => PetEpisodeKind.Recovering,
             _ when string.Equals(motion.AssetBatch, FoodWaterCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) && motion.BehaviorId == FoodWaterCandidateBehaviorIds.EatKibbleStandingV5 => PetEpisodeKind.Eating,
             _ when string.Equals(motion.AssetBatch, FoodWaterCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) => PetEpisodeKind.Drinking,
             _ when string.Equals(motion.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) => PetEpisodeKind.Exploring,

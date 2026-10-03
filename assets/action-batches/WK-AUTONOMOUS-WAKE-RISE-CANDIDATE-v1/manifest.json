@@ -1,0 +1,748 @@
+{
+  "schema_version": 1,
+  "batch_id": "WK-AUTONOMOUS-WAKE-RISE-CANDIDATE-v1",
+  "asset_id": "WK-AUTONOMOUS-WAKE-RISE-CANDIDATE-v1",
+  "asset_stage": "production",
+  "candidate_profile": "wake-rise-walk-v9",
+  "source_package": "WK-WAKE-RISE-WALK-APPEARANCE-REVIEW-v9",
+  "source_review_batch": "WK-WAKE-RISE-WALK-APPEARANCE-REVIEW-v9",
+  "source_frame_count": 27,
+  "runtime_frame_count": 27,
+  "sequence_count": 7,
+  "source_png_byte_identity": true,
+  "owner_preview_approved": true,
+  "visual_approved": true,
+  "runtime_validation": "passed_windows_renderer_qa",
+  "runtime_approved": true,
+  "runtime_use": true,
+  "production_asset": true,
+  "prototype_use": false,
+  "developer_preview": true,
+  "autonomous_binding_enabled": true,
+  "allowed_sources": [
+    "AutonomousTick",
+    "DeveloperPreview"
+  ],
+  "runtime_render_scale": 0.68,
+  "runtime_scale_basis": "one fixed group scale; copied 1024 PNG bytes; no per-frame fit",
+  "entry_restriction": "runtime enabled only through matching pose families; no cross-view sleep bridge is permitted",
+  "frame_inventory": [
+    {
+      "path": "frames/anchors/front-idle.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 214970,
+      "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d"
+    },
+    {
+      "path": "frames/anchors/front-sleep.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 577885,
+      "sha256": "a2963f1619087b3e0379ae68083f1768820ec791d785cab48a5cd0503561efcd"
+    },
+    {
+      "path": "frames/anchors/side-awake.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 583139,
+      "sha256": "4fa68381d06be55e1f70b93c34d261db6f6987b29976e8bce97c7fa1c4f6833d"
+    },
+    {
+      "path": "frames/anchors/side-low.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 519991,
+      "sha256": "0b14778565a238710efed30fce3fd330338bf7280f66cc1b50d2ec962afbabb5"
+    },
+    {
+      "path": "frames/anchors/side-sleep.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 549657,
+      "sha256": "0bd50354433e71752166247e025412d03db715ee88eadff60d9697a49e99d312"
+    },
+    {
+      "path": "frames/front-rise/frame-003.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 311424,
+      "sha256": "7d0d2aa9a9c79277ba72e2d59ce6430bb32ea14ffbdb9f4479e70cc8e9ba7da1"
+    },
+    {
+      "path": "frames/front-rise/hip-lift.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 333945,
+      "sha256": "24e60fff12ae48c1844b076bd0ef754dc8b3dc963602cbe55c76efbbdc214d96"
+    },
+    {
+      "path": "frames/front-rise/low-push.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 277655,
+      "sha256": "dae1ca80dccaf5144ee8f0dbc36b073a74a15822e7ebe8a21b5fb3dcdf5060da"
+    },
+    {
+      "path": "frames/front-rise/near-sit.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 332307,
+      "sha256": "b201d42c848bf4bcecda043a1e6dc32fd6ce8238e4e85b165752fc4d044be513"
+    },
+    {
+      "path": "frames/front-rise/quarter-push.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 275786,
+      "sha256": "621aaa6b27b7f0402fd4239a35777c5f221a2f44037f113b878b765f309aa4ba"
+    },
+    {
+      "path": "frames/front-rise/sit.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 333105,
+      "sha256": "83aeca69887926d5f9edbacb99d058140d5c832ca9db5f82c9f4fbe531bcea6e"
+    },
+    {
+      "path": "frames/front-rise/stand-half.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 326310,
+      "sha256": "72e764f6af579f1dd00e2def3a1bef848cfb159052eee1f23fc6e7bb44ef34ba"
+    },
+    {
+      "path": "frames/front-rise/stand.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 310799,
+      "sha256": "2f1417a9dd14f312479e4ab2a8d057ee255da611ff760332ce8d4ec3b9ec36e0"
+    },
+    {
+      "path": "frames/front-wake/awake.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 512015,
+      "sha256": "69e6c0a7ad6a5d1ca5d4c0e8e3914a72e40f94b7ecb683baf19b9da6b9d98eed"
+    },
+    {
+      "path": "frames/front-wake/eyes.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 566437,
+      "sha256": "c6ef9b7e08a3851adbb967b386799bae4983db6c2afdbbdecee1d3028180a84e"
+    },
+    {
+      "path": "frames/front-wake/low.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 524207,
+      "sha256": "6a823dcbb5453d5230a5281fbe2ecdbbb7bc1d27a26669b5ff799ee889baec16"
+    },
+    {
+      "path": "frames/front-wake/mid.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 491957,
+      "sha256": "f26ab51bbdb5a3dd9d5537948fd44485e4e30ab6524dbdcdcb389e7442c62e55"
+    },
+    {
+      "path": "frames/prone-interrupt/alert.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 504782,
+      "sha256": "6fa60892558ae20861cd44ade403aee993561321d5e70e73325c629d0ce6b598"
+    },
+    {
+      "path": "frames/prone-interrupt/eyes.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 471027,
+      "sha256": "09e83cd0743866cbb558c7603f26092b6275d3f23d55c09eac53c213e7d470ef"
+    },
+    {
+      "path": "frames/prone-interrupt/lift.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 484196,
+      "sha256": "d0249b7446c722e0ad35fc0863155fca381ac3c7c42d635025670805d2bd6013"
+    },
+    {
+      "path": "frames/prone-interrupt/small-lift.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 518579,
+      "sha256": "f1a07f916e82898367e99fc9a92de2e9a8ef14904025f6d863e9f0aeba7b9466"
+    },
+    {
+      "path": "frames/side-wake/early-roll.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 488761,
+      "sha256": "a10d1d026c470f19c5c39262afaac9ae5cffc33eb8912235b2e986340e4fc3b8"
+    },
+    {
+      "path": "frames/side-wake/frame-002.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 512190,
+      "sha256": "4bcac406ff432b866c51a646853bae56a052ddcff143d8a451b3048117a73a1c"
+    },
+    {
+      "path": "frames/side-wake/frame-003.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 502586,
+      "sha256": "3f61fa3acd02aa33f0c73acd4f562d3efb1e38dc1a0940ebfbd3b7be3f7ae254"
+    },
+    {
+      "path": "frames/side-wake/frame-004.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 489728,
+      "sha256": "d50e4d728e13ff1d6a558e6d0f2b9c4bcd9e4e3e4167548cfded9735bdb84cfc"
+    },
+    {
+      "path": "frames/side-wake/key-chest-raise.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 533344,
+      "sha256": "9277a4ea1bc4f6bd2a638fa48a40aed89f9b7647132f003398e232382c4380a7"
+    },
+    {
+      "path": "frames/side-wake/settle-paws.png",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGBA",
+      "bytes": 540892,
+      "sha256": "1c3c49ddd404db5c89c45e4e4a476586a9f8227f20f04a9b4540f3e31f6af029"
+    }
+  ],
+  "actions": [
+    {
+      "behavior_id": "wk.candidate.autonomous.side_sleep_wake_v1",
+      "display_name": "侧睡醒来",
+      "description": "独立正向醒来序列；不是入睡倒放。重点检查翻回胸卧、前爪收放和首尾毛发一致性。",
+      "from_pose": "sleep.side.stable",
+      "to_pose": "prone.awake.left_front",
+      "direction": "front",
+      "entry_policy": "runtime_enabled_matching_sleep_exit",
+      "frame_count": 8,
+      "total_duration_ms": 3500,
+      "frame_duration_ms": 800,
+      "interruptible": false,
+      "loop": false,
+      "owner_preview_approved": true,
+      "visual_approved": true,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "production_asset": true,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": true,
+      "allowed_sources": [
+        "AutonomousTick",
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "sequence",
+          "loop": false,
+          "frame_count": 8,
+          "frames": [
+            {
+              "path": "frames/anchors/side-sleep.png",
+              "sha256": "0bd50354433e71752166247e025412d03db715ee88eadff60d9697a49e99d312",
+              "bytes": 549657,
+              "duration_ms": 800
+            },
+            {
+              "path": "frames/side-wake/frame-002.png",
+              "sha256": "4bcac406ff432b866c51a646853bae56a052ddcff143d8a451b3048117a73a1c",
+              "bytes": 512190,
+              "duration_ms": 400
+            },
+            {
+              "path": "frames/side-wake/frame-003.png",
+              "sha256": "3f61fa3acd02aa33f0c73acd4f562d3efb1e38dc1a0940ebfbd3b7be3f7ae254",
+              "bytes": 502586,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/side-wake/early-roll.png",
+              "sha256": "a10d1d026c470f19c5c39262afaac9ae5cffc33eb8912235b2e986340e4fc3b8",
+              "bytes": 488761,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/side-wake/frame-004.png",
+              "sha256": "d50e4d728e13ff1d6a558e6d0f2b9c4bcd9e4e3e4167548cfded9735bdb84cfc",
+              "bytes": 489728,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/side-wake/key-chest-raise.png",
+              "sha256": "9277a4ea1bc4f6bd2a638fa48a40aed89f9b7647132f003398e232382c4380a7",
+              "bytes": 533344,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/side-wake/settle-paws.png",
+              "sha256": "1c3c49ddd404db5c89c45e4e4a476586a9f8227f20f04a9b4540f3e31f6af029",
+              "bytes": 540892,
+              "duration_ms": 280
+            },
+            {
+              "path": "frames/anchors/side-awake.png",
+              "sha256": "4fa68381d06be55e1f70b93c34d261db6f6987b29976e8bce97c7fa1c4f6833d",
+              "bytes": 583139,
+              "duration_ms": 1000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.autonomous.side_sleep_interrupt_exit_v1",
+      "display_name": "侧睡被打断",
+      "description": "仅从侧睡稳定锚点进入；翻身中收到请求应先完成到稳定锚点，不能从任意帧跳入。",
+      "from_pose": "sleep.side.stable",
+      "to_pose": "prone.awake.left_front",
+      "direction": "front",
+      "entry_policy": "runtime_enabled_matching_sleep_interrupt_exit",
+      "frame_count": 8,
+      "total_duration_ms": 2470,
+      "frame_duration_ms": 250,
+      "interruptible": false,
+      "loop": false,
+      "owner_preview_approved": true,
+      "visual_approved": true,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "production_asset": true,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": true,
+      "allowed_sources": [
+        "AutonomousTick",
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "sequence",
+          "loop": false,
+          "frame_count": 8,
+          "frames": [
+            {
+              "path": "frames/anchors/side-sleep.png",
+              "sha256": "0bd50354433e71752166247e025412d03db715ee88eadff60d9697a49e99d312",
+              "bytes": 549657,
+              "duration_ms": 250
+            },
+            {
+              "path": "frames/side-wake/frame-002.png",
+              "sha256": "4bcac406ff432b866c51a646853bae56a052ddcff143d8a451b3048117a73a1c",
+              "bytes": 512190,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/side-wake/frame-003.png",
+              "sha256": "3f61fa3acd02aa33f0c73acd4f562d3efb1e38dc1a0940ebfbd3b7be3f7ae254",
+              "bytes": 502586,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/side-wake/early-roll.png",
+              "sha256": "a10d1d026c470f19c5c39262afaac9ae5cffc33eb8912235b2e986340e4fc3b8",
+              "bytes": 488761,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/side-wake/frame-004.png",
+              "sha256": "d50e4d728e13ff1d6a558e6d0f2b9c4bcd9e4e3e4167548cfded9735bdb84cfc",
+              "bytes": 489728,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/side-wake/key-chest-raise.png",
+              "sha256": "9277a4ea1bc4f6bd2a638fa48a40aed89f9b7647132f003398e232382c4380a7",
+              "bytes": 533344,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/side-wake/settle-paws.png",
+              "sha256": "1c3c49ddd404db5c89c45e4e4a476586a9f8227f20f04a9b4540f3e31f6af029",
+              "bytes": 540892,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/anchors/side-awake.png",
+              "sha256": "4fa68381d06be55e1f70b93c34d261db6f6987b29976e8bce97c7fa1c4f6833d",
+              "bytes": 583139,
+              "duration_ms": 800
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.autonomous.low_prone_interrupt_exit_v1",
+      "display_name": "低头浅睡被打断",
+      "description": "醒来后仍保留原后腿折叠姿态；末帧到正式待机的桥接尚未验收，不得直接硬切。",
+      "from_pose": "sleep.low_prone",
+      "to_pose": "prone.awake.left_front",
+      "direction": "front",
+      "entry_policy": "runtime_enabled_matching_low_prone_interrupt_exit",
+      "frame_count": 5,
+      "total_duration_ms": 2170,
+      "frame_duration_ms": 350,
+      "interruptible": false,
+      "loop": false,
+      "owner_preview_approved": true,
+      "visual_approved": true,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "production_asset": true,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": true,
+      "allowed_sources": [
+        "AutonomousTick",
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "sequence",
+          "loop": false,
+          "frame_count": 5,
+          "frames": [
+            {
+              "path": "frames/anchors/side-low.png",
+              "sha256": "0b14778565a238710efed30fce3fd330338bf7280f66cc1b50d2ec962afbabb5",
+              "bytes": 519991,
+              "duration_ms": 350
+            },
+            {
+              "path": "frames/prone-interrupt/eyes.png",
+              "sha256": "09e83cd0743866cbb558c7603f26092b6275d3f23d55c09eac53c213e7d470ef",
+              "bytes": 471027,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/prone-interrupt/small-lift.png",
+              "sha256": "f1a07f916e82898367e99fc9a92de2e9a8ef14904025f6d863e9f0aeba7b9466",
+              "bytes": 518579,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/prone-interrupt/lift.png",
+              "sha256": "d0249b7446c722e0ad35fc0863155fca381ac3c7c42d635025670805d2bd6013",
+              "bytes": 484196,
+              "duration_ms": 300
+            },
+            {
+              "path": "frames/prone-interrupt/alert.png",
+              "sha256": "6fa60892558ae20861cd44ade403aee993561321d5e70e73325c629d0ce6b598",
+              "bytes": 504782,
+              "duration_ms": 1000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.autonomous.front_prone_wake_v1",
+      "display_name": "正趴睡醒",
+      "description": "保持摊开前爪与原睡眠视角；不等同于日常正趴，不能跨尺度直接衔接。",
+      "from_pose": "sleep.prone.sprawled.front",
+      "to_pose": "prone.awake.front",
+      "direction": "front",
+      "entry_policy": "runtime_enabled_matching_front_sleep_exit",
+      "frame_count": 4,
+      "total_duration_ms": 1880,
+      "frame_duration_ms": 800,
+      "interruptible": false,
+      "loop": false,
+      "owner_preview_approved": true,
+      "visual_approved": true,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "production_asset": true,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": true,
+      "allowed_sources": [
+        "AutonomousTick",
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "sequence",
+          "loop": false,
+          "frame_count": 4,
+          "frames": [
+            {
+              "path": "frames/anchors/front-sleep.png",
+              "sha256": "a2963f1619087b3e0379ae68083f1768820ec791d785cab48a5cd0503561efcd",
+              "bytes": 577885,
+              "duration_ms": 800
+            },
+            {
+              "path": "frames/front-wake/eyes.png",
+              "sha256": "c6ef9b7e08a3851adbb967b386799bae4983db6c2afdbbdecee1d3028180a84e",
+              "bytes": 566437,
+              "duration_ms": 420
+            },
+            {
+              "path": "frames/front-wake/low.png",
+              "sha256": "6a823dcbb5453d5230a5281fbe2ecdbbb7bc1d27a26669b5ff799ee889baec16",
+              "bytes": 524207,
+              "duration_ms": 320
+            },
+            {
+              "path": "frames/front-wake/mid.png",
+              "sha256": "f26ab51bbdb5a3dd9d5537948fd44485e4e30ab6524dbdcdcb389e7442c62e55",
+              "bytes": 491957,
+              "duration_ms": 340
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.autonomous.front_prone_to_sit_v1",
+      "display_name": "正趴坐起",
+      "description": "从正式正趴原帧开始；按撑肘、抬胸、前腿伸直、坐稳审阅，不使用侧趴回头。",
+      "from_pose": "prone.awake.front",
+      "to_pose": "sit.neutral.left_front",
+      "direction": "front",
+      "entry_policy": "runtime_enabled_matching_front_prone_transition",
+      "frame_count": 5,
+      "total_duration_ms": 2230,
+      "frame_duration_ms": 650,
+      "interruptible": false,
+      "loop": false,
+      "owner_preview_approved": true,
+      "visual_approved": true,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "production_asset": true,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": true,
+      "allowed_sources": [
+        "AutonomousTick",
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "sequence",
+          "loop": false,
+          "frame_count": 5,
+          "frames": [
+            {
+              "path": "frames/anchors/front-idle.png",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 650
+            },
+            {
+              "path": "frames/front-rise/low-push.png",
+              "sha256": "dae1ca80dccaf5144ee8f0dbc36b073a74a15822e7ebe8a21b5fb3dcdf5060da",
+              "bytes": 277655,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/front-rise/quarter-push.png",
+              "sha256": "621aaa6b27b7f0402fd4239a35777c5f221a2f44037f113b878b765f309aa4ba",
+              "bytes": 275786,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/front-rise/frame-003.png",
+              "sha256": "7d0d2aa9a9c79277ba72e2d59ce6430bb32ea14ffbdb9f4479e70cc8e9ba7da1",
+              "bytes": 311424,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/front-rise/sit.png",
+              "sha256": "83aeca69887926d5f9edbacb99d058140d5c832ca9db5f82c9f4fbe531bcea6e",
+              "bytes": 333105,
+              "duration_ms": 900
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.autonomous.front_sit_to_stand_v1",
+      "display_name": "正面坐姿站起",
+      "description": "前爪受力后抬臀；终点是新正面站姿，不直接跳到三分之四站姿。",
+      "from_pose": "sit.neutral.left_front",
+      "to_pose": "stand.neutral.left_front",
+      "direction": "front",
+      "entry_policy": "runtime_enabled_matching_front_sit_transition",
+      "frame_count": 3,
+      "total_duration_ms": 1680,
+      "frame_duration_ms": 500,
+      "interruptible": false,
+      "loop": false,
+      "owner_preview_approved": true,
+      "visual_approved": true,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "production_asset": true,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": true,
+      "allowed_sources": [
+        "AutonomousTick",
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "sequence",
+          "loop": false,
+          "frame_count": 3,
+          "frames": [
+            {
+              "path": "frames/front-rise/sit.png",
+              "sha256": "83aeca69887926d5f9edbacb99d058140d5c832ca9db5f82c9f4fbe531bcea6e",
+              "bytes": 333105,
+              "duration_ms": 500
+            },
+            {
+              "path": "frames/front-rise/hip-lift.png",
+              "sha256": "24e60fff12ae48c1844b076bd0ef754dc8b3dc963602cbe55c76efbbdc214d96",
+              "bytes": 333945,
+              "duration_ms": 280
+            },
+            {
+              "path": "frames/front-rise/stand.png",
+              "sha256": "2f1417a9dd14f312479e4ab2a8d057ee255da611ff760332ce8d4ec3b9ec36e0",
+              "bytes": 310799,
+              "duration_ms": 900
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "behavior_id": "wk.candidate.autonomous.front_prone_rise_v1",
+      "display_name": "正趴完整起身",
+      "description": "完整路径：正趴、坐起、短暂停顿、站稳。所有帧共用固定画布，不逐帧适配。",
+      "from_pose": "prone.awake.front",
+      "to_pose": "stand.neutral.left_front",
+      "direction": "front",
+      "entry_policy": "runtime_enabled_matching_front_prone_transition",
+      "frame_count": 8,
+      "total_duration_ms": 3370,
+      "frame_duration_ms": 650,
+      "interruptible": false,
+      "loop": false,
+      "owner_preview_approved": true,
+      "visual_approved": true,
+      "runtime_validation": "passed_windows_renderer_qa",
+      "runtime_approved": true,
+      "runtime_use": true,
+      "production_asset": true,
+      "prototype_use": false,
+      "developer_preview": true,
+      "autonomous_binding_enabled": true,
+      "allowed_sources": [
+        "AutonomousTick",
+        "DeveloperPreview"
+      ],
+      "phases": [
+        {
+          "name": "sequence",
+          "loop": false,
+          "frame_count": 8,
+          "frames": [
+            {
+              "path": "frames/anchors/front-idle.png",
+              "sha256": "22a42a17704312fe44fffc549cdbffa362b5efed938f07c1ef4b0f6e3b80327d",
+              "bytes": 214970,
+              "duration_ms": 650
+            },
+            {
+              "path": "frames/front-rise/low-push.png",
+              "sha256": "dae1ca80dccaf5144ee8f0dbc36b073a74a15822e7ebe8a21b5fb3dcdf5060da",
+              "bytes": 277655,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/front-rise/quarter-push.png",
+              "sha256": "621aaa6b27b7f0402fd4239a35777c5f221a2f44037f113b878b765f309aa4ba",
+              "bytes": 275786,
+              "duration_ms": 220
+            },
+            {
+              "path": "frames/front-rise/frame-003.png",
+              "sha256": "7d0d2aa9a9c79277ba72e2d59ce6430bb32ea14ffbdb9f4479e70cc8e9ba7da1",
+              "bytes": 311424,
+              "duration_ms": 240
+            },
+            {
+              "path": "frames/front-rise/near-sit.png",
+              "sha256": "b201d42c848bf4bcecda043a1e6dc32fd6ce8238e4e85b165752fc4d044be513",
+              "bytes": 332307,
+              "duration_ms": 260
+            },
+            {
+              "path": "frames/front-rise/sit.png",
+              "sha256": "83aeca69887926d5f9edbacb99d058140d5c832ca9db5f82c9f4fbe531bcea6e",
+              "bytes": 333105,
+              "duration_ms": 500
+            },
+            {
+              "path": "frames/front-rise/hip-lift.png",
+              "sha256": "24e60fff12ae48c1844b076bd0ef754dc8b3dc963602cbe55c76efbbdc214d96",
+              "bytes": 333945,
+              "duration_ms": 280
+            },
+            {
+              "path": "frames/front-rise/stand.png",
+              "sha256": "2f1417a9dd14f312479e4ab2a8d057ee255da611ff760332ce8d4ec3b9ec36e0",
+              "bytes": 310799,
+              "duration_ms": 1000
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "window_motion_enabled": false
+}
