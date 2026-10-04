@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wukong.Application;
 using Wukong.Domain;
@@ -3951,6 +3952,9 @@ public sealed record PetMotionRequest(
 public sealed record BehaviorMechanismSnapshot(
     string DisplayName,
     string BehaviorId,
+    string CategoryKey,
+    string CategoryName,
+    string CategoryAccent,
     string TriggerMechanism,
     string WeightAndFrequency,
     string GateSummary,
@@ -3959,8 +3963,46 @@ public sealed record BehaviorMechanismSnapshot(
     string LastTriggered,
     string TriggerSources);
 
+/// <summary>
+/// Session-only group statistics for the developer diagnostics panel. These are
+/// deliberately descriptive: the values never feed decision scoring or memory.
+/// </summary>
+public sealed record BehaviorMechanismCategorySnapshot(
+    string Key,
+    string Name,
+    string Accent,
+    int AvailableMotionCount,
+    int SessionTriggerCount,
+    string SessionShare,
+    double BarWidth,
+    string AverageInterval,
+    string TriggerSources);
+
+public sealed record BehaviorMechanismTrendBucket(
+    string Label,
+    int TriggerCount,
+    double BarHeight,
+    string Tooltip);
+
+public sealed record BehaviorMechanismDashboardSnapshot(
+    int TotalTriggerCount,
+    int AutonomousTriggerCount,
+    int OwnerTriggerCount,
+    int DistinctActionCount,
+    string Summary,
+    IReadOnlyList<BehaviorMechanismCategorySnapshot> Categories,
+    IReadOnlyList<BehaviorMechanismTrendBucket> TrendBuckets,
+    PointCollection TrendLinePoints);
+
 public sealed class DesktopRuntimeHost : INotifyPropertyChanged
 {
+    private sealed record MechanismCategoryDescriptor(string Key, string Name, string Accent, int Order);
+    private sealed record BehaviorTriggerEvent(
+        DateTimeOffset Timestamp,
+        string BehaviorId,
+        string CategoryKey,
+        BehaviorRequestSource Source);
+
     private sealed record ActiveBehaviorExecution(
         BehaviorRequest Request,
         BehaviorOutcomeProfile Profile,
@@ -4001,6 +4043,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     }
 
     private const string StableHoldPrefix = "wk.runtime.posture_hold.";
+    private const int BehaviorStatisticsEventLimit = 256;
+    private const int BehaviorTrendBucketCount = 12;
     private static readonly IReadOnlySet<string> AutonomousRuntimeAllowlist =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -4051,6 +4095,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
     private AutonomousBehaviorPreferences _autonomousPreferences = AutonomousBehaviorPreferences.Default;
     private readonly Dictionary<string, DateTimeOffset> _lastAccepted = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, BehaviorTriggerAggregate> _behaviorTriggerStatistics = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Queue<BehaviorTriggerEvent> _behaviorTriggerEvents = new();
     private readonly RollingFileLogStore _logs = RollingFileLogStore.CreateDefault();
     private readonly object _agentStatePersistenceLock = new();
     private IPetAgentStateStore? _agentStateStore;
@@ -4245,6 +4290,8 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         .OrderBy(motion => MotionDisplayNameCatalog.Resolve(motion.BehaviorId, motion.DisplayName), StringComparer.CurrentCulture)
         .Select(BuildBehaviorMechanismSnapshot)
         .ToArray();
+
+    public BehaviorMechanismDashboardSnapshot BehaviorMechanismDashboard => BuildBehaviorMechanismDashboard();
 
     public async Task<bool> AttachAgentStateStoreAsync(
         IPetAgentStateStore store,
@@ -6063,12 +6110,20 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         }
 
         aggregate.Record(timestamp, source);
+        var category = ClassifyMechanism(motion, _behaviorCapabilities.Find(motion.BehaviorId));
+        _behaviorTriggerEvents.Enqueue(new BehaviorTriggerEvent(timestamp, motion.BehaviorId, category.Key, source));
+        while (_behaviorTriggerEvents.Count > BehaviorStatisticsEventLimit)
+            _behaviorTriggerEvents.Dequeue();
+
+        OnPropertyChanged(nameof(BehaviorMechanisms));
+        OnPropertyChanged(nameof(BehaviorMechanismDashboard));
     }
 
     private BehaviorMechanismSnapshot BuildBehaviorMechanismSnapshot(PlayableMotion motion)
     {
         var capability = _behaviorCapabilities.Find(motion.BehaviorId);
         _behaviorTriggerStatistics.TryGetValue(motion.BehaviorId, out var aggregate);
+        var category = ClassifyMechanism(motion, capability);
         var autonomous = capability?.AutonomousBindingEnabled == true;
         var weightAndFrequency = autonomous && capability is not null
             ? $"权重 {capability.BaseWeight:0.00} · 冷却 {FormatDuration(capability.Cooldown)} · 最短驻留 {FormatDuration(capability.MinimumDwell)}"
@@ -6079,6 +6134,9 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         return new BehaviorMechanismSnapshot(
             MotionDisplayNameCatalog.Resolve(motion.BehaviorId, motion.DisplayName),
             motion.BehaviorId,
+            category.Key,
+            category.Name,
+            category.Accent,
             TriggerMechanismFor(motion, autonomous),
             weightAndFrequency,
             gateSummary,
@@ -6087,6 +6145,154 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
             aggregate?.LastTriggeredAt is { } last ? last.ToLocalTime().ToString("HH:mm:ss") : "本次启动未触发",
             aggregate?.SourceSummary ?? "--");
     }
+
+    private BehaviorMechanismDashboardSnapshot BuildBehaviorMechanismDashboard()
+    {
+        var mechanisms = BehaviorMechanisms;
+        var events = _behaviorTriggerEvents.ToArray();
+        var total = events.Length;
+        var groupedEvents = events
+            .GroupBy(item => item.CategoryKey, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.OrderBy(item => item.Timestamp).ToArray(), StringComparer.OrdinalIgnoreCase);
+        var availableByCategory = mechanisms
+            .GroupBy(item => item.CategoryKey, StringComparer.OrdinalIgnoreCase)
+            .Select(group => new
+            {
+                Descriptor = new MechanismCategoryDescriptor(
+                    group.Key,
+                    group.First().CategoryName,
+                    group.First().CategoryAccent,
+                    MechanismCategoryOrder(group.Key)),
+                MotionCount = group.Count()
+            })
+            .OrderBy(item => item.Descriptor.Order)
+            .ThenBy(item => item.Descriptor.Name, StringComparer.CurrentCulture)
+            .ToArray();
+        var largestCategoryCount = Math.Max(1, availableByCategory
+            .Select(item => groupedEvents.GetValueOrDefault(item.Descriptor.Key)?.Length ?? 0)
+            .DefaultIfEmpty(0)
+            .Max());
+        var categories = availableByCategory
+            .Select(item =>
+            {
+                var categoryEvents = groupedEvents.GetValueOrDefault(item.Descriptor.Key) ?? Array.Empty<BehaviorTriggerEvent>();
+                var count = categoryEvents.Length;
+                return new BehaviorMechanismCategorySnapshot(
+                    item.Descriptor.Key,
+                    item.Descriptor.Name,
+                    item.Descriptor.Accent,
+                    item.MotionCount,
+                    count,
+                    total == 0 ? "--" : $"{count / (double)total:P0}",
+                    Math.Round(228d * count / largestCategoryCount, 1),
+                    AverageIntervalFor(categoryEvents),
+                    SourceSummaryFor(categoryEvents));
+            })
+            .ToArray();
+        var autonomous = events.Count(item => item.Source == BehaviorRequestSource.AutonomousTick);
+        var top = categories.OrderByDescending(item => item.SessionTriggerCount).ThenBy(item => item.Name, StringComparer.CurrentCulture).FirstOrDefault();
+        var summary = total == 0
+            ? "本次启动还没有真实运行记录。手动、对话或自主触发后，图表会即时更新。"
+            : $"本次会话共 {total} 次真实动作；{top?.Name ?? "--"} 最多（{top?.SessionTriggerCount ?? 0} 次）。";
+        var trend = BuildBehaviorTrend(events);
+        return new BehaviorMechanismDashboardSnapshot(
+            total,
+            autonomous,
+            total - autonomous,
+            events.Select(item => item.BehaviorId).Distinct(StringComparer.OrdinalIgnoreCase).Count(),
+            summary,
+            categories,
+            trend,
+            BuildBehaviorTrendLine(trend));
+    }
+
+    private IReadOnlyList<BehaviorMechanismTrendBucket> BuildBehaviorTrend(IReadOnlyList<BehaviorTriggerEvent> events)
+    {
+        var end = _now();
+        var start = end - TimeSpan.FromHours(2);
+        var bucketDuration = TimeSpan.FromTicks((end - start).Ticks / BehaviorTrendBucketCount);
+        var counts = Enumerable.Range(0, BehaviorTrendBucketCount)
+            .Select(index => events.Count(item =>
+            {
+                var bucketStart = start + TimeSpan.FromTicks(bucketDuration.Ticks * index);
+                var bucketEnd = index == BehaviorTrendBucketCount - 1 ? end : bucketStart + bucketDuration;
+                return item.Timestamp >= bucketStart &&
+                       (index == BehaviorTrendBucketCount - 1 ? item.Timestamp <= bucketEnd : item.Timestamp < bucketEnd);
+            }))
+            .ToArray();
+        var maximum = Math.Max(1, counts.Max());
+        return counts.Select((count, index) =>
+        {
+            var labelAt = start + TimeSpan.FromTicks(bucketDuration.Ticks * (index + 1));
+            return new BehaviorMechanismTrendBucket(
+                labelAt.ToLocalTime().ToString("HH:mm"),
+                count,
+                count == 0 ? 2 : Math.Round(14 + 78d * count / maximum, 1),
+                $"{labelAt.ToLocalTime():HH:mm} 前 10 分钟：{count} 次真实动作");
+        }).ToArray();
+    }
+
+    private static PointCollection BuildBehaviorTrendLine(IReadOnlyList<BehaviorMechanismTrendBucket> buckets)
+    {
+        var maximum = Math.Max(1, buckets.Max(item => item.TriggerCount));
+        return new PointCollection(buckets.Select((bucket, index) => new Point(
+            8 + index * 46,
+            124 - 94d * bucket.TriggerCount / maximum)));
+    }
+
+    private static string AverageIntervalFor(IReadOnlyList<BehaviorTriggerEvent> events)
+    {
+        if (events.Count < 2)
+            return "尚无重复触发";
+        var intervals = events.Zip(events.Skip(1), (left, right) => right.Timestamp - left.Timestamp)
+            .Where(interval => interval >= TimeSpan.Zero)
+            .ToArray();
+        return intervals.Length == 0
+            ? "尚无重复触发"
+            : $"{intervals.Average(interval => interval.TotalSeconds):0.#} 秒";
+    }
+
+    private static string SourceSummaryFor(IEnumerable<BehaviorTriggerEvent> events)
+    {
+        var sourceCounts = events.GroupBy(item => item.Source)
+            .OrderBy(group => group.Key.ToString(), StringComparer.Ordinal)
+            .Select(group => $"{DisplaySource(group.Key)} {group.Count()}");
+        var summary = string.Join(" / ", sourceCounts);
+        return string.IsNullOrWhiteSpace(summary) ? "--" : summary;
+    }
+
+    private static MechanismCategoryDescriptor ClassifyMechanism(PlayableMotion motion, BehaviorCapability? capability) =>
+        motion.Effect is DesktopMotionEffect.BroomFlight or DesktopMotionEffect.Apparate or
+            DesktopMotionEffect.Petrify or DesktopMotionEffect.PetrifyRelease or DesktopMotionEffect.Scourgify
+            ? new("magic", "魔法特辑", "#7A5AA6", 60)
+            : motion.Effect == DesktopMotionEffect.CarRide
+                ? new("play", "玩一下", "#27846B", 70)
+                : string.Equals(motion.AssetBatch, FoodWaterCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase)
+                    ? new("interaction", "主人互动", "#B56A3D", 40)
+                    : string.Equals(motion.Category, "口令动作", StringComparison.OrdinalIgnoreCase)
+                        ? new("command", "口令", "#A64F73", 50)
+                        : string.Equals(motion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
+                          string.Equals(motion.AssetBatch, WakeRiseCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase)
+                            ? new("sleep", "睡眠恢复", "#536E93", 20)
+                            : string.Equals(motion.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase)
+                                ? new("walk", "走动巡视", "#28728C", 30)
+                                : capability?.AutonomousBindingEnabled == true
+                                    ? new("daily", "自主日常", "#5B805F", 10)
+                                    : motion.PrototypeUse || !motion.RuntimeEnabled
+                                        ? new("candidate", "候选预览", "#7A756D", 90)
+                                        : new("interaction", "主人互动", "#B56A3D", 40);
+
+    private static int MechanismCategoryOrder(string key) => key switch
+    {
+        "daily" => 10,
+        "sleep" => 20,
+        "walk" => 30,
+        "interaction" => 40,
+        "command" => 50,
+        "magic" => 60,
+        "play" => 70,
+        _ => 90
+    };
 
     private static string TriggerMechanismFor(PlayableMotion motion, bool autonomous)
     {
@@ -6098,7 +6304,7 @@ public sealed class DesktopRuntimeHost : INotifyPropertyChanged
         if (string.Equals(motion.AssetBatch, FoodWaterCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
             return "主人互动：吃一下 / 面板 / 对话";
         if (string.Equals(motion.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
-            return "自主日常 / 对话“走走”";
+            return "自主日常 / 对话“走一走”";
         if (string.Equals(motion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
             return "自主日常 / 对话“睡觉”";
         if (autonomous)

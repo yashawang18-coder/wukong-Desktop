@@ -14,6 +14,8 @@ namespace Wukong.Desktop;
 
 public partial class ControlPanelWindow : Window
 {
+    private sealed record BehaviorMechanismFilterItem(string Key, string Name);
+
     private readonly DesktopRuntimeHost _runtime;
     private readonly DesktopAgentRuntime _agent;
     private readonly DesktopDialogueCoordinator _dialogue;
@@ -41,6 +43,8 @@ public partial class ControlPanelWindow : Window
     private PetProfileSnapshot _loadedPetProfile = PetProfileSnapshot.Default;
     private OwnerProfileSnapshot _loadedOwnerProfile = OwnerProfileSnapshot.Default;
     private bool _changingDeveloperMode;
+    private bool _refreshingMechanismDiagnostics;
+    private string _selectedMechanismCategory = "all";
     private CancellationTokenSource? _agentRequestCancellation;
 
     public ControlPanelWindow(DesktopRuntimeHost runtime)
@@ -438,8 +442,38 @@ public partial class ControlPanelWindow : Window
 
     private void RefreshBehaviorMechanisms_Click(object sender, RoutedEventArgs e) => RefreshBehaviorMechanisms();
 
-    private void RefreshBehaviorMechanisms() =>
-        BehaviorMechanismList.ItemsSource = _runtime.BehaviorMechanisms;
+    private void BehaviorMechanismCategoryFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_refreshingMechanismDiagnostics)
+            return;
+        _selectedMechanismCategory = BehaviorMechanismCategoryFilter.SelectedValue as string ?? "all";
+        ApplyBehaviorMechanismFilter();
+    }
+
+    private void RefreshBehaviorMechanisms()
+    {
+        var dashboard = _runtime.BehaviorMechanismDashboard;
+        BehaviorMechanismDashboardRoot.DataContext = dashboard;
+        var filters = new[] { new BehaviorMechanismFilterItem("all", "全部动作") }
+            .Concat(dashboard.Categories.Select(item => new BehaviorMechanismFilterItem(item.Key, item.Name)))
+            .ToArray();
+        if (!filters.Any(item => string.Equals(item.Key, _selectedMechanismCategory, StringComparison.OrdinalIgnoreCase)))
+            _selectedMechanismCategory = "all";
+
+        _refreshingMechanismDiagnostics = true;
+        BehaviorMechanismCategoryFilter.ItemsSource = filters;
+        BehaviorMechanismCategoryFilter.SelectedValue = _selectedMechanismCategory;
+        _refreshingMechanismDiagnostics = false;
+        ApplyBehaviorMechanismFilter();
+    }
+
+    private void ApplyBehaviorMechanismFilter()
+    {
+        var motions = _runtime.BehaviorMechanisms;
+        BehaviorMechanismList.ItemsSource = string.Equals(_selectedMechanismCategory, "all", StringComparison.OrdinalIgnoreCase)
+            ? motions
+            : motions.Where(item => string.Equals(item.CategoryKey, _selectedMechanismCategory, StringComparison.OrdinalIgnoreCase)).ToArray();
+    }
 
     private async void MemoryConfig_Changed(object sender, RoutedEventArgs e)
     {

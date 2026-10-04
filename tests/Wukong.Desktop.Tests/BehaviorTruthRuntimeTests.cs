@@ -67,6 +67,14 @@ internal static class BehaviorTruthRuntimeTests
         var statistics = runtime.BehaviorMechanisms.Single(item => item.BehaviorId == SleepCandidateBehaviorIds.MainLifecycle);
         Assert(statistics.SessionTriggerCount == 1 && statistics.TriggerSources.Contains("对话 1", StringComparison.Ordinal),
             "session action statistics did not record the real dialogue sleep request");
+        Assert(statistics.CategoryKey == "sleep" && statistics.CategoryName == "睡眠恢复",
+            "sleep lifecycle was not classified into the sleep/recovery action family");
+        var dashboard = runtime.BehaviorMechanismDashboard;
+        var sleep = dashboard.Categories.Single(item => item.Key == "sleep");
+        Assert(sleep.SessionTriggerCount == 1 && dashboard.TotalTriggerCount >= 3,
+            "dashboard did not separate the sleep lifecycle from its approved posture preparation");
+        Assert(dashboard.TrendBuckets.Count == 12 && dashboard.TrendLinePoints.Count == 12,
+            "dashboard trend did not expose the fixed recent-session visualization");
     }
 
     public static void DialogueWalkUsesApprovedPosturePreparationAndSpaceGate()

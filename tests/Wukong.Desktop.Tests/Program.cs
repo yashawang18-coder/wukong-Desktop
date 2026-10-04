@@ -31,6 +31,11 @@ if (args.Contains("--dialogue-episode-routing-selftest", StringComparer.Ordinal)
     BehaviorTruthRuntimeTests.DialogueWalkUsesApprovedPosturePreparationAndSpaceGate();
     return 0;
 }
+if (args.Contains("--mechanism-dashboard-selftest", StringComparer.Ordinal))
+{
+    ControlPanelXamlConstructs();
+    return 0;
+}
 if (args.Contains("--capture-panel-screens", StringComparer.Ordinal))
     return CapturePanelScreens(args.SkipWhile(x => x != "--capture-panel-screens").Skip(1).FirstOrDefault() ?? Path.Combine(".publish-check", "ux-panel-album-coin-fixes-v1", "screenshots"));
 if (args.Contains("--car-ride-memory-smoke", StringComparer.Ordinal))
@@ -382,6 +387,9 @@ static int CapturePanelScreens(string outputRoot)
             }
             ClickNamedButton(panel, "MagicAssetsTabButton");
             CapturePanel(panel, outputRoot, "assets-magic-specials.png");
+            ClickNavByTag(panel, "Developer");
+            ClickNamedButton(panel, "DeveloperMechanismsTabButton");
+            CapturePanel(panel, outputRoot, "developer-action-mechanisms.png");
             CaptureVisualSizeComparison(outputRoot);
             panel.Close();
         }
@@ -643,6 +651,10 @@ static void ControlPanelXamlConstructs()
                 "developer action mechanism tab does not open as an isolated tab");
             Assert(panel.FindName("BehaviorMechanismList") is ListBox { ItemsSource: not null },
                 "developer action mechanism statistics are not bound");
+            Assert(panel.FindName("BehaviorMechanismDashboardRoot") is StackPanel { DataContext: BehaviorMechanismDashboardSnapshot },
+                "developer action mechanism dashboard is not bound to its session snapshot");
+            Assert(panel.FindName("BehaviorMechanismCategoryFilter") is ComboBox { ItemsSource: not null },
+                "developer action mechanism category filter is missing");
             runtimeTabButton!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Assert(runtimeTab.Visibility == Visibility.Visible && mechanismsTab.Visibility == Visibility.Collapsed,
                 "developer runtime diagnostics tab does not restore");
