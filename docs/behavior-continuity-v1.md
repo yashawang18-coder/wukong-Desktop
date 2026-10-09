@@ -25,7 +25,7 @@ Stable idle loops are display states. They are not busy executions and do not re
 | Episode | Minimum | Preferred | Maximum | Switch margin | Cooldown | Authoritative |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
 | Resting | 45 s | 120 s | 240 s | 0.16 | 45 s | yes |
-| Sleeping | 180 s | 600 s | 1200 s | 0.30 | 300 s | yes, no wake until an approved bridge exists |
+| Sleeping | 300 s | 600 s | 1200 s | 0.30 | 300 s | yes; compatible sleep presentation holds until approved wake |
 | Observing | 20 s | 60 s | 120 s | 0.14 | 30 s | yes |
 | Exploring | 20 s | 90 s | 180 s | 0.18 | 60 s | yes |
 | Eating | 10 s | 15 s | 40 s | 0.30 | 90 s | lifecycle only |
@@ -58,7 +58,7 @@ Stand --approved patrol left/right--> Stand
 
 Food and drink use `Prone -> Sit -> Stand` or `Sit -> Stand` before their standing action. Owner commands use their declared transition plan and then briefly hold the exact terminal frame before entering the matching stable idle.
 
-Missing production edges are not synthesized: there is no approved `Sleeping -> AwakeProne` wake/interrupt exit, and no general approved `ProneFront <-> ProneSide` camera bridge. Sleeping therefore remains on its compatible terminal display until a higher-priority safe path is available; it does not reverse entry frames or hard-cut to another prone view.
+Missing production edges are not synthesized: approved front/side wake routes are used for their matching sleep poses, while no general `ProneFront <-> ProneSide` camera bridge is assumed. After the entry animation, Sleeping stays on a compatible breathing loop or terminal sleep frame for at least five minutes before a bounded natural wake. Owner dialogue and commands may request an earlier wake through the deterministic sleep-interruption policy; an unsafe entry transition is never hard-cut.
 
 ## Intent and language mapping
 
@@ -94,7 +94,7 @@ Trace events include normalized intent, request/correlation ID, source, executio
 
 ## Remaining gaps
 
-- Add an owner-approved wake and interrupt-exit sequence before natural sleep exit can be enabled.
+- Continue Windows observation of the approved wake routes, especially early owner interruption and long sleep holds.
 - Add explicit visual bridges between front-prone and side-prone pose families.
 - Continue removing unreachable legacy completion branches from `DesktopPetRuntime` after this candidate is accepted; the Normal lifecycle intercepts them now, but compatibility code remains for rollback.
 - Replace remaining compatibility outcome profiles with explicit semantic effects as their legacy motions are reviewed; formal settlement already goes through the reducer.

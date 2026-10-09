@@ -106,6 +106,45 @@ internal static class BehaviorTruthRuntimeTests
             "walk preparation did not reach the Normal patrol lifecycle");
     }
 
+    public static void SleepPresentationHoldsForFiveMinutesBeforeNaturalWake()
+    {
+        var now = new DateTimeOffset(2026, 10, 9, 22, 0, 0, TimeSpan.Zero);
+        var runtime = new DesktopRuntimeHost(now: () => now);
+        var requests = new List<PetMotionRequest>();
+        runtime.MotionRequested += (_, request) => requests.Add(request);
+        runtime.UpdateBehaviorAgentMock(
+            TemperamentProfile.Default,
+            PetRuntimeState.Default with
+            {
+                CurrentPosture = StablePosture.Prone,
+                CurrentPoseId = "prone.awake.left_front",
+                Energy = 0.28,
+                Stress = 0.12
+            },
+            RelationshipState.Default,
+            2408);
+
+        var result = runtime.SubmitDialogueIntentAsync("去睡觉").GetAwaiter().GetResult();
+        Assert(result.Result == PetActionResult.Accepted, "sleep request was not accepted");
+        var sleep = requests.Last();
+        Assert(sleep.Motion.BehaviorId == SleepCandidateBehaviorIds.MainLifecycle, "sleep entry was not selected");
+        runtime.CompleteMotion(sleep.RequestId, sleep.Motion.BehaviorId, "exit");
+        var hold = requests.Last();
+        Assert(hold.Motion.BehaviorId == "wk.runtime.posture_hold.sleep" &&
+               hold.LoopCycles == int.MaxValue && !hold.ReturnToIdle,
+            "sleep entry did not settle into a persistent compatible sleep presentation");
+
+        var beforeMinimum = requests.Count;
+        now = now.AddMinutes(4).AddSeconds(59);
+        runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
+        Assert(requests.Count == beforeMinimum, "natural wake started before the five-minute minimum");
+
+        now = now.AddMinutes(6);
+        runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
+        Assert(requests.Last().Motion.BehaviorId == WakeRiseCandidateBehaviorIds.SideWake,
+            "sleep did not use the approved wake path after its bounded natural duration");
+    }
+
     public static void FalseAutonomousSpeechIsReplacedByCurrentFact()
     {
         var runtime = new DesktopRuntimeHost();

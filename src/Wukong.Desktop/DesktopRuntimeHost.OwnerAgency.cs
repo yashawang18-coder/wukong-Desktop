@@ -43,6 +43,8 @@ public sealed partial class DesktopRuntimeHost
     private PetActionResult? AdmitOwnerActivity(string id, BehaviorRequestSource source)
     {
         if (source is not (BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.OwnerDialogue or BehaviorRequestSource.OwnerUi)) return null;
+        if (!SleepCandidateBehaviorIds.All.Contains(id) && HandleOwnerSleepStimulus(source) is { } sleepResult)
+            return sleepResult;
         var motion = _catalog.Find(id);
         var capability = _behaviorCapabilities.Find(id);
         if (motion is null || capability is null) return null; // Existing submission reports MissingAsset.

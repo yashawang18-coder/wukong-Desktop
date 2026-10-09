@@ -31,6 +31,8 @@ public sealed class DesktopDialogueCoordinator
                 0);
         }
 
+        _runtime.TryWakeFromConversation();
+
         var result = await _agent.Conversation.SendAsync(
             new ConversationRequest(DesktopAgentRuntime.DailySessionId, text),
             cancellationToken);

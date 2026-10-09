@@ -1,5 +1,15 @@
 # Decisions
 
+## 2026-10-09 - keep audit assets in source but exclude them from user delivery
+
+User delivery must preserve default configuration, explicitly bundled albums and
+all canonical runtime assets while excluding superseded/candidate-only batches,
+legacy source masters, review GIFs, contact sheets and mutable recipient data.
+This is a packaging boundary only: it does not delete repository evidence or
+change any asset approval state. Emit stable local delivery names
+`deskpet.exe` and `deskpet-portable.zip`, and fail packaging when a required
+canonical manifest or default-data boundary is missing.
+
 ## 2026-10-09 - promote walk v10 and add reproducible per-user packaging
 
 The owner's final acceptance after complete WPF left/right/stop playback approves
@@ -1088,3 +1098,34 @@ Restrictions:
 - Greeting rules cannot bypass busy, stress, quiet-hour, repeated-topic, unanswered-line, cooldown, or daily-budget gates. Templates may use bounded memory themes but cannot select assets or grant capabilities.
 - v10 cannot enter AutonomousTick, owner dialogue, production statistics, relationship, or memory. No marker means the catalog continues to resolve the stable walk behavior IDs to v8.
 - Do not overwrite or delete v8. Do not set v10 visual/runtime approval until the owner reviews real Windows playback, including the mirrored direction and physical window translation.
+
+## 2026-10-09 - hold sleep as an Episode and expose the complete owner profile to dialogue
+
+Decision:
+
+- Treat the approved sleep entry sequence as the start of a five-to-ten-minute sleep Episode, not as the complete sleep duration.
+- Keep the exact compatible sleep pose after entry: loop the existing front breathing frames when available and otherwise hold the approved side-sleep terminal frame. Do not hard-cut among incompatible camera angles merely to create variety.
+- Let conversation and owner commands attempt an early wake through one deterministic state-sensitive policy. A failed attempt means Wukong continues sleeping; a successful attempt starts the approved pose-specific wake route and asks the owner to repeat the intended action after waking.
+- Include the saved owner birthday, owner call-name preference and device-local timestamp in the read-only model context.
+
+Reason:
+
+The former runtime woke immediately when a short sleep clip completed, so the animation length incorrectly defined the life-state duration. The owner profile store already persisted birthday and call-name data, but the context assembler omitted both fields, making the model appear unaware of saved profile information.
+
+Restrictions:
+
+- Do not modify sleep pixels or approval metadata, synthesize a wake frame, reverse entry frames, or cross-cut front and side sleep poses.
+- Natural wake cannot occur before five minutes. Owner interruption may occur earlier only after the current transition reaches a safe stable sleep presentation.
+- Profile and time data are facts, not instructions; they cannot grant behavior capability or override live posture and lifecycle truth.
+
+## 2026-10-10 - publish the accepted sleep-continuity candidate as a portable release
+
+Decision:
+
+- Accept the Windows candidate behavior for five-to-ten-minute sleep Episodes, probabilistic owner wake attempts and complete owner-profile dialogue context.
+- Publish source changes to `main` and distribute the generated portable ZIP as a GitHub Release asset attached to that exact `main` commit.
+- Keep mutable `WukongData`, conversation history, runtime memory, local candidate markers, review media and historical publish outputs out of the public archive.
+
+Reason:
+
+The owner completed local acceptance. The portable archive is larger than GitHub's normal Git object limit, so a Release asset preserves a direct GitHub download without bloating repository history or weakening the package's runtime-asset and privacy checks.

@@ -63,6 +63,7 @@ var tests = new (string Name, Func<Task> Run)[]
     ,("preparing and completed claims require lifecycle evidence", () => RunSync(BehaviorContinuityTests.PreparingAndCompletedClaimsRequireEvidence))
     ,("sleeping episode holds and evolves by elapsed time", () => RunSync(BehaviorContinuityTests.SleepingEpisodeHoldsAndUsesElapsedTime))
     ,("episode definitions centralize duration and hysteresis", () => RunSync(BehaviorContinuityTests.EpisodeDefinitionsUseProductionDurationsAndHysteresis))
+    ,("sleep wake policy is bounded and deterministic", () => RunSync(BehaviorContinuityTests.SleepWakePolicyIsBoundedAndDeterministic))
 };
 
 var failures = new List<string>();
@@ -312,6 +313,9 @@ static async Task AgentContextIncludesAllSources()
     var system = model.LastRequest!.Messages.Single(x => x.Role == AgentChatRole.System).Content;
     Assert(system.Contains("悟空", StringComparison.Ordinal), "pet profile did not enter context");
     Assert(system.Contains("老爸", StringComparison.Ordinal), "owner profile did not enter context");
+    Assert(system.Contains("birthday=1994-10-10", StringComparison.Ordinal), "owner birthday did not enter context");
+    Assert(system.Contains("pet_calls_owner=老爸", StringComparison.Ordinal), "owner call-name preference did not enter context");
+    Assert(system.Contains("<device_local_time_readonly>", StringComparison.Ordinal), "device-local time did not enter context");
     Assert(system.Contains("回答要温柔", StringComparison.Ordinal), "custom pet prompt did not enter context");
     Assert(system.Contains("stress=0.62", StringComparison.Ordinal), "runtime state did not enter context");
     Assert(system.Contains("current_posture=stand", StringComparison.Ordinal), "live posture did not enter context");
@@ -695,7 +699,11 @@ static ContextualConversationService CreateAgentService(
 
 static PetContextSnapshot AgentSnapshot(params RelevantAlbumMemory[] memories) => new(
     new("悟空", "Wukong", "2024-08-10", "日本柴犬", "成年", "橙色背带"),
-    new("老爸", "白天工作", "安静陪伴", "自然", "不编造经历"),
+    new OwnerProfileSnapshot("老爸", "白天工作", "安静陪伴", "自然", "不编造经历")
+    {
+        Birthday = "1994-10-10",
+        PetCallName = "老爸"
+    },
     "回答要温柔，并保持简短。",
     PersonalitySnapshot.Default,
     RelationshipSnapshot.Default,

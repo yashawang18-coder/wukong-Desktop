@@ -88,7 +88,7 @@ public static class BehaviorEpisodeCatalog
         new[]
         {
             Define(PetEpisodeKind.Resting, 45, 120, 240, 0.16, 45, true, StablePosture.Stand, StablePosture.Sit, StablePosture.Prone),
-            Define(PetEpisodeKind.Sleeping, 180, 600, 1200, 0.30, 300, false, StablePosture.Prone),
+            Define(PetEpisodeKind.Sleeping, 300, 600, 1200, 0.30, 300, false, StablePosture.Prone),
             Define(PetEpisodeKind.Observing, 20, 60, 120, 0.14, 30, true, StablePosture.Stand, StablePosture.Sit, StablePosture.Prone),
             Define(PetEpisodeKind.Exploring, 20, 90, 180, 0.18, 60, true, StablePosture.Stand),
             Define(PetEpisodeKind.Eating, 10, 15, 40, 0.30, 90, false, StablePosture.Stand),
@@ -126,6 +126,54 @@ public static class BehaviorEpisodeCatalog
         params StablePosture[] postures) =>
         new(kind, postures.ToHashSet(), TimeSpan.FromSeconds(minimumSeconds), TimeSpan.FromSeconds(preferredSeconds),
             TimeSpan.FromSeconds(maximumSeconds), switchMargin, TimeSpan.FromSeconds(cooldownSeconds), ordinaryAutonomousInterruptible);
+}
+
+public enum SleepWakeStimulus
+{
+    Conversation,
+    OwnerCommand
+}
+
+public sealed record SleepWakeDecision(
+    bool ShouldWake,
+    double Probability,
+    string ReasonCode);
+
+public sealed class SleepWakeDecisionService
+{
+    public SleepWakeDecision Evaluate(
+        PetAgentState state,
+        SleepWakeStimulus stimulus,
+        DateTimeOffset now,
+        int seed)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        state = state.Clamp();
+        if (state.Episode.Kind != PetEpisodeKind.Sleeping)
+            return new(false, 0, "not_sleeping");
+        if (state.Runtime.IsBusy)
+            return new(false, 0, "sleep_transition_in_progress");
+
+        var elapsed = now > state.Episode.StartedAt ? now - state.Episode.StartedAt : TimeSpan.Zero;
+        var minimum = BehaviorEpisodeCatalog.Get(PetEpisodeKind.Sleeping).MinimumDuration;
+        var restedRatio = Math.Clamp(elapsed.TotalSeconds / Math.Max(1, minimum.TotalSeconds), 0, 1);
+        var stimulusBoost = stimulus == SleepWakeStimulus.OwnerCommand ? 0.16 : 0;
+        var probability = 0.22
+            + stimulusBoost
+            + restedRatio * 0.24
+            + state.Temperament.Attachment01 * 0.12
+            + state.Relationship.Familiarity * 0.08
+            + state.Runtime.Arousal * 0.12
+            - (1 - state.Runtime.Energy) * 0.20
+            - state.Runtime.Stress * 0.08;
+        probability = Math.Clamp(probability, 0.12, 0.88);
+
+        var shouldWake = new Random(seed).NextDouble() < probability;
+        return new(
+            shouldWake,
+            probability,
+            shouldWake ? "owner_stimulus_woke_sleep" : "sleep_continues_after_owner_stimulus");
+    }
 }
 
 public sealed record PetEpisodeSelection(

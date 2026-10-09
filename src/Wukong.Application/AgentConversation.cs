@@ -41,7 +41,7 @@ public sealed class AgentContextAssembler
         userMessage = (userMessage ?? string.Empty).Trim();
         var degradations = new List<string>();
         var truncated = false;
-        var profile = Clip(BuildProfileBlock(snapshot), _options.MaximumProfileCharacters, "profile", degradations, ref truncated);
+        var profile = Clip(BuildProfileBlock(snapshot, now), _options.MaximumProfileCharacters, "profile", degradations, ref truncated);
         var messages = new List<AgentChatMessage>
         {
             new(AgentChatRole.System, SafetyBoundary + Environment.NewLine + profile, now)
@@ -123,7 +123,7 @@ public sealed class AgentContextAssembler
             truncated,
             degradations.Distinct(StringComparer.Ordinal).ToArray());
 
-    private static string BuildProfileBlock(PetContextSnapshot snapshot)
+    private static string BuildProfileBlock(PetContextSnapshot snapshot, DateTimeOffset now)
     {
         var pet = snapshot.PetProfile;
         var owner = snapshot.OwnerProfile;
@@ -141,11 +141,17 @@ public sealed class AgentContextAssembler
         builder.AppendLine("</pet_identity_data>");
         builder.AppendLine("<owner_profile_data>");
         Append(builder, "call_name", owner.CallName);
+        Append(builder, "birthday", owner.Birthday);
+        Append(builder, "pet_calls_owner", owner.PetCallName);
         Append(builder, "schedule", owner.Schedule);
         Append(builder, "companion_preference", owner.CompanionPreference);
         Append(builder, "tone", owner.Tone);
         Append(builder, "notes", owner.Notes);
         builder.AppendLine("</owner_profile_data>");
+        builder.AppendLine("<device_local_time_readonly>");
+        builder.AppendLine($"iso8601={now:yyyy-MM-ddTHH:mm:sszzz}; date={now:yyyy-MM-dd}; time={now:HH:mm}; day_of_week={now.ToString("dddd", CultureInfo.GetCultureInfo("zh-CN"))}");
+        builder.AppendLine("constraint=Use this timestamp for date and time awareness. Do not invent a different location or time zone.");
+        builder.AppendLine("</device_local_time_readonly>");
         builder.AppendLine("<custom_pet_setting priority=\"below_safety_above_profile\">");
         builder.AppendLine(EscapeData(snapshot.CustomPetPrompt));
         builder.AppendLine("</custom_pet_setting>");

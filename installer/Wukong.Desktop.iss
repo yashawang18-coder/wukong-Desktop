@@ -7,6 +7,9 @@
 #ifndef OutputDir
   #define OutputDir "..\.publish-check\installers"
 #endif
+#ifndef OutputBaseFilename
+  #define OutputBaseFilename "deskpet"
+#endif
 
 [Setup]
 AppId={{D9A4F0FD-1E68-4B50-94F6-4A66F9413D6E}
@@ -20,7 +23,7 @@ PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir={#OutputDir}
-OutputBaseFilename=Wukong-Desktop-Setup-{#AppVersion}-win-x64
+OutputBaseFilename={#OutputBaseFilename}
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern

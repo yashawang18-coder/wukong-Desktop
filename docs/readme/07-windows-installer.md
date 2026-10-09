@@ -2,8 +2,13 @@
 
 `tools/build-windows-installer.ps1` creates two local delivery artifacts:
 
-- a complete self-contained `win-x64` portable ZIP;
-- a per-user Inno Setup installer EXE.
+- `deskpet-portable.zip`, a complete self-contained `win-x64` portable ZIP;
+- `deskpet.exe`, a per-user Inno Setup installer.
+
+The delivery package keeps the default configuration, the explicitly bundled
+album seed and every canonical batch required by current behavior definitions. Historical
+and superseded batches, source masters, review GIFs, contact sheets and mutable
+`WukongData` are excluded from delivery without deleting their repository copies.
 
 The installer writes to `%LOCALAPPDATA%\Programs\Wukong Desktop`, requires no
 administrator privilege, and leaves runtime-created `WukongData` in place during

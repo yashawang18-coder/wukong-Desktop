@@ -200,7 +200,7 @@ failures remain hard gates and are not described as personality refusals.
 
 1. Run long Windows observation for Episode continuity, stale callbacks, and
    long-lived busy state.
-2. Add an approved sleep wake/interrupt bridge before enabling natural wake-up.
+2. Validate the approved sleep wake/interrupt routes during long Windows sessions and retain pose-specific fail-closed behavior.
 3. Promote Socializing and general Recovering only with explicit visual routes and
    allowlists.
 4. Replace compatibility outcome profiles with action-specific profiles as each

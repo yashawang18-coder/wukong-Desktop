@@ -89,10 +89,40 @@ internal static class BehaviorContinuityTests
     {
         var sleep = BehaviorEpisodeCatalog.Get(PetEpisodeKind.Sleeping);
         var rest = BehaviorEpisodeCatalog.Get(PetEpisodeKind.Resting);
-        Assert(sleep.MinimumDuration == TimeSpan.FromMinutes(3), "sleep minimum duration changed");
+        Assert(sleep.MinimumDuration == TimeSpan.FromMinutes(5), "sleep minimum duration changed");
         Assert(sleep.PreferredDuration == TimeSpan.FromMinutes(10), "sleep preferred duration changed");
         Assert(rest.MinimumDuration == TimeSpan.FromSeconds(45), "rest minimum duration changed");
         Assert(rest.SwitchMargin > 0, "rest switch hysteresis is missing");
+    }
+
+    public static void SleepWakePolicyIsBoundedAndDeterministic()
+    {
+        var now = new DateTimeOffset(2026, 10, 9, 22, 0, 0, TimeSpan.Zero);
+        var state = PetAgentState.CreateDefault(now) with
+        {
+            Episode = BehaviorEpisodeCatalog.Start(PetEpisodeKind.Sleeping, now, "test"),
+            Runtime = PetRuntimeState.Default with
+            {
+                CurrentPosture = StablePosture.Prone,
+                CurrentPoseId = "sleep.side.stable",
+                Energy = 0.32,
+                Arousal = 0.15,
+                Stress = 0.10,
+                IsBusy = false
+            }
+        };
+        var service = new SleepWakeDecisionService();
+        var first = service.Evaluate(state, SleepWakeStimulus.Conversation, now.AddMinutes(2), 2408);
+        var repeated = service.Evaluate(state, SleepWakeStimulus.Conversation, now.AddMinutes(2), 2408);
+        var command = service.Evaluate(state, SleepWakeStimulus.OwnerCommand, now.AddMinutes(2), 2408);
+
+        Assert(first == repeated, "sleep wake decision changed for the same state and seed");
+        Assert(first.Probability is >= 0.12 and <= 0.88, "conversation wake probability escaped bounds");
+        Assert(command.Probability > first.Probability, "owner command did not provide a stronger wake stimulus");
+        var busy = service.Evaluate(state with { Runtime = state.Runtime with { IsBusy = true } },
+            SleepWakeStimulus.OwnerCommand, now.AddMinutes(2), 2408);
+        Assert(!busy.ShouldWake && busy.ReasonCode == "sleep_transition_in_progress",
+            "sleep transition was interrupted before its safe point");
     }
 
     private static void Assert(bool condition, string message)

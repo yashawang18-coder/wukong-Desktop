@@ -164,6 +164,7 @@ var tests = new (string Name, Action Run)[]
     ("dialogue and menu commands use the same runtime path", BehaviorTruthRuntimeTests.DialogueAndMenuCommandsUseTheSameRuntimePath),
     ("dialogue commitments require an active lifecycle request", BehaviorTruthRuntimeTests.DialogueCommitmentRequiresAStartedRequest),
     ("dialogue sleep uses approved posture preparation", BehaviorTruthRuntimeTests.DialogueSleepUsesApprovedPosturePreparation),
+    ("sleep presentation holds five minutes before natural wake", BehaviorTruthRuntimeTests.SleepPresentationHoldsForFiveMinutesBeforeNaturalWake),
     ("dialogue walk uses approved posture preparation and space gate", BehaviorTruthRuntimeTests.DialogueWalkUsesApprovedPosturePreparationAndSpaceGate),
     ("false autonomous speech is replaced by current facts", BehaviorTruthRuntimeTests.FalseAutonomousSpeechIsReplacedByCurrentFact),
     ("continuity rollout owns daily episodes including quiet recovery", BehaviorTruthRuntimeTests.ContinuityRolloutOwnsDailyEpisodes),

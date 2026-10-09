@@ -4109,6 +4109,7 @@ public sealed partial class DesktopRuntimeHost : INotifyPropertyChanged
     private BehaviorCapabilityCatalog _behaviorCapabilities;
     private readonly InteractionDecisionService _interactionDecisions = new();
     private readonly InitiativeSpeechDecisionService _initiativeSpeechDecisions = new();
+    private readonly SleepWakeDecisionService _sleepWakeDecisions = new();
     private AutonomousAgentRolloutOptions _rolloutOptions;
     private AutonomyPolicyProfile _autonomyPolicy;
     public AutonomyPolicyProfile AutonomyPolicy => _autonomyPolicy;
@@ -4177,6 +4178,10 @@ public sealed partial class DesktopRuntimeHost : INotifyPropertyChanged
     private DateTimeOffset? _coinActivityAt;
     private DateTimeOffset _nextFrontProneExpressionAt = DateTimeOffset.MinValue;
     private DateTimeOffset _nextStandingHappyExpectantAt = DateTimeOffset.MinValue;
+    private DateTimeOffset? _sleepSessionStartedAt;
+    private DateTimeOffset? _naturalWakeAt;
+    private string _sleepEntryBehaviorId = string.Empty;
+    private bool _sleepWakeInProgress;
     private BehaviorRequestSource _coinPreviewSource = BehaviorRequestSource.OwnerContextMenu;
     private bool _frontProneProfileActive;
     private bool _patrolCanMoveLeft;
@@ -4681,6 +4686,49 @@ public sealed partial class DesktopRuntimeHost : INotifyPropertyChanged
         ReduceAgentState(new PetOwnerDialogueObserved(_now(), positive), "owner_dialogue_response");
         RaiseMetrics();
         Trace("owner_dialogue_response", $"positive={positive} pending={_petAgentState.InitiativeSpeechFeedback.PendingTopic ?? "none"}");
+    }
+
+    public bool TryWakeFromConversation()
+    {
+        if (_petAgentState.Episode.Kind != PetEpisodeKind.Sleeping)
+            return false;
+        var decision = EvaluateSleepWake(SleepWakeStimulus.Conversation, BehaviorRequestSource.OwnerDialogue);
+        if (!decision.ShouldWake)
+        {
+            Trace("sleep_wake_stimulus", $"source=conversation result=continued probability={decision.Probability:0.000} reason={decision.ReasonCode}");
+            return false;
+        }
+        var started = TryStartApprovedWakeExit(_sleepEntryBehaviorId, BehaviorRequestSource.OwnerDialogue);
+        Trace("sleep_wake_stimulus", $"source=conversation result={(started ? "wake_started" : "wake_unavailable")} probability={decision.Probability:0.000}");
+        return started;
+    }
+
+    private PetActionResult? HandleOwnerSleepStimulus(BehaviorRequestSource source)
+    {
+        if (_petAgentState.Episode.Kind != PetEpisodeKind.Sleeping)
+            return null;
+        var decision = EvaluateSleepWake(SleepWakeStimulus.OwnerCommand, source);
+        if (!decision.ShouldWake)
+        {
+            UpdateDecision(PetActionResult.Rejected, source.ToString(), decision.ReasonCode, "我还想再睡一会儿呀");
+            Trace("sleep_wake_stimulus", $"source={source} result=continued probability={decision.Probability:0.000} reason={decision.ReasonCode}");
+            return PetActionResult.Rejected;
+        }
+        if (!TryStartApprovedWakeExit(_sleepEntryBehaviorId, source))
+        {
+            UpdateDecision(PetActionResult.Deferred, source.ToString(), "sleep_wake_path_unavailable", "我还没安全醒过来，等一下呀");
+            return PetActionResult.Deferred;
+        }
+        UpdateDecision(PetActionResult.Deferred, source.ToString(), "sleep_wake_started_retry_action", "我醒醒，再叫我一次呀");
+        return PetActionResult.Deferred;
+    }
+
+    private SleepWakeDecision EvaluateSleepWake(SleepWakeStimulus stimulus, BehaviorRequestSource source)
+    {
+        var now = _now();
+        var seed = CombineDecisionSeed(_decisionSeed, _ownerRequestTimes.Count + _autonomousDecisionCount,
+            HashCode.Combine((int)stimulus, (int)source, now.Year, now.DayOfYear, now.Hour, now.Minute));
+        return _sleepWakeDecisions.Evaluate(_petAgentState, stimulus, now, seed);
     }
 
     public Task<PetActionResult> SubmitContextMenuIntentAsync(SemanticIntent intent)
@@ -5444,6 +5492,7 @@ public sealed partial class DesktopRuntimeHost : INotifyPropertyChanged
         }
         IsPetrified = false;
         ClearCoin();
+        EndSleepSession(reason);
         OnPropertyChanged(nameof(IsPetrified));
         Trace("stop_requested", reason);
         StartIdle("stop");
@@ -5457,6 +5506,13 @@ public sealed partial class DesktopRuntimeHost : INotifyPropertyChanged
         RaiseMetrics();
 
         var now = _now();
+        if (TryStartNaturalWake(now))
+            return Task.CompletedTask;
+        if (_sleepSessionStartedAt is not null && _petAgentState.Episode.Kind == PetEpisodeKind.Sleeping)
+        {
+            Trace("sleep_session_held", $"elapsed={(now - _sleepSessionStartedAt.Value).TotalSeconds:0}s natural_wake={_naturalWakeAt:O}");
+            return Task.CompletedTask;
+        }
         if (now < _nextAutonomousDecisionAt || !IsStableIdleBehavior(_currentBehaviorId))
             return Task.CompletedTask;
 
@@ -5718,16 +5774,20 @@ public sealed partial class DesktopRuntimeHost : INotifyPropertyChanged
         if (completedPlaybackMotion is not null &&
             string.Equals(completedPlaybackMotion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
         {
-            if (TryStartApprovedWakeExit(completedPlaybackMotion, completedSource))
+            if (completedSource == BehaviorRequestSource.ControlPanel &&
+                TryStartApprovedWakeExit(completedPlaybackMotion.BehaviorId, completedSource))
             {
                 _pendingAgentDecision = null;
                 return;
             }
-            StartTerminalPoseHold(behaviorId, _agentState.CurrentPosture, $"sleep_hold:{behaviorId}", completedPlaybackMotion);
+            StartSleepPresentation(completedPlaybackMotion, completedSource);
         }
         else if (completedPlaybackMotion is not null &&
                  string.Equals(completedPlaybackMotion.AssetBatch, WakeRiseCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
+        {
+            EndSleepSession($"wake_complete:{behaviorId}");
             StartTerminalPoseHold(behaviorId, _agentState.CurrentPosture, $"wake_rise_hold:{behaviorId}", completedPlaybackMotion);
+        }
         else if (completedPlaybackMotion is not null && MockCommandActionIds.PrototypeWhitelist.Contains(behaviorId))
             StartTerminalPoseHold(behaviorId, _agentState.CurrentPosture, $"command_complete:{behaviorId}", completedPlaybackMotion);
         else
@@ -5817,9 +5877,9 @@ public sealed partial class DesktopRuntimeHost : INotifyPropertyChanged
         Accept(fallback, BehaviorRequestSource.OwnerUi, BehaviorExecutionMode.Normal, source, returnToIdle: false, loopCycles: int.MaxValue);
     }
 
-    private bool TryStartApprovedWakeExit(PlayableMotion completedSleepMotion, BehaviorRequestSource completedSource)
+    private bool TryStartApprovedWakeExit(string sleepBehaviorId, BehaviorRequestSource source)
     {
-        var wakeBehaviorId = completedSleepMotion.BehaviorId switch
+        var wakeBehaviorId = sleepBehaviorId switch
         {
             SleepCandidateBehaviorIds.MainLifecycle => WakeRiseCandidateBehaviorIds.SideWake,
             SleepCandidateBehaviorIds.SprawledFrontBreath => WakeRiseCandidateBehaviorIds.FrontWake,
@@ -5830,13 +5890,94 @@ public sealed partial class DesktopRuntimeHost : INotifyPropertyChanged
             return false;
 
         var result = SubmitBehavior(
-            completedSource == BehaviorRequestSource.ControlPanel ? BehaviorRequestSource.ControlPanel : BehaviorRequestSource.AutonomousTick,
+            source,
             wakeBehaviorId,
-            $"approved_sleep_exit:{completedSleepMotion.BehaviorId}",
+            $"approved_sleep_exit:{sleepBehaviorId}",
             priority: 0);
         if (result == PetActionResult.Accepted)
-            Trace("approved_sleep_exit_started", $"sleep={completedSleepMotion.BehaviorId} wake={wakeBehaviorId}");
+        {
+            _sleepWakeInProgress = true;
+            Trace("approved_sleep_exit_started", $"sleep={sleepBehaviorId} wake={wakeBehaviorId} source={source}");
+        }
         return result == PetActionResult.Accepted;
+    }
+
+    private void StartSleepPresentation(PlayableMotion completedSleepMotion, BehaviorRequestSource completedSource)
+    {
+        BeginSleepSession(completedSleepMotion.BehaviorId, completedSource);
+        var loop = completedSleepMotion.Phases.FirstOrDefault(phase => phase.Loop && phase.Frames.Count > 0);
+        var frames = loop?.Frames ?? new[] { completedSleepMotion.Phases.SelectMany(phase => phase.Frames).Last() };
+        var durations = loop?.FrameDurationsMs ?? new[] { 900 };
+        var presentation = new PlayableMotion(
+            $"{StableHoldPrefix}sleep",
+            "安稳睡着",
+            "睡眠恢复",
+            completedSleepMotion.Direction,
+            durations.FirstOrDefault(900),
+            Interruptible: true,
+            new[] { new MotionPhase("sleep", frames, Loop: true, durations) },
+            completedSleepMotion.SourceRoot,
+            RuntimeEnabled: true,
+            Status: "Sleeping presentation",
+            MissingContent: "None",
+            StartPose: completedSleepMotion.EndPose,
+            EndPose: completedSleepMotion.EndPose,
+            StyleGroup: completedSleepMotion.StyleGroup,
+            Disposition: "Runtime sleeping hold",
+            PrototypeUse: false,
+            AssetBatch: completedSleepMotion.AssetBatch,
+            Description: "Keeps the approved compatible sleep pose until natural or owner-triggered wake.",
+            CandidateProfile: completedSleepMotion.CandidateProfile,
+            VisualScale: completedSleepMotion.VisualScale,
+            RenderScaleOverride: MotionVisualSizer.RenderScaleForMotion(completedSleepMotion, DesktopMotionCatalog.ReferenceFramePath),
+            SupportsHorizontalMirror: completedSleepMotion.SupportsHorizontalMirror);
+
+        _agentState = _agentState with
+        {
+            CurrentPosture = StablePosture.Prone,
+            CurrentPoseId = completedSleepMotion.EndPose,
+            ActiveExecutionId = null,
+            ActiveActionId = null,
+            IsBusy = false
+        };
+        _nextAutonomousDecisionAt = _now() + TimeSpan.FromSeconds(_autonomyPolicy.RetryMaximumSeconds);
+        Accept(presentation, BehaviorRequestSource.OwnerUi, BehaviorExecutionMode.Normal,
+            $"sleep_presentation:{completedSleepMotion.BehaviorId}:{completedSource}", returnToIdle: false, loopCycles: int.MaxValue);
+    }
+
+    private void BeginSleepSession(string behaviorId, BehaviorRequestSource source)
+    {
+        if (_sleepSessionStartedAt is not null)
+            return;
+        var now = _now();
+        var definition = BehaviorEpisodeCatalog.Get(PetEpisodeKind.Sleeping);
+        var minimumSeconds = Math.Max(1, (int)definition.MinimumDuration.TotalSeconds);
+        var preferredSeconds = Math.Max(minimumSeconds + 1, (int)definition.PreferredDuration.TotalSeconds);
+        _sleepSessionStartedAt = now;
+        _naturalWakeAt = now + TimeSpan.FromSeconds(_random.Next(minimumSeconds, preferredSeconds + 1));
+        _sleepEntryBehaviorId = behaviorId;
+        _sleepWakeInProgress = false;
+        Trace("sleep_session_started", $"behavior={behaviorId} source={source} minimum={minimumSeconds}s natural_wake={_naturalWakeAt:O}");
+    }
+
+    private bool TryStartNaturalWake(DateTimeOffset now)
+    {
+        if (_sleepWakeInProgress || _sleepSessionStartedAt is null || _naturalWakeAt is null ||
+            now < _naturalWakeAt || _petAgentState.Episode.Kind != PetEpisodeKind.Sleeping ||
+            _agentState.IsBusy || !IsStableIdleBehavior(_currentBehaviorId))
+            return false;
+        return TryStartApprovedWakeExit(_sleepEntryBehaviorId, BehaviorRequestSource.AutonomousTick);
+    }
+
+    private void EndSleepSession(string reason)
+    {
+        if (_sleepSessionStartedAt is null && !_sleepWakeInProgress)
+            return;
+        Trace("sleep_session_ended", $"reason={reason} elapsed={(_now() - (_sleepSessionStartedAt ?? _now())).TotalSeconds:0}s");
+        _sleepSessionStartedAt = null;
+        _naturalWakeAt = null;
+        _sleepEntryBehaviorId = string.Empty;
+        _sleepWakeInProgress = false;
     }
 
     private void StartTerminalPoseHold(string behaviorId, StablePosture posture, string source, PlayableMotion? completedRequestMotion)

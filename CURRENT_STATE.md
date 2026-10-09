@@ -47,7 +47,7 @@
 - New production batch: `assets/action-batches/WK-AUTONOMOUS-SLEEP-CONTINUITY-PRODUCTION-v11`. It contains 29 unique 1024x1024 RGBA PNGs and seven actions with 44 ordered frame references. Every runtime copy uses one full-canvas premultiplied-alpha 1254-to-1024 conversion and one `0.78` local scale; there is no per-frame fit, centering, crop, recolor or geometry adjustment.
 - The seven v11 actions record `visual_approved=true`, `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, `prototype_use=false`, and `developer_preview=true`. Real transparent MainWindow playback observed every unique frame, verified frozen WPF bitmaps and stable scale, and exercised the two approved Normal routes.
 - Autonomous use is deliberately narrower than runtime approval. Only the complete main sleep lifecycle from its compatible non-front prone pose and the sprawled-front breathing loop from the matching front-prone pose are in the autonomous allowlist. The roll bridge and four independent side/compact/curled loops remain manual/developer runtime actions until matching pose bridges exist. No incompatible camera view is hard-cut.
-- The retired sleep v10 package remains immutable audit evidence with all runtime gates closed and is excluded from publish output. There is still no approved wake or interrupt-exit sequence; v11 must fail closed rather than reverse the entry or fall back to old sleep pixels.
+- The retired sleep v10 package remains immutable audit evidence with all runtime gates closed and is excluded from publish output. The later approved wake/rise batch supplies pose-specific exits; v11 still fails closed rather than reverse the entry or fall back to old sleep pixels when no compatible exit exists.
 - Stable Idle no longer starts an OwnerInteraction episode when a DeveloperPreview returns to its presentation pose. This keeps preview state, relationship and memory isolated while retaining the normal on-screen idle recovery.
 - Final validation: Release solution build passed with six existing warnings; Domain 5/5, Contracts 5/5, Application 58/58, Infrastructure 23/23, Desktop 123/123, Python 95/95, contract validator 0 errors / 9 known gaps, and `git diff --check` passed. The self-contained win-x64 folder publish contains 1,639 source-matched asset files, including all 29 v11 PNGs and neither retired v10 nor the rejected V7 walk review. Real WPF evidence is in `.publish-check/sleep-v11-renderer-smoke-final2/`.
 - Candidate folder: `.publish-check/sleep-v11-runtime-final/`; launcher SHA256 `6a2ff785020dfd21cc537d2a47a9b89b5c445a96283ca2d41d49379d18b2e15d`, application DLL SHA256 `74751517bb706371c05e5d6a92ad1247ec3d3b8244a59558426bc3cd44248589`. Independent EXE survival was not repeated because the owner is running `.publish-check/walk-v8-runtime/Wukong.Desktop.exe` as PID 66992 and the single-instance guard correctly owns the desktop session; that process was not terminated.
@@ -139,7 +139,7 @@
 - Prone-head V4 keeps its existing approved action and autonomous gates. The owner accepted its `0.60` presentation scale against the approved prone idle; no pixels or posture eligibility changed.
 - Patrol gait frames and their existing approval are unchanged. The owner accepted the work-area-constrained horizontal translation on 2026-09-06, so `window_motion_validation=passed_windows_renderer_qa`. It still runs only as a low-frequency standing autonomous action or isolated developer preview.
 - Owner Windows review passed for the four non-deprecated sleep v10 actions: `wk.candidate.sleep.main_lifecycle_v2`, `wk.candidate.sleep.prone_to_side_roll_v2`, `wk.candidate.sleep.sprawled_front_breath_v2`, and `wk.candidate.sleep.sprawled_left_side_breath_v2`. They record `visual_approved=true`, `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, and `prototype_use=false`.
-- Autonomous sleep routing remains posture-safe: only the complete lifecycle from the compatible non-front prone profile and front breathing from the front-prone profile are enabled for `AutonomousTick`. The independent roll and left-side loop are runtime approved but remain explicit developer previews until their required pose bridges exist. No incompatible camera views are hard-cut, and the missing wake/interrupt-exit assets remain recorded gaps.
+- Autonomous sleep routing remains posture-safe: only the complete lifecycle from the compatible non-front prone profile and front breathing from the front-prone profile are enabled for `AutonomousTick`. The independent roll and left-side loop are runtime approved but remain explicit developer previews until their required pose bridges exist. No incompatible camera views are hard-cut; approved wake/rise actions are selected only for their matching terminal sleep pose.
 - These owner-approved changes are prepared on `agent/car-prone-runtime-release-v1`; publication status is reported from Git after the final non-force push.
 
 ## Owner-approved autonomous posture, prone-head, and patrol actions - 2026-09-05
@@ -579,7 +579,7 @@ Before implementation, add or provide the reviewed UX artifact and a pinned Pupu
 - Normal non-idle animation executions receive request IDs and settle through `PetStateReducer`. Duplicate and stale callbacks are ignored. Preview modes remain isolated.
 - Owner action replies are projected from the actual request result. Current, preparing, and completed claims are validated against live Episode/action/posture and recent lifecycle outcomes before display.
 - Command completion preserves the exact terminal frame and scale before entering a compatible stable idle.
-- Sleeping holds a compatible sleep presentation because no approved wake/interrupt-exit asset exists. No reversed entry animation or cross-camera hard cut is fabricated.
+- Sleeping holds a compatible sleep presentation until its approved pose-specific wake path is requested. No reversed entry animation or cross-camera hard cut is fabricated.
 - No PNG, asset approval field, manifest, menu, or `main` branch is changed by this behavior-continuity work.
 - Detailed design and remaining bridge gaps: `docs/behavior-continuity-v1.md`.
 
@@ -637,3 +637,32 @@ Before implementation, add or provide the reviewed UX artifact and a pinned Pupu
 - Walk v10 status: `owner_preview_approved=true`, `visual_approved=true`, `runtime_validation=passed_windows_renderer_qa`, `runtime_approved=true`, `runtime_use=true`, `production_asset=true`, `prototype_use=false`, `developer_preview=true`, `autonomous_binding_enabled=true`.
 - v8 PNG bytes remain immutable audit evidence. Its active runtime and autonomous gates are closed and `superseded_by` points to v10; it is not loaded as a fallback.
 - Release packaging now has a reproducible self-contained `win-x64` portable ZIP and per-user Inno Setup installer. Installer output is local and excluded from Git; source, tests, manifests and build instructions are eligible for the authorized `main` publication.
+## Slim local installer - 2026-10-09 (local uncommitted)
+
+- The local delivery package now keeps only the 14 canonical action batches, the
+  production command batch, default configuration and one byte-identical album
+  seed. Historical/superseded batches, legacy action masters, review GIFs,
+  contact sheets and mutable `WukongData` are excluded from delivery; repository
+  source and renderer evidence remain intact.
+- Installer: `.publish-check/installers/deskpet.exe`, 584,184,487 bytes,
+  SHA-256 `7576a5beb6b2e3a66a6ea7657a2b2e4968eca6a441addd280582f55bf198d1f4`.
+  Portable archive: `.publish-check/installers/deskpet-portable.zip`,
+  817,612,224 bytes, SHA-256
+  `ac9e27f851a5d79e144d3e1ac1268e228e116fa71c3249ec7ae891173d3358d0`.
+- Published runtime assets: 983 files / 532,257,489 bytes. Bundled albums:
+  402 files / 221,475,835 bytes with zero source hash mismatches. Release output
+  contains no review GIF, review directory or `WukongData`.
+- Validation: Release solution build passed with existing warnings; contracts
+  0 errors / 9 known gaps; Python 100/100; Domain 5/5, Contracts 5/5,
+  Application 58/58, Infrastructure 23/23 and Desktop 147/147. The published
+  EXE remained alive for seven seconds and was terminated by its exact PID.
+  This is a packaging/runtime smoke check, not new owner animation QA.
+
+## Sleep continuity and owner-profile context - 2026-10-10 (owner accepted)
+
+- Natural sleep now has a five-minute minimum Episode duration. The approved entry animation settles into its compatible breathing loop or terminal sleep frame instead of immediately starting the wake asset.
+- A bounded natural wake point is selected between five and ten minutes. Autonomous ticks hold the active sleep presentation and cannot replay the entry sequence during that interval.
+- Ordinary owner conversation and owner commands use a deterministic, state-sensitive wake policy. They may wake Wukong early or leave him asleep; an in-progress sleep transition remains a safe-point gate. Stop and higher-priority runtime safety behavior remain authoritative.
+- Saved owner birthday and the configured name Wukong uses for the owner now enter the model context together with schedule, preference, tone and notes. The model also receives the current device-local timestamp as read-only runtime data.
+- The owner accepted the Windows candidate behavior on 2026-10-10. No sleep PNG, manifest approval or runtime asset mapping changed; the implementation is approved for portable packaging and publication to `main`.
+- Release build, contract validation, Python tests and all C# console suites pass. The portable ZIP must be generated from the committed source with mutable `WukongData`, review media and historical release copies excluded.
