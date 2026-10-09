@@ -77,6 +77,9 @@ Compress-Archive -Path (Join-Path $publish '*') -DestinationPath $archive -Compr
 
 if ([string]::IsNullOrWhiteSpace($InnoCompiler)) {
     $known = @(
+        (Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 7\ISCC.exe'),
+        (Join-Path $env:ProgramFiles 'Inno Setup 7\ISCC.exe'),
+        (Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 7\ISCC.exe'),
         (Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 6\ISCC.exe'),
         (Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'),
         (Join-Path $env:ProgramFiles 'Inno Setup 6\ISCC.exe')
@@ -84,7 +87,7 @@ if ([string]::IsNullOrWhiteSpace($InnoCompiler)) {
     $InnoCompiler = $known | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
 }
 if ([string]::IsNullOrWhiteSpace($InnoCompiler) -or -not (Test-Path -LiteralPath $InnoCompiler)) {
-    throw 'Inno Setup 6 compiler was not found. Install it or pass -InnoCompiler.'
+    throw 'Inno Setup compiler was not found. Install Inno Setup 7 (recommended) or 6, or pass -InnoCompiler.'
 }
 
 & $InnoCompiler "/DAppVersion=$Version" "/DSourceDir=$publish" "/DOutputDir=$installerOutput" $script

@@ -14,7 +14,8 @@ owner can disable it from the panel.
 .\tools\build-windows-installer.ps1 -Version 0.1.0-preview.20261009
 ```
 
-Inno Setup 6 must be installed. Release output is written under
+Inno Setup 7 is recommended for the repository's long asset paths; version 6 is
+also supported when source paths remain within its limits. Release output is written under
 `.publish-check/`, which is intentionally excluded from Git. The build rejects
 local review markers, `.asset-staging`, tests, references and existing user data.
 The generated installer is currently unsigned, so Windows may show a SmartScreen
