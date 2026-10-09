@@ -231,10 +231,14 @@ public partial class MainWindow : Window
             var decisionMemoryTask = _runtime.RefreshDecisionMemoryAsync("startup");
             await Task.WhenAll(personalityTask, decisionMemoryTask, policyTask, companionSessionTask);
             var policy = await policyTask;
-            _runtime.UpdateAutonomyPolicy(policy.Profile, policy.Status);
+            var deviceTimePolicy = policy.Profile with
+            {
+                Time = policy.Profile.Time with { UseDeviceTimeZone = true }
+            };
+            _runtime.UpdateAutonomyPolicy(deviceTimePolicy, policy.Status);
             _companionSession = await companionSessionTask;
             _companionSessionLoaded = true;
-            SynchronizeWindowsStartup(policy.Profile.Presence.StartWithWindows);
+            SynchronizeWindowsStartup(deviceTimePolicy.Presence.StartWithWindows);
             var personality = await personalityTask;
             _runtime.UpdateTemperament(TemperamentProfile.FromSnapshot(personality));
             _runtime.UpdateOwnerPromptAgency(await _agentRuntime.Profiles.LoadPetPromptAsync());

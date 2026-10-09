@@ -11,6 +11,7 @@
         Style="{StaticResource UxWindow}">
   <Window.Resources>
     <local:PanelAvailabilityConverter x:Key="PanelAvailability" />
+    <local:AssetThumbnailConverter x:Key="AssetThumbnail" />
     <Style x:Key="ExecutionHint" TargetType="TextBlock" BasedOn="{StaticResource SubText}">
       <Setter Property="Margin" Value="0,7,0,0" />
       <Setter Property="TextWrapping" Value="Wrap" />
@@ -92,7 +93,6 @@
               <TextBlock Text="主人" Style="{StaticResource PageTitle}" />
               <TextBlock Text="{Binding Willingness}" Style="{StaticResource SubText}" />
             </StackPanel>
-            <Button DockPanel.Dock="Right" Content="同步（待解锁）" Style="{StaticResource DisabledButton}" />
           </DockPanel>
           <Grid>
             <Grid.ColumnDefinitions>
@@ -185,7 +185,6 @@
               <TextBlock Text="档案" Style="{StaticResource PageTitle}" />
               <TextBlock Text="长期资料、性格底色、关系变化与记忆。" Style="{StaticResource SubText}" />
             </StackPanel>
-            <Button DockPanel.Dock="Right" Content="保存" Style="{StaticResource PrimaryButton}" IsEnabled="False" />
           </DockPanel>
           <UniformGrid Columns="4" Width="620" HorizontalAlignment="Left" Margin="0,0,0,18">
             <Button x:Name="ProfilePetTabButton" Content="宠物档案" Style="{StaticResource PanelTabButtonSelected}" Tag="Pet" Click="ProfileTab_Click" />
@@ -247,9 +246,13 @@
             </Border>
             <Border x:Name="ProfileRelationPanel" Style="{StaticResource Card}" Visibility="Collapsed">
               <StackPanel>
-              <Grid x:Name="PersonalityRelationshipProjection">
-                <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
-                <StackPanel Grid.ColumnSpan="2">
+                <UniformGrid Columns="4" Margin="0,0,0,18">
+                  <Button x:Name="RelationTemperamentTabButton" Content="性格基线" Tag="Temperament" Style="{StaticResource PanelTabButtonSelected}" Click="RelationSection_Click" />
+                  <Button x:Name="RelationPreferencesTabButton" Content="日常偏好" Tag="Preferences" Style="{StaticResource PanelTabButton}" Click="RelationSection_Click" />
+                  <Button x:Name="RelationRhythmTabButton" Content="行为节奏" Tag="Rhythm" Style="{StaticResource PanelTabButton}" Click="RelationSection_Click" />
+                  <Button x:Name="RelationCompanionTabButton" Content="主动陪伴" Tag="Companion" Style="{StaticResource PanelTabButton}" Click="RelationSection_Click" />
+                </UniformGrid>
+                <StackPanel x:Name="RelationTemperamentPanel">
                   <TextBlock Text="性格基线" FontWeight="SemiBold" />
                   <TextBlock Text="拖动滑杆会影响自主动作倾向和对话语气，保存后随便携数据保留。" Style="{StaticResource SubText}" Margin="0,4,0,12" TextWrapping="Wrap" />
                   <DockPanel><TextBlock Text="活泼度" /><TextBlock DockPanel.Dock="Right" Text="{Binding ElementName=TemperamentActivitySlider, Path=Value, StringFormat={}{0:F0}}" /></DockPanel>
@@ -267,9 +270,7 @@
                     <TextBlock x:Name="TemperamentSaveStatus" Text="拖动后保存" Style="{StaticResource SubText}" VerticalAlignment="Center" Margin="8,0,0,0" />
                   </WrapPanel>
                 </StackPanel>
-              </Grid>
-              <Separator Margin="0,20,0,16" />
-              <StackPanel>
+                <StackPanel x:Name="RelationPreferencesPanel" Visibility="Collapsed">
                 <TextBlock Text="日常动作倾向" FontWeight="SemiBold" />
                 <TextBlock Text="调节悟空空闲时更常选择哪类已批准动作。状态、安全门禁和冷却仍然优先。" Style="{StaticResource SubText}" Margin="0,4,0,12" TextWrapping="Wrap" />
                 <UniformGrid Columns="2">
@@ -290,13 +291,21 @@
                     <Slider x:Name="StandingPreferenceSlider" Style="{StaticResource PersonalitySlider}" Minimum="25" Maximum="200" Value="40" />
                   </StackPanel>
                 </UniformGrid>
-                <Expander x:Name="AutonomyPolicyExpander" Header="生活节奏与打扰频率" Margin="0,16,0,0">
+                  <WrapPanel Margin="0,16,0,0">
+                    <Button Content="保存日常偏好" Style="{StaticResource PrimaryButton}" Click="SaveAutonomousPreferences_Click" />
+                    <TextBlock x:Name="AutonomousPreferenceSaveStatus" Text="首次运行使用推荐值" Style="{StaticResource SubText}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                  </WrapPanel>
+                </StackPanel>
+                <StackPanel x:Name="RelationRhythmPanel" Visibility="Collapsed">
+                  <TextBlock Text="行为节奏" FontWeight="SemiBold" />
+                  <TextBlock Text="控制口令耐受度和稳定姿态的停留区间。普通安全门禁始终优先。" Style="{StaticResource SubText}" Margin="0,4,0,12" TextWrapping="Wrap" />
+                  <DockPanel Margin="0,0,0,6">
+                    <TextBlock Text="叛逆度" />
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding ElementName=RebelliousnessSlider, Path=Value, StringFormat={}{0:F0}%}" />
+                  </DockPanel>
+                  <Slider x:Name="RebelliousnessSlider" Style="{StaticResource PersonalitySlider}" Margin="0,0,0,12" />
+                <Expander x:Name="AutonomyPolicyExpander" Header="姿态驻留细节" IsExpanded="False" Margin="0,8,0,0">
                   <StackPanel Margin="0,10,0,0">
-                    <DockPanel Margin="0,0,0,6">
-                      <TextBlock Text="叛逆度" />
-                      <TextBlock DockPanel.Dock="Right" Text="{Binding ElementName=RebelliousnessSlider, Path=Value, StringFormat={}{0:F0}%}" />
-                    </DockPanel>
-                    <Slider x:Name="RebelliousnessSlider" Style="{StaticResource PersonalitySlider}" Margin="0,0,0,12" />
                     <DataGrid x:Name="PosturePolicyGrid" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column" RowHeaderWidth="0" MinRowHeight="38" MinColumnWidth="140" FontSize="14" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#DCE3DD" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderThickness="0" Background="Transparent">
                       <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
@@ -315,7 +324,14 @@
                         <DataGridTextColumn Header="待机偏好" Binding="{Binding IdleWeight, ValidatesOnExceptions=True}" Width="*" />
                       </DataGrid.Columns>
                     </DataGrid>
-                    <Grid Margin="0,14,0,0">
+                  </StackPanel>
+                </Expander>
+                  <Button Content="保存行为节奏" Style="{StaticResource PrimaryButton}" Click="SaveAutonomousPreferences_Click" HorizontalAlignment="Left" Margin="0,16,0,0" />
+                </StackPanel>
+                <StackPanel x:Name="RelationCompanionPanel" Visibility="Collapsed">
+                  <TextBlock Text="主动陪伴" FontWeight="SemiBold" />
+                  <TextBlock Text="管理主动发言、安静时段以及开机和久别问候。时间始终跟随当前电脑。" Style="{StaticResource SubText}" Margin="0,4,0,12" TextWrapping="Wrap" />
+                  <Grid Margin="0,0,0,0">
                       <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition /><ColumnDefinition Width="80" /></Grid.ColumnDefinitions>
                       <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                       <CheckBox x:Name="InitiativeEnabledCheck" Content="偶尔主动说话" VerticalAlignment="Center" />
@@ -330,9 +346,9 @@
                       </StackPanel>
                       <TextBlock Grid.Row="2" Text="每 8 小时最多发言" VerticalAlignment="Center" Margin="0,12,0,0" />
                       <TextBox x:Name="SpeechBudgetText" Grid.Row="2" Grid.Column="1" Style="{StaticResource Field}" Width="80" HorizontalAlignment="Left" Margin="0,12,0,0" />
-                    </Grid>
-                    <Separator Margin="0,16,0,14" />
-                    <TextBlock Text="开机与本地时间" FontWeight="SemiBold" />
+                  </Grid>
+                    <Separator Margin="0,18,0,14" />
+                    <TextBlock Text="开机与问候" FontWeight="SemiBold" />
                     <WrapPanel Margin="0,10,0,0">
                       <CheckBox x:Name="StartWithWindowsCheck" Content="开机后自动唤醒悟空" Margin="0,0,22,10" />
                       <CheckBox x:Name="StartupGreetingCheck" Content="启动时偶尔问候" Margin="0,0,22,10" />
@@ -340,22 +356,14 @@
                       <CheckBox x:Name="LateNightCareCheck" Content="深夜提醒休息" Margin="0,0,0,10" />
                     </WrapPanel>
                     <Grid Margin="0,2,0,0">
-                      <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition /><ColumnDefinition Width="150" /><ColumnDefinition Width="90" /></Grid.ColumnDefinitions>
-                      <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-                      <CheckBox x:Name="UseDeviceTimeZoneCheck" Content="跟随设备时间" VerticalAlignment="Center" Checked="UseDeviceTimeZoneCheck_Changed" Unchecked="UseDeviceTimeZoneCheck_Changed" />
-                      <ComboBox x:Name="ManualTimeZoneCombo" Grid.Column="1" IsEditable="True" MinHeight="34" Margin="8,0,20,0" DisplayMemberPath="Name" SelectedValuePath="Id" />
-                      <TextBlock Grid.Column="2" Text="久别判定（小时）" VerticalAlignment="Center" />
-                      <TextBox x:Name="LongAbsenceHoursText" Grid.Column="3" Style="{StaticResource Field}" />
-                      <TextBlock x:Name="CompanionTimeStatusText" Grid.Row="1" Grid.ColumnSpan="4" Style="{StaticResource SubText}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="100" /><ColumnDefinition /></Grid.ColumnDefinitions>
+                      <TextBlock Text="久别判定（小时）" VerticalAlignment="Center" />
+                      <TextBox x:Name="LongAbsenceHoursText" Grid.Column="1" Style="{StaticResource Field}" />
+                      <TextBlock x:Name="CompanionTimeStatusText" Grid.Column="2" Style="{StaticResource SubText}" Margin="16,0,0,0" VerticalAlignment="Center" TextWrapping="Wrap" />
                     </Grid>
                     <TextBlock x:Name="AutonomyPolicyStatusText" Style="{StaticResource SubText}" Margin="0,10,0,0" TextWrapping="Wrap" />
-                  </StackPanel>
-                </Expander>
-                <WrapPanel Margin="0,12,0,0">
-                  <Button Content="保存日常倾向" Style="{StaticResource PrimaryButton}" Click="SaveAutonomousPreferences_Click" />
-                  <TextBlock x:Name="AutonomousPreferenceSaveStatus" Text="首次运行使用推荐值" Style="{StaticResource SubText}" VerticalAlignment="Center" Margin="8,0,0,0" />
-                </WrapPanel>
-              </StackPanel>
+                    <Button Content="保存主动陪伴设置" Style="{StaticResource PrimaryButton}" Click="SaveAutonomousPreferences_Click" HorizontalAlignment="Left" Margin="0,14,0,0" />
+                </StackPanel>
               </StackPanel>
             </Border>
             <Border x:Name="ProfileMemoryPanel" Style="{StaticResource Card}" Visibility="Collapsed">
@@ -418,8 +426,9 @@
           </Border>
           <Grid Margin="0,16,0,0">
             <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="2.55*" />
-              <ColumnDefinition Width="0.85*" />
+              <ColumnDefinition Width="2.2*" MinWidth="420" />
+              <ColumnDefinition Width="8" />
+              <ColumnDefinition Width="1*" MinWidth="280" />
             </Grid.ColumnDefinitions>
             <Border Style="{StaticResource Card}" VerticalAlignment="Top">
               <StackPanel>
@@ -445,7 +454,8 @@
                 </ScrollViewer>
               </StackPanel>
             </Border>
-            <Border Grid.Column="1" Style="{StaticResource Card}" Margin="16,0,0,0" VerticalAlignment="Top">
+            <GridSplitter x:Name="AlbumLayoutSplitter" Grid.Column="1" Width="8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Background="Transparent" ShowsPreview="True" />
+            <Border Grid.Column="2" Style="{StaticResource Card}" Margin="12,0,0,0" VerticalAlignment="Top">
               <StackPanel>
                 <TextBlock Text="子相册编辑" FontWeight="SemiBold" />
                 <TextBlock x:Name="AlbumSelectedNameText" Text="未选择子相册" FontWeight="SemiBold" Margin="0,10,0,0" />
@@ -662,9 +672,10 @@
             <Button x:Name="MagicAssetsTabButton" Content="魔法特辑" Tag="Magic" Style="{StaticResource PanelTabButton}" Click="AssetTab_Click" Margin="0,0,8,8" />
             <Button x:Name="HolidayAssetsTabButton" Content="节日特辑（待解锁）" Tag="Holiday" Style="{StaticResource PanelTabButton}" IsEnabled="False" Margin="0,0,0,8" />
           </WrapPanel>
+          <TextBlock x:Name="AssetLoadStatus" Text="进入素材页后按需加载缩略图" Style="{StaticResource SubText}" Margin="0,0,0,8" />
           <TextBlock Text="{Binding ElementName=MagicShowStatus, Path=Text}" TextWrapping="Wrap" Foreground="{StaticResource GreenBrush}" Margin="0,0,0,12" />
           <Grid>
-            <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="1.1*" /></Grid.ColumnDefinitions>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="2*" MinWidth="430" /><ColumnDefinition Width="8" /><ColumnDefinition Width="1.1*" MinWidth="300" /></Grid.ColumnDefinitions>
             <ScrollViewer x:Name="NormalAssetsPanel" MaxHeight="560">
               <ItemsControl x:Name="AssetList">
                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
@@ -672,7 +683,7 @@
                   <DataTemplate>
                     <Border Style="{StaticResource AssetCard}" Width="284" Margin="0,0,12,12">
                       <StackPanel>
-                        <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
+                        <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame, Converter={StaticResource AssetThumbnail}, IsAsync=True}" Width="{Binding PanelPreviewRenderSize}" Height="{Binding PanelPreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
                         <DockPanel LastChildFill="False" Margin="0,10,0,0">
                           <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
                           <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding StatusSummary}" /></Border>
@@ -695,7 +706,7 @@
                   <DataTemplate>
                     <Border Style="{StaticResource AssetCard}" Width="284" Margin="0,0,12,12">
                       <StackPanel>
-                        <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
+                        <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame, Converter={StaticResource AssetThumbnail}, IsAsync=True}" Width="{Binding PanelPreviewRenderSize}" Height="{Binding PanelPreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
                         <DockPanel LastChildFill="False" Margin="0,10,0,0">
                           <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
                           <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding StatusSummary}" /></Border>
@@ -718,7 +729,7 @@
                   <DataTemplate>
                     <Border Style="{StaticResource AssetCard}" Width="284" Margin="0,0,12,12">
                       <StackPanel>
-                        <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
+                        <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame, Converter={StaticResource AssetThumbnail}, IsAsync=True}" Width="{Binding PanelPreviewRenderSize}" Height="{Binding PanelPreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
                         <DockPanel LastChildFill="False" Margin="0,10,0,0">
                           <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
                           <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding StatusSummary}" /></Border>
@@ -742,7 +753,7 @@
                     <DataTemplate>
                       <Border Style="{StaticResource AssetCard}" Width="284" Margin="0,0,12,12">
                         <StackPanel>
-                          <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
+                          <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame, Converter={StaticResource AssetThumbnail}, IsAsync=True}" Width="{Binding PanelPreviewRenderSize}" Height="{Binding PanelPreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
                           <DockPanel LastChildFill="False" Margin="0,10,0,0">
                             <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
                             <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding StatusSummary}" /></Border>
@@ -767,7 +778,7 @@
                   <DataTemplate>
                     <Border Style="{StaticResource AssetCard}" Width="284" Margin="0,0,12,12">
                       <StackPanel>
-                        <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame}" Width="{Binding PreviewRenderSize}" Height="{Binding PreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
+                        <Border Style="{StaticResource AssetPreviewFrame}"><Image Source="{Binding FirstFrame, Converter={StaticResource AssetThumbnail}, IsAsync=True}" Width="{Binding PanelPreviewRenderSize}" Height="{Binding PanelPreviewRenderSize}" Style="{StaticResource AssetPreviewImage}" /></Border>
                         <DockPanel LastChildFill="False" Margin="0,10,0,0">
                           <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
                           <Border DockPanel.Dock="Right" Style="{StaticResource AssetDispositionBadge}"><TextBlock Text="{Binding StatusSummary}" /></Border>
@@ -784,7 +795,8 @@
               </ItemsControl>
               </StackPanel>
             </ScrollViewer>
-            <Border Grid.Column="1" Style="{StaticResource Card}" Margin="16,0,0,16">
+            <GridSplitter x:Name="AssetLayoutSplitter" Grid.Column="1" Width="8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Background="Transparent" ShowsPreview="True" />
+            <Border Grid.Column="2" Style="{StaticResource Card}" Margin="12,0,0,16">
               <StackPanel>
                 <TextBlock Text="动画预览" FontWeight="SemiBold" />
                 <TextBlock x:Name="PreviewTitle" Text="选择左侧动作查看" Style="{StaticResource SubText}" Margin="0,4,0,12" />

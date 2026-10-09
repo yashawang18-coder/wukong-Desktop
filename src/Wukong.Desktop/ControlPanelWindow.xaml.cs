@@ -44,6 +44,8 @@ public partial class ControlPanelWindow : Window
     private OwnerProfileSnapshot _loadedOwnerProfile = OwnerProfileSnapshot.Default;
     private bool _changingDeveloperMode;
     private bool _refreshingMechanismDiagnostics;
+    private bool _assetListsLoaded;
+    private bool _assetLoadScheduled;
     private string _selectedMechanismCategory = "all";
     private CancellationTokenSource? _agentRequestCancellation;
 
@@ -70,7 +72,6 @@ public partial class ControlPanelWindow : Window
         ApplyPolicyToUi(_runtime.AutonomyPolicy);
         DataContext = _runtime;
         TraceList.ItemsSource = _runtime.TraceLines;
-        RefreshAssetLists();
         CommandMotionList.ItemsSource = _runtime.Motions
             .Where(x => !x.IsExpired && !x.Deprecated && string.Equals(x.Category, "口令动作", StringComparison.Ordinal))
             .OrderBy(x => x.BehaviorId)
@@ -150,6 +151,11 @@ public partial class ControlPanelWindow : Window
             UpdateDeveloperVisibility();
         }
 
+        SelectNavigationPage(page);
+    }
+
+    private void SelectNavigationPage(string page)
+    {
         OwnerPage.Visibility = page == "Owner" ? Visibility.Visible : Visibility.Collapsed;
         ProfilePage.Visibility = page == "Profile" ? Visibility.Visible : Visibility.Collapsed;
         AlbumPage.Visibility = page == "Album" ? Visibility.Visible : Visibility.Collapsed;
@@ -163,6 +169,25 @@ public partial class ControlPanelWindow : Window
         AssetsNavButton.Style = NavButtonStyle(page == "Assets");
         DeveloperNavButton.Style = NavButtonStyle(page == "Developer");
         PageScrollViewer.ScrollToTop();
+        if (page == "Assets")
+            ScheduleAssetListLoad();
+    }
+
+    private void ScheduleAssetListLoad()
+    {
+        if (_assetListsLoaded || _assetLoadScheduled)
+            return;
+
+        _assetLoadScheduled = true;
+        AssetLoadStatus.Text = "正在加载素材索引和缩略图...";
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            var started = Stopwatch.StartNew();
+            RefreshAssetLists();
+            _assetListsLoaded = true;
+            _assetLoadScheduled = false;
+            AssetLoadStatus.Text = $"素材已就绪 · {started.ElapsedMilliseconds} ms";
+        }));
     }
 
     private async void ChooseAlbumRoot_Click(object sender, RoutedEventArgs e)
@@ -402,6 +427,25 @@ public partial class ControlPanelWindow : Window
         ProfileMemoryTabButton.Style = PanelTabStyle(activeTab == "Memory");
     }
 
+    private void RelationSection_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string section })
+            SelectRelationSection(section);
+    }
+
+    private void SelectRelationSection(string section)
+    {
+        var active = section is "Preferences" or "Rhythm" or "Companion" ? section : "Temperament";
+        RelationTemperamentPanel.Visibility = active == "Temperament" ? Visibility.Visible : Visibility.Collapsed;
+        RelationPreferencesPanel.Visibility = active == "Preferences" ? Visibility.Visible : Visibility.Collapsed;
+        RelationRhythmPanel.Visibility = active == "Rhythm" ? Visibility.Visible : Visibility.Collapsed;
+        RelationCompanionPanel.Visibility = active == "Companion" ? Visibility.Visible : Visibility.Collapsed;
+        RelationTemperamentTabButton.Style = PanelTabStyle(active == "Temperament");
+        RelationPreferencesTabButton.Style = PanelTabStyle(active == "Preferences");
+        RelationRhythmTabButton.Style = PanelTabStyle(active == "Rhythm");
+        RelationCompanionTabButton.Style = PanelTabStyle(active == "Companion");
+    }
+
     private void ModelTab_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button { Tag: string tab })
@@ -607,10 +651,14 @@ public partial class ControlPanelWindow : Window
         _memoryConfiguration = await memoryConfigurationTask;
         ApplyMemoryConfigurationToUi(_memoryConfiguration);
         var policy = await policyTask;
-        _runtime.UpdateAutonomyPolicy(policy.Profile, policy.Status);
-        _autonomousBehaviorPreferences = policy.Profile.EffectivePreferences;
+        var deviceTimePolicy = policy.Profile with
+        {
+            Time = policy.Profile.Time with { UseDeviceTimeZone = true }
+        };
+        _runtime.UpdateAutonomyPolicy(deviceTimePolicy, policy.Status);
+        _autonomousBehaviorPreferences = deviceTimePolicy.EffectivePreferences;
         ApplyAutonomousPreferencesToUi(_autonomousBehaviorPreferences);
-        ApplyPolicyToUi(policy.Profile);
+        ApplyPolicyToUi(deviceTimePolicy);
         LoadAvatarIfAvailable();
 
         _providerConfigurations.Clear();

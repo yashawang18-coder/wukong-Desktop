@@ -686,6 +686,10 @@ static void DesktopSingleInstanceRejectsDuplicate()
 
 static void ControlPanelXamlConstructs()
 {
+    var panelXaml = File.ReadAllText(Path.GetFullPath(Path.Combine("src", "Wukong.Desktop", "ControlPanelWindow.xaml")));
+    Assert(!panelXaml.Contains("Content=\"保存\" Style=\"{StaticResource PrimaryButton}\" IsEnabled=\"False\"", StringComparison.Ordinal),
+        "profile header must not expose a permanently disabled save action");
+
     Exception? failure = null;
     var thread = new Thread(() =>
     {
@@ -711,6 +715,23 @@ static void ControlPanelXamlConstructs()
             Assert(panel.FindName("TemperamentIndependenceSlider") is Slider, "independence temperament slider missing");
             Assert(panel.FindName("TemperamentMischiefSlider") is Slider, "mischief temperament slider missing");
             Assert(panel.FindName("TemperamentSaveStatus") is TextBlock, "temperament persistence status missing");
+            Assert(panel.FindName("OpenCompanionTimeSettingsButton") is null,
+                "owner page still duplicates time and greeting settings");
+            Assert(panel.FindName("AutonomyPolicyExpander") is Expander { IsExpanded: false },
+                "advanced posture policy should be collapsed by default");
+            Assert(panel.FindName("UseDeviceTimeZoneCheck") is null &&
+                   panel.FindName("ManualTimeZoneCombo") is null,
+                "manual time-zone controls should not appear when desktop time is authoritative");
+            Assert(panel.FindName("RelationTemperamentTabButton") is Button &&
+                   panel.FindName("RelationPreferencesTabButton") is Button &&
+                   panel.FindName("RelationRhythmTabButton") is Button &&
+                   panel.FindName("RelationCompanionTabButton") is Button,
+                "personality and daily settings are not split into logical sections");
+            Assert(panel.FindName("AlbumLayoutSplitter") is GridSplitter &&
+                   panel.FindName("AssetLayoutSplitter") is GridSplitter,
+                "album and asset workspaces must expose resizable split views");
+            Assert(panel.FindName("AssetList") is ItemsControl { ItemsSource: null },
+                "asset cards should be loaded lazily instead of during panel construction");
             Assert(panel.FindName("PosturePolicyGrid") is DataGrid { Items.Count: 3, MinColumnWidth: >= 140 },
                 "posture policy editor must expose three readable rows");
             Assert(panel.FindName("InitiativeEnabledCheck") is CheckBox &&
@@ -2113,6 +2134,12 @@ static void ControlPanelExposesMagicSpecialsTab()
                 new RelationshipState(0.84, 0.73, 7, 2) { TouchAcceptance = 0.79, InitiativeAcceptance = 0.68 },
                 91);
             var panel = new ControlPanelWindow(runtime);
+            var assetsNav = panel.FindName("AssetsNavButton") as Button;
+            Assert(assetsNav is not null, "assets navigation button missing");
+            assetsNav!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            panel.Dispatcher.Invoke(
+                () => { },
+                System.Windows.Threading.DispatcherPriority.ApplicationIdle);
             Assert(panel.FindName("NormalAssetsPanel") is ScrollViewer, "normal assets panel missing");
             var baseList = panel.FindName("AssetList") as ItemsControl;
             Assert(baseList is not null, "base asset list missing");
@@ -2144,7 +2171,6 @@ static void ControlPanelExposesMagicSpecialsTab()
             }), "asset categories no longer match owner-facing behavior groups");
             Assert(panel.FindName("HolidayAssetsTabButton") is Button { IsEnabled: false }, "holiday specials should remain visibly locked");
             Assert(panel.FindName("AgentDecisionFlow") is UniformGrid { Children.Count: 6 }, "developer page is missing the six-step Agent decision flow");
-            Assert(panel.FindName("PersonalityRelationshipProjection") is Grid, "personality and relationship runtime projection is missing");
             Assert(runtime.TemperamentActivity == 71 && Math.Abs(runtime.RelationshipTrust - 0.84) < 0.001 && runtime.RecentPositiveInteractions == 7,
                 "personality and relationship projection is not backed by runtime state");
             foreach (var name in new[]

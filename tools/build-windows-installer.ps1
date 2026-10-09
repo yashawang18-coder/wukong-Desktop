@@ -2,7 +2,8 @@ param(
     [string]$Version = '0.1.0-preview.20261009',
     [string]$Configuration = 'Release',
     [string]$Runtime = 'win-x64',
-    [string]$InnoCompiler = ''
+    [string]$InnoCompiler = '',
+    [string]$LocalAlbumSource = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -34,6 +35,39 @@ dotnet publish $project `
     -nr:false `
     -v:minimal
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed: $LASTEXITCODE" }
+
+$bundledAlbumFileCount = 0
+$bundledAlbumBytes = 0
+if (-not [string]::IsNullOrWhiteSpace($LocalAlbumSource)) {
+    $albumSource = (Resolve-Path -LiteralPath $LocalAlbumSource).Path
+    if (-not (Test-Path -LiteralPath $albumSource -PathType Container)) {
+        throw "Local album source is not a directory: $LocalAlbumSource"
+    }
+
+    $albumFiles = @(Get-ChildItem -LiteralPath $albumSource -Recurse -Force -File)
+    if ($albumFiles.Count -eq 0) { throw "Local album source is empty: $albumSource" }
+
+    $albumTarget = Join-Path $publish 'WukongDefaults\albums'
+    New-Item -ItemType Directory -Path $albumTarget -Force | Out-Null
+    Get-ChildItem -LiteralPath $albumSource -Force | Copy-Item -Destination $albumTarget -Recurse -Force
+
+    $copiedAlbumFiles = @(Get-ChildItem -LiteralPath $albumTarget -Recurse -Force -File)
+    $sourceRelative = $albumFiles | ForEach-Object { $_.FullName.Substring($albumSource.Length + 1).Replace('\','/') }
+    $copiedRelative = $copiedAlbumFiles | ForEach-Object { $_.FullName.Substring($albumTarget.Length + 1).Replace('\','/') }
+    if (Compare-Object $sourceRelative $copiedRelative) {
+        throw 'Bundled album file list differs from the local source.'
+    }
+    foreach ($sourceFile in $albumFiles) {
+        $relative = $sourceFile.FullName.Substring($albumSource.Length + 1)
+        $targetFile = Join-Path $albumTarget $relative
+        if ((Get-FileHash -LiteralPath $sourceFile.FullName -Algorithm SHA256).Hash -ne
+            (Get-FileHash -LiteralPath $targetFile -Algorithm SHA256).Hash) {
+            throw "Bundled album hash mismatch: $relative"
+        }
+    }
+    $bundledAlbumFileCount = $albumFiles.Count
+    $bundledAlbumBytes = ($albumFiles | Measure-Object -Property Length -Sum).Sum
+}
 
 $referenceAssets = Join-Path $publish 'WukongAssets\reference'
 if (Test-Path -LiteralPath $referenceAssets) {
@@ -67,6 +101,9 @@ $releaseManifest = [ordered]@{
     source_commit = $sourceSha
     self_contained = $true
     signed = $false
+    bundled_albums = $bundledAlbumFileCount -gt 0
+    bundled_album_file_count = $bundledAlbumFileCount
+    bundled_album_bytes = $bundledAlbumBytes
     user_data_policy = 'WukongData is created on first launch and preserved by uninstall.'
     generated_at_utc = [DateTimeOffset]::UtcNow.ToString('O')
 }

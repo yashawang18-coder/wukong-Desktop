@@ -181,6 +181,10 @@ public sealed record PlayableMotion(
         150 * MotionVisualSizer.RenderScaleForMotion(this, DesktopMotionCatalog.ReferenceFramePath),
         150 * 0.45,
         150 * 2.6);
+    public double PanelPreviewRenderSize => Math.Clamp(
+        150 * (RenderScaleOverride is > 0 ? RenderScaleOverride.Value : VisualScale),
+        150 * 0.6,
+        150 * 1.7);
 }
 
 public sealed record MotionVisibleMetrics(int CanvasWidth, int CanvasHeight, Int32Rect Bounds)
