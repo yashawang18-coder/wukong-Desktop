@@ -35,6 +35,11 @@ dotnet publish $project `
     -v:minimal
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed: $LASTEXITCODE" }
 
+$referenceAssets = Join-Path $publish 'WukongAssets\reference'
+if (Test-Path -LiteralPath $referenceAssets) {
+    Remove-Item -LiteralPath $referenceAssets -Recurse -Force
+}
+
 $required = @(
     'Wukong.Desktop.exe',
     'Wukong.Desktop.dll',
@@ -49,6 +54,7 @@ $forbidden = @('.git','.asset-staging','tests','reference','WukongData')
 foreach ($name in $forbidden) {
     if (Test-Path -LiteralPath (Join-Path $publish $name)) { throw "Forbidden publish item: $name" }
 }
+if (Test-Path -LiteralPath $referenceAssets) { throw 'Reference masters must not enter release output.' }
 Get-ChildItem -LiteralPath $publish -Filter '*.enabled' -File | ForEach-Object {
     throw "Local candidate marker must not enter release: $($_.Name)"
 }
