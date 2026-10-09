@@ -2,7 +2,7 @@
   "schema_version": 1,
   "batch_id": "WK-AUTONOMOUS-PATROL-WALK-v8",
   "asset_id": "WK-AUTONOMOUS-PATROL-WALK-v8",
-  "asset_stage": "runtime-approved",
+  "asset_stage": "superseded",
   "candidate_profile": "patrol-walk-v8",
   "source_package": "WK-WALK-MATERIAL-NORMALIZED-REVIEW-v8",
   "source_manifest_sha256": "bb22f77bad0bc5fc057bf87fcdabed59b83fd2561eb912a6272e59e2fab32148",
@@ -14,15 +14,13 @@
   "visual_approved": true,
   "runtime_validation": "passed_windows_renderer_qa",
   "runtime_approved": true,
-  "runtime_use": true,
-  "production_asset": true,
+  "runtime_use": false,
+  "production_asset": false,
   "prototype_use": false,
   "developer_preview": true,
-  "autonomous_binding_enabled": true,
+  "autonomous_binding_enabled": false,
   "allowed_sources": [
-    "AutonomousTick",
-    "DeveloperPreview",
-    "OwnerDialogue"
+    "DeveloperPreview"
   ],
   "runtime_render_scale": 0.68,
   "runtime_scale_basis": "one fixed group scale; matches existing approved standing height; no per-frame fit",
@@ -289,15 +287,13 @@
       "visual_approved": true,
       "runtime_validation": "passed_windows_renderer_qa",
       "runtime_approved": true,
-      "runtime_use": true,
-      "production_asset": true,
+      "runtime_use": false,
+      "production_asset": false,
       "prototype_use": false,
       "developer_preview": true,
-      "autonomous_binding_enabled": true,
+      "autonomous_binding_enabled": false,
       "allowed_sources": [
-        "AutonomousTick",
-        "DeveloperPreview",
-        "OwnerDialogue"
+        "DeveloperPreview"
       ],
       "behavior_id": "wk.candidate.autonomous.patrol_walk_left_v1",
       "display_name": "向左走走",
@@ -429,22 +425,22 @@
             }
           ]
         }
-      ]
+      ],
+      "deprecated": true,
+      "superseded_by": "WK-AUTONOMOUS-PATROL-WALK-v10"
     },
     {
       "owner_preview_approved": true,
       "visual_approved": true,
       "runtime_validation": "passed_windows_renderer_qa",
       "runtime_approved": true,
-      "runtime_use": true,
-      "production_asset": true,
+      "runtime_use": false,
+      "production_asset": false,
       "prototype_use": false,
       "developer_preview": true,
-      "autonomous_binding_enabled": true,
+      "autonomous_binding_enabled": false,
       "allowed_sources": [
-        "AutonomousTick",
-        "DeveloperPreview",
-        "OwnerDialogue"
+        "DeveloperPreview"
       ],
       "behavior_id": "wk.candidate.autonomous.patrol_walk_right_v1",
       "display_name": "向右走走",
@@ -576,7 +572,9 @@
             }
           ]
         }
-      ]
+      ],
+      "deprecated": true,
+      "superseded_by": "WK-AUTONOMOUS-PATROL-WALK-v10"
     }
   ],
   "approval_evidence": {
@@ -584,5 +582,8 @@
     "owner_runtime_integration_authorized": true,
     "automated_windows_playback": true,
     "owner_final_desktop_review": "pending"
-  }
+  },
+  "deprecated": true,
+  "superseded_by": "WK-AUTONOMOUS-PATROL-WALK-v10",
+  "deprecated_reason": "superseded_by_owner_approved_walk_v10_2026_10_09"
 }

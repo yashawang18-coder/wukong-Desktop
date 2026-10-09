@@ -4,7 +4,112 @@
 
 This is the working handoff for continuing Wukong Desktop from a different Codex desktop account. It is a reconstructed, high-signal record of owner decisions and implemented repository state. The Codex client does not expose a byte-for-byte chat export to the local coding agent; use this together with the committed repository as the source of truth.
 
-## Open First
+## Start Here: How To Use This Handoff
+
+### What Is Being Migrated
+
+The migration unit is the **entire current local worktree**, not only GitHub. The local candidate changes below are uncommitted, so a fresh clone of GitHub will **not** contain them.
+
+| Situation | Correct action |
+|---|---|
+| New Codex account on this Windows machine | Open the existing repository directory directly. Do not clone another copy. |
+| New Windows machine | Transfer a copy of the repository folder including `.git`, tracked changes and the two authorized untracked directories. Then open that copied directory. |
+| Only GitHub is available | Treat it as the published baseline only. Do not claim the latest posture-policy candidate is present until the local worktree or an explicit patch has also been transferred. |
+
+Do not transfer `.publish-check/`, `bin/`, `obj/`, logs or raw source ZIPs as source control. They are disposable build outputs. Preserve `.asset-staging/`, `AGENTS.md` and `skills/` because they are current owner-local inputs/rules.
+
+### Five-Minute Takeover Checklist
+
+1. Open the existing `<repository-root>`, not a newly cloned sibling directory.
+2. Read `AGENTS.md`, then this section, then the files in [Read Before Editing](#read-before-editing).
+3. Run the following **read-only** checks before editing anything:
+
+   ```powershell
+   git status --short --branch
+   git branch --show-current
+   git rev-parse HEAD
+   git diff --check
+   ```
+
+4. Confirm the expected branch and committed baseline are `codex/project-skills-foundation` and `f05b16c76abeaed270e7c11127f4b75f5d516e70`.
+5. Compare `git status` with [Expected Working Tree](#expected-working-tree). If a change is missing or unexpected, stop and ask the owner before cleaning, switching branches or staging.
+6. Launch the [Latest Local Candidate EXE](#latest-local-candidate-exe) for the owner review. A successful launch is not a production approval.
+7. Make only the owner-requested change. Before a future commit, run the validation gate in [Verification And Publish Gate](#verification-and-publish-gate).
+
+### Hard Safety Rules
+
+- Never use `git reset`, `git clean`, rebase, force-push, broad `git add .` / `git add -A`, or checkout-overwrite in this worktree.
+- Do not modify `main` without a new explicit owner instruction.
+- Do not stage `.asset-staging/`, `.publish-check/`, `bin/`, `obj/`, logs, raw ZIPs, portable user settings, chat history, memories or albums.
+- Do not use an unapproved, deprecated or pose-incompatible asset as a fallback.
+- Do not treat this document as authorization to commit, push, create a PR, merge or change asset approval.
+
+## Current Local Candidate: 2026-10-05
+
+This section is the authoritative snapshot for the local worktree at handoff time. The older dashboard/candidate notes later in this document are historical records only.
+
+### Expected Working Tree
+
+Current branch: `codex/project-skills-foundation`
+Current committed HEAD: `f05b16c76abeaed270e7c11127f4b75f5d516e70`
+
+The following changes are intentional and must be preserved:
+
+| Category | Paths | Owner / meaning |
+|---|---|---|
+| Current candidate source and tests | `src/Wukong.Application/BehaviorAgentFoundation.cs`; `src/Wukong.Desktop/ControlPanelWindow.xaml`; `src/Wukong.Desktop/ControlPanelWindow.xaml.cs`; `src/Wukong.Desktop/DesktopPetRuntime.cs`; `tests/Wukong.Desktop.Tests/Program.cs` | Local posture-policy and debug-history implementation awaiting owner review. |
+| This handoff | `docs/handoff/2026-10-04-codex-account-transfer.md` | Local migration instructions; update deliberately, do not discard. |
+| Owner-local rules | `AGENTS.md`; `skills/` | Preserve. Not part of the posture-policy scope. |
+| Authorized input | `.asset-staging/` | Preserve untouched and untracked. Never stage. |
+
+No entry in the table is published by the current committed HEAD. Do not infer GitHub status from the candidate EXE.
+
+### What The Candidate Changes
+
+| User-visible outcome | Implementation boundary |
+|---|---|
+| Clear active model/debug conversation history from the pet-setting page | Clears only the selected pet/memory/model debug session. It does not erase portable owner chat history. |
+| Prevent autonomous daily behavior from sitting indefinitely | Stable posture dwell is configured per posture, with pose-compatible exits only. |
+| Prefer natural prone daily rest | Prone has a longer dwell and normal idle preference; Sit has lower idle preference and a finite dwell. |
+
+The candidate does **not** change PNGs, manifests, asset approval, menus, model authority, action registrations or `main`.
+
+### Posture Policy Defaults
+
+`AutonomousAgentRolloutOptions.PosturePolicies` is the single rollout configuration for these values. It replaces the former Sit-specific runtime timeout.
+
+| Posture | Minimum dwell | Maximum dwell | Next-decision delay | Idle preference |
+|---|---:|---:|---:|---:|
+| Stand | 14 s | 45 s | 14-26 s | 1.00 |
+| Sit | 24 s | 90 s | 30-53 s | 0.55 |
+| Prone | 35 s | 480 s | 55-96 s | 1.00 |
+
+At maximum dwell, the runtime changes posture only when a production-approved, current-pose-compatible transition exists. Otherwise it keeps a stable idle instead of hard-cutting or fabricating an action.
+
+### Latest Local Candidate EXE
+
+- EXE: `.publish-check/posture-policy-runtime-candidate-20261004/Wukong.Desktop.exe`
+- SHA-256: `9264563B02B1291F6C98A95AD4CE450B30455073A1DEFCC9308253DF85BDAFAC`
+- Launch smoke: passed. It stayed alive for five seconds and only its exact process ID was stopped.
+- Review now: clear each debug-history session once; observe Stand/Sit/Prone dwell, natural compatible transitions and any busy-lock regression.
+- Not yet implied: commit, push, formal release or owner visual approval.
+
+### Verification And Publish Gate
+
+Already completed for this candidate:
+
+- Release solution build: passed.
+- Contract validation: `0 errors`, `9 known gaps`.
+- Python tests: `95/95` passed.
+- C# self-tests: Domain `5/5`, Contracts `5/5`, Application `58/58`, Infrastructure `23/23`.
+- Focused Desktop posture-policy and mechanism-dashboard self-tests: passed.
+- `git diff --check`: passed.
+
+Known limitation: the aggregate Desktop console runner is **pending**, not passed. Its legacy WPF host can leave a UI thread alive after individual cases complete and therefore never produce a final aggregate result. Keep this limitation visible; repair the test-host lifecycle as a separate focused change rather than masking it.
+
+Before any future commit or push: rerun the focused tests, build, contract validation, Python suite and `git diff --check`; visually review the candidate; then obtain fresh owner authorization for the exact commit/push scope.
+
+## Read Before Editing
 
 1. `AGENTS.md`
 2. `CURRENT_STATE.md`
@@ -20,7 +125,7 @@ Read the relevant `asset.json`, manifest and focused test before changing an ass
 ## Repository And Current Work
 
 - Repository: `https://github.com/yashawang18-coder/wukong-Desktop`
-- Local repository used for this handoff: `D:\【ZS】\【桌面宠物】\images_wk\magic\wukong-Desktop-food-water-v2`
+- Repository location: use the current device's existing `<repository-root>`.
 - Branch before this handoff commit: `codex/decision-memory-speech-command-v2`
 - Published parent commit: `3c072fcb2ce527d4bb02cbe079b28ae02986e406`
 - `main` is protected. Do not modify it without direct owner authorization.

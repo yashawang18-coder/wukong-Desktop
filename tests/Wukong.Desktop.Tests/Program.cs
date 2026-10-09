@@ -12,10 +12,32 @@ using Wukong.Application;
 using Wukong.Desktop;
 using Wukong.Domain;
 
+if (args.Contains("--pose-bridge-audit", StringComparer.Ordinal))
+{
+    var runtime = new DesktopRuntimeHost();
+    Console.WriteLine(string.Join(Environment.NewLine, runtime.DescribeMissingPoseBridges()));
+    return 0;
+}
+if (args.Contains("--policy-refinement-selftest", StringComparer.Ordinal))
+{
+    PolicyRefinementTests.DefinitionsAreSingleAndFailClosed();
+    Console.WriteLine("PASS definitions and fail-closed outcomes");
+    PolicyRefinementTests.PolicyRoundTripAndValidation();
+    Console.WriteLine("PASS portable policy roundtrip, migration and validation");
+    PolicyRefinementTests.SingleSelectorAndReducer();
+    Console.WriteLine("PASS single selector, 10,000 decisions and reducer lifecycle regressions");
+    PolicyRefinementTests.SpeechCommandsAndAssetAudit();
+    Console.WriteLine("PASS speech and command policy gates, canonical patrol/coin bindings");
+    PolicyRefinementTests.PortableAlbumsSurviveRelocation();
+    Console.WriteLine("PASS first-run albums, relative relocation and recipient binding preservation");
+    return 0;
+}
 if (args.Contains("--show-panel-smoke", StringComparer.Ordinal))
     return ShowPanelSmoke();
 if (args.Contains("--walk-v8-renderer-smoke", StringComparer.Ordinal))
     return WalkV8RendererSmoke.Run(args.Last());
+if (args.Contains("--walk-v10-renderer-smoke", StringComparer.Ordinal))
+    return WalkV8RendererSmoke.RunV10(args.Last());
 if (args.Contains("--prone-renderer-smoke", StringComparer.Ordinal))
     return ProneRendererSmoke.Run(args.Last());
 if (args.Contains("--sleep-v11-renderer-smoke", StringComparer.Ordinal))
@@ -34,10 +56,16 @@ if (args.Contains("--dialogue-episode-routing-selftest", StringComparer.Ordinal)
 if (args.Contains("--mechanism-dashboard-selftest", StringComparer.Ordinal))
 {
     ControlPanelXamlConstructs();
+    ModelDebugClearButtonTargetsActiveSession();
+    return 0;
+}
+if (args.Contains("--autonomous-sit-dwell-selftest", StringComparer.Ordinal))
+{
+    AutonomousSitDwellEndsWithApprovedProneTransition();
     return 0;
 }
 if (args.Contains("--capture-panel-screens", StringComparer.Ordinal))
-    return CapturePanelScreens(args.SkipWhile(x => x != "--capture-panel-screens").Skip(1).FirstOrDefault() ?? Path.Combine(".publish-check", "ux-panel-album-coin-fixes-v1", "screenshots"));
+    return CapturePanelScreens(args.SkipWhile(x => x != "--capture-panel-screens").Skip(1).FirstOrDefault() ?? Path.Combine(".publish-check", "ux-panel-album-coin-fixes-v1", "screenshots"), args.Contains("--owner-only", StringComparer.Ordinal));
 if (args.Contains("--car-ride-memory-smoke", StringComparer.Ordinal))
 {
     var secondsArg = args.SkipWhile(x => x != "--car-ride-memory-smoke").Skip(1).FirstOrDefault();
@@ -48,12 +76,29 @@ if (args.Contains("--car-ride-memory-smoke", StringComparer.Ordinal))
 
 var tests = new (string Name, Action Run)[]
 {
+    ("companion clock follows device or configured time zone", CompanionExperienceTests.DeviceAndManualTimeZonesStayExplicit),
+    ("startup absence and late-night care stay bounded", CompanionExperienceTests.StartupAbsenceAndLateNightCareAreBounded),
+    ("session heartbeat and startup preference persist", CompanionExperienceTests.SessionStoreAndWindowsStartupPreferencePersist),
+    ("owner pressure crosses menu and dialogue before completion", OwnerAgencyTests.RequestsAcrossSourcesCountBeforeCompletion),
+    ("panel inspection does not consume owner tolerance", OwnerAgencyTests.PanelDoesNotConsumeTolerance),
+    ("prompt and state adjust bounded willingness only", OwnerAgencyTests.PromptAndStateAffectOnlyBoundedWillingness),
+    ("card hints diagnose real pose graph without state writes", OwnerAgencyTests.CardsDiagnoseRealPoseGraphWithoutStateWrites),
+    ("panel walk and sleep prepare posture without learning or statistics", PanelInteractionTests.PreparedWalkAndSleepStayUnrecorded),
+    ("panel commands and failed preparation remain isolated", PanelInteractionTests.PanelCommandsAndFailuresAreIsolated),
+    ("chat centers on screen edges and initiative avoids repeated text", PanelInteractionTests.ChatCentersAndSpeechDoesNotRepeat),
+    ("pet setting debug clears independently of owner history and memory", PanelInteractionTests.PetDebugClearPreservesOwnerMemory),
+    ("behavior definitions have one authority and reject unknowns", PolicyRefinementTests.DefinitionsAreSingleAndFailClosed),
+    ("autonomy policy persists and preserves owner preferences", PolicyRefinementTests.PolicyRoundTripAndValidation),
+    ("single selector and reducer retain lifecycle invariants", PolicyRefinementTests.SingleSelectorAndReducer),
+    ("speech and commands respect policy and immutable gates", PolicyRefinementTests.SpeechCommandsAndAssetAudit),
+    ("portable albums survive first launch and relocation", PolicyRefinementTests.PortableAlbumsSurviveRelocation),
     ("prone promotion uses Normal and rejects stale or incompatible requests", ProneRuntimePromotionTests.NormalGateAndRecovery),
     ("prone scheduling honors shared cooldown and reduced side dwell", ProneRuntimePromotionTests.SchedulingAndSidePreference),
     ("input adapter emits input events", InputAdapterEmitsEvents),
     ("startup factory creates one main window", StartupFactoryCreatesOneMainWindow),
     ("desktop single instance rejects a duplicate process", DesktopSingleInstanceRejectsDuplicate),
     ("control panel xaml constructs", ControlPanelXamlConstructs),
+    ("pet-setting debug history has an explicit current-session clear action", ModelDebugClearButtonTargetsActiveSession),
     ("owner-facing motion names are concise Chinese labels", OwnerFacingMotionNamesAreChinese),
     ("horizontal mirror policy covers only non-directional pet actions", HorizontalMirrorPolicyCoversOnlyNonDirectionalPetActions),
     ("motion requests lock horizontal orientation for the full playback", MotionRequestsLockHorizontalOrientation),
@@ -74,6 +119,8 @@ var tests = new (string Name, Action Run)[]
     ("lifecycle review uses the existing developer request path", LifecycleReviewCandidateTests.DeveloperPreviewUsesTheExistingBehaviorRequestPath),
     ("lifecycle manifests and panel show approved runtime state", LifecycleReviewCandidateTests.ManifestsAndPanelShowApprovedRuntimeState),
     ("autonomous ticks use approved daily actions without commands", LifecycleReviewCandidateTests.AutonomousTicksUseApprovedDailyAllowlistWithoutCommands),
+    ("autonomous posture policies define complete bounded dwell", AutonomousPosturePoliciesDefineCompleteBoundedDwell),
+    ("autonomous sitting eventually uses the approved prone transition", AutonomousSitDwellEndsWithApprovedProneTransition),
     ("forward-prone profile requires the matching approved anchor", LifecycleReviewCandidateTests.ForwardProneProfileRequiresMatchingApprovedAnchor),
     ("standing happy-expectant frames and manifest stay byte exact", StandingHappyExpectantCandidateTests.ManifestAndFramesStayByteExact),
     ("standing happy-expectant candidate gate posture and cooldown stay isolated", StandingHappyExpectantCandidateTests.CandidateGatePostureAndCooldownStayIsolated),
@@ -95,6 +142,8 @@ var tests = new (string Name, Action Run)[]
     ("patrol walk v1 uses autonomous allowlist and isolated developer preview", PatrolWalkCandidateTests.ApprovedGaitUsesAutonomousAllowlistAndDeveloperPreviewStaysIsolated),
     ("patrol walk v1 window travel is directional and work-area bounded", PatrolWalkCandidateTests.WindowTravelIsDirectionalAndWorkAreaBounded),
     ("patrol walk v8 normal autonomous choices preserve facing", PatrolWalkCandidateTests.AutonomousSelectionUsesApprovedV8AndLocksFacing),
+    ("patrol walk v10 changes only the third cycle frame", PatrolWalkV10CandidateTests.CandidateReplacesOnlyTheThirdCycleFrame),
+    ("patrol walk v10 review marker stays isolated from formal runtime", PatrolWalkV10CandidateTests.ReviewMarkerIsolatesV10FromFormalRuntime),
     ("approved wake/rise runtime and v9 preview boundaries", WakeRiseCandidateTests.RuntimeFramesAndDeveloperPreviewStayIsolated),
     ("autonomous allowlist excludes command-only jump and spin", AutonomousAllowlistExcludesCommandOnlyActions),
     ("approved autonomous daily transitions are indexed and gated", ApprovedAutonomousDailyTransitionsAreIndexedAndGated),
@@ -154,7 +203,7 @@ var tests = new (string Name, Action Run)[]
     ("apparate target stays visible and relocates", ApparateTargetStaysVisibleAndRelocates),
     ("control panel exposes magic specials tab", ControlPanelExposesMagicSpecialsTab),
     ("base asset cards expose preview and owner execution", BaseAssetExecutionTests.BaseCardsExposePreviewAndOwnerExecution),
-    ("base asset owner execution uses isolated main-pet path", BaseAssetExecutionTests.BaseExecutionUsesIsolatedMainPetPath),
+    ("base asset owner execution uses approved path without learning", BaseAssetExecutionTests.BaseExecutionUsesApprovedPathWithoutLearning),
     ("expired asset cards are gray but remain previewable", ExpiredAssetCardsAreGrayButRemainPreviewable),
     ("control panel car ride copy matches approved runtime state", ControlPanelCarRideCopyMatchesApprovedRuntimeState),
     ("control panel tab buttons share visual metrics", ControlPanelTabButtonsShareVisualMetrics),
@@ -175,6 +224,23 @@ var tests = new (string Name, Action Run)[]
     ("portable first-run defaults are complete and sanitized", PortableFirstRunDefaultsAreCompleteAndSanitized),
     ("bootstrap log redacts and does not throw", BootstrapLogRedactsAndDoesNotThrow)
 };
+
+if (args.Contains("--list-tests", StringComparer.Ordinal))
+{
+    foreach (var test in tests) Console.WriteLine(test.Name);
+    return 0;
+}
+var testIndex = Array.IndexOf(args, "--test");
+if (testIndex >= 0)
+{
+    var name = args.ElementAtOrDefault(testIndex + 1);
+    tests = tests.Where(test => test.Name == name).ToArray();
+    if (tests.Length != 1)
+    {
+        Console.Error.WriteLine("--test requires an exact name from --list-tests.");
+        return 2;
+    }
+}
 
 var failures = new List<string>();
 foreach (var test in tests)
@@ -332,7 +398,7 @@ static int ShowPanelSmoke()
     return 0;
 }
 
-static int CapturePanelScreens(string outputRoot)
+static int CapturePanelScreens(string outputRoot, bool ownerOnly = false)
 {
     Exception? failure = null;
     var thread = new Thread(() =>
@@ -359,6 +425,13 @@ static int CapturePanelScreens(string outputRoot)
             CapturePanel(panel, outputRoot, "profile-tabs.png");
             ClickNamedButton(panel, "ProfileRelationTabButton");
             CapturePanel(panel, outputRoot, "profile-personality-relationship.png");
+            if (panel.FindName("AutonomyPolicyExpander") is Expander policyEditor)
+            {
+                policyEditor.IsExpanded = true;
+                panel.UpdateLayout();
+                policyEditor.BringIntoView();
+                CapturePanel(panel, outputRoot, "profile-autonomy-policy.png");
+            }
             ClickNavByTag(panel, "Album");
             CapturePanel(panel, outputRoot, "album-all-media-list.png");
             if (panel.FindName("AlbumMediaList") is ListBox mediaList && mediaList.Items.Count > 1)
@@ -387,6 +460,11 @@ static int CapturePanelScreens(string outputRoot)
             }
             ClickNamedButton(panel, "MagicAssetsTabButton");
             CapturePanel(panel, outputRoot, "assets-magic-specials.png");
+            if (ownerOnly)
+            {
+                panel.Close();
+                return;
+            }
             ClickNavByTag(panel, "Developer");
             ClickNamedButton(panel, "DeveloperMechanismsTabButton");
             CapturePanel(panel, outputRoot, "developer-action-mechanisms.png");
@@ -633,6 +711,15 @@ static void ControlPanelXamlConstructs()
             Assert(panel.FindName("TemperamentIndependenceSlider") is Slider, "independence temperament slider missing");
             Assert(panel.FindName("TemperamentMischiefSlider") is Slider, "mischief temperament slider missing");
             Assert(panel.FindName("TemperamentSaveStatus") is TextBlock, "temperament persistence status missing");
+            Assert(panel.FindName("PosturePolicyGrid") is DataGrid { Items.Count: 3, MinColumnWidth: >= 140 },
+                "posture policy editor must expose three readable rows");
+            Assert(panel.FindName("InitiativeEnabledCheck") is CheckBox &&
+                   panel.FindName("InitiativeFrequencySlider") is Slider { Minimum: 0.25, Maximum: 2 } &&
+                   panel.FindName("QuietStartCombo") is ComboBox { Items.Count: 24 } &&
+                   panel.FindName("QuietEndCombo") is ComboBox { Items.Count: 24 },
+                "initiative and quiet-hour policy controls missing");
+            Assert(panel.FindName("DeveloperPolicyTabButton") is Button,
+                "developer policy and gate diagnostics tab missing");
             var runtimeTabButton = panel.FindName("DeveloperRuntimeTabButton") as Button;
             var mechanismsTabButton = panel.FindName("DeveloperMechanismsTabButton") as Button;
             var guideTabButton = panel.FindName("DeveloperGuideTabButton") as Button;
@@ -681,6 +768,17 @@ static void ControlPanelXamlConstructs()
 
     if (failure is not null)
         throw failure;
+}
+
+static void ModelDebugClearButtonTargetsActiveSession()
+{
+    var panelXaml = File.ReadAllText(Path.GetFullPath(Path.Combine("src", "Wukong.Desktop", "ControlPanelWindow.xaml")));
+    Assert(panelXaml.Contains("x:Name=\"ClearModelDebugHistoryButton\"", StringComparison.Ordinal),
+        "model debug clear button must have a stable control name");
+    Assert(panelXaml.Contains("Content=\"清空当前调试记录\"", StringComparison.Ordinal),
+        "model debug clear button must tell the owner it clears only the active debug session");
+    Assert(panelXaml.Contains("Click=\"ClearConversation_Click\"", StringComparison.Ordinal),
+        "model debug clear button must use the persisted conversation clear route");
 }
 
 static void AgentWindowsConstructAndChatStartsHidden()
@@ -1322,7 +1420,7 @@ static void DesktopDecisionMemoryAndCommandReasonFeedback()
         },
         RelationshipState.Default,
         42);
-    var result = runtime.SubmitBehaviorAgentCommandAsync(OwnerCommandKind.Jump, BehaviorRequestSource.ControlPanel)
+    var result = runtime.SubmitBehaviorAgentCommandAsync(OwnerCommandKind.Jump, BehaviorRequestSource.OwnerContextMenu)
         .GetAwaiter().GetResult();
     Assert(result == PetActionResult.Rejected, "severely exhausted jump command should be rejected");
     Assert(runtime.CurrentDisposition == "暂时不想", "owner-facing command disposition was not updated");
@@ -2035,11 +2133,9 @@ static void ControlPanelExposesMagicSpecialsTab()
                 "base assets must include four approved posture transitions");
             Assert(baseList.Items.OfType<PlayableMotion>().Any(x => x.BehaviorId == ProneHeadCandidateBehaviorIds.HeadLowerTurnV4),
                 "base assets must include the approved prone head action");
-            var expiredFilter = panel.FindName("ShowDeprecatedAssetsCheckBox") as CheckBox;
-            Assert(expiredFilter is not null, "expired-only asset filter is missing");
-            expiredFilter!.IsChecked = true;
-            Assert(baseList.Items.OfType<PlayableMotion>().Any(x => x.BehaviorId == Phase15BehaviorIds.ProneTouch && x.IsExpired), "owner-rejected prone touch is not visible in the expired-only base filter");
-            expiredFilter.IsChecked = false;
+            Assert(panel.FindName("ShowDeprecatedAssetsCheckBox") is null, "retired asset filter must not be offered");
+            Assert(baseList.Items.OfType<PlayableMotion>().All(x => !x.IsExpired && !x.Deprecated), "retired assets leaked into the owner gallery");
+            Assert(panel.FindName("OwnerRelationshipProjection") is StackPanel, "relationship projection missing from owner page");
             var categories = panel.FindName("AssetCategoryTabs") as WrapPanel;
             Assert(categories is not null, "asset category tab row missing");
             Assert(categories!.Children.OfType<Button>().Select(x => x.Content?.ToString()).SequenceEqual(new[]
@@ -2806,6 +2902,88 @@ static void AutonomousTickCanRequestMotion()
     Assert(DesktopRuntimeHost.MinimumAutonomousDwell(StablePosture.Prone) == TimeSpan.FromSeconds(35), "prone posture transition dwell changed");
     Assert(DesktopRuntimeHost.ShouldKeepCurrentStableIdle(LifecycleCandidateBehaviorIds.ProneIdleMicroloop, LifecycleCandidateBehaviorIds.ProneIdleMicroloop), "same stable idle should be held without restarting the animation");
     Assert(!DesktopRuntimeHost.ShouldKeepCurrentStableIdle(LifecycleCandidateBehaviorIds.ProneIdleMicroloop, ProneHeadCandidateBehaviorIds.HeadLowerTurnV4), "a real microevent was incorrectly treated as an idle hold");
+}
+
+static void AutonomousSitDwellEndsWithApprovedProneTransition()
+{
+    var now = new DateTimeOffset(2026, 10, 4, 20, 0, 0, TimeSpan.Zero);
+    var baseline = AutonomousAgentRolloutOptions.ContinuityV1;
+    var rollout = baseline with
+    {
+        PosturePolicies = new Dictionary<StablePosture, StablePostureAutonomyPolicy>
+        {
+            [StablePosture.Stand] = baseline.PosturePolicyFor(StablePosture.Stand),
+            [StablePosture.Sit] = baseline.PosturePolicyFor(StablePosture.Sit) with
+            {
+                MinimumDwell = TimeSpan.FromSeconds(5),
+                MaximumDwell = TimeSpan.FromSeconds(15),
+                DecisionDelayMinimum = TimeSpan.FromSeconds(5),
+                DecisionDelayMaximum = TimeSpan.FromSeconds(14)
+            },
+            [StablePosture.Prone] = baseline.PosturePolicyFor(StablePosture.Prone)
+        }
+    };
+    var runtime = new DesktopRuntimeHost(now: () => now, rolloutOptions: rollout);
+    var requests = new List<PetMotionRequest>();
+    runtime.MotionRequested += (_, request) => requests.Add(request);
+    runtime.UpdateBehaviorAgentMock(
+        TemperamentProfile.Default,
+        PetRuntimeState.Default with
+        {
+            CurrentPosture = StablePosture.Sit,
+            CurrentPoseId = "sit.neutral.left_front",
+            Energy = 0.62,
+            Arousal = 0.42,
+            Stress = 0.12
+        },
+        RelationshipState.Default,
+        seed: 17);
+    runtime.StartIdle("test");
+
+    now += TimeSpan.FromSeconds(16);
+    typeof(DesktopRuntimeHost)
+        .GetField("_nextAutonomousDecisionAt", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+        .SetValue(runtime, now - TimeSpan.FromSeconds(1));
+
+    runtime.SubmitAutonomousTickAsync().GetAwaiter().GetResult();
+
+    Assert(requests.Last().Motion.BehaviorId == AutonomousDailyCandidateBehaviorIds.SitToProne,
+        "autonomous sit dwell did not dispatch the approved sit-to-prone transition");
+    runtime.CompleteMotion(AutonomousDailyCandidateBehaviorIds.SitToProne, "test");
+    Assert(runtime.CurrentStablePosture == StablePosture.Prone,
+        "approved sit-to-prone completion did not settle in prone posture");
+}
+
+static void AutonomousPosturePoliciesDefineCompleteBoundedDwell()
+{
+    var rollout = AutonomousAgentRolloutOptions.ContinuityV1;
+    foreach (var posture in new[] { StablePosture.Stand, StablePosture.Sit, StablePosture.Prone })
+    {
+        var policy = rollout.PosturePolicyFor(posture);
+        Assert(policy.MinimumDwell > TimeSpan.Zero, $"{posture} posture policy lacks a minimum dwell");
+        Assert(policy.MaximumDwell > policy.MinimumDwell, $"{posture} posture policy lacks a valid maximum dwell");
+        Assert(policy.DecisionDelayMinimum >= policy.MinimumDwell, $"{posture} decision delay is shorter than its minimum dwell");
+        Assert(policy.DecisionDelayMaximum > policy.DecisionDelayMinimum, $"{posture} posture policy has no decision-delay range");
+        Assert(policy.IdlePreferenceWeight is > 0 and <= 2, $"{posture} posture policy has an invalid idle preference weight");
+    }
+
+    Assert(rollout.PosturePolicyFor(StablePosture.Sit).MaximumDwell == TimeSpan.FromSeconds(90),
+        "the default sitting policy no longer carries its configured maximum dwell");
+
+    var tuned = rollout with
+    {
+        PosturePolicies = new Dictionary<StablePosture, StablePostureAutonomyPolicy>
+        {
+            [StablePosture.Stand] = rollout.PosturePolicyFor(StablePosture.Stand),
+            [StablePosture.Sit] = rollout.PosturePolicyFor(StablePosture.Sit) with { IdlePreferenceWeight = 0.25 },
+            [StablePosture.Prone] = rollout.PosturePolicyFor(StablePosture.Prone)
+        }
+    };
+    Assert(Math.Abs(DesktopRuntimeHost.AutonomousBehaviorWeightFor(
+            LifecycleCandidateBehaviorIds.SitIdleMicroloop,
+            AutonomousBehaviorPreferences.Default,
+            tuned) - 0.25) < 0.001,
+        "configured sitting idle preference did not flow into autonomous scoring");
 }
 
 static void AutonomousBehaviorPreferencesMapToDecisionPaths()

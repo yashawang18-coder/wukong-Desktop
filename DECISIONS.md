@@ -1,5 +1,69 @@
 # Decisions
 
+## 2026-10-09 - promote walk v10 and add reproducible per-user packaging
+
+The owner's final acceptance after complete WPF left/right/stop playback approves
+the regenerated whole-dog `cycle-003.png`. Promote
+`WK-AUTONOMOUS-PATROL-WALK-v10` as the canonical formal walk batch with the same
+stable behavior IDs, source permissions, window translation, mirror transform,
+timing and outcome policy as v8. Keep v8 bytes and provenance, but close its
+runtime/autonomous gates and mark it superseded; never fall back to it silently.
+
+Release delivery consists of a self-contained win-x64 portable ZIP and a per-user
+Inno Setup installer. The installer requires no administrator privilege, excludes
+candidate markers, raw inputs and user data, and preserves runtime-created
+`WukongData` on uninstall. Generated binaries remain outside Git. The installer is
+unsigned until a code-signing certificate is supplied.
+
+## 2026-10-09 - panel execution is inspection, not relationship learning
+
+Panel requests use the shared runtime gate and existing approved pose transitions.
+They may update the real physical pose and execution lifecycle, but neither the
+selected action nor preparation/automatic exit steps count as owner interaction,
+needs reward, preference learning, memory or trigger statistics. Preserve the
+ControlPanel source throughout the entire sequence. This supersedes the earlier
+October 3 statement that panel Normal execution contributes experience effects.
+Unavailable pose bridges remain explicit Deferred results; visual inspection does
+not grant asset approval. Walking uses actual window translation with space checks.
+
+Move relationship projection into Owner and keep its state source unchanged.
+Remove unused header actions, obsolete approval text and expired gallery entries,
+not historical asset bytes. Clear only pet-setting debug on panel opening; preserve
+ordinary chat and confirmed memories. Expose actual memory availability/counts.
+
+Place chat relative to transformed visible pet bounds, including mirroring, on the
+current monitor. Retain bounded, state-driven initiative speech and prevent it
+from interrupting an open input or an existing bubble. Put its actual sentence into
+conversation context so the next owner reply is grounded.
+
+The owner authorizes a private local relative album bundle. Copy source bytes into
+the candidate's WukongDefaults/albums and seed recipient data once. Do not move the
+originals, publish private content to Git, or restore recipient-deleted photographs.
+Distribute the complete portable directory. All changes remain local pending review.
+
+## 2026-10-08 - one behavior authority, explicit outcomes, portable owner policy
+
+Keep one exact-ID desktop behavior definition table and derive semantic capability,
+Episode bindings and outcome lookup from it. Asset validation remains authoritative
+for approval; neither names nor user-configurable weights grant runtime permission.
+Remove the legacy autonomous random selector rather than letting two engines choose
+or settle the same execution. Unknown Normal outcomes defer instead of guessing.
+
+Persist bounded tuning in a versioned autonomy-policy file. Migrate earlier owner
+preferences without losing other policy sections, preserve invalid files, and let
+the panel and runtime use the same object. Keep safety gates outside this editable
+policy. Stable presentation and isolated previews never produce production rewards.
+Preserve existing per-action state effects and exact end-pose identities.
+
+Show actual loaded asset approval and routing in diagnostics. Patrol v1 is historical,
+not the live patrol source. Pending magic and coin metadata is not approval; this
+refinement does not silently promote it or change pixels.
+
+Allow local distributions to include albums by relative directory. Initialize bundled
+albums only once, never overwrite recipient files or resurrect deleted photographs,
+and share path resolution between the panel and agent retrieval. Private albums,
+credentials, conversations and memories remain outside repository defaults.
+
 ## 2026-10-03 - route owner dialogue sleep and walk through approved preparation
 
 Owner language such as “睡觉” and “走走” is a semantic request, not permission to
@@ -1004,3 +1068,23 @@ Decision:
 Reason:
 
 The panel previously mixed two meanings: internal card preview and production `Normal` execution. Pending candidates could be viewed but failed the runtime gate, while approved panel actions could influence Agent learning even though the owner was only inspecting animation. Isolated main-window execution preserves the full renderer and lifecycle path without turning QA clicks into personality evidence. Consolidating the publish output also prevents launching a pre-2026-09-22 EXE that still contains the rejected side-prone first frame.
+
+## 2026-10-09 - make companion presence local-time aware and review walk-frame repair without replacing v8
+
+Decision:
+
+- Enable start-with-Windows on first run through one owned per-user Run value. Persist an explicit panel opt-out and never require administrator privileges or write a machine-wide startup entry.
+- Use the signed-in device time zone by default. Keep a manual time-zone fallback, defaulting to Auckland, for machines where the owner intentionally disables device-time following.
+- Derive startup greeting, long-absence affection, and late-night care from one persisted companion session and route them through the existing initiative-speech suppression and budget policy.
+- Preserve the approved patrol-walk v8 bytes and formal binding. Put the whole-dog midpoint replacement for cycle frame 3 in a separate v10 candidate selected only by a publish marker and DeveloperPreview.
+
+Reason:
+
+Companion behavior must follow the machine on which Wukong is actually living, remember genuine offline absence, and avoid duplicate or noisy startup speech. The visibly red third walk frame needs an end-to-end Windows gait review, but replacing an approved production byte before that review would conflate image generation with runtime approval.
+
+Restrictions:
+
+- Startup registration owns only `Wukong.Desktop.Companion`; do not alter unrelated Run values. A user opt-out remains authoritative.
+- Greeting rules cannot bypass busy, stress, quiet-hour, repeated-topic, unanswered-line, cooldown, or daily-budget gates. Templates may use bounded memory themes but cannot select assets or grant capabilities.
+- v10 cannot enter AutonomousTick, owner dialogue, production statistics, relationship, or memory. No marker means the catalog continues to resolve the stable walk behavior IDs to v8.
+- Do not overwrite or delete v8. Do not set v10 visual/runtime approval until the owner reviews real Windows playback, including the mirrored direction and physical window translation.

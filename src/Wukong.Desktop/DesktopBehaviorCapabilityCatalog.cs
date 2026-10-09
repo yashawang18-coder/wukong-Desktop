@@ -3,463 +3,213 @@ using Wukong.Domain;
 
 namespace Wukong.Desktop;
 
-public static class DesktopBehaviorCapabilityCatalog
+public sealed record DesktopBehaviorDefinition(
+    string BehaviorId, BehaviorSemanticCategory Category, BehaviorEffortLevel Effort,
+    IReadOnlySet<PetEpisodeKind> Episodes, IReadOnlySet<BehaviorRequestSource> Sources,
+    BehaviorOutcomeProfile? Outcome, string? AssetBatch = null,
+    string PreferenceGroup = "neutral", double PreferenceMultiplier = 1)
 {
-    public static BehaviorCapabilityCatalog Create(IEnumerable<PlayableMotion> motions)
-    {
-        ArgumentNullException.ThrowIfNull(motions);
-        return new BehaviorCapabilityCatalog(motions.Select(Project));
-    }
+    public bool IsStablePresentation => Category == BehaviorSemanticCategory.StableIdle;
+    public bool AutonomousAllowed => Sources.Contains(BehaviorRequestSource.AutonomousTick);
+}
 
-    private static BehaviorCapability Project(PlayableMotion motion)
+// One semantic table. Asset loaders own approval and frame validation; these
+// definitions can restrict their gates but cannot approve or enable an asset.
+public static class DesktopBehaviorDefinitionCatalog
+{
+    private static readonly IReadOnlyDictionary<string, DesktopBehaviorDefinition> Definitions = Build();
+    public static IReadOnlyCollection<DesktopBehaviorDefinition> All => Definitions.Values.ToArray();
+    public static DesktopBehaviorDefinition? Find(string id) => Definitions.GetValueOrDefault(id);
+    public static bool IsAutonomous(string id) => Find(id)?.AutonomousAllowed == true;
+    public static IReadOnlySet<string> ForEpisode(PetEpisodeKind episode) => Definitions.Values
+        .Where(item => item.AutonomousAllowed && item.Episodes.Contains(episode))
+        .Select(item => item.BehaviorId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+    private static IReadOnlyDictionary<string, DesktopBehaviorDefinition> Build()
     {
-        var category = CategoryFor(motion);
-        var participation = ParticipationFor(motion, category);
-        var startPosture = PostureFrom(motion.StartPose, StablePosture.Prone);
-        var endPosture = PostureFrom(motion.EndPose, startPosture);
-        var outcomeProfile = DesktopBehaviorOutcomeProfiles.Find(motion);
-        return new BehaviorCapability(
-            motion.BehaviorId,
-            category,
-            participation,
-            motion.Interruptible ? BehaviorInterruptionPolicy.SafePreempt : BehaviorInterruptionPolicy.WaitForSafePoint,
-            AllowedSourcesFor(motion, participation),
-            new HashSet<StablePosture> { startPosture },
-            endPosture,
-            EffortFor(motion, category),
-            EpisodesFor(category),
-            ProductionApproved: motion.EffectiveRuntimeApproved && !motion.IsExpired,
-            RuntimeUse: motion.RuntimeEnabled && !motion.IsExpired,
-            ProductionAsset: motion.RuntimeEnabled && motion.EffectiveRuntimeApproved && !motion.IsExpired,
-            AutonomousBindingEnabled: motion.AutonomousBindingEnabled,
-            SupportsWindowTranslation: motion.WindowMotionEnabled,
-            MinimumDwell: MinimumDwellFor(category),
-            Cooldown: CooldownFor(category),
-            BaseWeight: BaseWeightFor(category),
-            StateEffects: outcomeProfile?.StateEffects ?? EffectsFor(category))
+        var definitions = new Dictionary<string, DesktopBehaviorDefinition>(StringComparer.OrdinalIgnoreCase);
+        var resting = new[] { PetEpisodeKind.Resting, PetEpisodeKind.Observing, PetEpisodeKind.Recovering };
+        var idleEpisodes = resting.Append(PetEpisodeKind.Exploring).ToArray();
+        void Add(string id, BehaviorSemanticCategory category, StablePosture end, string pose,
+            PetStateEffects effects, PetEpisodeKind[]? episodes = null, bool owner = false,
+            BehaviorEffortLevel effort = BehaviorEffortLevel.Low, string? batch = null,
+            string preference = "neutral", double multiplier = 1, bool dialogue = false)
         {
-            StartPoseFamily = PetPoseCompatibility.FamilyFor(motion.StartPose, startPosture),
-            EndPoseId = outcomeProfile?.EndPoseId ?? motion.EndPose
-        };
-    }
-
-    private static BehaviorParticipationMode ParticipationFor(
-        PlayableMotion motion,
-        BehaviorSemanticCategory category)
-    {
-        if (category == BehaviorSemanticCategory.Magic)
-            return BehaviorParticipationMode.ForcedByOwner;
-        if (category == BehaviorSemanticCategory.OwnerCommand)
-            return BehaviorParticipationMode.UsuallyCooperative;
-        if (category == BehaviorSemanticCategory.OwnerInvitation)
-            return BehaviorParticipationMode.StateSensitive;
-        return motion.AutonomousBindingEnabled
-            ? BehaviorParticipationMode.Autonomous
-            : BehaviorParticipationMode.StateSensitive;
-    }
-
-    private static BehaviorSemanticCategory CategoryFor(PlayableMotion motion)
-    {
-        if (motion.Effect is DesktopMotionEffect.BroomFlight or DesktopMotionEffect.Apparate or
-            DesktopMotionEffect.Petrify or DesktopMotionEffect.PetrifyRelease or DesktopMotionEffect.Scourgify)
-            return BehaviorSemanticCategory.Magic;
-        if (motion.Effect == DesktopMotionEffect.CarRide)
-            return BehaviorSemanticCategory.OwnerInvitation;
-        if (string.Equals(motion.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
-            return BehaviorSemanticCategory.Explore;
-        if (string.Equals(motion.AssetBatch, WakeRiseCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
-            return BehaviorSemanticCategory.PostureTransition;
-        if (string.Equals(motion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
-            return BehaviorSemanticCategory.Rest;
-        if (string.Equals(motion.AssetBatch, ProneHeadCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(motion.AssetBatch, StandingHappyExpectantBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(motion.BehaviorId, LifecycleReviewCandidateBehaviorIds.FrontProneLickV4, StringComparison.OrdinalIgnoreCase))
-            return BehaviorSemanticCategory.Observe;
-        if (string.Equals(motion.AssetBatch, AutonomousDailyCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
-            return BehaviorSemanticCategory.PostureTransition;
-        if (motion.BehaviorId is LifecycleCandidateBehaviorIds.LivelyDailyP2 or LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1)
-            return BehaviorSemanticCategory.Rest;
-        if (motion.BehaviorId.Contains("idle", StringComparison.OrdinalIgnoreCase) || motion.Phases.All(phase => phase.Loop))
-            return BehaviorSemanticCategory.StableIdle;
-        if (motion.BehaviorId.StartsWith("wk.command.", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(motion.Category, "口令动作", StringComparison.OrdinalIgnoreCase))
-            return BehaviorSemanticCategory.OwnerCommand;
-        if (motion.BehaviorId.Contains("eat", StringComparison.OrdinalIgnoreCase))
-            return BehaviorSemanticCategory.Food;
-        if (motion.BehaviorId.Contains("drink", StringComparison.OrdinalIgnoreCase))
-            return BehaviorSemanticCategory.Drink;
-        return motion.AutonomousBindingEnabled
-            ? BehaviorSemanticCategory.Observe
-            : BehaviorSemanticCategory.OwnerInvitation;
-    }
-
-    private static IReadOnlySet<BehaviorRequestSource> AllowedSourcesFor(
-        PlayableMotion motion,
-        BehaviorParticipationMode participation)
-    {
-        var sources = new HashSet<BehaviorRequestSource> { BehaviorRequestSource.DeveloperPreview };
-        if (participation == BehaviorParticipationMode.Autonomous && motion.AutonomousBindingEnabled)
-            sources.Add(BehaviorRequestSource.AutonomousTick);
-        if (string.Equals(motion.AssetBatch, SleepCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase) &&
-            SleepCandidateBehaviorIds.AutonomousAllowed.Contains(motion.BehaviorId))
-            sources.Add(BehaviorRequestSource.OwnerDialogue);
-        if (string.Equals(motion.AssetBatch, PatrolWalkCandidateBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
-            sources.Add(BehaviorRequestSource.OwnerDialogue);
-        if (participation is BehaviorParticipationMode.ForcedByOwner or BehaviorParticipationMode.UsuallyCooperative or BehaviorParticipationMode.StateSensitive)
-        {
-            sources.Add(BehaviorRequestSource.OwnerContextMenu);
-            sources.Add(BehaviorRequestSource.ControlPanel);
-            sources.Add(BehaviorRequestSource.OwnerDialogue);
+            var sources = new HashSet<BehaviorRequestSource> { BehaviorRequestSource.DeveloperPreview };
+            if (episodes is { Length: > 0 }) sources.Add(BehaviorRequestSource.AutonomousTick);
+            if (owner || category == BehaviorSemanticCategory.StableIdle)
+                sources.UnionWith(new[] { BehaviorRequestSource.OwnerUi, BehaviorRequestSource.OwnerContextMenu, BehaviorRequestSource.ControlPanel });
+            if (owner || dialogue) sources.Add(BehaviorRequestSource.OwnerDialogue);
+            if (episodes is { Length: > 0 }) sources.Add(BehaviorRequestSource.ControlPanel);
+            var outcome = category == BehaviorSemanticCategory.StableIdle ? null : new BehaviorOutcomeProfile(
+                id, end, pose, effects, owner, MemoryEligibility: true, PartialEffectPolicy.Proportional);
+            definitions.Add(id, new(id, category, effort, (episodes ?? Array.Empty<PetEpisodeKind>()).ToHashSet(),
+                sources, outcome, batch, preference, multiplier));
         }
-        return sources;
-    }
-
-    private static IReadOnlySet<PetEpisodeKind> EpisodesFor(BehaviorSemanticCategory category) => category switch
-    {
-        BehaviorSemanticCategory.Rest => Set(PetEpisodeKind.Resting, PetEpisodeKind.Recovering, PetEpisodeKind.Sleeping),
-        BehaviorSemanticCategory.Observe => Set(PetEpisodeKind.Observing, PetEpisodeKind.Resting),
-        BehaviorSemanticCategory.Explore => Set(PetEpisodeKind.Exploring, PetEpisodeKind.Observing),
-        BehaviorSemanticCategory.Social => Set(PetEpisodeKind.Socializing),
-        _ => Set(PetEpisodeKind.Resting, PetEpisodeKind.Observing, PetEpisodeKind.Exploring, PetEpisodeKind.Socializing, PetEpisodeKind.Recovering)
-    };
-
-    private static IReadOnlySet<PetEpisodeKind> Set(params PetEpisodeKind[] values) => values.ToHashSet();
-
-    private static BehaviorEffortLevel EffortFor(PlayableMotion motion, BehaviorSemanticCategory category)
-    {
-        if (category == BehaviorSemanticCategory.OwnerCommand)
+        void Idle(string id, StablePosture posture, string pose, string batch, double multiplier = 1) =>
+            Add(id, BehaviorSemanticCategory.StableIdle, posture, pose, new(), idleEpisodes,
+                batch: batch, preference: posture.ToString().ToLowerInvariant(), multiplier: multiplier);
+        Idle(LifecycleCandidateBehaviorIds.StandIdleMicroloop, StablePosture.Stand, "stand.neutral.left_front", LifecycleCandidateBehaviorIds.AssetBatch);
+        Idle(LifecycleCandidateBehaviorIds.SitIdleMicroloop, StablePosture.Sit, "sit.neutral.left_front", LifecycleCandidateBehaviorIds.AssetBatch);
+        Idle(LifecycleCandidateBehaviorIds.ProneIdleMicroloop, StablePosture.Prone, "prone.awake.left_front", LifecycleCandidateBehaviorIds.AssetBatch, .45);
+        Idle(LifecycleReviewCandidateBehaviorIds.StandIdleV3R1, StablePosture.Stand, "stand.neutral.left_front", LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch);
+        Idle(LifecycleReviewCandidateBehaviorIds.SitIdleV3R1, StablePosture.Sit, "sit.neutral.left_front", LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch);
+        Idle(LifecycleReviewCandidateBehaviorIds.LegacySideProneIdleV3R1, StablePosture.Prone, "prone.awake.left_front", LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch, .45);
+        Idle(LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4, StablePosture.Prone, "prone.awake.front", LifecycleReviewCandidateBehaviorIds.V4AssetBatch);
+        Add(Phase15BehaviorIds.ProneIdle, BehaviorSemanticCategory.StableIdle, StablePosture.Prone, "prone.awake.left_front", new());
+        Add(Phase15BehaviorIds.ProneBreath, BehaviorSemanticCategory.Observe, StablePosture.Prone, "prone.awake.left_front", new(Energy: -.004), owner: true);
+        Add(Phase15BehaviorIds.SafeStand, BehaviorSemanticCategory.PostureTransition, StablePosture.Stand, "stand.neutral.left_front", new(Energy: -.004), owner: true);
+        Add(Phase15BehaviorIds.LookAround, BehaviorSemanticCategory.Observe, StablePosture.Prone, "prone.awake.left_front", new(Energy: -.004), owner: true);
+        Add(Phase15BehaviorIds.StrokeEnjoy, BehaviorSemanticCategory.Social, StablePosture.Prone, "prone.awake.left_front", new(Energy: -.004), owner: true);
+        Add(LifecycleCandidateBehaviorIds.LivelyDailyP2, BehaviorSemanticCategory.Rest, StablePosture.Stand,
+            "stand.neutral.left_front", new(Energy: -.06, Hunger: .012, Boredom: -.14, MoodValence: .015),
+            new[] { PetEpisodeKind.Resting }, batch: LifecycleCandidateBehaviorIds.AssetBatch, preference: "prone", multiplier: .20);
+        Add(LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1, BehaviorSemanticCategory.Rest, StablePosture.Stand,
+            "stand.neutral.left_front", new(Energy: -.055, Boredom: -.13, MoodValence: .015),
+            new[] { PetEpisodeKind.Resting }, batch: LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch, preference: "prone", multiplier: .20);
+        Add(LifecycleReviewCandidateBehaviorIds.LivelyDailyExitV3R1, BehaviorSemanticCategory.PostureTransition,
+            StablePosture.Stand, "stand.neutral.left_front", new(Energy: -.004), batch: LifecycleReviewCandidateBehaviorIds.V3R1AssetBatch);
+        Add(AutonomousDailyCandidateBehaviorIds.StandToSit, BehaviorSemanticCategory.PostureTransition, StablePosture.Sit,
+            "sit.neutral.left_front", new(), resting, effort: BehaviorEffortLevel.Medium, batch: AutonomousDailyCandidateBehaviorIds.AssetBatch, preference: "prone");
+        Add(AutonomousDailyCandidateBehaviorIds.SitToProne, BehaviorSemanticCategory.PostureTransition, StablePosture.Prone,
+            "prone.awake.left_front", new(), resting, effort: BehaviorEffortLevel.Medium, batch: AutonomousDailyCandidateBehaviorIds.AssetBatch, preference: "prone");
+        Add(AutonomousDailyCandidateBehaviorIds.ProneToSit, BehaviorSemanticCategory.PostureTransition, StablePosture.Sit,
+            "sit.neutral.left_front", new(), new[] { PetEpisodeKind.Exploring }, effort: BehaviorEffortLevel.Medium, batch: AutonomousDailyCandidateBehaviorIds.AssetBatch);
+        Add(AutonomousDailyCandidateBehaviorIds.SitToStand, BehaviorSemanticCategory.PostureTransition, StablePosture.Stand,
+            "stand.neutral.left_front", new(), new[] { PetEpisodeKind.Exploring }, effort: BehaviorEffortLevel.Medium, batch: AutonomousDailyCandidateBehaviorIds.AssetBatch);
+        Add(ProneHeadCandidateBehaviorIds.HeadLowerTurnV4, BehaviorSemanticCategory.Observe, StablePosture.Prone,
+            "prone.awake.diagonal.high_head.candidate_v4", new(), new[] { PetEpisodeKind.Observing }, batch: ProneHeadCandidateBehaviorIds.AssetBatch, preference: "prone");
+        Add(LifecycleReviewCandidateBehaviorIds.FrontProneLickV4, BehaviorSemanticCategory.Observe, StablePosture.Prone,
+            "prone.awake.front", new(Energy: -.004, Boredom: -.02, MoodValence: .002), new[] { PetEpisodeKind.Observing }, batch: LifecycleReviewCandidateBehaviorIds.V4AssetBatch);
+        Add(FrontProneExpressionBehaviorIds.SatisfiedSmile, BehaviorSemanticCategory.Observe, StablePosture.Prone,
+            "prone.awake.front", new(Stress: -.004, MoodValence: .004), new[] { PetEpisodeKind.Observing, PetEpisodeKind.Resting }, batch: FrontProneExpressionBehaviorIds.AssetBatch, multiplier: 1.20);
+        Add(FrontProneExpressionBehaviorIds.CuriousObserve, BehaviorSemanticCategory.Observe, StablePosture.Prone,
+            "prone.awake.front", new(Boredom: -.008), new[] { PetEpisodeKind.Observing, PetEpisodeKind.Resting }, batch: FrontProneExpressionBehaviorIds.AssetBatch, multiplier: 1.05);
+        Add(FrontProneExpressionBehaviorIds.KnowingLook, BehaviorSemanticCategory.Observe, StablePosture.Prone,
+            "prone.awake.front", new(Boredom: -.006), new[] { PetEpisodeKind.Observing, PetEpisodeKind.Resting }, batch: FrontProneExpressionBehaviorIds.AssetBatch, multiplier: .90);
+        Add(ProneHappyHotPantingBehaviorIds.HappyHotPanting, BehaviorSemanticCategory.Observe, StablePosture.Prone,
+            "prone.awake.front", new(Energy: -.006, Boredom: -.014, Stress: -.006, MoodValence: .006),
+            new[] { PetEpisodeKind.Observing, PetEpisodeKind.Resting }, batch: ProneHappyHotPantingBehaviorIds.AssetBatch, multiplier: .85);
+        Add(StandingHappyExpectantBehaviorIds.HappyExpectant, BehaviorSemanticCategory.Observe, StablePosture.Stand,
+            "stand.neutral.left_front", new(SocialNeed: -.012, Boredom: -.012, Stress: -.004, MoodValence: .006),
+            new[] { PetEpisodeKind.Observing, PetEpisodeKind.Socializing }, batch: StandingHappyExpectantBehaviorIds.AssetBatch);
+        Add(SleepCandidateBehaviorIds.MainLifecycle, BehaviorSemanticCategory.Rest, StablePosture.Prone,
+            "sleep.side.stable", new(Energy: .08, Stress: -.04, Arousal: -.08, Comfort: .04),
+            new[] { PetEpisodeKind.Sleeping }, batch: SleepCandidateBehaviorIds.AssetBatch, preference: "sleep", dialogue: true);
+        Add(SleepCandidateBehaviorIds.SprawledFrontBreath, BehaviorSemanticCategory.Rest, StablePosture.Prone,
+            "sleep.prone.sprawled.front", new(Energy: .04, Stress: -.025, Arousal: -.04, Comfort: .025),
+            new[] { PetEpisodeKind.Sleeping }, batch: SleepCandidateBehaviorIds.AssetBatch, preference: "sleep", dialogue: true);
+        foreach (var (id, pose) in new[]
         {
-            if (motion.BehaviorId.Contains("jump", StringComparison.OrdinalIgnoreCase) ||
-                motion.BehaviorId.Contains("spin", StringComparison.OrdinalIgnoreCase))
-                return BehaviorEffortLevel.High;
-            if (motion.BehaviorId.Contains("sit", StringComparison.OrdinalIgnoreCase) ||
-                motion.BehaviorId.Contains("lie", StringComparison.OrdinalIgnoreCase) ||
-                motion.BehaviorId.Contains("down", StringComparison.OrdinalIgnoreCase))
-                return BehaviorEffortLevel.Low;
-            return BehaviorEffortLevel.Medium;
-        }
-        return category switch
-        {
-            BehaviorSemanticCategory.Explore or BehaviorSemanticCategory.Magic => BehaviorEffortLevel.High,
-            BehaviorSemanticCategory.OwnerInvitation or BehaviorSemanticCategory.PostureTransition => BehaviorEffortLevel.Medium,
-            _ => BehaviorEffortLevel.Low
-        };
-    }
-
-    private static TimeSpan MinimumDwellFor(BehaviorSemanticCategory category) => category switch
-    {
-        BehaviorSemanticCategory.StableIdle => TimeSpan.FromSeconds(8),
-        BehaviorSemanticCategory.Rest => TimeSpan.FromSeconds(12),
-        BehaviorSemanticCategory.Explore => TimeSpan.FromSeconds(10),
-        _ => TimeSpan.FromSeconds(6)
-    };
-
-    private static TimeSpan CooldownFor(BehaviorSemanticCategory category) => category switch
-    {
-        BehaviorSemanticCategory.StableIdle => TimeSpan.Zero,
-        BehaviorSemanticCategory.Observe => TimeSpan.FromSeconds(45),
-        BehaviorSemanticCategory.Explore => TimeSpan.FromSeconds(70),
-        BehaviorSemanticCategory.Rest => TimeSpan.FromSeconds(60),
-        _ => TimeSpan.FromSeconds(20)
-    };
-
-    private static double BaseWeightFor(BehaviorSemanticCategory category) => category switch
-    {
-        BehaviorSemanticCategory.StableIdle => 0.64,
-        BehaviorSemanticCategory.Rest => 0.72,
-        BehaviorSemanticCategory.Observe => 0.48,
-        BehaviorSemanticCategory.Explore => 0.32,
-        BehaviorSemanticCategory.PostureTransition => 0.40,
-        BehaviorSemanticCategory.Social => 0.34,
-        _ => 0.30
-    };
-
-    private static PetStateEffects EffectsFor(BehaviorSemanticCategory category) => category switch
-    {
-        BehaviorSemanticCategory.Rest => new PetStateEffects(Energy: 0.025, Stress: -0.02, Arousal: -0.025, Comfort: 0.02),
-        BehaviorSemanticCategory.Explore => new PetStateEffects(Energy: -0.035, Boredom: -0.10, MoodValence: 0.01, Arousal: 0.02),
-        BehaviorSemanticCategory.Observe => new PetStateEffects(Energy: -0.004, Boredom: -0.025, Stress: -0.004),
-        BehaviorSemanticCategory.PostureTransition => new PetStateEffects(Energy: -0.006),
-        BehaviorSemanticCategory.Social => new PetStateEffects(SocialNeed: -0.05, Boredom: -0.03, MoodValence: 0.02),
-        BehaviorSemanticCategory.Food => new PetStateEffects(Hunger: -0.35, Energy: 0.04),
-        BehaviorSemanticCategory.Drink => new PetStateEffects(Thirst: -0.40),
-        _ => new PetStateEffects(Energy: -0.002)
-    };
-
-    private static StablePosture PostureFrom(string? value, StablePosture fallback)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return fallback;
-        if (value.Contains("stand", StringComparison.OrdinalIgnoreCase))
-            return StablePosture.Stand;
-        if (value.Contains("sit", StringComparison.OrdinalIgnoreCase))
-            return StablePosture.Sit;
-        if (value.Contains("prone", StringComparison.OrdinalIgnoreCase) ||
-            value.Contains("sleep", StringComparison.OrdinalIgnoreCase) ||
-            value.Contains("lying", StringComparison.OrdinalIgnoreCase))
-            return StablePosture.Prone;
-        return fallback;
+            (SleepCandidateBehaviorIds.ProneToSideRoll, "sleep.side.stable"),
+            (SleepCandidateBehaviorIds.SprawledLeftSideBreath, "sleep.side.sprawled.left"),
+            (SleepCandidateBehaviorIds.SprawledRightSideBreath, "sleep.side.sprawled.right"),
+            (SleepCandidateBehaviorIds.CompactProneBreath, "sleep.prone.compact"),
+            (SleepCandidateBehaviorIds.CurledSideBreath, "sleep.side.curled")
+        }) Add(id, BehaviorSemanticCategory.Rest, StablePosture.Prone, pose, new(Energy: -.004), owner: true, batch: SleepCandidateBehaviorIds.AssetBatch);
+        foreach (var (id, pose) in new[] { (PatrolWalkCandidateBehaviorIds.WalkLeft, "stand.walk.left"), (PatrolWalkCandidateBehaviorIds.WalkRight, "stand.walk.right") })
+            Add(id, BehaviorSemanticCategory.Explore, StablePosture.Stand, pose, new(Energy: -.025, Boredom: -.08, MoodValence: .01),
+                new[] { PetEpisodeKind.Exploring }, effort: BehaviorEffortLevel.High, batch: PatrolWalkCandidateBehaviorIds.AssetBatch, preference: "walk", dialogue: true);
+        Add(FoodWaterCandidateBehaviorIds.EatKibbleStandingV5, BehaviorSemanticCategory.Food, StablePosture.Stand,
+            "stand.neutral.left_front", new(Energy: .04, Hunger: -.35, Boredom: -.02), owner: true, batch: FoodWaterCandidateBehaviorIds.AssetBatch);
+        Add(FoodWaterCandidateBehaviorIds.DrinkWaterStandingV5, BehaviorSemanticCategory.Drink, StablePosture.Stand,
+            "stand.neutral.left_front", new(Thirst: -.40, Stress: -.01), owner: true, batch: FoodWaterCandidateBehaviorIds.AssetBatch);
+        void Command(string id, StablePosture end, string pose, PetStateEffects effects, BehaviorEffortLevel effort) =>
+            Add(id, BehaviorSemanticCategory.OwnerCommand, end, pose, effects, owner: true, effort: effort, batch: CommandMockBehaviorIds.AssetBatch);
+        Command(MockCommandActionIds.Sit, StablePosture.Sit, "sit.neutral.left_front", new(Energy: -.004, SocialNeed: -.01), BehaviorEffortLevel.Low);
+        Command(MockCommandActionIds.Down, StablePosture.Prone, "prone.awake.left_front", new(Energy: -.003, Comfort: .008), BehaviorEffortLevel.Low);
+        Command(MockCommandActionIds.PawSit, StablePosture.Sit, "sit.neutral.left_front", new(Energy: -.008, SocialNeed: -.025, MoodValence: .006), BehaviorEffortLevel.Medium);
+        Command(MockCommandActionIds.PawProne, StablePosture.Prone, "prone.awake.left_front", new(Energy: -.006, SocialNeed: -.025, MoodValence: .006), BehaviorEffortLevel.Medium);
+        Command(MockCommandActionIds.Jump, StablePosture.Stand, "stand.neutral.left_front", new(Energy: -.075, Boredom: -.08, Arousal: .04, MoodValence: .01), BehaviorEffortLevel.High);
+        Command(MockCommandActionIds.Spin, StablePosture.Stand, "stand.neutral.left_front", new(Energy: -.065, Boredom: -.07, Arousal: .035, MoodValence: .008), BehaviorEffortLevel.High);
+        Command(MockCommandActionIds.EatSit, StablePosture.Sit, "sit.neutral.left_front", new(Hunger: -.10, SocialNeed: -.01), BehaviorEffortLevel.Medium);
+        Command(MockCommandActionIds.EatProne, StablePosture.Prone, "prone.awake.front", new(Hunger: -.10, SocialNeed: -.01), BehaviorEffortLevel.Medium);
+        void Wake(string id, StablePosture end, string pose, PetStateEffects effects, bool restingAllowed = false) =>
+            Add(id, BehaviorSemanticCategory.PostureTransition, end, pose, effects,
+                restingAllowed ? new[] { PetEpisodeKind.Recovering, PetEpisodeKind.Resting } : new[] { PetEpisodeKind.Recovering },
+                effort: BehaviorEffortLevel.Medium, batch: WakeRiseCandidateBehaviorIds.AssetBatch);
+        Wake(WakeRiseCandidateBehaviorIds.SideWake, StablePosture.Prone, "prone.awake.left_front", new(Energy: .010, Arousal: .035));
+        Wake(WakeRiseCandidateBehaviorIds.SideInterrupt, StablePosture.Prone, "prone.awake.left_front", new(Energy: .005, Stress: .004, Arousal: .040));
+        Wake(WakeRiseCandidateBehaviorIds.LowInterrupt, StablePosture.Prone, "prone.awake.left_front", new(Energy: .004, Stress: .003, Arousal: .030));
+        Wake(WakeRiseCandidateBehaviorIds.FrontWake, StablePosture.Prone, "prone.awake.front", new(Energy: .008, Arousal: .030));
+        Wake(WakeRiseCandidateBehaviorIds.FrontRiseSit, StablePosture.Sit, "sit.neutral.left_front", new(Energy: -.008, Arousal: .010), true);
+        Wake(WakeRiseCandidateBehaviorIds.FrontSitStand, StablePosture.Stand, "stand.neutral.left_front", new(Energy: -.009, Arousal: .012), true);
+        Wake(WakeRiseCandidateBehaviorIds.FrontRiseFull, StablePosture.Stand, "stand.neutral.left_front", new(Energy: -.016, Arousal: .016), true);
+        Add(CarRideBehaviorIds.CarRide, BehaviorSemanticCategory.OwnerInvitation, StablePosture.Stand, "stand.neutral.right",
+            new(Energy: -.03, Boredom: -.10, MoodValence: .02), owner: true, effort: BehaviorEffortLevel.Medium, batch: CarRideBehaviorIds.AssetBatch);
+        foreach (var id in MagicBehaviorIds.PrototypeWhitelist)
+            Add(id, BehaviorSemanticCategory.Magic, StablePosture.Prone, "prone.awake.left_front",
+                id == MagicBehaviorIds.AccioBroom ? new(Energy: -.035, Boredom: -.08, Arousal: .03) : new(Energy: -.004),
+                owner: true, effort: BehaviorEffortLevel.High, batch: MagicBehaviorIds.AssetBatch);
+        return definitions;
     }
 }
 
+public static class DesktopBehaviorCapabilityCatalog
+{
+    public static BehaviorCapabilityCatalog Create(IEnumerable<PlayableMotion> motions, AutonomyPolicyProfile? policy = null) =>
+        new(motions.Select(motion => Project(motion, policy ?? AutonomyPolicyProfile.Default)));
+    private static BehaviorCapability Project(PlayableMotion motion, AutonomyPolicyProfile policy)
+    {
+        var definition = DesktopBehaviorDefinitionCatalog.Find(motion.BehaviorId);
+        var category = definition?.Category ?? BehaviorSemanticCategory.OwnerInvitation;
+        var tuning = policy.Categories[category];
+        var start = PostureFromPose(motion.StartPose);
+        var end = definition?.Outcome?.EndPosture ?? PostureFromPose(motion.EndPose);
+        var known = definition is not null &&
+            (definition.AssetBatch is null || definition.AssetBatch.Equals(motion.AssetBatch, StringComparison.OrdinalIgnoreCase));
+        var autonomous = known && definition!.AutonomousAllowed && motion.AutonomousBindingEnabled;
+        var sources = new HashSet<BehaviorRequestSource>(definition?.Sources ?? new HashSet<BehaviorRequestSource> { BehaviorRequestSource.DeveloperPreview });
+        if (!autonomous) sources.Remove(BehaviorRequestSource.AutonomousTick);
+        var participation = category switch
+        {
+            BehaviorSemanticCategory.Magic => BehaviorParticipationMode.ForcedByOwner,
+            BehaviorSemanticCategory.OwnerCommand => BehaviorParticipationMode.UsuallyCooperative,
+            _ => autonomous ? BehaviorParticipationMode.Autonomous : BehaviorParticipationMode.StateSensitive
+        };
+        return new(motion.BehaviorId, category, participation,
+            motion.Interruptible ? BehaviorInterruptionPolicy.SafePreempt : BehaviorInterruptionPolicy.WaitForSafePoint,
+            sources, new HashSet<StablePosture> { start }, end, definition?.Effort ?? BehaviorEffortLevel.Low,
+            definition?.Episodes ?? new HashSet<PetEpisodeKind>(),
+            known && motion.EffectiveRuntimeApproved && !motion.IsExpired,
+            known && motion.RuntimeEnabled && !motion.IsExpired,
+            known && motion.RuntimeEnabled && motion.EffectiveRuntimeApproved && !motion.IsExpired,
+            autonomous, motion.WindowMotionEnabled, TimeSpan.FromSeconds(tuning.MinimumDwellSeconds),
+            TimeSpan.FromSeconds(tuning.CooldownSeconds), tuning.BaseWeight,
+            definition?.Outcome?.StateEffects ?? new PetStateEffects())
+        {
+            StartPoseFamily = PetPoseCompatibility.FamilyFor(motion.StartPose, start),
+            EndPoseId = definition?.Outcome?.EndPoseId ?? motion.EndPose
+        };
+    }
+    public static StablePosture PostureFromPose(string pose) => pose.Split('.')[0].ToLowerInvariant() switch
+    {
+        "stand" or "standing" => StablePosture.Stand,
+        "sit" or "sitting" => StablePosture.Sit,
+        _ => StablePosture.Prone
+    };
+}
+
+// Compatibility projections; neither owns a second behavior table.
 public static class DesktopAutonomousEpisodeBindings
 {
-    private static readonly IReadOnlySet<string> Resting = Set(
-        LifecycleCandidateBehaviorIds.StandIdleMicroloop,
-        LifecycleCandidateBehaviorIds.SitIdleMicroloop,
-        LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
-        LifecycleCandidateBehaviorIds.LivelyDailyP2,
-        LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1,
-        LifecycleReviewCandidateBehaviorIds.StandIdleV3R1,
-        LifecycleReviewCandidateBehaviorIds.SitIdleV3R1,
-        LifecycleReviewCandidateBehaviorIds.LegacySideProneIdleV3R1,
-        LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
-        AutonomousDailyCandidateBehaviorIds.StandToSit,
-        AutonomousDailyCandidateBehaviorIds.SitToProne,
-        WakeRiseCandidateBehaviorIds.FrontRiseSit,
-        WakeRiseCandidateBehaviorIds.FrontRiseFull,
-        WakeRiseCandidateBehaviorIds.FrontSitStand);
-
-    private static readonly IReadOnlySet<string> Observing = Set(
-        LifecycleCandidateBehaviorIds.StandIdleMicroloop,
-        LifecycleCandidateBehaviorIds.SitIdleMicroloop,
-        LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
-        LifecycleReviewCandidateBehaviorIds.StandIdleV3R1,
-        LifecycleReviewCandidateBehaviorIds.SitIdleV3R1,
-        LifecycleReviewCandidateBehaviorIds.LegacySideProneIdleV3R1,
-        LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
-        AutonomousDailyCandidateBehaviorIds.StandToSit,
-        AutonomousDailyCandidateBehaviorIds.SitToProne,
-        ProneHeadCandidateBehaviorIds.HeadLowerTurnV4,
-        LifecycleReviewCandidateBehaviorIds.FrontProneLickV4,
-        FrontProneExpressionBehaviorIds.SatisfiedSmile,
-        FrontProneExpressionBehaviorIds.CuriousObserve,
-        FrontProneExpressionBehaviorIds.KnowingLook,
-        ProneHappyHotPantingBehaviorIds.HappyHotPanting);
-
-    private static readonly IReadOnlySet<string> Socializing = Set(
-        LifecycleCandidateBehaviorIds.StandIdleMicroloop,
-        LifecycleReviewCandidateBehaviorIds.StandIdleV3R1);
-
-    private static readonly IReadOnlySet<string> Sleeping = Set(
-        SleepCandidateBehaviorIds.MainLifecycle,
-        SleepCandidateBehaviorIds.SprawledFrontBreath);
-
-    private static readonly IReadOnlySet<string> Exploring = Set(
-        LifecycleCandidateBehaviorIds.StandIdleMicroloop,
-        LifecycleReviewCandidateBehaviorIds.StandIdleV3R1,
-        LifecycleReviewCandidateBehaviorIds.SitIdleV3R1,
-        LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
-        LifecycleReviewCandidateBehaviorIds.LegacySideProneIdleV3R1,
-        AutonomousDailyCandidateBehaviorIds.ProneToSit,
-        AutonomousDailyCandidateBehaviorIds.SitToStand,
-        PatrolWalkCandidateBehaviorIds.WalkLeft,
-        PatrolWalkCandidateBehaviorIds.WalkRight);
-
-    private static readonly IReadOnlySet<string> Recovering = Set(
-        LifecycleCandidateBehaviorIds.StandIdleMicroloop,
-        LifecycleCandidateBehaviorIds.SitIdleMicroloop,
-        LifecycleCandidateBehaviorIds.ProneIdleMicroloop,
-        LifecycleReviewCandidateBehaviorIds.StandIdleV3R1,
-        LifecycleReviewCandidateBehaviorIds.SitIdleV3R1,
-        LifecycleReviewCandidateBehaviorIds.LegacySideProneIdleV3R1,
-        LifecycleReviewCandidateBehaviorIds.FrontProneIdleV4,
-        AutonomousDailyCandidateBehaviorIds.StandToSit,
-        AutonomousDailyCandidateBehaviorIds.SitToProne,
-        WakeRiseCandidateBehaviorIds.SideWake,
-        WakeRiseCandidateBehaviorIds.SideInterrupt,
-        WakeRiseCandidateBehaviorIds.LowInterrupt,
-        WakeRiseCandidateBehaviorIds.FrontWake,
-        WakeRiseCandidateBehaviorIds.FrontRiseSit,
-        WakeRiseCandidateBehaviorIds.FrontSitStand,
-        WakeRiseCandidateBehaviorIds.FrontRiseFull);
-
-    public static IReadOnlySet<string>? For(PetEpisodeKind episode) => episode switch
-    {
-        PetEpisodeKind.Resting => Resting,
-        PetEpisodeKind.Observing => Observing,
-        PetEpisodeKind.Sleeping => Sleeping,
-        PetEpisodeKind.Exploring => Exploring,
-        PetEpisodeKind.Recovering => Recovering,
-        PetEpisodeKind.Socializing => Socializing,
-        _ => null
-    };
-
-    public static IReadOnlySet<PetEpisodeKind> AvailableEpisodes(
-        IBehaviorCapabilityCatalog catalog, PetRuntimeState runtime)
+    public static IReadOnlySet<string> For(PetEpisodeKind episode) => DesktopBehaviorDefinitionCatalog.ForEpisode(episode);
+    public static IReadOnlySet<PetEpisodeKind> AvailableEpisodes(IBehaviorCapabilityCatalog catalog, PetRuntimeState runtime)
     {
         var available = new HashSet<PetEpisodeKind> { PetEpisodeKind.Resting, PetEpisodeKind.Recovering };
-        foreach (var episode in Enum.GetValues<PetEpisodeKind>())
-        {
-            var bindings = For(episode);
-            if (bindings is null) continue;
-            if (catalog.Capabilities.Any(capability => bindings.Contains(capability.BehaviorId) &&
-                    capability.ProductionApproved && capability.RuntimeUse && capability.ProductionAsset &&
-                    capability.AutonomousBindingEnabled && capability.AllowedSources.Contains(BehaviorRequestSource.AutonomousTick) &&
-                    capability.ParticipationMode == BehaviorParticipationMode.Autonomous &&
-                    capability.Category != BehaviorSemanticCategory.StableIdle &&
-                    capability.AllowedEpisodes.Contains(episode) &&
-                    capability.StartPostures.Contains(runtime.CurrentPosture) &&
-                    PetPoseCompatibility.IsCompatible(capability.StartPoseFamily, runtime)))
-                available.Add(episode);
-        }
+        foreach (var capability in catalog.Capabilities.Where(item => item.ProductionApproved && item.RuntimeUse &&
+                     item.ProductionAsset && item.AutonomousBindingEnabled && item.AllowedSources.Contains(BehaviorRequestSource.AutonomousTick) &&
+                     item.Category != BehaviorSemanticCategory.StableIdle && item.StartPostures.Contains(runtime.CurrentPosture) &&
+                     PetPoseCompatibility.IsCompatible(item.StartPoseFamily, runtime)))
+            available.UnionWith(capability.AllowedEpisodes);
         return available;
     }
-
-    private static IReadOnlySet<string> Set(params string[] values) =>
-        new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);
 }
 
 public static class DesktopBehaviorOutcomeProfiles
 {
-    private static readonly IReadOnlyDictionary<string, BehaviorOutcomeProfile> Profiles =
-        new[]
-        {
-            Profile(
-                LifecycleCandidateBehaviorIds.LivelyDailyP2,
-                StablePosture.Stand,
-                "stand.neutral.left_front",
-                new PetStateEffects(Energy: -0.06, Hunger: 0.012, Boredom: -0.14, MoodValence: 0.015)),
-            Profile(
-                LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1,
-                StablePosture.Stand,
-                "stand.neutral.left_front",
-                new PetStateEffects(Energy: -0.055, Boredom: -0.13, MoodValence: 0.015)),
-            Profile(
-                AutonomousDailyCandidateBehaviorIds.StandToSit,
-                StablePosture.Sit,
-                "sit.neutral.left_front",
-                new PetStateEffects()),
-            Profile(
-                AutonomousDailyCandidateBehaviorIds.SitToProne,
-                StablePosture.Prone,
-                "prone.awake.left_front",
-                new PetStateEffects()),
-            Profile(
-                AutonomousDailyCandidateBehaviorIds.ProneToSit,
-                StablePosture.Sit,
-                "sit.neutral.left_front",
-                new PetStateEffects()),
-            Profile(
-                AutonomousDailyCandidateBehaviorIds.SitToStand,
-                StablePosture.Stand,
-                "stand.neutral.left_front",
-                new PetStateEffects()),
-            Profile(
-                ProneHeadCandidateBehaviorIds.HeadLowerTurnV4,
-                StablePosture.Prone,
-                "prone.awake.diagonal.high_head.candidate_v4",
-                new PetStateEffects()),
-            Profile(
-                LifecycleReviewCandidateBehaviorIds.FrontProneLickV4,
-                StablePosture.Prone,
-                "prone.awake.front",
-                new PetStateEffects(Energy: -0.004, Boredom: -0.02, MoodValence: 0.002)),
-            Profile(SleepCandidateBehaviorIds.MainLifecycle, StablePosture.Prone, "sleep.side.stable",
-                new PetStateEffects(Energy: 0.08, Stress: -0.04, Arousal: -0.08, Comfort: 0.04)),
-            Profile(SleepCandidateBehaviorIds.SprawledFrontBreath, StablePosture.Prone, "sleep.prone.sprawled.front",
-                new PetStateEffects(Energy: 0.04, Stress: -0.025, Arousal: -0.04, Comfort: 0.025)),
-            Profile(PatrolWalkCandidateBehaviorIds.WalkLeft, StablePosture.Stand, "stand.walk.left",
-                new PetStateEffects(Energy: -0.025, Boredom: -0.08, MoodValence: 0.01)),
-            Profile(PatrolWalkCandidateBehaviorIds.WalkRight, StablePosture.Stand, "stand.walk.right",
-                new PetStateEffects(Energy: -0.025, Boredom: -0.08, MoodValence: 0.01)),
-            Profile(FoodWaterCandidateBehaviorIds.EatKibbleStandingV5, StablePosture.Stand, "stand.neutral.left_front",
-                new PetStateEffects(Energy: 0.04, Hunger: -0.35, Boredom: -0.02), ownerInteraction: true),
-            Profile(FoodWaterCandidateBehaviorIds.DrinkWaterStandingV5, StablePosture.Stand, "stand.neutral.left_front",
-                new PetStateEffects(Thirst: -0.40, Stress: -0.01), ownerInteraction: true),
-            Profile(MockCommandActionIds.Sit, StablePosture.Sit, "sit.neutral.left_front",
-                new PetStateEffects(Energy: -0.004, SocialNeed: -0.01), ownerInteraction: true),
-            Profile(MockCommandActionIds.Down, StablePosture.Prone, "prone.awake.left_front",
-                new PetStateEffects(Energy: -0.003, Comfort: 0.008), ownerInteraction: true),
-            Profile(MockCommandActionIds.PawSit, StablePosture.Sit, "sit.neutral.left_front",
-                new PetStateEffects(Energy: -0.008, SocialNeed: -0.025, MoodValence: 0.006), ownerInteraction: true),
-            Profile(MockCommandActionIds.PawProne, StablePosture.Prone, "prone.awake.left_front",
-                new PetStateEffects(Energy: -0.006, SocialNeed: -0.025, MoodValence: 0.006), ownerInteraction: true),
-            Profile(MockCommandActionIds.Jump, StablePosture.Stand, "stand.neutral.left_front",
-                new PetStateEffects(Energy: -0.075, Boredom: -0.08, Arousal: 0.04, MoodValence: 0.01), ownerInteraction: true),
-            Profile(MockCommandActionIds.Spin, StablePosture.Stand, "stand.neutral.left_front",
-                new PetStateEffects(Energy: -0.065, Boredom: -0.07, Arousal: 0.035, MoodValence: 0.008), ownerInteraction: true),
-            Profile(MockCommandActionIds.EatSit, StablePosture.Sit, "sit.neutral.left_front",
-                new PetStateEffects(Hunger: -0.10, SocialNeed: -0.01), ownerInteraction: true),
-            Profile(MockCommandActionIds.EatProne, StablePosture.Prone, "prone.awake.front",
-                new PetStateEffects(Hunger: -0.10, SocialNeed: -0.01), ownerInteraction: true),
-            Profile(FrontProneExpressionBehaviorIds.SatisfiedSmile, StablePosture.Prone, "prone.awake.front",
-                new PetStateEffects(Stress: -0.004, MoodValence: 0.004)),
-            Profile(FrontProneExpressionBehaviorIds.CuriousObserve, StablePosture.Prone, "prone.awake.front",
-                new PetStateEffects(Boredom: -0.008)),
-            Profile(FrontProneExpressionBehaviorIds.KnowingLook, StablePosture.Prone, "prone.awake.front",
-                new PetStateEffects(Boredom: -0.006)),
-            Profile(ProneHappyHotPantingBehaviorIds.HappyHotPanting, StablePosture.Prone, "prone.awake.front",
-                new PetStateEffects(Energy: -0.006, Boredom: -0.014, Stress: -0.006, MoodValence: 0.006)),
-            Profile(StandingHappyExpectantBehaviorIds.HappyExpectant, StablePosture.Stand, "stand.neutral.left_front",
-                new PetStateEffects(SocialNeed: -0.012, Boredom: -0.012, Stress: -0.004, MoodValence: 0.006)),
-            Profile(WakeRiseCandidateBehaviorIds.SideWake, StablePosture.Prone, "prone.awake.left_front",
-                new PetStateEffects(Energy: 0.010, Arousal: 0.035)),
-            Profile(WakeRiseCandidateBehaviorIds.SideInterrupt, StablePosture.Prone, "prone.awake.left_front",
-                new PetStateEffects(Energy: 0.005, Stress: 0.004, Arousal: 0.040)),
-            Profile(WakeRiseCandidateBehaviorIds.LowInterrupt, StablePosture.Prone, "prone.awake.left_front",
-                new PetStateEffects(Energy: 0.004, Stress: 0.003, Arousal: 0.030)),
-            Profile(WakeRiseCandidateBehaviorIds.FrontWake, StablePosture.Prone, "prone.awake.front",
-                new PetStateEffects(Energy: 0.008, Arousal: 0.030)),
-            Profile(WakeRiseCandidateBehaviorIds.FrontRiseSit, StablePosture.Sit, "sit.neutral.left_front",
-                new PetStateEffects(Energy: -0.008, Arousal: 0.010)),
-            Profile(WakeRiseCandidateBehaviorIds.FrontSitStand, StablePosture.Stand, "stand.neutral.left_front",
-                new PetStateEffects(Energy: -0.009, Arousal: 0.012)),
-            Profile(WakeRiseCandidateBehaviorIds.FrontRiseFull, StablePosture.Stand, "stand.neutral.left_front",
-                new PetStateEffects(Energy: -0.016, Arousal: 0.016))
-        }.ToDictionary(item => item.BehaviorId, StringComparer.OrdinalIgnoreCase);
-
-    public static IReadOnlySet<string> ReducerOwnedBehaviorIds { get; } =
-        Profiles.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-    public static BehaviorOutcomeProfile? Find(PlayableMotion motion) =>
-        Profiles.TryGetValue(motion.BehaviorId, out var profile) ? profile : null;
-
-    public static BehaviorOutcomeProfile? Find(string behaviorId) =>
-        Profiles.TryGetValue(behaviorId, out var profile) ? profile : null;
-
-    public static BehaviorOutcomeProfile CreateFallback(PlayableMotion motion)
-    {
-        var endPosture = PostureFrom(motion.EndPose, PostureFrom(motion.StartPose, StablePosture.Prone));
-        var effects = motion.Effect switch
-        {
-            DesktopMotionEffect.CarRide => new PetStateEffects(Energy: -0.03, Boredom: -0.10, MoodValence: 0.02),
-            DesktopMotionEffect.BroomFlight => new PetStateEffects(Energy: -0.035, Boredom: -0.08, Arousal: 0.03),
-            _ => new PetStateEffects(Energy: -0.004)
-        };
-        return new BehaviorOutcomeProfile(
-            motion.BehaviorId,
-            endPosture,
-            string.IsNullOrWhiteSpace(motion.EndPose) ? PetRuntimeState.DefaultPoseFor(endPosture) : motion.EndPose,
-            effects,
-            OwnerInteraction: !motion.AutonomousBindingEnabled,
-            MemoryEligibility: true,
-            PartialEffectPolicy.Proportional);
-    }
-
-    private static StablePosture PostureFrom(string? pose, StablePosture fallback)
-    {
-        if (string.IsNullOrWhiteSpace(pose)) return fallback;
-        if (pose.Contains("stand", StringComparison.OrdinalIgnoreCase)) return StablePosture.Stand;
-        if (pose.Contains("sit", StringComparison.OrdinalIgnoreCase)) return StablePosture.Sit;
-        if (pose.Contains("prone", StringComparison.OrdinalIgnoreCase) ||
-            pose.Contains("sleep", StringComparison.OrdinalIgnoreCase) ||
-            pose.Contains("lying", StringComparison.OrdinalIgnoreCase)) return StablePosture.Prone;
-        return fallback;
-    }
-
-    private static BehaviorOutcomeProfile Profile(
-        string behaviorId,
-        StablePosture endPosture,
-        string endPoseId,
-        PetStateEffects effects,
-        bool ownerInteraction = false) =>
-        new(
-            behaviorId,
-            endPosture,
-            endPoseId,
-            effects,
-            OwnerInteraction: ownerInteraction,
-            MemoryEligibility: true,
-            PartialEffectPolicy.Proportional);
+    public static IReadOnlySet<string> ReducerOwnedBehaviorIds => DesktopBehaviorDefinitionCatalog.All
+        .Where(item => item.Outcome is not null).Select(item => item.BehaviorId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+    public static BehaviorOutcomeProfile? Find(PlayableMotion motion) => Find(motion.BehaviorId);
+    public static BehaviorOutcomeProfile? Find(string behaviorId) => DesktopBehaviorDefinitionCatalog.Find(behaviorId)?.Outcome;
 }

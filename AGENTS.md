@@ -12,6 +12,21 @@ Before making changes, read:
 6. Tests covering the affected area.
 7. The relevant files in `docs/handoff/` for product, behavior, migration, and release boundaries.
 
+## Project-local skills
+
+Reusable task workflows are stored in `skills/`. Before starting a task that
+matches one, read its `SKILL.md` in addition to the files above:
+
+- `skills/asset-intake/`: versioned external asset import and candidate review.
+- `skills/asset-promotion/`: visual/runtime approval and production activation.
+- `skills/behavior-change/`: behavior, state, memory and lifecycle changes.
+- `skills/desktop-ux/`: owner/developer WPF panel changes.
+- `skills/release-verify/`: build, test, candidate publish and Git release gates.
+
+These skills are repository-local guidance, not a substitute for explicit owner
+authorization. Read only the skill relevant to the task; do not load or apply
+unrelated workflows.
+
 Repository files and executable behavior are the source of truth. Do not infer completed work from conversation history alone.
 
 ## Scope discipline

@@ -20,6 +20,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         IConversationHistoryStore history,
         IConversationMemoryStore memory,
         IPetAgentStateStore agentState,
+        ICompanionSessionStateStore companionSession,
         IPetDecisionMemorySource decisionMemory,
         IDeveloperSession developerSession,
         IDeveloperDiagnostics diagnostics,
@@ -35,11 +36,13 @@ public sealed class DesktopAgentRuntime : IDisposable
         History = history;
         Memory = memory;
         AgentState = agentState;
+        CompanionSession = companionSession;
         DecisionMemory = decisionMemory;
         DeveloperSession = developerSession;
         Diagnostics = diagnostics;
         MockContext = mockContext;
         DataPaths = dataPaths;
+        AutonomyPolicy = new FileAutonomyPolicyStore(dataPaths.AgentDirectory);
     }
 
     public IContextualConversationService Conversation { get; }
@@ -50,11 +53,13 @@ public sealed class DesktopAgentRuntime : IDisposable
     public IConversationHistoryStore History { get; }
     public IConversationMemoryStore Memory { get; }
     public IPetAgentStateStore AgentState { get; }
+    public ICompanionSessionStateStore CompanionSession { get; }
     public IPetDecisionMemorySource DecisionMemory { get; }
     public IDeveloperSession DeveloperSession { get; }
     public IDeveloperDiagnostics Diagnostics { get; }
     public IMockContextController MockContext { get; }
     public PortableDataLayout DataPaths { get; }
+    public IAutonomyPolicyStore AutonomyPolicy { get; }
 
     public static DesktopAgentRuntime CreateDefault(Func<PetRuntimeStateSnapshot>? liveRuntimeState = null)
     {
@@ -79,6 +84,7 @@ public sealed class DesktopAgentRuntime : IDisposable
         var history = new FileConversationHistoryStore(agentRoot);
         var memory = new FileConversationMemoryStore(agentRoot);
         var agentState = new FilePetAgentStateStore(agentRoot);
+        var companionSession = new FileCompanionSessionStateStore(agentRoot);
         var developer = new DeveloperSession();
         var diagnostics = new DeveloperDiagnostics(developer);
         var mockState = new MockRuntimeContextStateProvider(developer, liveRuntimeState);
@@ -93,7 +99,7 @@ public sealed class DesktopAgentRuntime : IDisposable
             memory,
             diagnostics);
         return new(httpClient, conversation, models, profiles, memoryConfiguration, autonomousBehaviorPreferences,
-            history, memory, agentState, decisionMemory, developer, diagnostics, mockState, dataPaths);
+            history, memory, agentState, companionSession, decisionMemory, developer, diagnostics, mockState, dataPaths);
     }
 
     public async Task AppendLocalAssistantMessageAsync(string text, CancellationToken cancellationToken = default)
@@ -132,23 +138,9 @@ public sealed class DesktopAgentRuntime : IDisposable
 
     public void Dispose() => _httpClient.Dispose();
 
-    private static string? ResolveAlbumRoot(PortableDataLayout dataPaths)
-    {
-        var environment = Environment.GetEnvironmentVariable("WUKONG_ALBUM_ROOT");
-        if (!string.IsNullOrWhiteSpace(environment) && Directory.Exists(environment))
-            return environment;
-        var preference = Path.Combine(dataPaths.ProfileDirectory, "album-root.txt");
-        if (File.Exists(preference))
-        {
-            try
-            {
-                var path = File.ReadAllText(preference).Trim();
-                if (Directory.Exists(path))
-                    return path;
-            }
-            catch (IOException) { }
-            catch (UnauthorizedAccessException) { }
-        }
-        return dataPaths.AlbumsDirectory;
-    }
+    public Task ClearPetSettingDebugHistoryAsync(CancellationToken cancellationToken = default) =>
+        Conversation.ClearHistoryAsync("model-debug-pet", cancellationToken);
+
+    private static string ResolveAlbumRoot(PortableDataLayout dataPaths) =>
+        PortableAlbumBinding.Resolve(dataPaths.AlbumsDirectory, dataPaths.ProfileDirectory);
 }

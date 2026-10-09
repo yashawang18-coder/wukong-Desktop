@@ -14,7 +14,12 @@ internal static class BaseAssetExecutionTests
         {
             try
             {
-                _ = Application.Current ?? new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+                if (Application.Current is null)
+                {
+                    var app = new App();
+                    app.InitializeComponent();
+                    app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                }
                 var panel = new ControlPanelWindow(new DesktopRuntimeHost());
                 var list = panel.FindName("AssetList") as ItemsControl
                     ?? throw new InvalidOperationException("base asset list missing");
@@ -37,7 +42,7 @@ internal static class BaseAssetExecutionTests
             throw failure;
     }
 
-    public static void BaseExecutionUsesIsolatedMainPetPath()
+    public static void BaseExecutionUsesApprovedPathWithoutLearning()
     {
         var runtime = new DesktopRuntimeHost();
         var method = typeof(DesktopRuntimeHost).GetMethod(
@@ -59,8 +64,8 @@ internal static class BaseAssetExecutionTests
         Assert(request is
         {
             Source: BehaviorRequestSource.ControlPanel,
-            ExecutionMode: BehaviorExecutionMode.DeveloperPreview
-        }, "base asset execution did not use the isolated main-pet request path");
+            ExecutionMode: BehaviorExecutionMode.Normal
+        }, "approved base asset did not use the Normal request path");
         var captured = request ?? throw new InvalidOperationException("base asset execution did not emit a motion request");
         Assert(string.Equals(captured.Motion.BehaviorId, LifecycleCandidateBehaviorIds.ProneIdleMicroloop, StringComparison.Ordinal),
             "base asset execution selected a different motion");

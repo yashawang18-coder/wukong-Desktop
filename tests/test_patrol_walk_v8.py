@@ -54,18 +54,21 @@ class PatrolWalkV8Tests(unittest.TestCase):
         self.assertFalse(self.manifest["normalization"]["per_frame_fit"])
         self.assertEqual([0, 0], self.manifest["normalization"]["translation"])
 
-    def test_approval_and_provenance_consistent(self):
+    def test_superseded_provenance_is_preserved_but_runtime_is_closed(self):
         self.assertEqual(self.manifest, json.loads((BATCH / "asset.json").read_text(encoding="utf-8")))
         self.assertTrue(self.manifest["owner_preview_approved"])
         self.assertTrue(self.manifest["visual_approved"])
         self.assertFalse(self.manifest["prototype_use"])
-        approved = self.manifest["runtime_approved"]
-        self.assertEqual(approved, self.manifest["runtime_use"])
-        self.assertEqual(approved, self.manifest["autonomous_binding_enabled"])
-        self.assertEqual(approved, self.manifest["approval_evidence"]["automated_windows_playback"])
-        self.assertEqual(["AutonomousTick", "DeveloperPreview", "OwnerDialogue"], self.manifest["allowed_sources"])
+        self.assertTrue(self.manifest["runtime_approved"])
+        self.assertFalse(self.manifest["runtime_use"])
+        self.assertFalse(self.manifest["production_asset"])
+        self.assertFalse(self.manifest["autonomous_binding_enabled"])
+        self.assertTrue(self.manifest["deprecated"])
+        self.assertEqual("WK-AUTONOMOUS-PATROL-WALK-v10", self.manifest["superseded_by"])
+        self.assertEqual(["DeveloperPreview"], self.manifest["allowed_sources"])
         for action in self.manifest["actions"]:
-            self.assertEqual(approved, action["runtime_use"])
+            self.assertFalse(action["runtime_use"])
+            self.assertFalse(action["autonomous_binding_enabled"])
         source = ROOT / ".publish-check/art-rebuild-walk-v8-normalized-review"
         if source.exists():
             for item in self.manifest["frame_inventory"]:
@@ -74,7 +77,8 @@ class PatrolWalkV8Tests(unittest.TestCase):
     def test_old_patrol_not_loaded_or_published(self):
         source = (ROOT / "src/Wukong.Desktop/DesktopPetRuntime.cs").read_text(encoding="utf-8")
         binding = source.split("public static class PatrolWalkCandidateBehaviorIds", 1)[1].split("public static class", 1)[0]
-        self.assertIn('AssetBatch = "WK-AUTONOMOUS-PATROL-WALK-v8"', binding)
+        self.assertIn('AssetBatch = "WK-AUTONOMOUS-PATROL-WALK-v10"', binding)
+        self.assertIn('PreviousAssetBatch = "WK-AUTONOMOUS-PATROL-WALK-v8"', binding)
         self.assertNotIn("v1-candidate", binding)
         project = (ROOT / "src/Wukong.Desktop/Wukong.Desktop.csproj").read_text(encoding="utf-8")
         self.assertIn('Content Remove="..\\..\\assets\\action-batches\\WK-AUTONOMOUS-PATROL-WALK-v1-candidate\\**\\*"', project)

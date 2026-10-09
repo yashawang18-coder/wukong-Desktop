@@ -18,7 +18,8 @@ internal static class PatrolWalkCandidateTests
         var manifest = document.RootElement;
         Assert(manifest.GetProperty("owner_preview_approved").GetBoolean(), "owner art approval missing");
         Assert(manifest.GetProperty("visual_approved").GetBoolean(), "visual approval missing");
-        Assert(manifest.GetProperty("source_png_byte_identity").GetBoolean(), "source byte preservation missing");
+        Assert(!manifest.GetProperty("source_png_byte_identity").GetBoolean(),
+            "the canonical v10 package must disclose that cycle-003 was replaced");
         Assert(!manifest.GetProperty("prototype_use").GetBoolean(), "walk must not bypass gate with prototype mode");
         Assert(manifest.GetProperty("allowed_sources").EnumerateArray().Select(x => x.GetString())
             .OrderBy(value => value, StringComparer.Ordinal)
@@ -33,7 +34,12 @@ internal static class PatrolWalkCandidateTests
             var bytes = File.ReadAllBytes(path);
             Assert(bytes.Length == item.GetProperty("bytes").GetInt32(), "byte size mismatch");
             Assert(Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant() == item.GetProperty("sha256").GetString(), "SHA mismatch");
-            Assert(item.GetProperty("source_sha256").GetString() == item.GetProperty("sha256").GetString(), "import changed PNG bytes");
+            var relativePath = item.GetProperty("path").GetString()!;
+            var sourceMatchesRuntime = item.GetProperty("source_sha256").GetString() == item.GetProperty("sha256").GetString();
+            Assert(relativePath.EndsWith("cycle-003.png", StringComparison.OrdinalIgnoreCase)
+                    ? !sourceMatchesRuntime
+                    : sourceMatchesRuntime,
+                "only cycle-003 may differ from its source master");
             using var stream = File.OpenRead(path);
             var frame = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.Single();
             Assert(frame.PixelWidth == 1024 && frame.PixelHeight == 1024 && frame.Format.ToString().Contains('a', StringComparison.OrdinalIgnoreCase), "PNG format mismatch");

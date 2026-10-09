@@ -1,0 +1,38 @@
+{
+  "SchemaVersion": 1,
+  "ProfileId": "companion-v1",
+  "Postures": {
+    "Stand": { "MinimumDwell": "00:00:14", "MaximumDwell": "00:00:45", "DecisionDelayMinimum": "00:00:14", "DecisionDelayMaximum": "00:00:26", "IdlePreferenceWeight": 1.0 },
+    "Sit": { "MinimumDwell": "00:00:24", "MaximumDwell": "00:01:30", "DecisionDelayMinimum": "00:00:30", "DecisionDelayMaximum": "00:00:53", "IdlePreferenceWeight": 0.55 },
+    "Prone": { "MinimumDwell": "00:00:35", "MaximumDwell": "00:08:00", "DecisionDelayMinimum": "00:00:55", "DecisionDelayMaximum": "00:01:36", "IdlePreferenceWeight": 1.0 }
+  },
+  "EpisodePostures": {},
+  "BehaviorMultipliers": {},
+  "Speech": {
+    "Enabled": true,
+    "QuietHoursEnabled": true,
+    "QuietStartHour": 23,
+    "QuietEndHour": 7,
+    "EightHourBudget": 6,
+    "UnansweredBudget": 4,
+    "MinimumCooldownMinutes": 7,
+    "MaximumCooldownMinutes": 20,
+    "BaseCooldownMinutes": 16,
+    "FrequencyMultiplier": 1
+  },
+  "Time": {
+    "UseDeviceTimeZone": true,
+    "ManualTimeZoneId": "Pacific/Auckland"
+  },
+  "Presence": {
+    "StartWithWindows": true,
+    "StartupGreetingEnabled": true,
+    "StartupGreetingProbability": 0.65,
+    "LongAbsenceGreetingEnabled": true,
+    "LongAbsenceHours": 24,
+    "LateNightCareEnabled": true,
+    "LateNightStartHour": 23,
+    "LateNightEndHour": 3,
+    "LateNightMinimumIntervalHours": 18
+  }
+}

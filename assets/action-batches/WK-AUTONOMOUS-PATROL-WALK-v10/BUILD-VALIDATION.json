@@ -1,0 +1,30 @@
+{
+  "batch_id": "WK-AUTONOMOUS-PATROL-WALK-v10",
+  "generated_master": {
+    "sha256": "9d82a403204cd1d29744b70326b1a7c29acbe14a81d2f552b1b973cfd81b5749",
+    "size": [
+      1254,
+      1254
+    ]
+  },
+  "runtime_frame": {
+    "path": "frames/cycle-003.png",
+    "sha256": "373b4dae88823d4e86616385ad1ded5d1d9845c8a421812167149106e1f5f453",
+    "bytes": 688583,
+    "size": [
+      1024,
+      1024
+    ],
+    "mode": "RGBA",
+    "alpha_bbox": [
+      37,
+      219,
+      1011,
+      905
+    ]
+  },
+  "unchanged_v8_frames": 12,
+  "runtime_gate": "owner_approved_production",
+  "windows_renderer_validation": "passed_windows_renderer_qa",
+  "owner_final_desktop_review": "passed_2026-10-09"
+}

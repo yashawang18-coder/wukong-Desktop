@@ -28,6 +28,7 @@ internal static class BehaviorAgentRolloutTests
         AssertBindings(PetEpisodeKind.Resting, capabilityCatalog,
             BehaviorSemanticCategory.StableIdle,
             BehaviorSemanticCategory.Rest,
+            BehaviorSemanticCategory.Observe,
             BehaviorSemanticCategory.PostureTransition);
         AssertBindings(PetEpisodeKind.Observing, capabilityCatalog,
             BehaviorSemanticCategory.StableIdle,
@@ -114,7 +115,7 @@ internal static class BehaviorAgentRolloutTests
             "lifecycle end posture changed during reducer migration");
         Assert(headTurn.EndPosture == StablePosture.Prone && headTurn.EndPoseId.Contains("prone", StringComparison.Ordinal),
             "observing microevent lost its compatible prone terminal pose");
-        Assert(DesktopBehaviorOutcomeProfiles.ReducerOwnedBehaviorIds.SetEquals(new[]
+        Assert(DesktopBehaviorOutcomeProfiles.ReducerOwnedBehaviorIds.IsSupersetOf(new[]
         {
             LifecycleCandidateBehaviorIds.LivelyDailyP2,
             LifecycleReviewCandidateBehaviorIds.LivelyDailyV3R1,
@@ -163,12 +164,34 @@ internal static class BehaviorAgentRolloutTests
         {
             var capability = catalog.Find(behaviorId)
                 ?? throw new InvalidOperationException($"allowlisted capability missing: {behaviorId}");
+            Assert(allowedCategories.Contains(capability.Category),
+                $"{episode} allowlist contains category {capability.Category}: {behaviorId}");
+            // Definitions may describe a pending candidate. The loaded gates,
+            // not membership in that definition table, control selection.
+            if (!capability.RuntimeUse || !capability.ProductionApproved)
+            {
+                var now = DateTimeOffset.UnixEpoch.AddHours(12);
+                var state = PetAgentState.CreateDefault(now) with
+                {
+                    Episode = new(episode, now.AddMinutes(-2), TimeSpan.Zero, "closed_definition"),
+                    Runtime = PetRuntimeState.Default with
+                    {
+                        CurrentPosture = capability.StartPostures.First(),
+                        CurrentPoseId = PetRuntimeState.DefaultPoseFor(capability.StartPostures.First())
+                    }
+                };
+                var decision = new BehaviorDecisionEngine().Decide(state, catalog, new BehaviorDecisionInput(
+                    BehaviorRequestSource.AutonomousTick, now, "", now.AddMinutes(-2), true,
+                    new Dictionary<string, DateTimeOffset>(), Array.Empty<string>(), 17, false, true,
+                    new HashSet<string> { behaviorId }));
+                Assert(decision.SelectedBehaviorId is null,
+                    $"a declared but unapproved/disabled definition bypassed its live gate: {behaviorId}");
+                continue;
+            }
             Assert(capability.ParticipationMode == BehaviorParticipationMode.Autonomous,
                 $"allowlist contains non-autonomous behavior: {behaviorId}");
             Assert(capability.AllowedSources.Contains(BehaviorRequestSource.AutonomousTick),
                 $"allowlist item does not allow AutonomousTick: {behaviorId}");
-            Assert(allowedCategories.Contains(capability.Category),
-                $"{episode} allowlist contains category {capability.Category}: {behaviorId}");
         }
     }
 

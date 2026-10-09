@@ -17,7 +17,8 @@ internal static class AgentJson
         try
         {
             await using var stream = File.OpenRead(path);
-            return await JsonSerializer.DeserializeAsync<T>(stream, Options, cancellationToken);
+            return await JsonSerializer.DeserializeAsync<T>(stream, Options, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (JsonException) { return default; }
         catch (IOException) { return default; }
@@ -31,7 +32,8 @@ internal static class AgentJson
         try
         {
             await using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-                await JsonSerializer.SerializeAsync(stream, value, Options, cancellationToken);
+                await JsonSerializer.SerializeAsync(stream, value, Options, cancellationToken)
+                    .ConfigureAwait(false);
             File.Move(temporary, path, true);
         }
         finally
@@ -432,17 +434,19 @@ public sealed class FileAgentMemoryConfigurationStore : IAgentMemoryConfiguratio
 
 public sealed class FileAutonomousBehaviorPreferencesStore : IAutonomousBehaviorPreferencesStore
 {
-    private readonly string _path;
+    private readonly FileAutonomyPolicyStore _policy;
 
     public FileAutonomousBehaviorPreferencesStore(string rootDirectory) =>
-        _path = Path.Combine(rootDirectory, "autonomous-behavior-preferences.json");
+        _policy = new FileAutonomyPolicyStore(rootDirectory);
 
     public async Task<AutonomousBehaviorPreferences> LoadAsync(CancellationToken cancellationToken = default) =>
-        (await AgentJson.ReadAsync<AutonomousBehaviorPreferences>(_path, cancellationToken)
-         ?? AutonomousBehaviorPreferences.Default).Clamp();
+        (await _policy.LoadAsync(cancellationToken)).Profile.EffectivePreferences;
 
-    public Task SaveAsync(AutonomousBehaviorPreferences preferences, CancellationToken cancellationToken = default) =>
-        AgentJson.WriteAsync(_path, preferences.Clamp(), cancellationToken);
+    public async Task SaveAsync(AutonomousBehaviorPreferences preferences, CancellationToken cancellationToken = default)
+    {
+        var loaded = await _policy.LoadAsync(cancellationToken);
+        await _policy.SaveAsync(loaded.Profile with { OwnerPreferences = preferences.Clamp() }, cancellationToken);
+    }
 }
 
 public sealed class MockRuntimeContextStateProvider : IRuntimeContextStateProvider, IRuntimeContextOverrideState, IMockContextController

@@ -25,9 +25,11 @@ public sealed record PortableDataLayout(
         "model-providers.json",
         "memory-configuration.json",
         "autonomous-behavior-preferences.json",
+        "autonomy-policy.json",
         "conversation-history.json",
         "memory-candidates.json",
-        "pet-agent-state.json"
+        "pet-agent-state.json",
+        "companion-session.json"
     };
 
     public static PortableDataLayout CreateDefault() => Initialize(
@@ -80,6 +82,7 @@ public sealed record PortableDataLayout(
 
             CopyDefaults(Path.Combine(defaultsRoot, "profile"), profile);
             CopyDefaults(Path.Combine(defaultsRoot, "agent"), agent);
+            CopyBundledAlbumsOnce(Path.Combine(defaultsRoot, "albums"), albums, root);
             return true;
         }
         catch (IOException) { return false; }
@@ -101,6 +104,18 @@ public sealed record PortableDataLayout(
             return;
         foreach (var file in Directory.GetFiles(source, "*", SearchOption.TopDirectoryOnly))
             CopyIfMissing(file, Path.Combine(destination, Path.GetFileName(file)));
+    }
+
+    private static void CopyBundledAlbumsOnce(string source, string destination, string dataRoot)
+    {
+        var marker = Path.Combine(dataRoot, ".bundled-albums-v1-imported");
+        if (!Directory.Exists(source) || File.Exists(marker)) return;
+        // Skip links and copy only missing files; subsequent launches never restore
+        // an album or photograph the recipient deliberately removed.
+        var options = new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint };
+        foreach (var file in Directory.EnumerateFiles(source, "*", options))
+            CopyIfMissing(file, Path.Combine(destination, Path.GetRelativePath(source, file)));
+        File.WriteAllText(marker, "Bundled albums imported.\n");
     }
 
     private static void CopyMissingFiles(string source, string destination, IEnumerable<string> names)

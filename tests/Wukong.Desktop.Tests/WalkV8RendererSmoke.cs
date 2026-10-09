@@ -13,7 +13,12 @@ using Wukong.Application;
 internal static class WalkV8RendererSmoke
 {
     private const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
-    public static int Run(string output)
+    public static int RunV10(string output)
+    {
+        return Run(output, candidateOnly: true);
+    }
+
+    public static int Run(string output, bool candidateOnly = false)
     {
         output = Path.GetFullPath(output);
         Directory.CreateDirectory(output);
@@ -21,7 +26,11 @@ internal static class WalkV8RendererSmoke
         var evidence = new List<object>();
         var thread = new Thread(() =>
         {
-            var app = new System.Windows.Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+            var app = new System.Windows.Application { ShutdownMode = ShutdownMode.OnMainWindowClose };
+            app.Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("/Wukong.Desktop;component/Wukong.DesignTokens.xaml", UriKind.Relative)
+            });
             var window = new MainWindow();
             app.MainWindow = window;
             window.Show();
@@ -36,17 +45,32 @@ internal static class WalkV8RendererSmoke
                         ((DispatcherTimer)typeof(MainWindow).GetField(name, Private)!.GetValue(window)!).Stop();
                     var image = (Image)window.FindName("PetImage");
                     var facing = (ScaleTransform)window.FindName("PetFacingTransform");
-                    var cases = new[] { ("left", false, false), ("right", false, false), ("left", true, false), ("right", false, true) };
-                    foreach (var (direction, stop, normal) in cases)
+                    var cases = candidateOnly
+                        ? new[] { ("left", false, false, false), ("right", false, false, false), ("left", true, false, false) }
+                        : new[] { ("left", false, false, false), ("right", false, false, false), ("left", true, false, false), ("right", false, true, false), ("left", false, true, true), ("right", false, true, true) };
+                    foreach (var (direction, stop, normal, panel) in cases)
                     {
                         var area = SystemParameters.WorkArea;
                         window.Left = area.Left + (area.Width - window.Width) / 2;
                         window.Top = area.Top + Math.Max(0, area.Height - window.Height - 40);
                         var originX = window.Left;
                         var id = direction == "left" ? PatrolWalkCandidateBehaviorIds.WalkLeft : PatrolWalkCandidateBehaviorIds.WalkRight;
-                        var result = normal ? StartAutonomousWalk(runtime, id) : await runtime.SubmitDeveloperCandidateMotionAsync(id);
+                        if (panel)
+                        {
+                            runtime.UpdateBehaviorAgentMock(TemperamentProfile.Default,
+                                PetRuntimeState.Default with { CurrentPosture = StablePosture.Stand, CurrentPoseId = "stand.neutral.left_front" }, RelationshipState.Default, 10);
+                            runtime.StartIdle("panel_renderer_fixture");
+                            runtime.UpdatePatrolTravelSpace(1000, 1000, 50);
+                        }
+                        var result = panel ? await runtime.SubmitBaseMotionAsync(id, BehaviorRequestSource.ControlPanel)
+                            : normal ? StartAutonomousWalk(runtime, id) : await runtime.SubmitDeveloperCandidateMotionAsync(id);
                         PatrolWalkCandidateTests.Assert(result == PetActionResult.Accepted, "renderer preview gate failed");
                         var active = (PetMotionRequest)typeof(MainWindow).GetField("_activeRequest", Private)!.GetValue(window)!;
+                        if (candidateOnly)
+                            PatrolWalkCandidateTests.Assert(active.Motion.AssetBatch == PatrolWalkV10CandidateBehaviorIds.AssetBatch &&
+                                active.ExecutionMode == BehaviorExecutionMode.DeveloperPreview && active.Motion.RuntimeEnabled &&
+                                active.Motion.RuntimeApproved,
+                                "renderer did not use the approved walk v10 runtime assets");
                         var seen = new HashSet<string>();
                         var phases = new HashSet<string>();
                         var started = DateTimeOffset.UtcNow;
@@ -61,7 +85,7 @@ internal static class WalkV8RendererSmoke
                             previousX = window.Left;
                             phases.Add(runtime.CurrentPhase);
                             if (seen.Add(runtime.CurrentAsset))
-                                Capture(window, Path.Combine(output, $"{direction}-{(normal ? "normal" : stop ? "stop" : "full")}-{seen.Count:00}.png"));
+                                Capture(window, Path.Combine(output, $"{direction}-{(panel ? "panel" : normal ? "normal" : stop ? "stop" : "full")}-{seen.Count:00}.png"));
                             if (stop && stopping is null && runtime.CurrentPhase == "loop")
                             {
                                 var method = typeof(MainWindow).GetMethod("StopCurrentBehaviorAsync", Private)!;
@@ -78,11 +102,21 @@ internal static class WalkV8RendererSmoke
                         PatrolWalkCandidateTests.Assert(!runtime.AgentStateSnapshot.Runtime.IsBusy, "walking leaked busy state");
                         if (normal)
                         {
-                            PatrolWalkCandidateTests.Assert(runtime.CurrentStablePosture == StablePosture.Stand && facing.ScaleX == -1, "normal walk did not preserve standing/facing");
-                            PatrolWalkCandidateTests.Assert(active.ExecutionMode == BehaviorExecutionMode.Normal && active.Source == BehaviorRequestSource.AutonomousTick, "normal window run bypassed autonomy");
+                            PatrolWalkCandidateTests.Assert(runtime.CurrentStablePosture == StablePosture.Stand && facing.ScaleX == (direction == "right" ? -1 : 1), "normal walk did not preserve standing/facing");
+                            PatrolWalkCandidateTests.Assert(active.ExecutionMode == BehaviorExecutionMode.Normal && active.Source == (panel ? BehaviorRequestSource.ControlPanel : BehaviorRequestSource.AutonomousTick), "normal window run changed its source");
                             PatrolWalkCandidateTests.Assert(!(bool)typeof(MainWindow).GetField("_suspendAnimationFrames", Private)!.GetValue(window)!, "normal walk left idle animation suspended");
                         }
-                        evidence.Add(new { direction, stop, normal, frames = seen.Count, phases, displacement = previousX-originX,
+                        if (panel)
+                        {
+                            typeof(MainWindow).GetMethod("OpenChatForInput", Private)!.Invoke(window, null);
+                            await Task.Delay(100);
+                            var bounds = (Rect)typeof(MainWindow).GetMethod("CurrentVisiblePetBounds", Private)!.Invoke(window, null)!;
+                            var chat = (DesktopChatWindow)typeof(MainWindow).GetField("_chatWindow", Private)!.GetValue(window)!;
+                            PatrolWalkCandidateTests.Assert(Math.Abs(chat.Left + chat.ActualWidth/2 - bounds.Left - bounds.Width/2) < 2, "chat not centered on transformed pet");
+                            Capture(chat, Path.Combine(output, $"chat-{direction}.png"));
+                            chat.Collapse();
+                        }
+                        evidence.Add(new { direction, stop, normal, panel, frames = seen.Count, phases, displacement = previousX-originX,
                             elapsed_ms = (DateTimeOffset.UtcNow-started).TotalMilliseconds, active.RequestId });
                     }
                     var catalog = runtime.Motions.Select(x => new
@@ -96,7 +130,11 @@ internal static class WalkV8RendererSmoke
                     File.WriteAllText(Path.Combine(output, "renderer.json"), JsonSerializer.Serialize(new { passed=true, evidence }, new JsonSerializerOptions { WriteIndented = true }));
                 }
                 catch (Exception ex) { error = ex; }
-                finally { window.Close(); app.Shutdown(); }
+                finally
+                {
+                    window.Close();
+                    Dispatcher.CurrentDispatcher.InvokeShutdown();
+                }
             }));
             app.Run();
         });

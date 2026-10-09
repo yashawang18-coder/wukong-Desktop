@@ -38,7 +38,7 @@ public partial class MainWindow
     private Point WalkingTransitionGround(PlayableMotion? motion, string path)
     {
         var baseline = 0.5;
-        if (motion?.AssetBatch == PatrolWalkCandidateBehaviorIds.AssetBatch)
+        if (PatrolWalkAssetBatches.Contains(motion?.AssetBatch))
             baseline = 900.0 / 1024;
         else if (System.IO.File.Exists(path))
         {

@@ -71,6 +71,9 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _coinSingleClickTimer;
     private readonly DispatcherTimer _ownerSingleClickTimer;
     private readonly DispatcherTimer _initiativeSpeechTimer = new();
+    private readonly DispatcherTimer _presenceHeartbeatTimer = new() { Interval = TimeSpan.FromMinutes(1) };
+    private readonly CompanionGreetingDecisionService _companionGreetings = new();
+    private readonly WindowsStartupRegistration _startupRegistration = new();
     private readonly Dictionary<string, BitmapImage> _imageCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly Queue<string> _imageCacheOrder = new();
     private readonly object _imageCacheSync = new();
@@ -107,6 +110,9 @@ public partial class MainWindow : Window
     private string _currentFramePath = string.Empty;
     private double _lockedFrameScale = 1.0;
     private EffectDisplaySnapshot? _effectDisplaySnapshot;
+    private CompanionSessionState _companionSession = new();
+    private bool _companionSessionLoaded;
+    private bool _companionSessionSaveActive;
     public CarRideStartupMetrics? LastCarRideStartupMetrics { get; private set; }
 
     public MainWindow()
@@ -124,15 +130,19 @@ public partial class MainWindow : Window
         _runtime.MotionRequested += Runtime_MotionRequested;
         _runtime.PetPixelSizeRequested += Runtime_PetPixelSizeRequested;
         _runtime.PetScaleRequested += Runtime_PetScaleRequested;
-        LocationChanged += (_, _) => RepositionChat();
-        SizeChanged += (_, _) => RepositionChat();
+        LocationChanged += (_, _) => { RepositionChat(); if (IsLoaded) UpdatePatrolTravelSpace(); };
+        SizeChanged += (_, _) => { RepositionChat(); if (IsLoaded) UpdatePatrolTravelSpace(); };
         Closed += (_, _) =>
         {
+            BootstrapLog.WriteRaw("mainwindow_closed_entered");
             _effectCancellation?.Cancel();
+            _animationTimer.Stop();
+            _autonomousTimer.Stop();
             _coinStateTimer.Stop();
             _coinSingleClickTimer.Stop();
             _ownerSingleClickTimer.Stop();
             _initiativeSpeechTimer.Stop();
+            _presenceHeartbeatTimer.Stop();
             var chatWindow = _chatWindow;
             _chatWindow = null;
             chatWindow?.Close();
@@ -146,13 +156,29 @@ public partial class MainWindow : Window
             }
             try
             {
+                BootstrapLog.WriteRaw("mainwindow_agent_state_flush_before");
                 _runtime.FlushAgentStateAsync().GetAwaiter().GetResult();
+                BootstrapLog.WriteRaw("mainwindow_agent_state_flush_after");
             }
             catch (Exception ex)
             {
                 BootstrapLog.WriteRaw($"agent_state_flush_failed:{ex.GetType().Name}");
             }
+            try
+            {
+                BootstrapLog.WriteRaw("mainwindow_companion_session_flush_before");
+                // Run the complete final flush off the dispatcher. Starting an async
+                // file write on the UI thread and then blocking here can deadlock if
+                // any nested framework await needs that dispatcher during shutdown.
+                Task.Run(() => SaveCompanionSessionAsync()).GetAwaiter().GetResult();
+                BootstrapLog.WriteRaw("mainwindow_companion_session_flush_after");
+            }
+            catch (Exception ex)
+            {
+                BootstrapLog.WriteRaw($"companion_session_flush_failed:{ex.GetType().Name}");
+            }
             _agentRuntime.Dispose();
+            BootstrapLog.WriteRaw("mainwindow_closed_completed");
         };
 
         _animationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(125) };
@@ -185,6 +211,7 @@ public partial class MainWindow : Window
         };
 
         _initiativeSpeechTimer.Tick += InitiativeSpeechTimer_Tick;
+        _presenceHeartbeatTimer.Tick += async (_, _) => await SaveCompanionSessionAsync();
 
         ApplyPetScale(LoadPetScale(), persist: false);
         _runtime.StartIdle();
@@ -199,12 +226,18 @@ public partial class MainWindow : Window
             if (restoredAgentState)
                 _runtime.StartIdle("restored_state");
             var personalityTask = _agentRuntime.Profiles.LoadPersonalityAsync();
-            var preferencesTask = _agentRuntime.AutonomousBehaviorPreferences.LoadAsync();
+            var policyTask = _agentRuntime.AutonomyPolicy.LoadAsync();
+            var companionSessionTask = _agentRuntime.CompanionSession.LoadAsync();
             var decisionMemoryTask = _runtime.RefreshDecisionMemoryAsync("startup");
-            await Task.WhenAll(personalityTask, preferencesTask, decisionMemoryTask);
+            await Task.WhenAll(personalityTask, decisionMemoryTask, policyTask, companionSessionTask);
+            var policy = await policyTask;
+            _runtime.UpdateAutonomyPolicy(policy.Profile, policy.Status);
+            _companionSession = await companionSessionTask;
+            _companionSessionLoaded = true;
+            SynchronizeWindowsStartup(policy.Profile.Presence.StartWithWindows);
             var personality = await personalityTask;
             _runtime.UpdateTemperament(TemperamentProfile.FromSnapshot(personality));
-            _runtime.UpdateAutonomousBehaviorPreferences(await preferencesTask);
+            _runtime.UpdateOwnerPromptAgency(await _agentRuntime.Profiles.LoadPetPromptAsync());
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
         {
@@ -217,6 +250,8 @@ public partial class MainWindow : Window
             24));
         _autonomousTimer.Start();
         _coinStateTimer.Start();
+        await TryShowCompanionMessageAsync(isStartup: true);
+        _presenceHeartbeatTimer.Start();
         ScheduleNextInitiativeSpeech();
         BootstrapLog.WriteRaw("mainwindow_loaded_handler");
         BootstrapLog.Write("MainWindow Loaded", this.Snapshot());
@@ -389,7 +424,7 @@ public partial class MainWindow : Window
     private async void OwnerCommandMenuItem_Click(object sender, RoutedEventArgs e)
     {
         if (sender is MenuItem { Tag: string command })
-            await _runtime.SubmitOwnerCommandAsync(command);
+            ShowOwnerDecisionFeedback(await _runtime.SubmitOwnerCommandAsync(command));
     }
 
     private async void MagicMenuItem_Click(object sender, RoutedEventArgs e)
@@ -399,12 +434,18 @@ public partial class MainWindow : Window
     }
 
     private async void CarRideMenuItem_Click(object sender, RoutedEventArgs e) =>
-        await _runtime.SubmitCarRideAsync(BehaviorRequestSource.OwnerContextMenu);
+        ShowOwnerDecisionFeedback(await _runtime.SubmitCarRideAsync(BehaviorRequestSource.OwnerContextMenu));
 
     private async void FoodWaterMenuItem_Click(object sender, RoutedEventArgs e)
     {
         if (sender is MenuItem { Tag: string behaviorId })
-            await _runtime.SubmitFoodWaterAsync(behaviorId, BehaviorRequestSource.OwnerContextMenu);
+            ShowOwnerDecisionFeedback(await _runtime.SubmitFoodWaterAsync(behaviorId, BehaviorRequestSource.OwnerContextMenu));
+    }
+
+    private void ShowOwnerDecisionFeedback(PetActionResult result)
+    {
+        if (result is PetActionResult.Rejected or PetActionResult.Deferred)
+            ShowSpeechBubble(_runtime.OwnerDecisionFeedback);
     }
 
     private void OpenPanelMenuItem_Click(object sender, RoutedEventArgs e) => OpenControlPanel();
@@ -480,8 +521,8 @@ public partial class MainWindow : Window
         Dispatcher.Invoke(() =>
         {
             var pipelineElapsed = ElapsedMilliseconds(request.RequestedAtTimestamp);
-            var preserveWalkingGround = request.Motion.AssetBatch == PatrolWalkCandidateBehaviorIds.AssetBatch ||
-                _activeRequest?.Motion.AssetBatch == PatrolWalkCandidateBehaviorIds.AssetBatch;
+            var preserveWalkingGround = PatrolWalkAssetBatches.Contains(request.Motion.AssetBatch) ||
+                PatrolWalkAssetBatches.Contains(_activeRequest?.Motion.AssetBatch);
             var walkingGround = preserveWalkingGround ? WalkingTransitionGround(_activeRequest?.Motion, _currentFramePath) : (Point?)null;
             _activeRequest = request;
             _suspendAnimationFrames = false;
@@ -600,7 +641,7 @@ public partial class MainWindow : Window
         _coinSingleClickTimer.Stop();
         _ownerSingleClickTimer.Stop();
         var returnToIdle = _activeRequest.ReturnToIdle;
-        if (request.Motion.AssetBatch != PatrolWalkCandidateBehaviorIds.AssetBatch)
+        if (!PatrolWalkAssetBatches.Contains(request.Motion.AssetBatch))
             _activeRequest = null;
         if (returnToIdle)
             _runtime.CompleteMotion(request.RequestId, behaviorId, phase);
@@ -608,7 +649,7 @@ public partial class MainWindow : Window
 
     private async Task StopCurrentBehaviorAsync(string reason)
     {
-        if (_activeRequest?.Motion.AssetBatch == PatrolWalkCandidateBehaviorIds.AssetBatch &&
+        if (PatrolWalkAssetBatches.Contains(_activeRequest?.Motion.AssetBatch) &&
             _patrolPlaybackTask is { IsCompleted: false })
         {
             if (_patrolStopRequested)
@@ -1643,15 +1684,16 @@ public partial class MainWindow : Window
     private void OpenChatForInput()
     {
         EnsureChatWindow();
-        var workArea = SystemParameters.WorkArea;
+        var workArea = WindowPlacement.CurrentWorkingArea(this);
         var visiblePet = CurrentVisiblePetBounds();
         var adjusted = DesktopChatPlacement.MakeRoomBelow(
             workArea,
             visiblePet,
             new Size(_chatWindow!.Width, _chatWindow.Height));
         var verticalShift = adjusted.Top - visiblePet.Top;
-        if (Math.Abs(verticalShift) > 0.01)
-            ApplyVisiblePlacement(new Point(Left, Top + verticalShift));
+        var horizontalShift = adjusted.Left - visiblePet.Left;
+        if (Math.Abs(verticalShift) > 0.01 || Math.Abs(horizontalShift) > 0.01)
+            ApplyVisiblePlacement(new Point(Left + horizontalShift, Top + verticalShift));
         _chatWindow.ShowForInput(workArea, CurrentVisiblePetBounds());
     }
 
@@ -1666,16 +1708,109 @@ public partial class MainWindow : Window
     private void ShowSpeechBubble(string text)
     {
         _speechBubbleWindow ??= new DesktopSpeechBubbleWindow();
-        _speechBubbleWindow.ShowMessage(text, SystemParameters.WorkArea, CurrentVisiblePetBounds());
+        _speechBubbleWindow.ShowMessage(text, WindowPlacement.CurrentWorkingArea(this), CurrentVisiblePetBounds());
     }
 
-    private void InitiativeSpeechTimer_Tick(object? sender, EventArgs e)
+    private string? _lastInitiativeText;
+
+    private void SynchronizeWindowsStartup(bool enabled)
+    {
+        try
+        {
+            var result = _startupRegistration.Synchronize(enabled);
+            BootstrapLog.WriteRaw($"windows_startup_registration status={result.Status} enabled={result.Enabled} applied={result.Applied}");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+        {
+            BootstrapLog.WriteRaw($"windows_startup_registration_failed:{ex.GetType().Name}");
+        }
+    }
+
+    private async Task<bool> TryShowCompanionMessageAsync(bool isStartup)
+    {
+        if (!_companionSessionLoaded)
+            return false;
+
+        var instant = _runtime.CurrentInstant;
+        var policy = _runtime.AutonomyPolicy;
+        var decision = _companionGreetings.Decide(new CompanionGreetingContext(
+            instant,
+            isStartup,
+            _companionSession,
+            policy.Time,
+            policy.Presence,
+            policy.Speech,
+            _runtime.AgentStateSnapshot.DecisionMemory,
+            _runtime.CurrentStablePosture,
+            _initiativeSpeechRandom.NextDouble()));
+
+        if (isStartup)
+            _companionSession = _companionSession with
+            {
+                LaunchCount = Math.Min(1_000_000, _companionSession.LaunchCount + 1)
+            };
+
+        if (!decision.ShouldSpeak)
+        {
+            await SaveCompanionSessionAsync(instant);
+            return false;
+        }
+
+        var speechGate = _runtime.EvaluateScheduledCompanionSpeech(
+            decision.Topic,
+            _chatWindow?.IsExpanded == true || _dragStarted || _speechBubbleWindow?.IsVisible == true,
+            allowDuringQuietHours: decision.Kind is CompanionGreetingKind.LongAbsence or CompanionGreetingKind.LateNightCare);
+        if (!speechGate.ShouldSpeak)
+        {
+            await SaveCompanionSessionAsync(instant);
+            return false;
+        }
+
+        var text = _runtime.ValidateDialogueReply(decision.Text).Text;
+        ShowSpeechBubble(text);
+        _lastInitiativeText = text;
+        _runtime.RecordInitiativeSpeech(decision.Topic, decision.ReasonCode);
+        await _agentRuntime.AppendLocalAssistantMessageAsync(text);
+        _companionSession = _companionSession with
+        {
+            LastStartupGreetingAtUtc = isStartup ? instant : _companionSession.LastStartupGreetingAtUtc,
+            LastLateNightCareAtUtc = decision.CountsAsLateNightCare ? instant : _companionSession.LastLateNightCareAtUtc
+        };
+        await SaveCompanionSessionAsync(instant);
+        return true;
+    }
+
+    private async Task SaveCompanionSessionAsync(DateTimeOffset? instant = null)
+    {
+        if (!_companionSessionLoaded || _companionSessionSaveActive)
+            return;
+        _companionSessionSaveActive = true;
+        try
+        {
+            _companionSession = (_companionSession with
+            {
+                LastActiveAtUtc = (instant ?? _runtime.CurrentInstant).ToUniversalTime()
+            }).Clamp();
+            // The Closed handler performs one final synchronous flush on the UI
+            // thread. Do not capture that dispatcher while the file store writes.
+            await _agentRuntime.CompanionSession.SaveAsync(_companionSession).ConfigureAwait(false);
+        }
+        finally
+        {
+            _companionSessionSaveActive = false;
+        }
+    }
+
+    private async void InitiativeSpeechTimer_Tick(object? sender, EventArgs e)
     {
         _initiativeSpeechTimer.Stop();
         var nextCheck = InitiativeSpeechSchedule.NextInterval(_initiativeSpeechRandom);
         try
         {
-            var decision = _runtime.DecideInitiativeSpeech(_chatWindow?.IsExpanded == true);
+            if (await TryShowCompanionMessageAsync(isStartup: false))
+                return;
+            var decision = _runtime.DecideInitiativeSpeech(_chatWindow?.IsExpanded == true ||
+                _dragStarted || _speechBubbleWindow?.IsVisible == true);
             nextCheck = decision.NextCheck;
             if (!decision.ShouldSpeak)
                 return;
@@ -1686,10 +1821,13 @@ public partial class MainWindow : Window
                 decision.Topic,
                 _runtime.CurrentStablePosture,
                 state.Runtime,
-                state.DecisionMemory);
+                state.DecisionMemory,
+                _lastInitiativeText);
             var text = _runtime.ValidateDialogueReply(candidate).Text;
-            _runtime.RecordInitiativeSpeech(decision.Topic, "state_rule");
             ShowSpeechBubble(text);
+            _lastInitiativeText = text;
+            _runtime.RecordInitiativeSpeech(decision.Topic, "state_rule");
+            await _agentRuntime.AppendLocalAssistantMessageAsync(text);
         }
         catch (Exception ex)
         {
@@ -1713,7 +1851,7 @@ public partial class MainWindow : Window
     {
         if (_chatWindow is null && _speechBubbleWindow is null)
             return;
-        var workArea = SystemParameters.WorkArea;
+        var workArea = WindowPlacement.CurrentWorkingArea(this);
         var bounds = CurrentVisiblePetBounds();
         _chatWindow?.Reposition(workArea, bounds);
         _speechBubbleWindow?.Reposition(workArea, bounds);
@@ -1728,16 +1866,14 @@ public partial class MainWindow : Window
 
         try
         {
-            var origin = PetImage.TranslatePoint(new Point(0, 0), this);
-            var imageBounds = new Rect(
-                windowBounds.Left + origin.X,
-                windowBounds.Top + origin.Y,
-                PetImage.ActualWidth,
-                PetImage.ActualHeight);
+            var imageBounds = new Rect(0, 0, PetImage.ActualWidth, PetImage.ActualHeight);
             var metrics = string.IsNullOrWhiteSpace(_currentFramePath)
                 ? new MotionVisibleMetrics(source.PixelWidth, source.PixelHeight, new Int32Rect(0, 0, source.PixelWidth, source.PixelHeight))
                 : MotionVisualSizer.Measure(_currentFramePath);
-            return DesktopChatPlacement.VisibleSubjectBounds(imageBounds, metrics);
+            var localSubject = DesktopChatPlacement.VisibleSubjectBounds(imageBounds, metrics);
+            var transformed = PetImage.TransformToAncestor(this).TransformBounds(localSubject);
+            transformed.Offset(windowBounds.Left, windowBounds.Top);
+            return transformed;
         }
         catch (Exception ex)
         {

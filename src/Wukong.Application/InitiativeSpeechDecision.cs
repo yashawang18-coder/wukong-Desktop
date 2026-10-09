@@ -27,6 +27,7 @@ public sealed record InitiativeSpeechContext(
     public IReadOnlyList<PetRecentExperience> RecentExperience { get; init; } = Array.Empty<PetRecentExperience>();
     public PetDecisionMemoryProfile DecisionMemory { get; init; } = PetDecisionMemoryProfile.Empty;
     public InitiativeSpeechFeedbackState Feedback { get; init; } = InitiativeSpeechFeedbackState.Empty;
+    public InitiativeSpeechOptions Policy { get; init; } = new();
 }
 
 public sealed record InitiativeSpeechCandidate(
@@ -70,7 +71,7 @@ public sealed class InitiativeSpeechDecisionService
 
         // The gate is deterministic for a fixed state/seed. Relationship affects
         // willingness to initiate, while independence affects frequency, not facts.
-        var gate = 0.76 + new Random(context.RandomSeed ^ 0x51A7).NextDouble() * 0.14
+        var gate = context.Policy.SelectionThreshold + new Random(context.RandomSeed ^ 0x51A7).NextDouble() * 0.14
             + context.Temperament.Independence01 * 0.08
             - context.Relationship.InitiativeAcceptance01 * 0.08
             - context.Relationship.Trust01 * 0.04;
@@ -79,9 +80,26 @@ public sealed class InitiativeSpeechDecisionService
             : new InitiativeSpeechDecision(false, InitiativeSpeechTopic.None, "initiative_threshold_not_met", nextCheck, candidates);
     }
 
+    public InitiativeSpeechDecision EvaluateScheduled(
+        InitiativeSpeechContext context,
+        InitiativeSpeechTopic topic,
+        bool allowDuringQuietHours)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        var effective = allowDuringQuietHours ? context with { IsQuietHours = false } : context;
+        var nextCheck = NextCheck(effective);
+        var suppression = SuppressionReason(effective);
+        return suppression is null
+            ? new InitiativeSpeechDecision(true, topic, "scheduled_companion_message", nextCheck, Array.Empty<InitiativeSpeechCandidate>())
+            : new InitiativeSpeechDecision(false, InitiativeSpeechTopic.None, suppression, nextCheck, Array.Empty<InitiativeSpeechCandidate>());
+    }
+
     private static string? SuppressionReason(InitiativeSpeechContext context)
     {
         var state = context.State.Clamp();
+        var policy = context.Policy;
+        if (!policy.Enabled)
+            return "initiative_disabled";
         if (context.IsPetrified)
             return "petrified";
         if (context.IsChatExpanded)
@@ -93,9 +111,9 @@ public sealed class InitiativeSpeechDecisionService
         if (context.Episode == PetEpisodeKind.Sleeping ||
             PetPoseCompatibility.FamilyFor(state.CurrentPoseId, state.CurrentPosture) == "sleep")
             return "sleeping_does_not_initiate_speech";
-        if (state.LastInteractionAt is { } interaction && context.Now - interaction < TimeSpan.FromSeconds(90))
+        if (state.LastInteractionAt is { } interaction && context.Now - interaction < TimeSpan.FromSeconds(policy.RecentInteractionSeconds))
             return "recent_owner_interaction";
-        if (state.Stress >= 0.72)
+        if (state.Stress >= policy.MaximumStress)
             return "stress_safety_limit";
         if (context.Relationship.InitiativeAcceptance01 < 0.25)
             return "initiative_acceptance_low";
@@ -111,18 +129,19 @@ public sealed class InitiativeSpeechDecisionService
             ? 1
             : 0;
         var unansweredCount = Math.Clamp(feedback.ConsecutiveUnanswered + pendingUnanswered, 0, 8);
-        var budget = unansweredCount >= 2 ? 4 : 6;
+        var budget = unansweredCount >= 2 ? policy.UnansweredBudget : policy.EightHourBudget;
         if (recentInitiatives.Length >= budget)
             return "initiative_budget_exhausted";
 
         var urgency = NeedUrgency(state);
-        var cooldownMinutes = 16.0
+        var cooldownMinutes = policy.BaseCooldownMinutes
             - context.Relationship.InitiativeAcceptance01 * 3.0
             - context.Temperament.Attachment01 * 2.0
             + context.Temperament.Independence01 * 3.0
             + state.Stress * 4.0
             - urgency * 4.0;
-        var cooldown = TimeSpan.FromMinutes(Math.Clamp(cooldownMinutes, 7, 20));
+        var cooldown = TimeSpan.FromMinutes(Math.Clamp(cooldownMinutes, policy.MinimumCooldownMinutes,
+            policy.MaximumCooldownMinutes) / policy.FrequencyMultiplier);
         var lastSpeechAt = context.LastSpokenAt ?? recentInitiatives.FirstOrDefault()?.At;
         var unanswered = unansweredCount > 0 || lastSpeechAt is not null &&
             (state.LastInteractionAt is null || state.LastInteractionAt.Value <= lastSpeechAt.Value);
@@ -180,7 +199,7 @@ public sealed class InitiativeSpeechDecisionService
         };
         var seconds = random.Next(minimumSeconds, maximumSeconds);
         var unanswered = Math.Clamp(context.Feedback.ConsecutiveUnanswered, 0, 3);
-        return TimeSpan.FromSeconds(seconds * (1 + unanswered * 0.35));
+        return TimeSpan.FromSeconds(seconds * (1 + unanswered * 0.35) / context.Policy.FrequencyMultiplier);
     }
 
     private static double NeedUrgency(PetRuntimeState state) => Math.Max(

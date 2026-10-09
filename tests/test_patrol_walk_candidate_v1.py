@@ -98,9 +98,15 @@ class PatrolWalkCandidateV1Tests(unittest.TestCase):
             self.assertEqual(["loop"], [phase["name"] for phase in action["phases"]])
 
         source = (ROOT / "src" / "Wukong.Desktop" / "DesktopPetRuntime.cs").read_text(encoding="utf-8")
-        allowlist = source.split("AutonomousRuntimeAllowlist", 1)[1].split("};", 1)[0]
-        self.assertIn("PatrolWalkCandidateBehaviorIds.WalkLeft", allowlist)
-        self.assertIn("PatrolWalkCandidateBehaviorIds.WalkRight", allowlist)
+        definitions = (ROOT / "src" / "Wukong.Desktop" / "DesktopBehaviorCapabilityCatalog.cs").read_text(encoding="utf-8")
+        self.assertIn("PatrolWalkCandidateBehaviorIds.WalkLeft", definitions)
+        self.assertIn("PatrolWalkCandidateBehaviorIds.WalkRight", definitions)
+        self.assertIn("batch: PatrolWalkCandidateBehaviorIds.AssetBatch", definitions)
+        self.assertIn("DesktopBehaviorDefinitionCatalog.IsAutonomous(behaviorId)", source)
+        # Historical IDs survive, but the current canonical batch is v10.
+        self.assertNotIn('AssetBatch = "WK-AUTONOMOUS-PATROL-WALK-v1-candidate"', source)
+        self.assertIn('AssetBatch = "WK-AUTONOMOUS-PATROL-WALK-v10"', source)
+        self.assertIn('PreviousAssetBatch = "WK-AUTONOMOUS-PATROL-WALK-v8"', source)
         self.assertIn("LoadPatrolWalkCandidates", source)
 
 

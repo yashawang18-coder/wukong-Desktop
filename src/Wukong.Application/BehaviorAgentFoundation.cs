@@ -133,15 +133,55 @@ public sealed record PetEpisodeSelection(
     bool Changed,
     IReadOnlyList<string> ReasonCodes);
 
+public sealed record StablePostureAutonomyPolicy(
+    TimeSpan MinimumDwell,
+    TimeSpan MaximumDwell,
+    TimeSpan DecisionDelayMinimum,
+    TimeSpan DecisionDelayMaximum,
+    double IdlePreferenceWeight)
+{
+    public StablePostureAutonomyPolicy Clamp()
+    {
+        var minimumDwell = MinimumDwell <= TimeSpan.Zero ? TimeSpan.FromSeconds(1) : MinimumDwell;
+        var maximumDwell = MaximumDwell <= minimumDwell ? minimumDwell + TimeSpan.FromSeconds(1) : MaximumDwell;
+        var decisionDelayMinimum = DecisionDelayMinimum < minimumDwell ? minimumDwell : DecisionDelayMinimum;
+        var decisionDelayMaximum = DecisionDelayMaximum <= decisionDelayMinimum
+            ? decisionDelayMinimum + TimeSpan.FromSeconds(1)
+            : DecisionDelayMaximum;
+        var idlePreference = double.IsFinite(IdlePreferenceWeight)
+            ? Math.Clamp(IdlePreferenceWeight, 0.05, 2.0)
+            : 1.0;
+        return this with
+        {
+            MinimumDwell = minimumDwell,
+            MaximumDwell = maximumDwell,
+            DecisionDelayMinimum = decisionDelayMinimum,
+            DecisionDelayMaximum = decisionDelayMaximum,
+            IdlePreferenceWeight = idlePreference
+        };
+    }
+
+    public TimeSpan ChooseDecisionDelay(Random random)
+    {
+        ArgumentNullException.ThrowIfNull(random);
+        var policy = Clamp();
+        var minimumSeconds = Math.Max(1, (int)Math.Ceiling(policy.DecisionDelayMinimum.TotalSeconds));
+        var maximumSeconds = Math.Max(minimumSeconds + 1, (int)Math.Ceiling(policy.DecisionDelayMaximum.TotalSeconds));
+        return TimeSpan.FromSeconds(random.Next(minimumSeconds, maximumSeconds));
+    }
+}
+
 public sealed record AutonomousAgentRolloutOptions(
     bool ShadowEnabled,
     IReadOnlySet<PetEpisodeKind> AuthoritativeEpisodes,
-    bool LegacyFallbackOnInfrastructureFailure)
+    bool LegacyFallbackOnInfrastructureFailure,
+    IReadOnlyDictionary<StablePosture, StablePostureAutonomyPolicy>? PosturePolicies = null)
 {
     public static AutonomousAgentRolloutOptions RestingFirst { get; } = new(
         ShadowEnabled: true,
         new HashSet<PetEpisodeKind> { PetEpisodeKind.Resting },
-        LegacyFallbackOnInfrastructureFailure: false);
+        LegacyFallbackOnInfrastructureFailure: false,
+        PosturePolicies: CreateDefaultPosturePolicies());
 
     public static AutonomousAgentRolloutOptions ContinuityV1 { get; } = new(
         ShadowEnabled: true,
@@ -153,14 +193,49 @@ public sealed record AutonomousAgentRolloutOptions(
             PetEpisodeKind.Recovering,
             PetEpisodeKind.Sleeping
         },
-        LegacyFallbackOnInfrastructureFailure: false);
+        LegacyFallbackOnInfrastructureFailure: false,
+        PosturePolicies: CreateDefaultPosturePolicies());
 
     public static AutonomousAgentRolloutOptions ShadowOnly { get; } = new(
         ShadowEnabled: true,
         new HashSet<PetEpisodeKind>(),
-        LegacyFallbackOnInfrastructureFailure: false);
+        LegacyFallbackOnInfrastructureFailure: false,
+        PosturePolicies: CreateDefaultPosturePolicies());
 
     public bool IsAuthoritative(PetEpisodeKind episode) => AuthoritativeEpisodes.Contains(episode);
+
+    public StablePostureAutonomyPolicy PosturePolicyFor(StablePosture posture)
+    {
+        if (PosturePolicies?.TryGetValue(posture, out var configured) == true)
+            return configured.Clamp();
+        return DefaultPosturePolicy(posture);
+    }
+
+    public static IReadOnlyDictionary<StablePosture, StablePostureAutonomyPolicy> CreateDefaultPosturePolicies() =>
+        new Dictionary<StablePosture, StablePostureAutonomyPolicy>
+        {
+            [StablePosture.Stand] = new(
+                TimeSpan.FromSeconds(14),
+                TimeSpan.FromSeconds(45),
+                TimeSpan.FromSeconds(14),
+                TimeSpan.FromSeconds(26),
+                IdlePreferenceWeight: 1.0),
+            [StablePosture.Sit] = new(
+                TimeSpan.FromSeconds(24),
+                TimeSpan.FromSeconds(90),
+                TimeSpan.FromSeconds(30),
+                TimeSpan.FromSeconds(53),
+                IdlePreferenceWeight: 0.55),
+            [StablePosture.Prone] = new(
+                TimeSpan.FromSeconds(35),
+                TimeSpan.FromSeconds(480),
+                TimeSpan.FromSeconds(55),
+                TimeSpan.FromSeconds(96),
+                IdlePreferenceWeight: 1.0)
+        };
+
+    private static StablePostureAutonomyPolicy DefaultPosturePolicy(StablePosture posture) =>
+        CreateDefaultPosturePolicies()[posture].Clamp();
 }
 
 public sealed class PetEpisodePolicy
@@ -881,16 +956,31 @@ public sealed class BehaviorParticipationPolicy
         BehaviorCapability capability,
         PetAgentState state,
         BehaviorRequestSource source,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        CommandParticipationOptions? options = null,
+        int recentRequestCount = 0,
+        double promptAgencyBias = 0)
     {
         ArgumentNullException.ThrowIfNull(capability);
         ArgumentNullException.ThrowIfNull(state);
+        var policy = options ?? new CommandParticipationOptions();
         state = state.Clamp();
 
         if (!capability.ProductionApproved || !capability.RuntimeUse || !capability.ProductionAsset)
             return Defer("capability_unavailable", "对应动作素材尚未具备正式运行资格");
         if (!capability.AllowedSources.Contains(source))
             return Defer("source_not_allowed", "当前来源不能触发该行为");
+        var ownerRequest = source is BehaviorRequestSource.OwnerContextMenu or BehaviorRequestSource.OwnerDialogue or BehaviorRequestSource.OwnerUi;
+        var agency = Math.Clamp(state.Temperament.Independence01 * .35 + state.Temperament.Mischief01 * .15 + policy.Rebelliousness * .30 +
+            Math.Clamp(promptAgencyBias, -.15, .25), 0, 1);
+        if (ownerRequest && capability.ParticipationMode != BehaviorParticipationMode.ForcedByOwner)
+        {
+            var tolerance = Math.Max(3, policy.RequestBurstLimit - (int)Math.Floor(agency * 2));
+            if (recentRequestCount >= tolerance)
+                return Reject("owner_request_pressure", "老爸，别一直催我嘛，想歇会儿。");
+            if (recentRequestCount == tolerance - 1)
+                return Defer("owner_request_pause", "等我一会儿嘛，先别催啦。", now.AddSeconds(policy.RetrySeconds));
+        }
         if (state.Runtime.IsBusy && !state.Runtime.IsInterruptible &&
             !string.Equals(state.Runtime.ActiveActionId, capability.BehaviorId, StringComparison.OrdinalIgnoreCase))
             return Defer("current_not_interruptible", "当前动作需要先到达安全中断点");
@@ -902,25 +992,33 @@ public sealed class BehaviorParticipationPolicy
 
         if (capability.ParticipationMode == BehaviorParticipationMode.ForcedByOwner)
             return Accept("forced_owner_safe_admission", "主人特辑将在安全中断后执行");
-        if (capability.ParticipationMode == BehaviorParticipationMode.Autonomous)
+        if (capability.ParticipationMode == BehaviorParticipationMode.Autonomous && !ownerRequest)
             return Accept("autonomous_candidate", "自主候选通过参与门禁");
 
         var runtime = state.Runtime;
+        if (ownerRequest && runtime.Stress >= policy.LowEffortMaximumStress)
+            return Reject("needs_quiet_now", "现在想安静一会儿，老爸。");
+        if (ownerRequest && capability.AllowedEpisodes.Contains(PetEpisodeKind.Sleeping) && runtime.Energy > .82 && runtime.Arousal > .60)
+            return Defer("not_sleepy_now", "我还不困呀，想再待会儿。", now.AddSeconds(policy.RetrySeconds));
+        if (ownerRequest && agency >= .50 &&
+            ((capability.Category == BehaviorSemanticCategory.Food && runtime.Hunger < .10) ||
+             (capability.Category == BehaviorSemanticCategory.Drink && runtime.Thirst < .10)))
+            return Reject("need_already_satisfied", capability.Category == BehaviorSemanticCategory.Food ? "肚子还饱着呢。" : "刚喝够啦，不渴呀。");
         var cooperation = state.Temperament.CommandCooperativeness01;
         var recentRepeats = state.RecentExperience
-            .Where(item => item.At <= now && now - item.At <= TimeSpan.FromMinutes(10) &&
+            .Where(item => item.At <= now && now - item.At <= TimeSpan.FromMinutes(policy.RepeatWindowMinutes) &&
                            string.Equals(item.BehaviorId, capability.BehaviorId, StringComparison.OrdinalIgnoreCase) &&
                            item.Status == ExecutionStatus.Completed)
             .Count();
         var sameLastAction = string.Equals(runtime.LastActionId, capability.BehaviorId, StringComparison.OrdinalIgnoreCase);
-        var recentLastAction = runtime.LastInteractionAt is { } last && last <= now && now - last <= TimeSpan.FromMinutes(10);
+        var recentLastAction = runtime.LastInteractionAt is { } last && last <= now && now - last <= TimeSpan.FromMinutes(policy.RepeatWindowMinutes);
         var repeatCount = Math.Max(sameLastAction && recentLastAction ? runtime.RepeatedActionCount : 0, recentRepeats);
-        if (capability.Effort == BehaviorEffortLevel.High && runtime.Energy < 0.16)
+        if (capability.Effort == BehaviorEffortLevel.High && runtime.Energy < policy.HighEffortMinimumEnergy)
             return Reject("energy_too_low", "悟空现在太累了，想先休息一下");
-        if (capability.Effort == BehaviorEffortLevel.High && runtime.Stress > 0.82)
+        if (capability.Effort == BehaviorEffortLevel.High && runtime.Stress > policy.HighEffortMaximumStress)
             return Reject("stress_too_high", "悟空现在有些紧张，不想做强烈动作");
-        if (repeatCount >= 5 ||
-            (repeatCount >= 4 && runtime.Stress + state.Temperament.Sensitivity01 * 0.20 > 0.72))
+        if (repeatCount >= policy.RepeatLimit ||
+            (repeatCount >= policy.RepeatLimit - 1 && runtime.Stress + state.Temperament.Sensitivity01 * 0.20 > 0.72))
             return Reject("repeated_command_tolerance_exceeded", "这个动作已经连续做了很多次，让悟空缓一缓");
 
         var effortEnergy = capability.Effort switch
@@ -937,21 +1035,22 @@ public sealed class BehaviorParticipationPolicy
             ["current_mood"] = runtime.MoodValence * 0.08,
             ["available_energy"] = effortEnergy * 0.12,
             ["stress_safety"] = (1 - runtime.Stress) * 0.10,
-            ["repetition_penalty"] = -Math.Min(0.30, repeatCount * (0.035 + state.Temperament.Sensitivity01 * 0.015))
+            ["repetition_penalty"] = -Math.Min(0.30, repeatCount * (0.035 + state.Temperament.Sensitivity01 * 0.015)),
+            ["personal_boundary"] = ownerRequest ? -agency * (.10 + runtime.Stress * .15) : 0,
+            ["request_pressure"] = ownerRequest ? -Math.Min(.24, Math.Max(0, recentRequestCount - 1) * .06) : 0
         };
         var willingness = Math.Clamp(components.Values.Sum(), 0, 1);
 
-        // Low-effort commands are intentionally highly cooperative. Independence
-        // affects style and initiative, never obedience to an explicit owner command.
-        if (capability.Effort == BehaviorEffortLevel.Low && runtime.Stress < 0.94)
+        if (capability.Effort == BehaviorEffortLevel.Low && runtime.Stress < policy.LowEffortMaximumStress &&
+            willingness >= policy.MediumAcceptThreshold)
             return Accept("low_effort_cooperative", "悟空愿意响应主人", willingness, components);
 
-        var acceptThreshold = capability.Effort == BehaviorEffortLevel.High ? 0.58 : 0.46;
-        var rejectThreshold = capability.Effort == BehaviorEffortLevel.High ? 0.34 : 0.26;
+        var acceptThreshold = capability.Effort == BehaviorEffortLevel.High ? policy.HighAcceptThreshold : policy.MediumAcceptThreshold;
+        var rejectThreshold = capability.Effort == BehaviorEffortLevel.High ? policy.HighRejectThreshold : policy.MediumRejectThreshold;
         if (willingness >= acceptThreshold)
             return Accept("normally_cooperative", "悟空愿意响应主人", willingness, components);
         if (willingness >= rejectThreshold)
-            return Defer("command_state_delay", "悟空需要先缓一缓", now.AddSeconds(20), willingness, components);
+            return Defer("command_state_delay", "悟空需要先缓一缓", now.AddSeconds(policy.RetrySeconds), willingness, components);
         return Reject("command_state_refusal", "悟空现在状态不太好，想先休息", willingness, components);
     }
 

@@ -67,11 +67,12 @@ public partial class ControlPanelWindow : Window
             _agent.DataPaths.AlbumsDirectory,
             _agent.DataPaths.ProfileDirectory);
         InitializeComponent();
+        ApplyPolicyToUi(_runtime.AutonomyPolicy);
         DataContext = _runtime;
         TraceList.ItemsSource = _runtime.TraceLines;
-        RefreshAssetLists(expiredOnly: false);
+        RefreshAssetLists();
         CommandMotionList.ItemsSource = _runtime.Motions
-            .Where(x => string.Equals(x.Category, "口令动作", StringComparison.Ordinal))
+            .Where(x => !x.IsExpired && !x.Deprecated && string.Equals(x.Category, "口令动作", StringComparison.Ordinal))
             .OrderBy(x => x.BehaviorId)
             .ToList();
         AlbumList.ItemsSource = _albumFolders;
@@ -104,7 +105,7 @@ public partial class ControlPanelWindow : Window
     private async void Command_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button { Content: string command })
-            await _runtime.SubmitOwnerCommandAsync(command);
+            await _runtime.SubmitOwnerCommandAsync(command, BehaviorRequestSource.ControlPanel);
     }
 
     private void DeveloperToggle_Changed(object sender, RoutedEventArgs e)
@@ -161,6 +162,7 @@ public partial class ControlPanelWindow : Window
         ModelNavButton.Style = NavButtonStyle(page == "Model");
         AssetsNavButton.Style = NavButtonStyle(page == "Assets");
         DeveloperNavButton.Style = NavButtonStyle(page == "Developer");
+        PageScrollViewer.ScrollToTop();
     }
 
     private async void ChooseAlbumRoot_Click(object sender, RoutedEventArgs e)
@@ -433,9 +435,11 @@ public partial class ControlPanelWindow : Window
         DeveloperRuntimeTab.Visibility = showRuntime ? Visibility.Visible : Visibility.Collapsed;
         DeveloperMechanismsTab.Visibility = showMechanisms ? Visibility.Visible : Visibility.Collapsed;
         DeveloperGuideTab.Visibility = tab == "Guide" ? Visibility.Visible : Visibility.Collapsed;
+        DeveloperPolicyTab.Visibility = tab == "Policy" ? Visibility.Visible : Visibility.Collapsed;
         DeveloperRuntimeTabButton.Style = PanelTabStyle(showRuntime);
         DeveloperMechanismsTabButton.Style = PanelTabStyle(showMechanisms);
         DeveloperGuideTabButton.Style = PanelTabStyle(tab == "Guide");
+        DeveloperPolicyTabButton.Style = PanelTabStyle(tab == "Policy");
         if (showMechanisms)
             RefreshBehaviorMechanisms();
     }
@@ -483,12 +487,14 @@ public partial class ControlPanelWindow : Window
         _memoryConfiguration = ReadMemoryConfigurationFromUi();
         await _agent.MemoryConfiguration.SaveAsync(_memoryConfiguration);
         await _runtime.RefreshDecisionMemoryAsync("memory_configuration_changed");
+        await RefreshMemoryCandidatesAsync();
         SetChatStatus("记忆配置已保存，并已刷新对话与行为决策权重。");
     }
 
     private async void SavePetPrompt_Click(object sender, RoutedEventArgs e)
     {
         await _agent.Profiles.SavePetPromptAsync(PetPromptText.Text);
+        _runtime.UpdateOwnerPromptAgency(PetPromptText.Text);
         ModelConfigStatus.Text = "宠物设定已保存并会用于后续对话。";
         SetChatStatus("宠物设定已保存，下一轮调试会重新注入最新提示词。");
     }
@@ -553,14 +559,16 @@ public partial class ControlPanelWindow : Window
             StandingPreferenceSlider.Value / 100.0).Clamp();
         try
         {
-            await _agent.AutonomousBehaviorPreferences.SaveAsync(preferences);
+            var policy = ReadPolicyFromUi(preferences);
+            await _agent.AutonomyPolicy.SaveAsync(policy);
             _autonomousBehaviorPreferences = preferences;
-            _runtime.UpdateAutonomousBehaviorPreferences(preferences);
-            AutonomousPreferenceSaveStatus.Text = "已保存";
+            _runtime.UpdateAutonomyPolicy(policy, "owner_saved");
+            AutonomousPreferenceSaveStatus.Text = "已保存" + ApplyWindowsStartupPreference(policy);
+            ApplyPolicyToUi(policy);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
         {
-            AutonomousPreferenceSaveStatus.Text = $"保存失败：{ex.GetType().Name}";
+            AutonomousPreferenceSaveStatus.Text = ex is ArgumentException ? ex.Message : $"保存失败：{ex.GetType().Name}";
         }
     }
 
@@ -575,8 +583,8 @@ public partial class ControlPanelWindow : Window
         var configurationsTask = _agent.Models.GetConfigurationsAsync();
         var activeTask = _agent.Models.GetActiveConfigurationAsync();
         var memoryConfigurationTask = _agent.MemoryConfiguration.LoadAsync();
-        var autonomousPreferencesTask = _agent.AutonomousBehaviorPreferences.LoadAsync();
-        await Task.WhenAll(petTask, ownerTask, personalityTask, promptTask, configurationsTask, activeTask, memoryConfigurationTask, autonomousPreferencesTask);
+        var policyTask = _agent.AutonomyPolicy.LoadAsync();
+        await Task.WhenAll(petTask, ownerTask, personalityTask, promptTask, configurationsTask, activeTask, memoryConfigurationTask, policyTask);
 
         var pet = await petTask;
         _loadedPetProfile = pet;
@@ -595,11 +603,14 @@ public partial class ControlPanelWindow : Window
         OwnerNotesText.Text = owner.Notes;
         _runtime.UpdateTemperament(TemperamentProfile.FromSnapshot(await personalityTask));
         PetPromptText.Text = await promptTask;
+        _runtime.UpdateOwnerPromptAgency(PetPromptText.Text);
         _memoryConfiguration = await memoryConfigurationTask;
         ApplyMemoryConfigurationToUi(_memoryConfiguration);
-        _autonomousBehaviorPreferences = await autonomousPreferencesTask;
+        var policy = await policyTask;
+        _runtime.UpdateAutonomyPolicy(policy.Profile, policy.Status);
+        _autonomousBehaviorPreferences = policy.Profile.EffectivePreferences;
         ApplyAutonomousPreferencesToUi(_autonomousBehaviorPreferences);
-        _runtime.UpdateAutonomousBehaviorPreferences(_autonomousBehaviorPreferences);
+        ApplyPolicyToUi(policy.Profile);
         LoadAvatarIfAvailable();
 
         _providerConfigurations.Clear();
@@ -611,6 +622,7 @@ public partial class ControlPanelWindow : Window
         LoadProviderEditor(active);
         _modelUiReady = true;
 
+        await _agent.ClearPetSettingDebugHistoryAsync();
         await ReloadChatHistoryAsync();
         await RefreshMemoryCandidatesAsync();
         UpdateDeveloperVisibility();
@@ -837,10 +849,20 @@ public partial class ControlPanelWindow : Window
             : DesktopAgentRuntime.DailySessionId;
         await _agent.Conversation.ClearHistoryAsync(sessionId);
         if (sessionId == DesktopAgentRuntime.DailySessionId)
+        {
             _chatItems.Clear();
+            SetChatStatus("当前对话已清空。");
+        }
         else
+        {
             _modelDebugItems[_activeModelTab].Clear();
-        SetChatStatus("当前对话已清空。");
+            SetChatStatus(_activeModelTab switch
+            {
+                "Pet" => "已清空宠物设定调试记录。",
+                "Memory" => "已清空记忆配置调试记录。",
+                _ => "已清空大模型调试记录。"
+            });
+        }
     }
 
     private async void ClearAllConversationHistory_Click(object sender, RoutedEventArgs e)
@@ -878,6 +900,11 @@ public partial class ControlPanelWindow : Window
         foreach (var item in items.OrderByDescending(x => x.CreatedAt))
             _memoryCandidates.Add(item);
         MemoryEmptyState.Visibility = _memoryCandidates.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        var configuration = await _agent.MemoryConfiguration.LoadAsync();
+        var confirmed = items.Count(item => item.Status == ConversationMemoryStatus.Confirmed);
+        var pending = items.Count(item => item.Status == ConversationMemoryStatus.Pending);
+        MemoryActivitySummary.Text = $"长期记忆{(configuration.UseLongTermMemory ? "已开启" : "已暂停")} · 已确认 {confirmed} 条 · 待确认 {pending} 条。" +
+            (configuration.UseLongTermMemory ? "已确认内容参与对话和有限决策权重。" : "记录保留，开启后才参与对话与决策。");
     }
 
     private async void RefreshMemory_Click(object sender, RoutedEventArgs e) => await RefreshMemoryCandidatesAsync();
@@ -1124,13 +1151,10 @@ public partial class ControlPanelWindow : Window
         }
     }
 
-    private void DeprecatedAssetsFilter_Changed(object sender, RoutedEventArgs e) =>
-        RefreshAssetLists(ShowDeprecatedAssetsCheckBox.IsChecked == true);
-
-    private void RefreshAssetLists(bool expiredOnly)
+    private void RefreshAssetLists()
     {
-        static IEnumerable<PlayableMotion> Filter(IEnumerable<PlayableMotion> motions, bool showExpired) =>
-            motions.Where(motion => showExpired ? motion.IsExpired : !motion.IsExpired);
+        static IEnumerable<PlayableMotion> Filter(IEnumerable<PlayableMotion> motions) =>
+            motions.Where(motion => !motion.IsExpired && !motion.Deprecated);
 
         var baseMotions = _runtime.Motions.Where(IsBaseMotion)
             .Concat(_runtime.AutonomousDailyCandidateMotions)
@@ -1138,24 +1162,24 @@ public partial class ControlPanelWindow : Window
                 string.Equals(x.AssetBatch, "WK-INTERACTION-PRONE-TOUCH-v4-1", StringComparison.OrdinalIgnoreCase)))
             .GroupBy(x => (x.AssetBatch, x.BehaviorId))
             .Select(x => x.First());
-        AssetList.ItemsSource = Filter(baseMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
-        PlayAssetList.ItemsSource = Filter(_runtime.CarRideCandidateMotions, expiredOnly).ToList();
-        CommandAssetList.ItemsSource = Filter(_runtime.Motions.Where(IsCommandMotion), expiredOnly)
+        AssetList.ItemsSource = Filter(baseMotions).OrderBy(x => x.BehaviorId).ToList();
+        PlayAssetList.ItemsSource = Filter(_runtime.CarRideCandidateMotions).ToList();
+        CommandAssetList.ItemsSource = Filter(_runtime.Motions.Where(IsCommandMotion))
             .OrderByDescending(x => string.Equals(x.AssetBatch, CommandMockBehaviorIds.AssetBatch, StringComparison.OrdinalIgnoreCase))
             .ThenBy(x => x.BehaviorId)
             .ToList();
-        FoodWaterCandidateList.ItemsSource = Filter(_runtime.FoodWaterCandidateMotions, expiredOnly)
+        FoodWaterCandidateList.ItemsSource = Filter(_runtime.FoodWaterCandidateMotions)
             .OrderBy(x => x.BehaviorId)
             .ToList();
         MagicSpecialList.ItemsSource = Filter(_runtime.MagicMotions
             .Where(x => !string.Equals(x.BehaviorId, MagicBehaviorIds.PetrificusRelease, StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(x.BehaviorId, MagicBehaviorIds.Scourgify, StringComparison.OrdinalIgnoreCase)), expiredOnly)
+                        !string.Equals(x.BehaviorId, MagicBehaviorIds.Scourgify, StringComparison.OrdinalIgnoreCase)))
             .OrderBy(x => x.DisplayName)
             .ToList();
-        LifecycleCandidateList.ItemsSource = Filter(_runtime.LifecycleCandidateMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
-        StandingExpressionCandidateList.ItemsSource = Filter(_runtime.StandingExpressionCandidateMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
-        LifecycleReviewCandidateList.ItemsSource = Filter(_runtime.LifecycleReviewCandidateMotions, expiredOnly).OrderBy(x => x.BehaviorId).ToList();
-        CarRideCandidateList.ItemsSource = Filter(_runtime.CarRideCandidateMotions, expiredOnly).ToList();
+        LifecycleCandidateList.ItemsSource = Filter(_runtime.LifecycleCandidateMotions).OrderBy(x => x.BehaviorId).ToList();
+        StandingExpressionCandidateList.ItemsSource = Filter(_runtime.StandingExpressionCandidateMotions).OrderBy(x => x.BehaviorId).ToList();
+        LifecycleReviewCandidateList.ItemsSource = Filter(_runtime.LifecycleReviewCandidateMotions).OrderBy(x => x.BehaviorId).ToList();
+        CarRideCandidateList.ItemsSource = Filter(_runtime.CarRideCandidateMotions).ToList();
     }
 
     private async void ForceCommandMotion_Click(object sender, RoutedEventArgs e)
@@ -1256,7 +1280,7 @@ public partial class ControlPanelWindow : Window
         var result = await _runtime.SubmitBaseMotionAsync(motion.BehaviorId, BehaviorRequestSource.ControlPanel);
         MagicShowStatus.Text = result switch
         {
-            PetActionResult.Accepted => $"{motion.DisplayName}：正在主窗口执行，并同步当前状态与互动记录",
+            PetActionResult.Accepted => $"{motion.DisplayName}：{_runtime.CurrentReason}（不计统计、记忆或性格）",
             PetActionResult.Deferred => $"{motion.DisplayName}：{_runtime.CurrentReason}",
             PetActionResult.MissingAsset => $"{motion.DisplayName}：素材缺失",
             PetActionResult.Interrupted => $"{motion.DisplayName}：已停止",
@@ -1284,7 +1308,7 @@ public partial class ControlPanelWindow : Window
         }
 
         MagicShowStatus.Text = $"正在展示口令动作：{motion.DisplayName}...";
-        var result = await _runtime.SubmitOwnerCommandAsync(command);
+        var result = await _runtime.SubmitOwnerCommandAsync(command, BehaviorRequestSource.ControlPanel);
         MagicShowStatus.Text = result switch
         {
             PetActionResult.Accepted => $"{motion.DisplayName}: 正在展示",
@@ -1784,31 +1808,13 @@ public sealed record AlbumFolderItem(
     private static readonly string[] ImageExtensions = { ".png", ".jpg", ".jpeg", ".webp", ".bmp" };
     private static readonly string[] MarkdownNames = { "album.md", "README.md", "readme.md", "description.md", "\u63cf\u8ff0.md" };
 
-    public static string GetDefaultAlbumRoot(string? portableAlbumRoot = null, string? profileDirectory = null)
-    {
-        var configured = Environment.GetEnvironmentVariable("WUKONG_ALBUM_ROOT");
-        if (!string.IsNullOrWhiteSpace(configured) && Directory.Exists(configured))
-            return configured;
+    public static string GetDefaultAlbumRoot(string? portableAlbumRoot = null, string? profileDirectory = null) =>
+        Wukong.Infrastructure.PortableAlbumBinding.Resolve(
+            portableAlbumRoot ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Wukong"),
+            AlbumProfileDirectory(profileDirectory));
 
-        var preference = AlbumRootPreferencePath(profileDirectory);
-        if (File.Exists(preference))
-        {
-            var path = File.ReadAllText(preference).Trim();
-            if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
-                return path;
-        }
-
-        return !string.IsNullOrWhiteSpace(portableAlbumRoot)
-            ? portableAlbumRoot
-            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Wukong");
-    }
-
-    public static void SaveAlbumRootPreference(string path, string? profileDirectory = null)
-    {
-        var directory = AlbumProfileDirectory(profileDirectory);
-        Directory.CreateDirectory(directory);
-        File.WriteAllText(AlbumRootPreferencePath(directory), path);
-    }
+    public static void SaveAlbumRootPreference(string path, string? profileDirectory = null) =>
+        Wukong.Infrastructure.PortableAlbumBinding.Save(path, AlbumProfileDirectory(profileDirectory));
 
     public static AlbumFolderItem FromDirectory(string directory)
     {

@@ -46,6 +46,10 @@ public static class DesktopChatPlacement
 
     public static Rect MakeRoomBelow(Rect workArea, Rect petBounds, Size overlaySize)
     {
+        var halfWidth = Math.Min(overlaySize.Width, workArea.Width - Margin * 2) / 2;
+        var center = Math.Clamp(petBounds.Left + petBounds.Width / 2,
+            workArea.Left + Margin + halfWidth, workArea.Right - Margin - halfWidth);
+        petBounds.X = center - petBounds.Width / 2;
         var requiredBottom = petBounds.Bottom + Gap + overlaySize.Height + Margin;
         if (requiredBottom <= workArea.Bottom)
             return petBounds;
@@ -73,7 +77,8 @@ public static class InitiativeSpeechSchedule
         InitiativeSpeechTopic topic,
         StablePosture posture,
         PetRuntimeState? state = null,
-        PetDecisionMemoryProfile? memory = null)
+        PetDecisionMemoryProfile? memory = null,
+        string? previousMessage = null)
     {
         if (state is { Stress: >= 0.58 })
             return posture == StablePosture.Prone ? "我想安静趴会儿。" : "我想安静一下。";
@@ -94,7 +99,8 @@ public static class InitiativeSpeechSchedule
             InitiativeSpeechTopic.Companionship when posture == StablePosture.Sit => new[] { "老爸，我在听。", "陪我说句话嘛。", "我看着你呢。" },
             _ => new[] { "老爸，我在呀。", "刚刚想你啦。", "看看我嘛。" }
         };
-        return messages[random.Next(messages.Length)];
+        var fresh = messages.Where(message => !string.Equals(message, previousMessage, StringComparison.Ordinal)).ToArray();
+        return fresh[random.Next(fresh.Length)];
     }
 
     public static bool CanSpeakDuring(string behaviorId, bool isPetrified) =>
